@@ -129,5 +129,6 @@
   "raw_comparison_sha256": "89354516c1fdfb85a2f7d61fddfb6b5442efca17240c1a14e11ce33a6ee2206f",
   "rust_checks": "cargo xtask check passed 84 ordinary tests, fmt, strict Clippy; 20Python tests passed",
   "interrupted_futex_record": "runtime-consumer-verification.json",
-  "build_record_sha256": "323750e4963584744233d890ceb1e66fffb4d2aecfcdc410145dd758921e83b2"
+  "build_record_sha256": "323750e4963584744233d890ceb1e66fffb4d2aecfcdc410145dd758921e83b2",
+  "latest_lockset_process_followup": "lockset-process-verification.json"
 }

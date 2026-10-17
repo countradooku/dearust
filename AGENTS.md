@@ -311,3 +311,22 @@ No Rust runtime implementation defect was reproduced during atomics, futex,
 errno, cerror/cancellation-source audit. Real SIGUSR1/EINTR retry now runs in
 original/native Rust/Darling-backend ABI differentials, with eintr=1 in the record.
 Do not convert passing source audits into untested cancellation claims.
+
+
+Continuation: Rust locksets and process queries
+--------------------------------------------
+See LOCKSET-PROCESS.txt and lockset-process-verification.json. The Rust lockset
+server and partial process-query dispatcher execute real Mach-O apps in isolated
+unprivileged user/mount/PID namespaces, without modifying installed binaries or
+the existing user prefix. All 29 app checks pass under the Rust kernel when the
+known cfbridge timestamp is explicitly normalized (28 strict + 1 normalized). Both
+Cocoa GUI checks and new lifecycle/process probes pass. 97 Rust tests, 24 Python
+tests, formatting and strict Clippy pass. Earlier records above are historical.
+
+Four dependency source slices are partial, 265799 entries remain pending. Target
+retirement counts are unchanged. Legacy process flavors still delegate to C;
+fixed-priority lock ordering uses enqueue-time priority; unlinked overlay map
+identity remains limited. Full Rust migration and arbitrary app compatibility
+are not established. Matching final artifacts are continuation work/
+server-lockset-release/darlingserver and process-kernel-final/
+libsystem_kernel-rust.dylib. Reproduction commands are in LOCKSET-PROCESS.txt.

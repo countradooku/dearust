@@ -323,5 +323,6 @@
     "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/selfexec.c.bin": "a625d36112296c34e2d6db85fd7a589fe61380618bdb72ae94efc634b3194d1f",
     "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/tls1.c.bin": "f897a3ee467bc1131474444d96884ca81b16673bdd62b91f7e92dfc71322e3a6",
     "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/tls2.cpp.bin": "ea36a04361cae246267b60ac232211fae7d10a06fc3d33ee273ffca92fd60ade"
-  }
+  },
+  "latest_lockset_process_followup": "lockset-process-verification.json"
 }

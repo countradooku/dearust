@@ -1,7 +1,7 @@
 {
   "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
   "rust_toolchain": "rustc 1.99.0 (b940084d7 2026-09-28)",
-  "normal_tests_passed": 84,
+  "normal_tests_passed": 97,
   "optional_upstream_differential_tests_explicitly_run_and_passed": 5,
   "checks": [
     "cargo xtask check",
@@ -79,9 +79,13 @@
     "inventoried_trees": 160,
     "unavailable_trees": 0,
     "entries": 265803,
-    "entries_pending_migration": 265801,
+    "entries_pending_migration": 265799,
     "license_candidates": 341,
-    "entries_partial": 2
+    "entries_partial": 4,
+    "entries_by_status": {
+      "partial": 4,
+      "pending": 265799
+    }
   },
   "coredump_zero_fill_benchmark": {
     "record": "crates/darling-coredump/zero-fill-measurement.json",
@@ -196,5 +200,13 @@
     "selected_installed_runtime_applications_executed": true,
     "installed_runtime_application_record": "mac-app-verification.json",
     "installed_runtime_gui_record": "gui-verification.json"
+  },
+  "lockset_process_integration": {
+    "record": "lockset-process-verification.json",
+    "rust_tests": 97,
+    "python_tests": 24,
+    "rust_app_strict_passes": 28,
+    "rust_app_explicit_normalized_passes": 29,
+    "gui_checks_pass": true
   }
 }

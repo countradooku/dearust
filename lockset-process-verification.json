@@ -1,0 +1,91 @@
+{
+  "scope": "Partial x86_64 Rust lockset server and process-query runtime integration using locally modified matching Darling inputs; no full migration claim.",
+  "upstream_gaps_and_bugs_fixed": [
+    "lockset_create and other lockset APIs were unconditional failure stubs; now real Mach ports, ownership, wait/handoff, unstable recovery and lifecycle behavior",
+    "proc_info LISTPIDS was unsupported; now namespace-aware enumeration and filters",
+    "proc_name returned loader name instead of registered executable basename",
+    "missing vnode/fd/mapped-file queries prevented proc_listpidspath",
+    "legacy PIDLISTTHREADS wrote before checking short buffer capacity",
+    "legacy region query copied uninitialized data on no matching region; Rust initializes records and reports an error"
+  ],
+  "new_integration_bugs_found_and_fixed": [
+    "thread/task cleanup delayed until final reference deallocation; now dying/exec hooks",
+    "interrupted handoff could transfer ownership but report aborted",
+    "raw procfs queries used wrong virtual root namespace",
+    "vchroot followed procfs magic links twice",
+    "overlay maps device identity disagreed with guest stat",
+    "C bridge port slot type punning and unsynchronized priority read"
+  ],
+  "checks": {
+    "cargo_xtask_check": "pass: formatting, strict Clippy and workspace tests",
+    "rust_tests_passed": 97,
+    "python_tests_passed": 24,
+    "darwin_runtime_staging": "pass; integrated process.o byte-identical to app-tested object",
+    "process_object_sha256": "814326b12b6855d171c4060a0d2f977c86c648148d7e3bd96dfc9c2ed04cde10",
+    "apps": {
+      "original": {
+        "cases": 29,
+        "strict_pass": 27,
+        "normalized_pass": 28,
+        "shutdown_exit": 0,
+        "kernel_mapping_verified": true
+      },
+      "rust": {
+        "cases": 29,
+        "strict_pass": 28,
+        "normalized_pass": 29,
+        "shutdown_exit": 0,
+        "kernel_mapping_verified": true
+      }
+    },
+    "gui_apps": [
+      "Cocotron TextEditor: actual XTest typing and manually verified screenshots, both kernel variants",
+      "Cocoa Calculator fixture: mapped window, button actions assert42, both kernel variants"
+    ],
+    "lockset_guest_probes": "ownership, invalid IDs/policy, thread/task death, unstable recovery, blocked destroy,100portlifecycles,cross-process Machsendrights,and retained-task exec retirement: pass both kernel variants",
+    "process_guest_probe": "filters and negative filter, byte counts, short/negative buffers/canaries, threads, vnode layouts/metadata/ownership, fd path/list, cwd/root, open-file and mmap-only path lookup: pass"
+  },
+  "artifacts": {
+    "rust_server": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/work/server-lockset-release/darlingserver",
+      "sha256": "ca8eeb990c574f337edf307559bd11ce4a47636a88417affccbd8d92e6df64fb"
+    },
+    "rust_kernel": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/work/process-kernel-final/libsystem_kernel-rust.dylib",
+      "sha256": "e06d208563efd25c310df3ef42b6d88afdace46925202340c27f119edd5c7339"
+    },
+    "kernel_public_symbols": 1370,
+    "kernel_imports_unchanged": true
+  },
+  "evidence": {
+    "apps": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/lockset-process-apps/comparison.json",
+      "sha256": "ee64c0d221b70dc2928d409013048bb4a7a788daa1fb76cd0d1e4e365d61543b"
+    },
+    "gui": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/lockset-process-gui/comparison.json",
+      "sha256": "6b03d0a3fc052ad7a84be5c8ec7f9b49a0840dc5ba08701598e93c22042a8ea7"
+    },
+    "lifecycle": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/lockset-lifecycle/comparison.json",
+      "sha256": "585a1848aff113ba584eaafe93747d341cf66c8970fb415e5d781c203a340c1e"
+    },
+    "process": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/process-query-regressions/results.json",
+      "sha256": "4d0d7b7a6944ac2c4a648c93d4015c6bca58e93b300f30f317bad054194a0ed0"
+    },
+    "cleanup": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/lockset-process-gui/environment-cleanup.json",
+      "sha256": "661376d8415b21cd082238b35547633df848fe8db77ce5cd64922ebbdbe2e00f"
+    }
+  },
+  "comparison_interpretation": "Both app variants use the new Rust lockset server. Original means original client kernel. Original kernel still fails libproc; Rust fixes it. cfbridge has one explicitly normalized timestamped NSLog line in both. Harness returns1 for strict mismatches; none hidden.",
+  "limits": [
+    "Most Darling code remains C/C++/assembly; unported process query flavors delegate to legacy C.",
+    "Selected x86_64 locally modified runtime only; clean pinned full-runtime and i386 execution pending.",
+    "FIFO and fixed-priority are documented lockset policies; fixed-priority uses enqueue-time priority, not live reprioritization.",
+    "Unlinked overlay mappings cannot always recover guest-visible device identity.",
+    "No arbitrary GUI app, cancellation, or exhaustive scheduler-race compatibility claim."
+  ],
+  "environment": "New short prefixes, private unprivileged user/mount/PID namespaces, private server bind. All test prefixes shut down. Installed kernel/server hashes unchanged; task-owned Xephyr stopped; existing user prefix untouched."
+}

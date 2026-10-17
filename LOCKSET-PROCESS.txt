@@ -1,0 +1,63 @@
+Rust lockset and process-query integration
+========================================
+
+crates/darling-lockset implements the server lockset state, references and task/
+thread ownership. Its small C bridge supplies private XNU structures, scheduler
+calls and Mach-port operations. The isolated bridge builder patches lifecycle
+call sites in copied files; the source/build references remain unchanged.
+crates/darling-process implements selected no_std syscall queries and delegates
+remaining flavors to a private renamed original dispatcher. See both SAFETY.txt
+files for exact boundaries and limits.
+
+Verified: 97 Rust tests, 24 Python tests, formatting and strict Clippy; actual
+Mach locksets including 300,000 acquisitions, handoff, invalid ownership, thread/
+task death, cross-process rights and exec retirement; process enumeration,
+filters, short-buffer canaries, vnode/fd metadata and mapped-file lookup.
+29 app checks pass after explicitly normalizing cfbridge's known NSLog line
+(28 strict passes). TextEditor and Calculator GUI checks also pass. The original
+kernel comparison uses the same new lockset server and retains its libproc failure.
+
+Reproduce with already-built MATCHING local source/build and runtime SDK paths:
+
+  cargo xtask check
+  python3 -m unittest discover -s tools -p 'test_*.py' -v
+  cargo xtask runtime --target x86_64-apple-darwin --destdir NEW_RUNTIME
+  cargo build -p darling-lockset --release --offline --locked
+  python3 tools/build_lockset_bridge.py --source SOURCE --build BUILD --output NEW_BRIDGE
+  python3 tools/relink_matching_kernel.py --build BUILD --runtime NEW_RUNTIME \
+    --process-object NEW_RUNTIME/objects/process.o --output NEW_KERNEL
+
+Use NEW_BRIDGE/bridge-build.json for the five duct-tape --replace SOURCE=OBJECT
+arguments and the --replace-server src/process.cpp=OBJECT argument:
+
+  python3 tools/relink_darlingserver.py --build BUILD --output NEW_SERVER \
+    --replace xnu/osfmk/kern/sync_lock.c=OBJECT [other four replacements] \
+    --replace-server src/process.cpp=OBJECT \
+    --archive target/release/libdarling_lockset.a
+
+Run the app and GUI harnesses through the namespace wrapper:
+
+  python3 tools/run_isolated_server.py --server NEW_SERVER/darlingserver -- \
+    python3 tools/check_mac_apps.py --original-kernel NEW_KERNEL/libsystem_kernel-original.dylib \
+    --rust-kernel NEW_KERNEL/libsystem_kernel-rust.dylib --tests FIXTURES --output NEW_RESULTS
+
+check_gui_apps.py uses the same kernel arguments plus --apps APPS --display :99.
+The X display must be task-owned and isolated; never inject input into the user's
+normal display. build_gui_apps.py builds the sample and fixture. Additional C
+probes in tools/fixtures/{process-query,mach-lockset-regression,mach-lockset-exec}.c
+can be built by build_runtime_probes.py and executed with check_mac_apps.py --cases.
+Provide their explicit expected .stdout files; never derive goldens from a run.
+Each tool requires a fresh output directory outside reference trees.
+
+Final concrete evidence and exact binary hashes: lockset-process-verification.json.
+User-facing evidence is in continuation outputs/lockset-process-verification,
+outputs/lockset-process-apps, outputs/lockset-process-gui,
+outputs/lockset-lifecycle and outputs/process-query-regressions.
+
+The namespace wrapper privately binds the server inside unprivileged user/mount/
+PID namespaces, and namespace exit bounds daemon lifetimes. It does not install
+anything or alter setuid permissions. A complete original RPC-compatible build
+is still needed; clean pinned clients cannot use the locally modified server
+protocol. i386/full migration, broad app compatibility, cancellation and exhaustive
+scheduling races remain unverified. Fixed-priority lock ordering uses enqueue-time
+priority. Unlinked overlay mappings cannot always recover guest device identity.
