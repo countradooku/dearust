@@ -1,5 +1,5 @@
 Dearust
-=======
+-------
 Darling, reimagined in Rust.
 
 Dearust is an incremental Rust migration of Darling for running macOS
