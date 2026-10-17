@@ -12,7 +12,9 @@ with Cargo-native orchestration. Do actual implementation.
 The user authorizes parallel subagents and isolated Git worktrees, and requested
 continuation in a separate chat. Reuse this repository and preserve its history.
 Do not equate host-tool progress with a full port, use placeholder implementations
-to satisfy scope, or claim macOS applications run. Full migration is INCOMPLETE.
+to satisfy scope, or claim application compatibility beyond recorded execution.
+Selected macOS command-line checks now run in a locally modified installed runtime
+with three Rust slices; the full migration is INCOMPLETE.
 Follow later user instructions if they revise these priorities.
 
 ## Read first
@@ -90,10 +92,10 @@ unsafe and documented. REQUEUE storage must remain alive/stable through ALL
 requeued waiters, beyond the notifying syscall. Nullable completed-once callback
 is supported. This source remains PARTIAL: native and Darling x86_64 backends work and the
 Darling objects link into actual system_kernel. i386/other architectures and
-actual Darwin bootstrap/application execution remain unported/unverified. Cargo
+clean pinned-runtime startup and general application compatibility remain unverified. Cargo
 build/staging emits a no_std panic-abort native archive; C consumers use -pthread.
 Normal Rust development/tests retain default std; see SAFETY.txt for C-only panic
-handler ownership. Darwin startup integration remains pending.
+handler ownership. Installed-runtime startup has the narrower scope recorded below.
 
 Cargo xtask builds migrated packages and stages six tools, the native archive and native errno validation object
 using the typed graph xtask/host-artifacts.tsv. Real staged tools are executed;
@@ -120,7 +122,8 @@ Latest cargo xtask check passed formatting, strict Clippy, 84 ordinary tests.
 Five optional differential suites were explicitly run successfully. Eight Python
 inventory/graph tests pass; both inventories and graph regenerate identically.
 Cargo release build, native C ABI differential/concurrency tests and generated
-wrapper compilation/linking to Mach-O pass. No full runtime/app validation exists.
+wrapper compilation/linking to Mach-O pass. Selected installed-runtime application
+checks pass as described below; full runtime/app validation remains incomplete.
 
 Run from this repository:
 
@@ -160,8 +163,9 @@ Darling performance improvement has been established.
 
 Use independently testable components and parallel implementation/review. Native
 and Darling x86_64 synchronization/futex/errno slices now have real consumer
-execution/link checks. Continue with i386, emulation_dyld/static consumers, actual
-Darwin bootstrap/TLS/cancellation and application validation before retiring
+execution/link checks and installed-runtime command-line smoke coverage. Continue
+with i386, emulation_dyld/static consumers, clean pinned-runtime startup,
+cancellation semantics and broader application validation before retiring
 original targets. Also advance Cargo code-generation/link/install edges using
 the captured original graph and actual generated artifacts. Choose tasks based
 on dependency order and evidence, not the ease of marking inventory entries.
@@ -211,7 +215,8 @@ static archive behavior remains available. darling-futex is no_std and preserves
 both exported wrappers over the original seven-argument raw linux_syscall ABI.
 Its cerror declaration now matches the actual LP64 unsigned128 return, rather
 than the old source's mismatched long declaration; cancellation may terminate
-threads but must not unwind through Rust. Real TLS/cancellation startup is untested.
+threads but must not unwind through Rust. Installed-runtime TLS smoke tests now
+pass; cancellation semantics remain untested.
 
 `cargo xtask runtime --target x86_64-apple-darwin --destdir PATH` emits three
 objects and a thin libsimple archive through xtask/runtime-artifacts.tsv.
@@ -237,7 +242,8 @@ existing C synchronization stress pass. Only host cerror TLS/abort are test
 adapters there; the actual Mach-O full link uses original production boundaries.
 Records: runtime-consumer-verification.json and system-kernel-integration.json.
 84 ordinary tests, eight Python tests, eight feature-darling tests, strict Clippy
-and the optional Darwin artifact integration test pass. No Mach-O launch is claimed.
+and the optional Darwin artifact integration test pass. Subsequent Mach-O launch
+evidence is recorded in the installed-runtime continuation below.
 
 Retained isolated worktrees (inspect before reuse): continuation work/
 {darwin-libsimple,futex-port,runtime-consumer}. The continuation root is
@@ -247,3 +253,40 @@ full linked mixed library is under work/system-kernel-rust-verified. Parent orig
 baseline tree/build remain unchanged reference inputs. Full target and source
 counts stay partial: seven target slices, 1,622 pending targets, two partial
 pinned dependency sources and 265,801 pending dependency entries.
+
+
+Continuation 2026-10-18: actual installed-runtime application execution
+---------------------------------------------------------------------
+Actual x86_64 mixed-runtime boot and command-line execution now pass with the
+Rust errno/futex/libsimple slices. The comparison is a matching original relink;
+both use existing objects from /home/radud/darling-lol/build/darling-src/build.
+These objects belong to the locally modified installed source tree, not the clean
+pinned baseline. Installed/build kernel and server files are byte-identical.
+Both relinks retain 1,370 public definitions and 40 imports. The running launchd
+maps the copied Rust dylib's inode, and its SHA-256 is checked.
+
+Verified workloads include Bash pipelines, SQLite table/insert/aggregate, Python
+JSON/SHA-256, offline curl version output, Objective-C, pthread, TLS, fork and Mach
+semaphores. Original and Rust comparisons pass. Do not expand this evidence into
+a claim that arbitrary apps or GUI programs work; GUI and cancellation semantics
+remain untested. Most runtime code, server and frameworks remain C/assembly.
+
+The installed local protocol adds fileport_makeport/fileport_makefd, shifting
+subsequent RPC numbers by 2. Pinned task_self_trap=33 becomes installed
+pthread_canceled=33, causing the same boot failure for original and Rust pinned
+kernels. Matching local objects avoid that mismatch; clean pinned full-runtime
+boot remains pending. Only x86_64 is exercised; no i386 Rust validation or target
+retirement is claimed. Inventory counts remain unchanged.
+
+Scratch relink.py/provenance.py, exact input-object hashes and tracked local
+patches are under continuation work/installed-runtime-match. Its original and Rust
+outputs are libsystem_kernel-original.dylib and libsystem_kernel-rust.dylib.
+The latter has SHA-256 cb63eb32207f13d28beaf62ecb753708b4d0053ed8cbd2ad314e93a4d60b1480.
+Do not overwrite the installed runtime or existing ~/.darling application prefix.
+
+mac-app-verification.json records 29 checks per matching variant: 24 strict
+expected-output passes and five shared mismatches. The latter are two lockset
+assertions, a CFURL fixture requiring absent /home, unsupported/failing libproc
+queries, and an extra timestamped cfbridge NSLog line despite a zero exit.
+No status/exit regression was observed between the matching variants in this suite.
+The record includes hashes and paths to raw execution and mapping evidence.

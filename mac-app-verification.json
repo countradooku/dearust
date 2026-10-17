@@ -1,0 +1,327 @@
+{
+  "scope": "Actual x86_64 Mach-O execution on locally modified installed Darling with Rust errno/futex/libsimple slices. Not a clean pinned full Rust runtime; no GUI verification.",
+  "total_cases_per_variant": 29,
+  "original_counts": {
+    "pass": 24,
+    "fail": 5
+  },
+  "rust_counts": {
+    "pass": 24,
+    "fail": 5
+  },
+  "matching_status_and_exit_all_cases": true,
+  "original_kernel_sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f",
+  "rust_kernel_sha256": "cb63eb32207f13d28beaf62ecb753708b4d0053ed8cbd2ad314e93a4d60b1480",
+  "darlingserver_sha256": "6c792a7b1ef80284be0291bc5b51e71d6947193e864b332e073b7fe8f5a6bf69",
+  "comparison": [
+    {
+      "name": "bash",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "sqlite",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "python",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "curl",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "objc_helloworld.m",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "objc_helloworld_static.m",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "objc_category.m",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "objc_properties.m",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "objc_exception.m",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "objc_protocol.m",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "objc_stret.m",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "objc_fpret.m",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "objc_ivars.m",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "objc_load.m",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "objc_super.m",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "pthread_threads.c",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "tls1.c",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "tls2.cpp",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "fork_wait.c",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "fcntl.c",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "mach_semaphore.c",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "mach_lockset_basic.c",
+      "original_status": "fail",
+      "rust_status": "fail",
+      "original_exit": 134,
+      "rust_exit": 134,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": false
+    },
+    {
+      "name": "mach_lockset_handoff.c",
+      "original_status": "fail",
+      "rust_status": "fail",
+      "original_exit": 134,
+      "rust_exit": 134,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": false
+    },
+    {
+      "name": "cfbridge.m",
+      "original_status": "fail",
+      "rust_status": "fail",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": false
+    },
+    {
+      "name": "cfbridge_strequals.m",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "cfurl_fm_basic.c",
+      "original_status": "fail",
+      "rust_status": "fail",
+      "original_exit": 134,
+      "rust_exit": 134,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": false
+    },
+    {
+      "name": "exception.cpp",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "fstream.cpp",
+      "original_status": "pass",
+      "rust_status": "pass",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    },
+    {
+      "name": "libproc.c",
+      "original_status": "fail",
+      "rust_status": "fail",
+      "original_exit": 0,
+      "rust_exit": 0,
+      "same_status_and_exit": true,
+      "exact_stdout_equal": true
+    }
+  ],
+  "limitations": [
+    "Two Mach lockset tests abort in both variants.",
+    "CFURL fixture requires /home, absent from these isolated prefixes; both abort.",
+    "libproc output reports unsupported calls/failures in both variants.",
+    "cfbridge exits zero with correct payload plus timestamped NSLog on stdout, so strict golden comparison fails in both.",
+    "Empty /private/tmp must be created mode1777 before first prefix boot; otherwise file fixtures fail equally in both.",
+    "Clean pinned original and mixed kernels cannot boot against installed locally modified RPC protocol; pinned task_self33 collides with installed pthread_canceled33.",
+    "Existing Riot/League applications were not launched or modified.",
+    "First test startup sometimes left launcher waiting until timeout even after application recorded completion; child exit and stdout are captured separately."
+  ],
+  "evidence_directory": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/app-verification",
+  "evidence_sha256": {
+    "final-original/results.json": "15da64358d9bdc0c364e91c0a0d5bba9743d00a63a6d9d3c0864564f0c97c799",
+    "final-rust/results.json": "5b3b6f3e83fb7d1a805e4d22cbf938100212a502a15814b38b14df78d83e3b82",
+    "final-original/runtime-mapping.json": "d44bcb3fdd8a304abb610fb0e630d55ff92685c8f25aad845acf36c70a8979d2",
+    "final-rust/runtime-mapping.json": "7f53d82d1d1d18514466273559f1db261366df05b08bc05e12015e6e98eaee07",
+    "provenance/matching-link-report.json": "9cfca1145f3b590f2aaeb543634d54a84b82c030f6bff08115f765cdaf8bd523",
+    "provenance/original-objects.json": "e6fad33bb15cbe481d405e28ac3d70f15f8ee64e4d16074f83582a6e850312f7"
+  },
+  "test_binary_sha256": {
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/cfbridge.m.bin": "f7368c59c69d8408a961dcf4e8be4eaec4e86febacfb6a02c452c80c2a5261a8",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/cfbridge_strequals.m.bin": "49407e66b146b8c30f28d6516171fd310e73a438083801d6d5baf770dd1462dc",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/cfurl_fm_basic.c.bin": "f3ab268edd53437b897281c21c6f201ddceadbf6ee5e680a47b7e0cbbe4c2f2c",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/exception.cpp.bin": "2c20a3aab118c993d075fe25291fe40999e93ae82e42fbf1696f2b3d71fdb019",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/fcntl.c.bin": "41410625080e848019cfe0d5f8d96dca5b8f24248c48649214966929a213ece4",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/fork_wait.c.bin": "5d62b6cdcd90dd3ba8b0748776367184c16e756ded5777c679a52bf0d247ba89",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/fstream.cpp.bin": "3dc8ccf2332a6db1e2bcf0957c5b0b789d0c43355dc90b9c4f4582181cfa8bda",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/libproc.c.bin": "eadc06992e16f0ffdf12c75786bda3d892ea98d3052307d905ebe0134d99214f",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/mach_lockset_basic.c.bin": "7fe16ee7b2c9217e21e5113ffad9f2c88d697340af61092ceb0bdbeed6114eb1",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/mach_lockset_handoff.c.bin": "09bd97b7272d0bac20b4a7d584fb24dfc96e962874736a2636cf8a4b5d90a75f",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/mach_semaphore.c.bin": "e5b64d371da0f9a2db8cf53a5b82de1b1e91204f7666bcc74892e913543c4086",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/maclocales.m.bin": "0cab38b9f12060cc07bc8f3e1ac51fff7637390bc5f27480de72e65b3bd91c42",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/objc_category.m.bin": "7a3993d1ee642ffcd78cd0db11ea97624d49fa7482b4cc7cbc10086b95fae0e0",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/objc_exception.m.bin": "623369706da3861be332c6149d30f98fad5f82d1d4b71bc3e409eb4e49f54a64",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/objc_fpret.m.bin": "f13d4cafe819445217e6edde91aeccef1b8ad0fe8c7540611171fb655ce08a5d",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/objc_helloworld.m.bin": "fada88bc9a4557f7a6c6251650c9235143be36f2b5930d23a40e2bec9ecf701e",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/objc_helloworld_static.m.bin": "9f40c1bb46a8a6d17abea17121868e0d86857b624c28091251aa11a892b357c5",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/objc_ivars.m.bin": "a612db0c0228851680f36045c6fda2887ee1168cf3fa93a748e23e78ae240bb4",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/objc_load.m.bin": "10087eebc2c31e7a716aa9f64c1a8a66942612a18b7c8da5e9bb2c40aafbeaa6",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/objc_properties.m.bin": "ef55fff3c5ab6f03448c466f1ac20346df4e1c1cbadab26f7dba1d52f85d0d92",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/objc_protocol.m.bin": "8683a27198ac5bf7d6fdf3eca6e761998cf2ef3d92ff5e998d03ff84f74e3c16",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/objc_stret.m.bin": "ff2a34f0ef22dce0ff3c55ceba82f14e418432d0267008d29c1a457af375f570",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/objc_super.m.bin": "e4a5bd4be3fedea681fad3baf5bff7b713ece4ef5721d9792bbc6253f2406a70",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/pthread_threads.c.bin": "184f547f19957afbe4344e2ddc37582204f2b6aabaac165e2d71e83842e626c7",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/selfexec.c.bin": "a625d36112296c34e2d6db85fd7a589fe61380618bdb72ae94efc634b3194d1f",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/tls1.c.bin": "f897a3ee467bc1131474444d96884ca81b16673bdd62b91f7e92dfc71322e3a6",
+    "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/tests/src/bin/x86-64/10.8/tls2.cpp.bin": "ea36a04361cae246267b60ac232211fae7d10a06fc3d33ee273ffca92fd60ade"
+  }
+}

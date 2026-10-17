@@ -39,10 +39,12 @@ print_wrapped_elf and darling-coredump. wrapgen has a functioning safe Rust
 parser/generator, but is marked partial because safe name lookup does not
 reproduce all dynamic-loader policy. Native libsimple is also partial: its Linux x86_64 synchronization C ABI
 and external cmpxchg helper work, including a native no_std C-linked archive.
-Darling x86_64 runtime consumers now link; i386/other architectures and actual
-Darwin startup remain unported/unverified. There are 27,267 pending superproject entries. Exact diagnostic text is not guaranteed. Each source replacement has
+Darling x86_64 runtime consumers now link and execute selected command-line
+applications inside the locally modified installed runtime. i386/other architectures
+and clean pinned-runtime startup remain unported/unverified. There are 27,267 pending superproject entries. Exact diagnostic text is not guaranteed. Each source replacement has
 behavioral and malformed-input regressions plus a pinned differential suite.
-These gates validate this Linux host slice, not the Darling runtime or macOS ABI.
+The host-tool differential gates validate their Linux host slice; the separate
+runtime execution checks below cover selected macOS command-line behavior.
 
 The forced same-inode hard-link regression preserves an upstream-deleted source.
 New regressions cover DT_SONAME at nonzero load addresses, dropped extra core
@@ -75,7 +77,8 @@ Observed build graph and baseline
 The isolated exact-pin original checkout configures successfully with default
 CMake options on the recorded host. Original native elfdep/getuuid/bsdln/wrapgen,
 darling-coredump and libsimple_darlingserver targets build successfully. The
-remaining runtime has not been built or run. Forty-four Swift LFS binary
+original emulation and system_kernel targets also build. A complete clean pinned
+runtime has not been built or run. Forty-four Swift LFS binary
 payloads remain missing even though their Git pointer objects are inventoried.
 
 upstream-cmake-graph.json captures 1,629 emitted default targets, 7,785 dependency
@@ -192,7 +195,7 @@ hidden globals and size_t object are checked against compiled committed C/header
 INT_MIN overflow is fixed with a UBSan reproducer and regression coverage. Native
 C linkage is verified with no unresolved runtime symbols, including alongside
 the staged synchronization archive. Dependency source status remains partial
-because the i386 Rust replacement and actual Darwin startup are not validated.
+because the i386 Rust replacement and clean pinned-runtime startup are not validated.
 The x86_64 errno/futex objects and libsimple archive now participate in the actual
 complete system_kernel final link. Both emulation and emulation_dyld targets remain
 pending because their other sources are unported; the dyld/static variant link
@@ -217,5 +220,31 @@ A full original system_kernel link now uses the Rust x86_64 source slices with
 identical 1,362 public definitions and 18 imports, confirmed original/Rust symbol
 provenance and no new stubs or permissive undefined-symbol mode. The i386 final
 slice remains original and is byte-identical. Whole-target migration, original
-C/assembly retirement, Cargo replacement of that complete original graph and
-Darwin process/application execution remain pending.
+C/assembly retirement and Cargo replacement of that complete original graph remain
+pending. Actual installed-runtime execution has the narrower scope below.
+
+
+Installed-runtime execution gate
+--------------------------------
+The same three Rust x86_64 slices have booted and executed macOS command-line
+programs after relinking against the installed runtime's locally modified build
+objects. Matching original and Rust relinks preserve 1,370 public definitions and
+40 imports. Both pass Bash pipeline, SQLite create/insert/aggregate, Python
+JSON/SHA-256, offline curl version and Objective-C/pthread/TLS/fork/Mach semaphore
+checks. The copied Rust dylib is identified by its checked SHA-256 and the inode
+mapped by the running launchd process.
+
+This gate reuses original C/assembly, server and framework implementations. The
+installed source tree shares the pinned HEADs but contains extensive local changes,
+including two fileport RPC additions. Those additions shift task_self_trap from
+33 to 35; a clean pinned client's 33 is interpreted as pthread_canceled, causing
+boot failure against that server. Matching local objects preserve protocol behavior.
+This does not validate clean pinned full-runtime boot, i386, GUI applications,
+cancellation semantics or full Cargo migration, and changes no inventory status.
+
+mac-app-verification.json records 29 checks per matching variant: 24 strict
+expected-output passes and five shared mismatches. The latter are two lockset
+assertions, a CFURL fixture requiring absent /home, unsupported/failing libproc
+queries, and an extra timestamped cfbridge NSLog line despite a zero exit.
+No status/exit regression was observed between the matching variants in this suite.
+The record includes hashes and paths to raw execution and mapping evidence.

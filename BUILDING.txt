@@ -44,7 +44,8 @@ Ordinary Cargo commands also work without xtask:
     cargo test --offline --locked --workspace
 
 This workspace currently migrates selected host utilities. It is not yet a
-complete Darling runtime and cannot launch macOS applications. Cargo is the
+complete Darling runtime. Its three Rust runtime slices have launched selected
+macOS command-line programs inside an existing locally modified installation. Cargo is the
 primary build system for the migrated Rust code; the existence of this
 workspace does not replace the remaining upstream build graph.
 
@@ -141,7 +142,7 @@ harness against upstream and Rust independently. All 14 external symbols,
 state layout, lock/CAS/once/RW/condvar concurrency and publication are checked.
 The state-machine core forbids unsafe; SAFETY.txt inventories the narrow
 native FFI/futex boundary. Native Linux and Darling x86_64 backends are supported; i386/other architectures
-and actual Darwin startup remain pending. Native C
+and clean pinned-runtime startup remain pending. Native C
 consumers of the staged no_std archive link with -pthread only. This does not
 replace libSystem initialization.
 
@@ -212,5 +213,36 @@ futex and libsimple slices, adds no stubs/relaxed symbol resolution, writes to a
 fresh directory outside the original build, checks public definitions/imports,
 and preserves the original i386 final dylib slice unchanged. The linker map proves
 that real guarded/close code calls the Rust chain and original cerror/raw syscall/
-bootstrap abort. This is not a Cargo replacement for unported original inputs or
-an executed Darwin startup test. system-kernel-integration.json records the gate.
+bootstrap abort. This is not a Cargo replacement for unported original inputs.
+system-kernel-integration.json records this pinned-baseline link gate; installed
+runtime execution is a separate check described below.
+
+
+Installed-runtime application checks
+------------------------------------
+Actual x86_64 execution uses the locally modified source/build at
+/home/radud/darling-lol/build/darling-src. Its existing server and kernel build
+artifacts match the installed binaries byte-for-byte. Relinking the same original
+objects with the three staged Rust slices preserves 1,370 public definitions and
+40 imports. A matching original relink serves as the comparison. Both variants
+boot in separate exclusively owned prefixes, leaving installed files unchanged.
+
+The execution checks cover Bash pipelines, SQLite create/insert/aggregate, Python
+JSON/SHA-256, offline curl version output, Objective-C, pthread/TLS, fork and Mach
+semaphores. The running launchd process maps the copied Rust dylib's inode; its
+SHA-256 is recorded. This verifies actual loading and execution of the mixed
+runtime, while most runtime implementation remains original C/assembly.
+
+Do not inject the clean pinned kernel into this installed server: two locally
+added fileport RPC calls shift the protocol numbering. That mismatch prevents
+boot in both the original pinned and Rust pinned variants. The pinned link script
+above also preserves an i386 slice, whereas the installed build is x86_64 only.
+GUI applications, cancellation semantics and clean pinned full-runtime boot need
+separate validation. App smoke checks do not retire any original build target.
+
+mac-app-verification.json records 29 checks per matching variant: 24 strict
+expected-output passes and five shared mismatches. The latter are two lockset
+assertions, a CFURL fixture requiring absent /home, unsupported/failing libproc
+queries, and an extra timestamped cfbridge NSLog line despite a zero exit.
+No status/exit regression was observed between the matching variants in this suite.
+The record includes hashes and paths to raw execution and mapping evidence.

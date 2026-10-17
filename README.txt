@@ -3,7 +3,9 @@ Darling Rust migration
 
 Target: the FULL migration of https://github.com/darlinghq/darling to Rust,
 including its runtime, server, libraries, frameworks and dependencies.
-The full migration is INCOMPLETE. This repository cannot run macOS apps.
+The full migration is INCOMPLETE. Three Rust runtime slices have executed macOS
+command-line applications inside an existing locally modified Darling installation.
+This workspace does not yet build a complete Darling runtime.
 
 Functioning Rust components
 ---------------------------
@@ -35,7 +37,7 @@ A native Linux x86_64 libsimple synchronization archive also provides the
 13 documented C functions plus the externally linked cmpxchg helper, preserving
 four-byte state layouts. C-link concurrency tests compare it with upstream.
 This source remains PARTIAL: the native and Darling x86_64 futex backends work,
-while i386/other architectures and actual Darwin startup remain pending. Cargo build/staging now emits a no_std panic-abort archive; libc supplies
+while i386/other architectures and clean pinned-runtime startup remain pending. Cargo build/staging now emits a no_std panic-abort archive; libc supplies
 syscall and abort. Normal Rust development/tests retain the default std feature.
 
 A separate no_std errno converter now preserves the pinned Linux-to-Darwin
@@ -44,7 +46,8 @@ for INT_MIN, verified against compiled original C plus UBSan. Cargo stages a
 native ELF object with hidden symbols and no unresolved runtime dependencies.
 Darwin Mach-O errno/futex/lock objects now link into the actual original
 libsystem_kernel. Native execution checks real guarded-table and close consumers.
-i386 Rust replacements, full emulation migration and actual startup remain pending.
+i386 Rust replacements, full emulation migration and clean pinned-runtime startup
+remain pending. Actual installed-runtime execution is described below.
 
 Build and stage with Cargo
 --------------------------
@@ -120,5 +123,31 @@ Darling ABI chain for execution tests. See tools/DARWIN-RUNTIME.txt.
 The original emulation/system_kernel targets now build. The complete actual
 system_kernel final link accepts the Rust x86_64 slices with the same 1,362 public
 symbols and 18 imports. Its original i386 final slice is preserved byte-for-byte.
-This is a verified mixed-language integration step, not a complete Cargo runtime
-or a demonstration that macOS applications run.
+This pinned-baseline link gate remains separate from actual execution in the
+locally modified installed runtime described below. Full Cargo runtime migration
+remains pending.
+
+
+Actual macOS command-line execution
+----------------------------------
+The Rust errno/futex/libsimple slices also link into the locally modified installed
+Darling runtime, preserving its 1,370 public definitions and 40 imports. Matching
+original and Rust variants both boot and pass Bash pipeline, SQLite table/insert/
+aggregate, Python JSON/SHA-256 and offline curl version checks, plus Objective-C,
+pthread, TLS, fork and Mach semaphore tests. The running launchd process's mapped
+library inode identifies the copied Rust dylib, whose SHA-256 was checked.
+
+This execution uses existing C/assembly, frameworks and server binaries from that
+installation. Its local fileport RPC additions shift call numbers by two; the
+clean pinned kernel therefore cannot boot against that installed server. Matching
+local build objects resolve this protocol mismatch without changing installed
+files. Only x86_64 was exercised; GUI applications, cancellation behavior and clean
+pinned full-runtime startup remain unverified. No general speedup or complete port
+is established by these checks.
+
+mac-app-verification.json records 29 checks per matching variant: 24 strict
+expected-output passes and five shared mismatches. The latter are two lockset
+assertions, a CFURL fixture requiring absent /home, unsupported/failing libproc
+queries, and an extra timestamped cfbridge NSLog line despite a zero exit.
+No status/exit regression was observed between the matching variants in this suite.
+The record includes hashes and paths to raw execution and mapping evidence.
