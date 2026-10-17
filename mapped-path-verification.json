@@ -1,0 +1,157 @@
+{
+  "scope": "Follow-up to c2981b7: mapped pathname regression fix and expanded utility workloads; incremental migration remains incomplete.",
+  "project_owner": "@countradooku",
+  "ai_assistance": "OpenAI Codex",
+  "date": "2026-10-18",
+  "checks": {
+    "ordinary_rust_tests": 108,
+    "python_tests": 29,
+    "formatting": "passed",
+    "strict_clippy": "passed",
+    "explicit_darwin_artifact_test": "passed",
+    "independent_source_review": "no actionable findings"
+  },
+  "sources": {
+    "crates/dearust-process/src/abi.rs": "057f47bbc0b332e012dc181938efa0555855b28e9b90d6a85bc747736e0860eb",
+    "crates/dearust-process/src/parse.rs": "100471164052a300246897e69a59ad77e5cb88e3e6d9b960dd77f742adaa50f7",
+    "tools/fixtures/process-mapped-path.c": "a52e1a3c750f855f0b7765d4a5197bba241f57a07539f5ae1f2b61c7c2a24676",
+    "tools/check_mac_utilities.py": "e754f2361f23fa277f0e4fc58fcb669cbf4d929beba9eaee0655b34b1d4f6706"
+  },
+  "evidence": {
+    "apps.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/mapped-path-verification/apps.json",
+      "sha256": "855f3686ae61bee2985445e5105957d1daca30d90c126bf94f0074963c71c739"
+    },
+    "utilities.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/mapped-path-verification/utilities.json",
+      "sha256": "cf817139d061bbe3d216481c8cc55af5be8bbb6092abdf75eb54643df32bb435"
+    },
+    "probes.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/mapped-path-verification/probes.json",
+      "sha256": "dbe52792679030b69ac8ebb83ddf39ca4408a6de7c8a99239134a7425c402b39"
+    },
+    "before.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/mapped-path-verification/before.json",
+      "sha256": "d9d377c5e740a27478113b31c65484817cd209b877826f3449cb428c50d09a4d"
+    },
+    "link.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/mapped-path-verification/link.json",
+      "sha256": "b1c2000572650e5c331f63ac643df6ea0acd586a2836db8e01ddabffe852eac8"
+    },
+    "probe-build.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/mapped-path-verification/probe-build.json",
+      "sha256": "472e105c885514a56f09f517314f81e1de946a024aa7b9a9a947231ea148161c"
+    },
+    "cargo-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/mapped-path-verification/cargo-check.log",
+      "sha256": "43001b6075419102b34c0dd9442c812f687817ef10ee742089ddf0ae30372229"
+    },
+    "python-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/mapped-path-verification/python-check.log",
+      "sha256": "8c6615d5b4d4deb24f81de355706a90359b41ee4a8d7d37cad9a52ffe4fb3988"
+    },
+    "darwin-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/mapped-path-verification/darwin-check.log",
+      "sha256": "dffb7f4029847b482636b92032fb07a725777e724ac622c914c95bc9540e34c7"
+    }
+  },
+  "suites": {
+    "apps": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 29,
+        "strict_passes": 27,
+        "normalized_passes": 28,
+        "failures": [
+          "cfbridge.m",
+          "libproc.c"
+        ]
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 29,
+        "strict_passes": 28,
+        "normalized_passes": 29,
+        "failures": [
+          "cfbridge.m"
+        ]
+      }
+    ],
+    "utilities": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 16,
+        "strict_passes": 14,
+        "normalized_passes": 14,
+        "failures": [
+          "bsdtar",
+          "cpio"
+        ]
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 16,
+        "strict_passes": 16,
+        "normalized_passes": 16,
+        "failures": []
+      }
+    ],
+    "probes": [
+      {
+        "variant": "original",
+        "meaning": "previous Rust kernel",
+        "cases": 4,
+        "strict_passes": 3,
+        "normalized_passes": 3,
+        "failures": [
+          "process-mapped-path.c"
+        ]
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 4,
+        "strict_passes": 4,
+        "normalized_passes": 4,
+        "failures": []
+      }
+    ]
+  },
+  "artifacts": {
+    "kernel-final/libsystem_kernel-original.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/kernel-final/libsystem_kernel-original.dylib",
+      "sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f"
+    },
+    "kernel-final/libsystem_kernel-rust.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/kernel-final/libsystem_kernel-rust.dylib",
+      "sha256": "7e2522cb7c7ffdfd5118feeed506ab11c2dcb7a2225e5ab1dce37075b53f261d"
+    },
+    "runtime-final/objects/process.o": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/runtime-final/objects/process.o",
+      "sha256": "b7059ed4730b31db9999d94ef02169a5e780929ab382c260dceb312d6d7d0ad2"
+    }
+  },
+  "installation_preserved": {
+    "/usr/local/libexec/darling/usr/lib/system/libsystem_kernel.dylib": "e473a4bcafbcc09a740ef6a82b656b18039db270b1cbed7b930e654a538aa052",
+    "/usr/local/bin/darlingserver": "6c792a7b1ef80284be0291bc5b51e71d6947193e864b332e073b7fe8f5a6bf69"
+  },
+  "migration_counts": {
+    "partial_dependency_sources": 6,
+    "pending_dependency_entries": 265797,
+    "cargo_target_slices": 7,
+    "pending_targets": 1622,
+    "retired_targets": 0
+  },
+  "limitations": [
+    "map_files denial leaves documented ambiguity for inaccessible/unlinked literal escape paths and same-inode hardlinks.",
+    "Procfs records remain subject to concurrent mapping/path changes.",
+    "Original baseline cpio crash is observed; its root cause has not been independently diagnosed here.",
+    "No GUI rerun in this follow-up; previous three GUI samples remain historical evidence.",
+    "Matching local x86_64 runtime only; no clean pinned boot, i386 Rust runtime or arbitrary commercial compatibility claim.",
+    "Most runtime and framework code remains C/C++/assembly."
+  ]
+}

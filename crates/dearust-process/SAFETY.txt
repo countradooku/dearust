@@ -116,3 +116,23 @@ Process task-name lookup retains the matching Darling server capability model.
 It does not add full macOS UID authorization checks; host procfs access still
 applies. Unregistered host PIDs are rejected as ESRCH. This is not a claim of
 macOS process-query security-policy parity.
+
+Mapped filenames with newlines
+-----------------------------
+Linux /proc/PID/maps represents newline bytes as the four literal bytes \012.
+The region-path implementation previously passed that encoded text to stat and
+returned it as the vnode path, losing the real pathname and overlay device match.
+Ambiguous names now use /proc/PID/map_files/START-END readlink to obtain the
+original pathname bytes. Hexadecimal addresses and decoded paths use bounded
+safe storage; readlink retains the existing raw-syscall/4096-byte ownership
+boundary. No exported ABI, allocator or OS import is added.
+
+If procfs access policy denies map_files readlink, an existing literal pathname
+is retained only when stat confirms the mapping inode; otherwise the documented
+newline escape is decoded. That fallback cannot disambiguate inaccessible or
+unlinked literal \012 names, or differently named hardlinks to the same inode.
+This is a procfs representation/access limitation, not full pathname recovery.
+The pure regression checks newline decoding, preservation of other backslashes,
+NUL capacity and hexadecimal map-file paths. tools/fixtures/process-mapped-path.c
+checks actual region address, identity and exact paths for newline, literal \012
+and ordinary-backslash filenames in an executing guest.

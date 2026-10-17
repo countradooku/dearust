@@ -21,8 +21,8 @@ These results reflect a locally modified, matching `x86_64` runtime environment.
 * **Low-Level Synchronization:** Safe Rust synchronization primitives, Linux `futex` backends, and Darwin/Linux `errno` translation layers.
 * **Mach Locksets:** Real Mach ports, lock handoff mechanisms, and thread/task lifecycle dispatching implemented in Rust.
 * **Runtime Queries:** Rust BSD/task process information, descriptor guard tables, bounded `lstat` wrappers, and partial vnode and mapped-file queries. Fixes include the original `bsdtar` null-path crash and guarded-table memory corruption.
-* **Test Coverage:** **107** Rust tests and **29** Python tests pass in the baseline environment.
-* **App Verification:** **29/29** app checks pass against the Rust kernel (28 exact-match outputs, 1 passing with an explicit timestamp normalization on a known `cfbridge` log line). Eight additional utility workloads and three GUI samples (**TextEditor**, **Calculator**, and repaired **CGShadingCreate**) pass. See [runtime expansion details](RUNTIME-EXPANSION.txt).
+* **Test Coverage:** **108** Rust tests and **29** Python tests pass in the baseline environment.
+* **App Verification:** **29/29** app checks pass against the Rust kernel (28 exact-match outputs, 1 passing with an explicit timestamp normalization on a known `cfbridge` log line). Sixteen additional utility workloads and three GUI samples (**TextEditor**, **Calculator**, and repaired **CGShadingCreate**) pass. See [runtime expansion details](RUNTIME-EXPANSION.txt).
 
 ---
 

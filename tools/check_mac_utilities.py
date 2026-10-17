@@ -62,6 +62,55 @@ printf 'Dearust zip\\n' > source/data
 /usr/bin/unzip -q data.zip -d restored
 cmp source/data restored/source/data
 '''),
+    'cpio': (['usr/bin/cpio'], '''mkdir source restored
+printf 'Dearust cpio\\n' > source/data
+ln -s data source/link
+printf 'source/data\\nsource/link\\n' > members
+/usr/bin/cpio -o < members > data.cpio 2>/dev/null
+(cd restored; /usr/bin/cpio -id < ../data.cpio 2>/dev/null)
+cmp source/data restored/source/data
+[ "$(readlink restored/source/link)" = data ]
+'''),
+    'awk': (['usr/bin/awk'], '''printf 'alpha 12\\nbeta 30\\n' > input
+[ "$(/usr/bin/awk '{total += $2} END {print total}' input)" = 42 ]
+'''),
+    'sed': (['usr/bin/sed'], '''printf 'alpha=12\\nbeta=30\\n' > input
+printf 'alpha:12\\nbeta:30\\n' > expected
+/usr/bin/sed 's/=/:/' input > actual
+cmp expected actual
+'''),
+    'bc': (['usr/bin/bc'], '''printf '6*7\\n' > input
+[ "$(/usr/bin/bc < input)" = 42 ]
+'''),
+    'dc': (['usr/bin/dc'], '''printf '6 7 * p\\n' > input
+[ "$(/usr/bin/dc < input)" = 42 ]
+'''),
+    'diff-patch': (['usr/bin/diff', 'usr/bin/patch'], '''printf 'alpha\\nbeta\\n' > before
+printf 'alpha\\ngamma\\n' > after
+cp before actual
+result=0
+/usr/bin/diff -u before after > change.patch || result=$?
+[ "$result" = 1 ]
+/usr/bin/patch -s actual < change.patch
+cmp actual after
+/usr/bin/patch -s -R actual < change.patch
+cmp actual before
+'''),
+    'sort': (['usr/bin/sort'], '''printf '9\\n2\\n9\\n1\\n' > input
+printf '1\\n2\\n9\\n' > expected
+LC_ALL=C /usr/bin/sort -n -u input > actual
+cmp expected actual
+'''),
+    'find': (['usr/bin/find'], '''mkdir -p tree/sub
+printf abc > tree/sub/data
+ln -s sub/data tree/link
+/usr/bin/find tree -type f > actual
+printf 'tree/sub/data\\n' > expected
+cmp expected actual
+/usr/bin/find tree -type l > actual
+printf 'tree/link\\n' > expected
+cmp expected actual
+'''),
     'openssl': (['usr/bin/openssl'], '''printf abc > input
 /usr/bin/openssl dgst -sha256 input > digest
 /bin/grep -q ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad digest

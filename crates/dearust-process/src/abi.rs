@@ -391,6 +391,54 @@ fn directories(pid: u32, out: &mut Output) -> Result<i64, i64> {
     out.emit(&bytes);
     Ok(2352)
 }
+// /proc/maps quotes newline as \012, which is also a legal literal filename.
+// map_files symlinks retain the original bytes and disambiguate both names.
+fn mapped_path(pid: u32, m: &parse::Mapping<'_>, native: &mut [u8; 4096]) -> Result<usize, i64> {
+    if m.path.len() >= 3900 {
+        return Err(-63);
+    }
+    put(native, 0, m.path);
+    if !m.path.windows(4).any(|s| s == b"\\012") {
+        return Ok(m.path.len());
+    }
+    let mut link = path(pid, b"/map_files/")?;
+    link.hex(m.address).ok_or(-22)?;
+    link.push(b"-").ok_or(-22)?;
+    link.hex(m.address.checked_add(m.size).ok_or(-22)?)
+        .ok_or(-22)?;
+    let expanded = expand(&link, false)?;
+    let mut target = [0; 4096];
+    if let Ok(n) = syscall(
+        89,
+        expanded.path.as_ptr() as i64,
+        target.as_mut_ptr() as i64,
+        3999,
+        0,
+    ) {
+        let n = n as usize;
+        if n >= 3900 {
+            return Err(-63);
+        }
+        *native = target;
+        return Ok(n);
+    }
+    // Some proc mounts deny map_files readlink. Preserve a literal filename
+    // when its inode confirms it; otherwise use the documented maps encoding.
+    let mut metadata = [0; 144];
+    if syscall(
+        4,
+        native.as_ptr() as i64,
+        metadata.as_mut_ptr() as i64,
+        0,
+        0,
+    )
+    .is_ok()
+        && u64at(&metadata, 8) == m.inode
+    {
+        return Ok(m.path.len());
+    }
+    parse::maps_path(m.path, native).ok_or(-63)
+}
 fn regions(pid: u32, flavor: u32, arg: u64, out: &mut Output) -> Result<i64, i64> {
     if out.sizing {
         return Err(-14);
@@ -426,9 +474,13 @@ fn regions(pid: u32, flavor: u32, arg: u64, out: &mut Output) -> Result<i64, i64
                 // to recover the guest-visible identity. Never substitute a new
                 // inode after unlink/rename/replacement.
                 let mut device = m.device;
-                if m.path.first() == Some(&b'/') && m.path.len() < 3900 {
-                    let mut native = [0; 4096];
-                    put(&mut native, 0, m.path);
+                let mut native = [0; 4096];
+                let path_length = if m.path.first() == Some(&b'/') && m.path.len() < 3900 {
+                    mapped_path(pid, &m, &mut native)?
+                } else {
+                    0
+                };
+                if path_length != 0 {
                     let mut metadata = [0; 144];
                     if syscall(
                         4,
@@ -464,11 +516,9 @@ fn regions(pid: u32, flavor: u32, arg: u64, out: &mut Output) -> Result<i64, i64
                     put(&mut bytes, 96, &device.to_ne_bytes());
                     put(&mut bytes, 104, &m.inode.to_ne_bytes());
                     if m.path.first() == Some(&b'/') {
-                        if m.path.len() > 3900 {
+                        if path_length == 0 {
                             return Err(-63);
                         }
-                        let mut native = [0; 4096];
-                        put(&mut native, 0, m.path);
                         // SAFETY: 4096-byte path, bounded to leave expansion room.
                         let rv = unsafe { vchroot_unexpand(native.as_mut_ptr()) };
                         if rv != 0 {

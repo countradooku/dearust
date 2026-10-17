@@ -87,3 +87,29 @@ Scope remains partial: six dependency source slices, 265797 pending dependency
 entries; seven Cargo target slices, 1622 pending targets, zero retired targets.
 Most runtime, framework and build-graph work remains. Historical reports retain
 their original counts and test boundaries.
+
+Continuation: mapped pathnames and sixteen utility workloads
+----------------------------------------------------------
+The Rust region queries now recover exact filenames containing newlines from
+/proc/PID/map_files/START-END. Linux maps text represents newline as literal
+\012, which previously caused wrong paths and overlay device identity. The
+actual guest regression fails under the previous Rust kernel and passes under
+the new one for both REGIONPATHINFO and REGIONPATHINFO2, testing real newline,
+literal \012 and ordinary backslash names. Access-denied fallback ambiguity and
+concurrent procfs races remain documented in dearust-process/SAFETY.txt.
+
+Utility coverage expands from eight to sixteen workloads: cpio archive roundtrip,
+awk aggregation, sed transformation, bc/dc arithmetic, diff/patch apply/reverse,
+sort and find join the previous eight. All sixteen pass the final Rust kernel;
+original C bsdtar and cpio crash with exit 139 while its other fourteen pass.
+This comparison establishes observed workload behavior, not a new cpio root-cause
+diagnosis or arbitrary application compatibility.
+
+108 Rust tests, 29 Python tests, formatting, strict Clippy and the explicit Darwin
+artifact ABI/staging check pass. The matching final link preserves 1370 public
+definitions and 40 imports. All four guest probes pass; existing 29 app checks
+retain 28 exact passes plus the explicit cfbridge timestamp normalization.
+See mapped-path-verification.json for final artifacts and raw comparison records.
+No new source is marked complete: six dependency slices remain partial, 265797
+entries and 1622 targets remain pending, and zero legacy targets are retired.
+Project owner: @countradooku. AI assistance: OpenAI Codex.

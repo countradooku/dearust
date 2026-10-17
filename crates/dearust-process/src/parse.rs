@@ -77,6 +77,19 @@ impl Path {
         }
         self.push(digits.get(cursor..)?)
     }
+    pub fn hex(&mut self, mut n: u64) -> Option<()> {
+        let mut digits = [0; 16];
+        let mut cursor = digits.len();
+        loop {
+            cursor = cursor.checked_sub(1)?;
+            *digits.get_mut(cursor)? = b"0123456789abcdef"[(n % 16) as usize];
+            n /= 16;
+            if n == 0 {
+                break;
+            }
+        }
+        self.push(digits.get(cursor..)?)
+    }
     pub fn proc(pid: u32, suffix: &[u8]) -> Option<Self> {
         let mut p = Self::new();
         p.push(b"/proc/")?;
@@ -87,6 +100,26 @@ impl Path {
     pub fn as_ptr(&self) -> *const u8 {
         self.bytes.as_ptr()
     }
+}
+// seq_file_path in Linux proc maps escapes only newlines, as literal \012.
+// This encoding is ambiguous with literal backslash names; prefer map_files
+// readlink when available before using this bounded fallback.
+pub fn maps_path(bytes: &[u8], out: &mut [u8]) -> Option<usize> {
+    let mut used = 0;
+    let mut rest = bytes;
+    while !rest.is_empty() {
+        let (byte, consumed) = if rest.starts_with(b"\\012") {
+            (b'\n', 4)
+        } else {
+            (*rest.first()?, 1)
+        };
+        *out.get_mut(used)? = byte;
+        used += 1;
+        rest = rest.get(consumed..)?;
+    }
+    // The path is passed to C/syscalls; include the NUL in the bound.
+    *out.get_mut(used)? = 0;
+    Some(used)
 }
 pub struct Mapping<'a> {
     pub address: u64,
@@ -167,6 +200,21 @@ mod tests {
     fn maximum_pid_path() {
         let p = Path::proc(u32::MAX, b"/fdinfo/2147483647").unwrap();
         assert_eq!(&p.bytes[..p.len], b"/proc/4294967295/fdinfo/2147483647");
+    }
+    #[test]
+    fn mapped_newlines_decode_without_interpreting_other_backslashes() {
+        let mut out = [0xa5; 64];
+        let n = maps_path(b"/tmp/a\\012b\\040c\\\\d", &mut out).unwrap();
+        assert_eq!(&out[..n + 1], b"/tmp/a\nb\\040c\\\\d\0");
+        assert!(maps_path(b"abcd", &mut [0; 4]).is_none());
+        let mut p = Path::proc(42, b"/map_files/").unwrap();
+        p.hex(0x123abc).unwrap();
+        p.push(b"-").unwrap();
+        p.hex(u64::MAX).unwrap();
+        assert_eq!(
+            &p.bytes[..p.len],
+            b"/proc/42/map_files/123abc-ffffffffffffffff"
+        );
     }
     #[test]
     fn mapping_tracks_identity_addresses_and_spaces() {
