@@ -1,0 +1,17 @@
+[package]
+name = "darling-futex"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+description = "no_std Darling raw Linux futex syscall adapter with Darwin errno policy"
+
+[lib]
+name = "darling_futex"
+crate-type = ["rlib"]
+
+[dependencies]
+darling-errno = { path = "../darling-errno" }
+
+[lints.clippy]
+undocumented_unsafe_blocks = "deny"

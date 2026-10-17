@@ -1,0 +1,55 @@
+Darling futex adapter: provenance, ABI and safety
+================================================
+
+Source: darlinghq/darling superproject 60ba801decee7a00782f74f6be4c8ffb013f79ff,
+external xnu dependency fa29287aa2f0115271e091f1031f53c9e024005d.
+This crate replaces darling/src/libsystem_kernel/emulation/src/
+linux_premigration/ext/futex.c (blob 07335f73b2b10a4c2f930f898a090e4d71c90f43).
+The original futex.c and futex.h carry no per-file license notice. This port
+does not assign new upstream terms. APPLE_LICENSE is copied unchanged from
+the pinned xnu tree; license provenance for Darling additions is an upstream
+metadata limitation. The errno dependency preserves its separate notices.
+
+Both original global C exports __linux_futex and __linux_futex_reterr retain
+their original six arguments: int*, int, int, const struct timespec*, int*, int.
+Rust uses opaque c_void for timespec, since it never reads this structure.
+This also preserves operation-dependent integer val2 encoded in the fourth
+argument (REQUEUE). There is no host timespec layout substitution. Each
+argument is cast to C long exactly as in original common/base.h's syscall
+macro. Integers sign-extend and raw pointer bits are preserved. The syscall
+number is a seventh int argument, matching original linux_syscall's ABI;
+x86_64 Linux futex number 202 applies to Linux-host testing and Darling's
+x86_64 Darwin runtime. Other architectures and operating systems are rejected.
+Darling's Darwin runtime executes Linux syscalls: this does not implement
+native Apple-kernel synchronization or use Apple's own syscall numbering.
+
+lib.rs denies unsafe; result.rs forbids unsafe. abi.rs alone permits unsafe:
+two exported no_mangle attributes reserve original symbol names, external
+linux_syscall and cerror calls are unavoidable OS/ABI boundaries. Rust never
+dereferences the pointers or creates references to foreign memory. The caller
+must still meet Linux futex operation-specific address, four-byte alignment,
+atomic access, sharing and lifetime requirements. REQUEUE destination storage
+must remain stable and alive through all requeued waiters. cerror must accept
+positive Darwin errno, set current thread's errno, and return normally.
+
+The original C stores linux_syscall's long result into int before testing its
+sign. This port explicitly preserves narrowing and then converts Linux errors
+using darling-errno's pure function. __linux_futex_reterr never calls cerror;
+__linux_futex calls cerror on negative results and then returns -1 regardless
+of cerror's return value. Both preserve nonnegative results. Real kernel
+failures lie in -4095..=-1; wrapping negation also gives defined behavior for
+INT_MIN, where the original __linux_futex has signed-negation undefined behavior.
+
+This always-no_std rlib owns no allocator or panic handler. Native objects
+must be emitted with release LTO disabled. Both Linux ELF and x86_64 Darwin
+Mach-O objects expose exactly the two original default-visibility symbols,
+with only linux_syscall and cerror unresolved. The inlined errno conversion
+does not emit duplicate errno globals. Replace original futex.c exactly once;
+the final runtime must supply actual linux_syscall/cerror implementations.
+
+Unit tests separate safe result policy from a linked recording syscall/cerror
+boundary. They check argument order, pointer bits, sign extension, narrowing,
+errno signs, success counts, cerror effects and independent -1 return policy.
+These mocks validate ABI policy only. Actual Linux syscall, runtime consumer
+and Mach-O linkage validation must be checked separately; this crate alone
+does not establish Darling startup or macOS application compatibility.
