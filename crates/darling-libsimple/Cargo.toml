@@ -5,12 +5,17 @@ edition = "2024"
 rust-version = "1.85"
 license = "GPL-3.0-or-later"
 publish = false
-description = "Native Linux x86_64 libsimple lock C ABI with a safe atomic core"
+description = "Linux/Darling x86_64 libsimple lock C ABI with a safe atomic core"
 
 [features]
 default = ["std"]
-# Disable std only for a final C-linked archive with panic=abort.
+# Disable std for freestanding C consumers with panic=abort.
 std = []
+# Darling's libsystem_kernel ABI, also selectable on Linux for ABI execution tests.
+darling = []
+# Emit an object/rlib whose final consumer supplies the panic runtime.
+# Use cargo rustc --lib --crate-type=rlib -- --emit=obj (not the staticlib).
+runtime-object = []
 
 [lib]
 name = "darling_simple"

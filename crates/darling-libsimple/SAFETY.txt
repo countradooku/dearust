@@ -1,4 +1,4 @@
-Native libsimple lock slice: safety contract and scope
+libsimple lock slice: safety contract and scope
 ====================================================
 
 Source: Darling src/libsimple/src/lock.c and public lock.h/base.h at
@@ -12,20 +12,35 @@ an aligned atomic uint32_t pointer and expected/desired uint32_t values, returni
 the prior observed value for both success and failure (AcqRel success, Acquire
 failure). The full pinned native baseline archive confirms its global T symbol.
 
-Scope is PARTIAL for the original source: only native Linux x86_64 is supported.
-The Darling/Darwin __linux_futex_reterr backend and other native architectures
-remain unported. Unsupported target OS/architecture combinations fail to compile.
-No Darling runtime, libSystem bootstrap, or macOS application integration is
-claimed. The production state-machine module uses core atomics and forbids all
-unsafe code; the crate now supports a no_std final native archive.
-`cargo xtask build` and staging disable the default std feature and explicitly set panic=abort. The
-no_std panic handler calls C abort without formatting, allocation or TLS. It
-belongs to this final C-linked archive; do not link it into a Rust std application
-or combine it with another Rust panic handler. Building without std and with
-unwinding enabled is explicitly rejected. Ordinary Rust builds/tests keep the
-default std feature. Linux C consumers link with -pthread only, as exercised by
-scripts/check-abi.sh and its C harness. This removes the Rust std dependency;
-it does not integrate the separate Darling/Darwin backend or libSystem startup.
+Scope remains PARTIAL for the original source. Linux x86_64 is supported with
+its native libc syscall entry. Feature `darling` selects the original
+__linux_futex_reterr entry, including on Linux for ABI execution tests; on
+x86_64-apple-darwin it targets Darling's Linux-hosted Darwin environment, not a
+macOS kernel. Other architectures and unsupported OS combinations are rejected.
+The production state-machine module uses core atomics and forbids unsafe code.
+
+Ordinary native Rust builds/tests keep the default std feature. Final native C
+archives disable std and set panic=abort; their panic handler calls C abort with
+no formatting, allocation or TLS. Feature `darling` instead calls Darling's real
+__simple_abort, which preserves libSystem bootstrap ordering. Both termination
+functions must never return or unwind. No macOS application integration is
+claimed by compiling the Darwin object alone.
+
+Feature `runtime-object` omits the final panic handler so a final runtime may own
+it. It requires --no-default-features and panic=abort. Because the manifest also
+requests a staticlib (which requires a handler), override the crate type using
+Cargo's option BEFORE the `--` rustc separator:
+
+cargo rustc -p darling-libsimple --lib --crate-type=rlib --release \
+  --no-default-features --features darling,runtime-object \
+  --target x86_64-apple-darwin --config profile.release.lto=false \
+  --config profile.release.panic='"abort"' --offline --locked -- --emit=obj
+
+The resulting Mach-O object has 14 unmangled C exports and requires only
+__linux_futex_reterr and __simple_abort; no Rust panic or allocator symbols are
+unresolved. This feature is for object/rlib consumers, not a standalone staticlib.
+The default native archive still owns its C-linked panic handler; never combine
+that handler with another Rust panic runtime. Linux C consumers link -pthread.
 
 Unsafe inventory
 ----------------
@@ -62,6 +77,17 @@ Unsafe inventory
    operation can enter this safe backend interface. EINTR and EAGAIN simply
    cause state-machine rechecks, matching upstream. There are no timed APIs.
 
+   With feature darling the same operations call __linux_futex_reterr through
+   its exact C ABI: (int*, int, int, const struct timespec*, int*, int) -> int.
+   The timespec pointee is deliberately opaque as no timed API is exposed.
+   The fourth slot retains REQUEUE val2=INT_MAX as a pointer-shaped integer;
+   neither Rust nor the original wrapper dereferences it for this operation.
+   c_int parameters preserve all 32 bits of values/masks. The signed c_int
+   return is explicitly extended to i64, including negative errors. This wrapper
+   supplies Darwin negative errno behavior itself; Rust does not use Linux libc
+   errno or run a second conversion. Word lifetime/requeue obligations are the
+   same as native. On Darwin all six arguments follow the x86_64 C calling ABI.
+
 3. Invoking the once callback is necessary to call C code. Its nullable function
    pointer uses Option<unsafe extern "C" fn(*mut c_void)> with C-compatible null
    representation. If initialization can occur, the caller must supply a valid
@@ -76,11 +102,12 @@ Unsafe inventory
 4. The unsafe(no_mangle) attributes assert that this archive owns the 14 external
    libsimple/CAS symbol names with their original C signatures. Link this
    replacement or upstream lock.c, never both in the same final binary. The
-   external declarations for syscall and abort are unsafe because Rust cannot
-   verify their ABI implementation. C abort is called by the no_std panic handler
+   external declarations for syscall/abort and Darling
+   __linux_futex_reterr/__simple_abort are unsafe because Rust cannot verify their
+   ABI implementations. The selected abort is called by the no_std panic handler
    and the invalid null-initializer path through terminate(); it has no
    preconditions, never returns and must not unwind. The final native C consumer
-   supplies both libc symbols. The remaining unsafe blocks only forward the
+   supplies both libc symbols; Darling supplies its futex and bootstrap abort. The remaining unsafe blocks only forward the
    state contract above, including the externally visible CAS helper, or call
    the once callback described above. There are no other unsafe operations in this crate; clippy requires block comments and
    unsafe_op_in_unsafe_fn is denied.
@@ -132,7 +159,10 @@ including completed NULL callback, 40,000 exclusive writer updates concurrent
 with readers, and 8 waiters through 80 notify-all generations plus notify-one
 progress coordination. Rust and pinned C deterministic summaries must match.
 These tests establish the native slice's exercised behavior, not formal proof
-of all schedules or validation of the unported Darwin backend.
+of all schedules. Feature darling adds an explicitly synthetic ABI unit test
+covering argument bit patterns, null timeout/address slots, both bitset masks,
+REQUEUE integer val2 and signed negative return extension. Actual runtime consumer
+validation is a separate integration gate.
 
 Native no_std consumer mapping
 ------------------------------
@@ -143,7 +173,9 @@ darlingserver_duct_tape. host.c uses once and locks.c uses the lock ABI. Cargo
 stages the replacement at the same archive path, but a complete darlingserver
 consumer build has not been validated. The second libsimple configuration at
 src/CMakeLists.txt:149 instead defines libsimple_darling; libsystem_kernel's
-consumers still require the unported __linux_futex_reterr backend.
+consumers require feature darling and the real __linux_futex_reterr runtime.
+The backend object now compiles, while complete libsystem_kernel/libSystem
+bootstrap and macOS application execution remain separate pending gates.
 
 The staged artifact test inspects archive member names to reject std, alloc and
 unwinder libraries, links the C stress harness with -pthread alone, and verifies

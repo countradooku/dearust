@@ -1,41 +1,69 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! Native Linux x86_64 C ABI for Darling libsimple synchronization.
+//! Linux and Darling x86_64 C ABI for libsimple synchronization.
 //! See SAFETY.txt for the FFI contract. The atomic state machines forbid unsafe.
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(unsafe_op_in_unsafe_fn)]
 #![deny(clippy::undocumented_unsafe_blocks)]
-#[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
-compile_error!(
-    "Only native Linux x86_64 futex ABI is implemented; Darling/Darwin backend is unported"
-);
+#[cfg(not(all(
+    target_arch = "x86_64",
+    any(target_os = "linux", all(target_os = "macos", feature = "darling"))
+)))]
+compile_error!("supported backends: Linux x86_64, or Darling x86_64 with feature darling");
 #[cfg(all(not(feature = "std"), not(test), not(panic = "abort")))]
-compile_error!("the freestanding static archive requires panic=abort");
+compile_error!("the freestanding runtime requires panic=abort");
+#[cfg(all(feature = "runtime-object", feature = "std"))]
+compile_error!(
+    "runtime-object requires --no-default-features; the final consumer owns the panic runtime"
+);
 #[cfg(all(test, not(feature = "std")))]
 extern crate std;
 
 // This handler belongs only to the final C-linked archive, never to a Rust
 // consumer that supplies its own panic runtime. No formatting, allocator or TLS.
-#[cfg(all(not(feature = "std"), not(test)))]
+#[cfg(all(not(feature = "std"), not(test), not(feature = "runtime-object")))]
 #[panic_handler]
 fn panic(_: &::core::panic::PanicInfo<'_>) -> ! {
     terminate()
 }
 mod core;
 use ::core::{
-    ffi::{c_int, c_long, c_void},
+    ffi::{c_int, c_void},
     sync::atomic::AtomicU32,
 };
 use core::Futex;
 
 const _: () = assert!(size_of::<AtomicU32>() == 4 && align_of::<AtomicU32>() == 4);
+#[cfg(not(feature = "darling"))]
 unsafe extern "C" {
-    fn syscall(number: c_long, ...) -> c_long;
+    fn syscall(number: ::core::ffi::c_long, ...) -> ::core::ffi::c_long;
     fn abort() -> !;
 }
+#[cfg(feature = "darling")]
+unsafe extern "C" {
+    // The timespec is deliberately opaque: none of this API's operations passes
+    // a timeout. REQUEUE instead carries its integer val2 in this pointer slot.
+    fn __linux_futex_reterr(
+        state: *mut c_int,
+        operation: c_int,
+        value: c_int,
+        timeout_or_val2: *const c_void,
+        target: *mut c_int,
+        mask: c_int,
+    ) -> c_int;
+    fn __simple_abort() -> !;
+}
 fn terminate() -> ! {
-    // SAFETY: C abort has no preconditions and does not return or unwind. The
-    // final native C consumer supplies libc, just as for the futex syscall shim.
-    unsafe { abort() }
+    #[cfg(not(feature = "darling"))]
+    // SAFETY: native C abort has no preconditions, never returns or unwinds.
+    unsafe {
+        abort()
+    }
+    #[cfg(feature = "darling")]
+    // SAFETY: Darling's bootstrap abort has no preconditions, never returns or
+    // unwinds, and does not require an initialized libc or Rust runtime.
+    unsafe {
+        __simple_abort()
+    }
 }
 struct Native;
 impl Native {
@@ -48,15 +76,13 @@ impl Native {
         mask: u32,
     ) -> i64 {
         let target = target.map_or(::core::ptr::null_mut(), AtomicU32::as_ptr);
-        // SAFETY: x86_64 Linux SYS_futex=202. AtomicU32 is four-byte aligned and
-        // remains alive throughout this synchronous kernel call. The kernel only
-        // accesses atomic state through its futex protocol. REQUEUE can leave
-        // other waits associated with the target after return; the FFI contract
-        // requires both words to remain stable and live until all waiters finish.
-        // fourth is null for untimed waits or INT_MAX for REQUEUE's integer val2.
+        #[cfg(not(feature = "darling"))]
+        // SAFETY: x86_64 Linux SYS_futex=202. Addresses come from live aligned
+        // atomic words. REQUEUE's integer val2 occupies the fourth argument;
+        // both words remain live until all requeued waiters finish (SAFETY.txt).
         unsafe {
             syscall(
-                202 as c_long,
+                202 as ::core::ffi::c_long,
                 state.as_ptr(),
                 operation,
                 value,
@@ -64,6 +90,20 @@ impl Native {
                 target,
                 mask,
             )
+        }
+        #[cfg(feature = "darling")]
+        // SAFETY: this is the original Darling C ABI, with 32-bit int arguments
+        // and result. The fourth slot is null or REQUEUE's integer val2, never
+        // dereferenced by Rust. Addresses obey the same futex lifetime contract.
+        unsafe {
+            i64::from(__linux_futex_reterr(
+                state.as_ptr().cast(),
+                operation,
+                value as c_int,
+                fourth as *const c_void,
+                target.cast(),
+                mask as c_int,
+            ))
         }
     }
 }
@@ -195,4 +235,69 @@ pub unsafe extern "C" fn libsimple_condvar_notify_all(state: *mut u32, lock: *mu
     // SAFETY: both state pointers are live, aligned and accessed atomically.
     let (state, lock) = unsafe { (atomic(state), atomic(lock)) };
     core::notify_all(state, lock, &Native);
+}
+
+#[cfg(all(test, feature = "darling"))]
+mod darling_abi_tests {
+    use super::*;
+    use std::sync::Mutex;
+
+    // This shim records only the ABI; real syscall/concurrency coverage belongs
+    // to the C consumer harness, not these deliberately synthetic return values.
+    type Call = (usize, c_int, c_int, usize, usize, c_int);
+    static CALLS: Mutex<Vec<Call>> = Mutex::new(Vec::new());
+
+    #[unsafe(no_mangle)]
+    extern "C" fn __linux_futex_reterr(
+        state: *mut c_int,
+        operation: c_int,
+        value: c_int,
+        fourth: *const c_void,
+        target: *mut c_int,
+        mask: c_int,
+    ) -> c_int {
+        CALLS.lock().unwrap().push((
+            state as usize,
+            operation,
+            value,
+            fourth as usize,
+            target as usize,
+            mask,
+        ));
+        -37
+    }
+
+    #[unsafe(no_mangle)]
+    extern "C" fn __simple_abort() -> ! {
+        std::process::abort()
+    }
+
+    #[test]
+    fn darling_arguments_preserve_requeue_slot_and_signed_error() {
+        let state = AtomicU32::new(0);
+        let target = AtomicU32::new(0);
+        Native.wait(&state, u32::MAX, None);
+        Native.wait(&state, 7, Some(1));
+        assert_eq!(Native.wake(&state, 3, None), -37);
+        assert_eq!(Native.wake(&state, u32::MAX, Some(2)), -37);
+        Native.requeue(&state, &target);
+        let address = state.as_ptr() as usize;
+        assert_eq!(
+            *CALLS.lock().unwrap(),
+            vec![
+                (address, 128, -1, 0, 0, 0),
+                (address, 137, 7, 0, 0, 1),
+                (address, 129, 3, 0, 0, 0),
+                (address, 138, -1, 0, 0, 2),
+                (
+                    address,
+                    131,
+                    1,
+                    i32::MAX as usize,
+                    target.as_ptr() as usize,
+                    0
+                ),
+            ]
+        );
+    }
 }
