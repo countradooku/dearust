@@ -1,4 +1,5 @@
 //! OS and caller-buffer boundary. See SAFETY.txt.
+use crate::info;
 use crate::parse::{self, Path};
 use core::ffi::c_void;
 unsafe extern "C" {
@@ -14,6 +15,8 @@ unsafe extern "C" {
     ) -> i64;
     fn dserver_rpc_get_executable_path(pid: i32, path: *mut u8, size: u64, length: *mut u64)
     -> i32;
+    fn dserver_rpc_task_is_64_bit(pid: i32, value: *mut bool) -> i32;
+    fn native_sysconf(name: i32) -> i64;
     fn sys_getuid() -> i64;
     fn sys_getgid() -> i64;
     fn mach_task_self() -> u32;
@@ -497,6 +500,124 @@ fn regions(pid: u32, flavor: u32, arg: u64, out: &mut Output) -> Result<i64, i64
     }
 }
 
+// /proc/stat can be larger than a single buffer on high-core-count machines.
+// Scan complete lines with bounded storage, skipping irrelevant oversized lines.
+fn boot_time() -> Result<u64, i64> {
+    let mut p = Path::new();
+    p.push(b"/proc/stat").ok_or(-22)?;
+    let fd = open(&p, 0)?;
+    let mut chunk = [0; 4096];
+    let mut line = [0; 64];
+    let mut length = 0usize;
+    loop {
+        let n = match syscall(0, fd.0, chunk.as_mut_ptr() as i64, chunk.len() as i64, 0) {
+            Err(-4) => continue,
+            other => other? as usize,
+        };
+        if n == 0 {
+            return Err(-5);
+        }
+        for &byte in chunk.get(..n).ok_or(-5)? {
+            if byte == b'\n' {
+                if let Some(value) = line
+                    .get(..length)
+                    .and_then(|s| s.strip_prefix(b"btime "))
+                    .and_then(|s| parse::number(s, 10))
+                {
+                    return Ok(value);
+                }
+                length = 0;
+            } else {
+                if let Some(dst) = line.get_mut(length) {
+                    *dst = byte;
+                }
+                length = length.saturating_add(1);
+            }
+        }
+    }
+}
+fn process_info(pid: u32, flavor: u32, out: &mut Output) -> Result<i64, i64> {
+    let length = match flavor {
+        13 => info::SHORT_SIZE,
+        3 => info::BSD_SIZE,
+        4 => info::TASK_SIZE,
+        _ => info::BSD_SIZE + info::TASK_SIZE,
+    };
+    if out.sizing {
+        return Err(-14);
+    }
+    if out.capacity < length {
+        return Err(-28);
+    }
+    let token = credentials(pid).ok_or(-3)?;
+    let mut bytes = [0; 4096];
+    let n = read(&path(pid, b"/stat")?, &mut bytes).map_err(|e| if e == -2 { -3 } else { e })?;
+    let stat = info::Stat::parse(bytes.get(..n).ok_or(-5)?, pid).ok_or(-22)?;
+    // Keep the complete result local until every requested field succeeds: a
+    // failed TASKALLINFO must not leave a half-updated BSD record in the caller.
+    let mut result = [0; info::BSD_SIZE + info::TASK_SIZE];
+    if flavor != 4 {
+        let mut lp64 = false;
+        // SAFETY: Existing RPC writes one C bool into live local storage.
+        let rv = unsafe { dserver_rpc_task_is_64_bit(pid as i32, &mut lp64) };
+        if rv != 0 {
+            return Err(if rv > 0 { -(rv as i64) } else { rv as i64 });
+        }
+        let uid = token.get(1).copied().ok_or(-5)?;
+        let gid = token.get(2).copied().ok_or(-5)?;
+        if flavor == 13 {
+            put(&mut result, 0, &stat.short(uid, gid, lp64));
+        } else {
+            let mut name = [0; 4096];
+            let mut full_length = 0;
+            // SAFETY: Existing RPC receives a live, bounded path allocation.
+            let rv = unsafe {
+                dserver_rpc_get_executable_path(
+                    pid as i32,
+                    name.as_mut_ptr(),
+                    name.len() as u64,
+                    &mut full_length,
+                )
+            };
+            if rv != 0 {
+                return Err(if rv > 0 { -(rv as i64) } else { rv as i64 });
+            }
+            let end = name.iter().position(|b| *b == 0).ok_or(-63)?;
+            // SAFETY: Scalar libc sysconf bridge, Linux _SC_CLK_TCK=2.
+            let hz = unsafe { native_sysconf(2) };
+            if hz <= 0 {
+                return Err(-5);
+            }
+            let bsd = stat
+                .bsd(
+                    uid,
+                    gid,
+                    lp64,
+                    name.get(..end).ok_or(-5)?,
+                    boot_time()?,
+                    hz as u64,
+                )
+                .ok_or(-22)?;
+            put(&mut result, 0, &bsd);
+        }
+    }
+    if flavor == 2 || flavor == 4 {
+        // SAFETY: Scalar libc sysconf bridge; Linux CLK_TCK=2 and PAGESIZE=30.
+        let (hz, pagesize) = unsafe { (native_sysconf(2), native_sysconf(30)) };
+        if hz <= 0 || pagesize <= 0 {
+            return Err(-5);
+        }
+        let task = stat.task(hz as u64, pagesize as u64).ok_or(-22)?;
+        put(
+            &mut result,
+            if flavor == 2 { info::BSD_SIZE } else { 0 },
+            &task,
+        );
+    }
+    out.emit(result.get(..length).ok_or(-5)?);
+    Ok(length as i64)
+}
+
 /// Kernel syscall adapter. Unported flavors retain the original implementation.
 ///
 /// # Safety
@@ -512,46 +633,8 @@ pub unsafe extern "C" fn sys_proc_info(
     buffer: *mut c_void,
     size: i32,
 ) -> i64 {
-    if call == 2 && flavor == 3 {
-        if size < 136 {
-            return -28;
-        }
-        if buffer.is_null() {
-            return -14;
-        }
-        // SAFETY: Validated full legacy BSD-info output storage.
-        let result = unsafe { darling_legacy_proc_info(call, pid, flavor, arg, buffer, size) };
-        if result > 0 {
-            let mut name = [0; 4096];
-            let mut len = 0;
-            // SAFETY: Existing RPC receives valid bounded output buffers.
-            if unsafe {
-                dserver_rpc_get_executable_path(pid, name.as_mut_ptr(), name.len() as u64, &mut len)
-            } == 0
-            {
-                let length = name.iter().position(|b| *b == 0).unwrap_or(name.len());
-                if let Some(path) = name.get(..length) {
-                    let base = path.rsplit(|b| *b == b'/').next().unwrap_or(&[]);
-                    let mut field = [0; 32];
-                    let n = base.len().min(31);
-                    if let (Some(dst), Some(src)) = (field.get_mut(..n), base.get(..n)) {
-                        dst.copy_from_slice(src);
-                    }
-                    // SAFETY: pbi_name occupies bytes64..96 in 136-byte struct.
-                    unsafe {
-                        core::ptr::copy_nonoverlapping(
-                            field.as_ptr(),
-                            buffer.cast::<u8>().add(64),
-                            32,
-                        );
-                    }
-                }
-            }
-        }
-        return result;
-    }
     let supported = call == 1
-        || (call == 2 && matches!(flavor, 1 | 6 | 8 | 9 | 22 | 23))
+        || (call == 2 && matches!(flavor, 1 | 2 | 3 | 4 | 6 | 8 | 9 | 13 | 22 | 23))
         || (call == 3 && matches!(flavor, 1 | 2));
     if !supported {
         // Prevent the legacy signed-to-size_t paths from overflowing caller buffers.
@@ -570,6 +653,7 @@ pub unsafe extern "C" fn sys_proc_info(
             return Err(-3);
         }
         match (call, flavor) {
+            (2, 2 | 3 | 4 | 13) => process_info(pid as u32, flavor, &mut out),
             (2, 1) => fds(pid as u32, &mut out),
             (2, 6) => threads(pid as u32, &mut out),
             (2, 9) => directories(pid as u32, &mut out),

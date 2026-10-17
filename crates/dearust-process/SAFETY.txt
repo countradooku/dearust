@@ -35,12 +35,13 @@ open flag conversion reuses oflags_linux_to_bsd.
 No all-process atomic snapshot is promised. Linux lacks Darwin birthtime,
 vnode-generation and guard metadata: unavailable fields remain zero, as in the
 existing port. i386, cancellation and inaccessible-pointer recovery are untested.
-Unported legacy region/task queries retain existing behavior and limitations.
+Other unported legacy flavors retain existing behavior and limitations.
 
 Follow-up behavior verified with the actual mixed runtime
 --------------------------------------------------------
-TBSDINFO retains legacy fields but fills pbi_name from the registered executable
-path, fixing proc_name returning the Linux loader name. REGIONPATHINFO and the
+TBSDINFO fills pbi_name from the registered executable path, fixing proc_name
+returning the Linux loader name. Its remaining fields now use the Rust BSD
+implementation described below. REGIONPATHINFO and the
 file-backed REGIONPATHINFO2/3 queries parse bounded /proc/maps records into fully
 initialized structures; no-match errors never copy uninitialized memory. The
 file-backed variants skip anonymous mappings and return EINVAL at end of search.
@@ -64,3 +65,49 @@ short-buffer canaries, thread lists, vnode ABI sizes, fd identity/path/offset,
 FREAD/FWRITE flags, cwd/root queries and both open-fd and mmap-only path matches.
 Original libproc.c passes all six checks in the Rust mixed runtime. Tests use
 an isolated matching server and guest prefixes; no installed runtime is modified.
+
+BSD and task-info follow-up
+--------------------------
+SHORTBSDINFO (13), TBSDINFO (3), TASKINFO (4) and TASKALLINFO (2) now execute
+Rust, with fixed C layout sizes 64, 136, 96 and 232. No fields from these flavors
+are delegated to the C implementation. The pure info.rs module parses stat
+records (including embedded ')' and newlines in comm), performs checked unit
+conversion, and emits fully initialized fixed-size records. Invalid/truncated
+records and conversion overflow fail before caller memory is changed. Failed
+TASKALLINFO is transactional; larger caller buffers retain their unused tail.
+
+Existing TASK_AUDIT_TOKEN supplies the queried task's current virtual UID/GID,
+not a cached caller identity. Darling currently models only one UID and GID:
+real/saved fields repeat that value, consistent with its getuid/geteuid model.
+The task_is_64_bit RPC receives a live C-bool output. native_sysconf takes scalar
+Linux _SC_CLK_TCK (2) and _SC_PAGESIZE (30) selectors; both existing C boundaries
+must return normally without unwinding. Only their validated positive results
+are used. No extra allocator or panic runtime is linked. /proc/stat boot time
+is read incrementally, independent of the host's CPU-count/file length.
+
+The public PROC_FLAG_LP64 bit is 0x10 (not kernel P_LP64=4, which erroneously
+advertises PROC_FLAG_INEXIT). RSS is converted from Linux pages to bytes; CPU
+USER_HZ ticks become Darwin x86_64 nanosecond absolute-time units. Fault counts
+saturate at INT32_MAX like XNU. Start seconds/microseconds use boot epoch plus
+start ticks. Negative priority/nice are retained. Negative transient RSS is
+clamped to zero. Architecture and unobservable scheduling/IPC fields retain
+existing limitations: only LP64 among BSD flags is modeled; task policy, live
+thread CPU totals, COW faults, IPC/syscall/switch counts and running-thread count
+remain zero rather than invented. Priority still reflects Linux scheduling.
+This is not a claim of full Darwin task-accounting equivalence.
+
+Source contracts: pinned xnu bsd/sys/proc_info.h (fixed layouts and public flags),
+bsd/kern/proc_info.c (short BSD return size and credentials), osfmk/kern/bsd_kern.c
+(fill_taskprocinfo byte sizes, absolute CPU times, saturated faults), and the
+matching server duct-tape/src/task.c (virtual credential model). Legacy defects
+are in emulation/src/xnu_syscall/bsd/impl/misc/proc_info.c and its
+helper/misc/sysctl_proc.c next_stat_elem parser, which stops at the first ')'.
+
+The tools/fixtures/process-info.c actual-runtime regression covers ABI sizes,
+queried child credentials changing twice while caller credentials stay unchanged,
+public LP64 flags, a comm containing ')', registered executable name, boot/start
+time, touched resident memory, a timed CPU workload, all-info composition, and
+null/negative/short/nonexistent-PID/tail canaries. The matching C baseline fails
+its short-BSD return-size assertion; the Rust mixed kernel passes the full probe.
+The three pure encoding tests additionally exercise overflow, signed fields,
+explicit non-1000-Hz conversion and multiple target credential values.

@@ -9,5 +9,6 @@
 compile_error!("dearust-process implements only the x86_64 Linux/Darling ABI");
 #[allow(unsafe_code)]
 mod abi;
+mod info;
 mod parse;
 pub use abi::sys_proc_info;
