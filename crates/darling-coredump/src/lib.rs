@@ -60,19 +60,11 @@ impl Default for Options {
         let home = std::env::var_os("HOME")
             .map(PathBuf::from)
             .or_else(|| {
-                // Safe fallback for environments with HOME unset: resolve the effective
-                // UID via procfs rather than calling libc through unsafe FFI.
-                let status = std::fs::read_to_string("/proc/self/status").ok()?;
-                let uid = status
-                    .lines()
-                    .find(|s| s.starts_with("Uid:"))?
-                    .split_whitespace()
-                    .nth(2)?;
-                let passwd = std::fs::read_to_string("/etc/passwd").ok()?;
-                passwd.lines().find_map(|line| {
-                    let f: Vec<_> = line.split(':').collect();
-                    (f.len() > 5 && f[2] == uid).then(|| PathBuf::from(f[5]))
-                })
+                // Upstream uses getuid(), the real UID. Decode procfs/passwd safely.
+                home_for_real_uid(
+                    &std::fs::read_to_string("/proc/self/status").ok()?,
+                    &std::fs::read_to_string("/etc/passwd").ok()?,
+                )
             })
             .unwrap_or_else(|| PathBuf::from("."));
         Self {
@@ -85,6 +77,18 @@ impl Default for Options {
         }
     }
 }
+fn home_for_real_uid(status: &str, passwd: &str) -> Option<PathBuf> {
+    let uid = status
+        .lines()
+        .find(|line| line.starts_with("Uid:"))?
+        .split_whitespace()
+        .nth(1)?;
+    passwd.lines().find_map(|line| {
+        let fields: Vec<_> = line.split(':').collect();
+        (fields.len() > 5 && fields[2] == uid).then(|| PathBuf::from(fields[5]))
+    })
+}
+
 impl Options {
     fn open(&self, path: &Path) -> io::Result<File> {
         if let Ok(file) = File::open(path) {
@@ -118,6 +122,56 @@ struct Area {
     prot: u64,
     path: Option<PathBuf>,
 }
+/// Match each area to the first original NT_FILE entry covering it, including
+/// arbitrary overlapping/unsorted entries. Sweep ascending addresses, insert
+/// mapping ends into a reversed Fenwick prefix-min tree, then query end >= area
+/// end. This preserves upstream first-entry precedence in O((A+M) log M) work.
+fn covering_mappings(areas: &[Area], mappings: &[Mapping]) -> Vec<Option<usize>> {
+    let mut matches = vec![None; areas.len()];
+    if mappings.is_empty() {
+        return matches;
+    }
+    let mut ends: Vec<_> = mappings.iter().map(|mapping| mapping.end).collect();
+    ends.sort_unstable();
+    ends.dedup();
+    let mut mapping_order: Vec<_> = (0..mappings.len()).collect();
+    mapping_order.sort_unstable_by_key(|&index| mappings[index].start);
+    let mut area_order: Vec<_> = areas
+        .iter()
+        .enumerate()
+        .filter(|(_, area)| area.length == 0)
+        .map(|(index, _)| index)
+        .collect();
+    area_order.sort_unstable_by_key(|&index| areas[index].address);
+    let mut tree = vec![usize::MAX; ends.len() + 1];
+    let mut inserted = 0;
+    for area_index in area_order {
+        let area = &areas[area_index];
+        while inserted < mapping_order.len()
+            && mappings[mapping_order[inserted]].start <= area.address
+        {
+            let index = mapping_order[inserted];
+            let mut position = ends.len() - ends.partition_point(|&end| end < mappings[index].end);
+            while position < tree.len() {
+                tree[position] = tree[position].min(index);
+                position += position & position.wrapping_neg();
+            }
+            inserted += 1;
+        }
+        let end = area.address + area.size; // validated during ELF parsing
+        let mut position = ends.len() - ends.partition_point(|&mapping_end| mapping_end < end);
+        let mut first = usize::MAX;
+        while position != 0 {
+            first = first.min(tree[position]);
+            position &= position - 1;
+        }
+        if first != usize::MAX {
+            matches[area_index] = Some(first);
+        }
+    }
+    matches
+}
+
 #[derive(Debug)]
 struct Plan {
     wide: bool,
@@ -266,7 +320,10 @@ impl Plan {
             if main_flags.is_none() && !path.starts_with("/dev") {
                 if let Ok(mut file) = options.open(&path) {
                     let mut header = [0; 32];
-                    if file.read_exact(&mut header).is_ok() && number(&header, 12, 4)? == 2 {
+                    if file.read_exact(&mut header).is_ok()
+                        && matches!(number(&header, 0, 4)?, 0xfeedface | 0xfeedfacf)
+                        && number(&header, 12, 4)? == 2
+                    {
                         main_flags = Some(number(&header, 24, 4)?);
                     }
                 }
@@ -279,16 +336,13 @@ impl Plan {
             });
         }
         let starts: BTreeSet<_> = areas.iter().map(|a| a.address).collect();
-        for area in &mut areas {
-            if area.length == 0 {
-                if let Some(m) = mappings
-                    .iter()
-                    .find(|m| m.start <= area.address && m.end >= area.address + area.size)
-                {
-                    area.path = Some(m.path.clone());
-                    area.offset = add(m.offset, area.address - m.start)?;
-                    area.length = area.size;
-                }
+        let matches = covering_mappings(&areas, &mappings);
+        for (area, mapping) in areas.iter_mut().zip(matches) {
+            if let Some(index) = mapping {
+                let mapping = &mappings[index];
+                area.path = Some(mapping.path.clone());
+                area.offset = add(mapping.offset, area.address - mapping.start)?;
+                area.length = area.size;
             }
         }
         // Upstream stopped after the first extra mapping; preserve all omitted mappings.
@@ -449,4 +503,72 @@ pub fn convert_file(input: &Path, output: &Path, options: &Options) -> io::Resul
     let mut output = io::BufWriter::new(File::create(output)?);
     plan.write(&data, options, &mut output)?;
     output.flush()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn area(address: u64, size: u64) -> Area {
+        Area {
+            address,
+            size,
+            offset: 0,
+            length: 0,
+            prot: 1,
+            path: None,
+        }
+    }
+    fn mapping(start: u64, end: u64) -> Mapping {
+        Mapping {
+            start,
+            end,
+            offset: 0,
+            path: PathBuf::new(),
+        }
+    }
+    #[test]
+    fn real_uid_home_fallback_does_not_select_effective_uid() {
+        let status = "Name:\tconverter\nUid:\t1000\t2000\t3000\t4000\n";
+        let passwd = "effective:x:2000:2000::/effective:/bin/sh\nreal:x:1000:1000::/real:/bin/sh\n";
+        assert_eq!(
+            home_for_real_uid(status, passwd),
+            Some(PathBuf::from("/real"))
+        );
+        assert_eq!(home_for_real_uid("Uid:\t9\t2000", passwd), None);
+    }
+    #[test]
+    fn ordered_lookup_preserves_first_overlap_for_unsorted_mappings() {
+        let mappings = vec![
+            mapping(40, 100),
+            mapping(0, 200),
+            mapping(20, 40),
+            mapping(0, 200),
+            mapping(9, 20),
+        ];
+        let areas: Vec<_> = (0..120)
+            .flat_map(|address| (0..30).map(move |size| area(address, size)))
+            .collect();
+        let result = covering_mappings(&areas, &mappings);
+        for (area, found) in areas.iter().zip(result) {
+            assert_eq!(
+                found,
+                mappings
+                    .iter()
+                    .position(|m| m.start <= area.address && m.end >= area.address + area.size)
+            );
+        }
+    }
+    #[test]
+    fn adversarial_nonmatching_mapping_lookup_is_bounded() {
+        // A nested search would perform 400 million failed comparisons here.
+        // All starts qualify, but no end reaches any area: the prefix-min query
+        // returns immediately after the O(M log M) insertion sweep.
+        let mappings: Vec<_> = (0..20000).map(|i| mapping(i, i + 1)).rev().collect();
+        let areas: Vec<_> = (0..20000).map(|i| area(30000 + i, 1)).collect();
+        assert!(
+            covering_mappings(&areas, &mappings)
+                .iter()
+                .all(Option::is_none)
+        );
+    }
 }

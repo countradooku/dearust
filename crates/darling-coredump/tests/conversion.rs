@@ -213,6 +213,7 @@ fn resolves_overlay_upper_and_lower_paths_and_copies_executable_flags() {
         libexec: lower.clone(),
     };
     let mut executable = vec![0; 40];
+    put(&mut executable, 0, 0xfeedfacf, 4);
     put(&mut executable, 12, 2, 4);
     put(&mut executable, 24, 0x200004, 4);
     std::fs::write(lower.join("app"), &executable).unwrap();
@@ -325,6 +326,7 @@ fn differential_pinned_upstream_both_architectures() {
     let dir = Dir::new();
     let executable = dir.0.join("app");
     let mut image = vec![0; 40];
+    put(&mut image, 0, 0xfeedfacf, 4);
     put(&mut image, 12, 2, 4);
     put(&mut image, 24, 0x200004, 4);
     std::fs::write(&executable, image).unwrap();
@@ -407,4 +409,58 @@ fn overflowing_32_bit_layout_is_rejected_before_output() {
     let mut out = Vec::new();
     assert!(convert(&data, &mut out, &Options::default()).is_err());
     assert!(out.is_empty());
+}
+
+#[test]
+fn non_macho_backing_file_cannot_supply_macho_flags() {
+    let dir = Dir::new();
+    let path = dir.0.join("not-macho");
+    let mut contents = vec![0; 32];
+    put(&mut contents, 12, 2, 4);
+    put(&mut contents, 24, 0xdeadbeef, 4);
+    std::fs::write(&path, contents).unwrap();
+    let out = output(true, &[(0x2000, 0x2020, 0, path.to_str().unwrap())]);
+    assert_eq!(n(&out, 24, 4), 0);
+}
+
+#[test]
+fn adversarial_elf_with_many_unmatched_mapping_ranges_converts() {
+    // These legal but adversarially ordered ranges previously required 400
+    // million area/mapping comparisons. No area can match any NT_FILE entry.
+    let count = 20_000;
+    for wide in [false, true] {
+        let mappings: Vec<_> = (0..count)
+            .rev()
+            .map(|i| (i as u64, i as u64 + 1, 0, "/dev/unavailable"))
+            .collect();
+        let mut data = fixture(wide, &mappings);
+        let hs = if wide { 64 } else { 52 };
+        let ps = if wide { 56 } else { 32 };
+        let w = if wide { 8 } else { 4 };
+        let extra_size = (count - 1) * ps;
+        data.splice(hs + 2 * ps..hs + 2 * ps, vec![0; extra_size]);
+        put(&mut data, if wide { 56 } else { 44 }, (count + 1) as u64, 2);
+        put(
+            &mut data,
+            hs + if wide { 8 } else { 4 },
+            (hs + (count + 1) * ps) as u64,
+            w,
+        );
+        for i in 0..count {
+            let ph = hs + (i + 1) * ps;
+            data[ph..ph + ps].fill(0);
+            put(&mut data, ph, 1, 4);
+            put(
+                &mut data,
+                ph + if wide { 16 } else { 8 },
+                (30_000 + i) as u64,
+                w,
+            );
+            put(&mut data, ph + if wide { 40 } else { 20 }, 1, w);
+        }
+        let mut out = Vec::new();
+        convert(&data, &mut out, &Options::default()).unwrap();
+        assert_eq!(n(&out, 16, 4), (count + 1) as u64);
+        assert!(out[out.len() - count..].iter().all(|byte| *byte == 0));
+    }
 }
