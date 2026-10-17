@@ -7,6 +7,10 @@ license = "GPL-3.0-or-later"
 publish = false
 description = "Safe Mach-O metadata readers for Darling's elfdep and getuuid tools"
 
+[workspace]
+members = ["xtask"]
+resolver = "3"
+
 [lints.rust]
 unsafe_code = "forbid"
 

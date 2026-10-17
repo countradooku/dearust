@@ -1,0 +1,86 @@
+Cargo build and migration boundaries
+===================================
+
+Requirements for this Rust workspace
+------------------------------------
+Rust 1.85 or later, Cargo, and a host linker are required. `cargo xtask check`
+also requires the rustfmt and Clippy toolchain components. There are no
+third-party Rust dependencies, build scripts, CMake calls, network downloads,
+or generated-code prerequisites in the migrated workspace.
+
+Run commands from this checkout, or a directory inside it:
+
+    cargo xtask build
+    cargo xtask check
+    cargo xtask test
+    cargo xtask bench
+    cargo xtask help
+
+`build` builds all binaries in darling-buildtools with release optimizations.
+The tools are placed in target/release (or CARGO_TARGET_DIR when configured).
+`check` stops at the first failure: rustfmt --check, Clippy for every workspace
+target with warnings denied, then workspace tests including doctests.
+`test` runs workspace tests and doctests. It leaves the optional upstream
+differential test ignored; tests/cli.rs describes the required reference-tool
+environment variables for running that test explicitly.
+`bench` runs only the metadata benchmark in release mode. Its figures measure
+the Rust parser on synthetic fixtures; they are not evidence of a speedup
+over upstream or the performance of an entire Darling installation.
+
+All xtask Cargo dependency-resolution commands use --offline --locked.
+No task installs software, changes system paths, invokes a shell, or builds
+the upstream CMake tree. An unavailable tool or failing child process makes
+the task fail; a nonzero child exit code is forwarded when representable.
+
+Ordinary Cargo commands also work without xtask:
+
+    cargo build --offline --locked --release --package darling-buildtools
+    cargo test --offline --locked --workspace
+
+This workspace currently migrates selected host utilities. It is not yet a
+complete Darling runtime and cannot launch macOS applications. Cargo is the
+primary build system for the migrated Rust code; the existence of this
+workspace does not replace the remaining upstream build graph.
+
+What the remaining CMake graph does
+----------------------------------
+Inspection baseline: darlinghq/darling commit
+60ba801decee7a00782f74f6be4c8ffb013f79ff.
+
+The upstream root CMakeLists.txt configures Clang, C/C++, assembly, component
+selection, architecture slices, dependency discovery and installation.
+src/CMakeLists.txt first builds Linux host tools and darlingserver, then
+switches to Apple target triples, SDK headers and Darwin compiler definitions
+for the emulated system libraries. It includes external subprojects for
+dyld, the Objective-C runtime, libc, libpthread, frameworks and other tools.
+
+cmake/darling_lib.cmake selects ld64, Darwin install names and dylib versions,
+orders multi-pass linking for mutually dependent libraries, and arranges
+lipo architecture slices and debug symbols. cmake/mig.cmake generates Mach
+IPC client/server C sources and headers, including architecture-specific
+variants and xtrace output. Installation rules arrange the Darling prefix
+and symlinks; the root build also discovers Setcap.
+
+Cargo's ordinary package dependency graph does not reproduce these target
+ABI, code-generation, circular-linking and filesystem-install semantics.
+A full replacement needs explicit equivalents and compatibility tests for
+each of them, plus Rust ports or deliberate legacy adapters for the foreign
+language subprojects. A CMake invocation hidden inside build.rs would still
+depend on CMake and would not constitute that replacement.
+
+Migration path
+--------------
+1. Keep independent host tools as Cargo binary targets with behavioral and
+   malformed-input regression tests. This is the current implementation.
+2. Add typed, independently tested generators for MIG, SDK metadata and other
+   generated artifacts, with deterministic inputs and declared outputs.
+3. Define separate host and Darwin-target packages, and validate their ABI,
+   exported symbols, loader behavior and architecture coverage. Introduce
+   narrowly reviewed unsafe only at required OS/ABI boundaries.
+4. Implement the required linking, slice assembly and installation steps as
+   explicit xtask operations, testing actual artifacts against upstream.
+5. Retire each remaining CMake target only after the corresponding Rust
+   component and compatibility tests exist. The legacy CMake build remains
+   required to build unported upstream components during that process.
+
+These are remaining engineering requirements, not implemented task commands.
