@@ -87,8 +87,13 @@ one/all and high bits are the wrapping notification generation.
 All condvar operations must use the same mutex. Wait requires mutex ownership,
 releases it, allows a spurious wake, then reacquires as CONTENDED (state2). That
 last rule maintains the mutex wake chain for notify_all's requeued sleepers.
-The caller must check its predicate in a loop. Notifications are coordinated
-under that same mutex in the exercised C protocol. Fairness is the inherited
+The caller must check its predicate in a loop. For notifications the validated
+native protocol assumes the caller holds the associated mutex too. The original
+header only explicitly requires using the same mutex; this additional ownership
+assumption records our exercised contract, not a proved upstream restriction.
+Arbitrary unlocked-notify compatibility has not been established. notify_one's
+mutex parameter is ignored as upstream does, so no pointer conversion or
+dereference is performed on that unused parameter. Fairness is the inherited
 writer-preferring state machine; no additional cancellation, robust owner-death,
 process-shared, or priority-inheritance semantics are claimed. No confirmed
 upstream concurrency defect was found or silently changed.

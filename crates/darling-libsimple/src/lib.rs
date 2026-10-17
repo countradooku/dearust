@@ -149,7 +149,8 @@ pub unsafe extern "C" fn libsimple_condvar_wait(state: *mut u32, lock: *mut u32)
 /// # Safety
 /// The condvar state obeys SAFETY.txt. The mutex parameter is unused, as in
 /// upstream; it is never dereferenced. Predicate coordination still uses the
-/// mutex associated with the condition variable.
+/// mutex associated with the condition variable; the validated native protocol
+/// requires the notifying caller to hold that mutex.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn libsimple_condvar_notify_one(state: *mut u32, _lock: *mut u32) {
     // SAFETY: state validity is guaranteed by the caller.
@@ -157,6 +158,7 @@ pub unsafe extern "C" fn libsimple_condvar_notify_one(state: *mut u32, _lock: *m
 }
 /// # Safety
 /// Both pointers obey SAFETY.txt; the mutex is the one used by all condvar waits.
+/// The validated native protocol requires the notifying caller to hold it.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn libsimple_condvar_notify_all(state: *mut u32, lock: *mut u32) {
     // SAFETY: both state pointers are live, aligned and accessed atomically.
