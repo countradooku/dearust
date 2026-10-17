@@ -464,3 +464,19 @@ fn adversarial_elf_with_many_unmatched_mapping_ranges_converts() {
         assert!(out[out.len() - count..].iter().all(|byte| *byte == 0));
     }
 }
+
+#[test]
+fn nonregular_core_input_is_rejected_before_destination_is_changed() {
+    let dir = Dir::new();
+    let destination = dir.0.join("preserve");
+    std::fs::write(&destination, b"keep").unwrap();
+    assert!(
+        convert_file(
+            std::path::Path::new("/dev/zero"),
+            &destination,
+            &Options::default()
+        )
+        .is_err()
+    );
+    assert_eq!(std::fs::read(destination).unwrap(), b"keep");
+}

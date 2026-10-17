@@ -474,6 +474,12 @@ pub fn convert_file(input: &Path, output: &Path, options: &Options) -> io::Resul
     use std::os::unix::fs::MetadataExt;
     let input_file = File::open(input)?;
     let input_meta = input_file.metadata()?;
+    if !input_meta.is_file() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "input must be a regular core file",
+        ));
+    }
     if let Ok(output_meta) = std::fs::metadata(output) {
         if input_meta.dev() == output_meta.dev() && input_meta.ino() == output_meta.ino() {
             return Err(io::Error::new(
@@ -483,7 +489,14 @@ pub fn convert_file(input: &Path, output: &Path, options: &Options) -> io::Resul
         }
     }
     let mut data = Vec::new();
-    input_file.take(u64::MAX).read_to_end(&mut data)?;
+    let limit = input_meta
+        .len()
+        .checked_add(1)
+        .ok_or_else(|| invalid("input length overflow"))?;
+    input_file.take(limit).read_to_end(&mut data)?;
+    if data.len() as u64 != input_meta.len() {
+        return Err(invalid("input file changed length while reading"));
+    }
     let plan = Plan::parse(&data, options)?;
     if let Ok(output_meta) = std::fs::metadata(output) {
         for area in &plan.areas {
