@@ -217,3 +217,106 @@ fn deterministic_mutations_do_not_panic() {
         let _ = Metadata::parse(&input);
     }
 }
+
+#[test]
+fn rejects_overlapping_fat_slices_even_with_unused_padding() {
+    for fat64 in [false, true] {
+        for big in [false, true] {
+            let image = thin(true, false, Some(UUID), None);
+            let mut file = fat(&[image.clone(), image], big, fat64);
+            let second = 8 + if fat64 { 32 } else { 20 };
+            // Point both architectures at the first image. The unused second
+            // image still leaves enough space to pass a sum-of-sizes budget.
+            if fat64 {
+                let first_offset = file[16..24].to_vec();
+                file[second + 8..second + 16].copy_from_slice(&first_offset);
+            } else {
+                let first_offset = file[16..20].to_vec();
+                file[second + 8..second + 12].copy_from_slice(&first_offset);
+            }
+            assert_eq!(
+                Metadata::parse(&file).unwrap_err().0,
+                "overlapping fat slices"
+            );
+        }
+    }
+}
+
+#[test]
+fn fat_table_order_determines_uuid_order_not_slice_offsets() {
+    for fat64 in [false, true] {
+        let mut file = fat(
+            &[
+                thin(true, false, Some(UUID), None),
+                thin(true, false, Some([255; 16]), None),
+            ],
+            true,
+            fat64,
+        );
+        let stride = if fat64 { 32 } else { 20 };
+        let first = file[8..8 + stride].to_vec();
+        let second = file[8 + stride..8 + 2 * stride].to_vec();
+        file[8..8 + stride].copy_from_slice(&second);
+        file[8 + stride..8 + 2 * stride].copy_from_slice(&first);
+        assert_eq!(
+            Metadata::parse(&file).unwrap().uuids,
+            [Uuid([255; 16]), Uuid(UUID)]
+        );
+    }
+}
+
+// Build several section records sharing one payload; range order is command
+// order and may differ from file offset order.
+fn name_sections(payload: &[u8], ranges: &[(usize, usize)]) -> Vec<u8> {
+    assert!(!ranges.is_empty());
+    let mut image = thin(true, false, None, Some(payload));
+    let section = image[104..184].to_vec();
+    let extra = section.repeat(ranges.len() - 1);
+    image.splice(184..184, extra);
+    let command_size = 72 + 80 * ranges.len();
+    put32(&mut image, 20, command_size as u32, false);
+    put32(&mut image, 36, command_size as u32, false);
+    put32(&mut image, 96, ranges.len() as u32, false);
+    let payload_start = 32 + command_size;
+    for (index, &(start, size)) in ranges.iter().enumerate() {
+        let section_start = 104 + 80 * index;
+        put64(&mut image, section_start + 40, size as u64, false);
+        put32(
+            &mut image,
+            section_start + 48,
+            (payload_start + start) as u32,
+            false,
+        );
+    }
+    image
+}
+
+#[test]
+fn overlapping_names_keep_command_order_and_validate_every_extent() {
+    let image = name_sections(b"first\0second\0", &[(6, 7), (0, 13), (1, 12)]);
+    assert_eq!(
+        Metadata::parse(&image).unwrap().elf_dependency,
+        Some(b"second".as_slice())
+    );
+    // A prior scan finding a NUL does not validate a shorter alias that ends
+    // before it, including aliases beginning at exactly the same offset.
+    for ranges in [&[(0, 6), (1, 3)][..], &[(0, 6), (0, 5)][..]] {
+        let image = name_sections(b"first\0", ranges);
+        assert!(Metadata::parse(&image).is_err());
+    }
+    let image = name_sections(b"first\0", &[(0, 6), (6, 0)]);
+    assert!(Metadata::parse(&image).is_err());
+}
+
+#[test]
+fn many_aliases_share_a_single_payload_scan() {
+    let mut payload = vec![b'x'; 65536];
+    payload.push(0);
+    let ranges: Vec<_> = (0..8192)
+        .rev()
+        .map(|start| (start, payload.len() - start))
+        .collect();
+    let image = name_sections(&payload, &ranges);
+    let parsed = Metadata::parse(&image).unwrap();
+    assert_eq!(parsed.elf_dependency.unwrap(), &payload[8191..65536]);
+}

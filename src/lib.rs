@@ -115,8 +115,8 @@ impl<'a> Metadata<'a> {
             .ok_or(Error("fat table overflow"))?;
         let table = range(data, 8, table_size)?;
         let table_end = 8 + table_size; // checked by range above
-        let mut budget = data.len() - table_end;
-        for arch in table.chunks_exact(stride) {
+        let mut slices = Vec::new();
+        for (index, arch) in table.chunks_exact(stride).enumerate() {
             let (offset, size, align) = if fat64 {
                 if endian.u32(arch, 28)? != 0 {
                     return Err(Error("nonzero fat64 reserved field"));
@@ -144,10 +144,21 @@ impl<'a> Metadata<'a> {
             if offset < table_end {
                 return Err(Error("fat slice overlaps architecture table"));
             }
-            budget = budget
-                .checked_sub(size)
-                .ok_or(Error("fat slices exceed parsing budget"))?;
-            let image = range(data, offset, size)?;
+            range(data, offset, size)?;
+            slices.push((offset, offset + size, index));
+        }
+        // A sum-of-sizes budget alone allows overlapping slices when a file
+        // also contains unused padding. Reject overlap before parsing a slice.
+        slices.sort_unstable_by_key(|&(start, _, _)| start);
+        for pair in slices.windows(2) {
+            if pair[0].1 > pair[1].0 {
+                return Err(Error("overlapping fat slices"));
+            }
+        }
+        slices.sort_unstable_by_key(|&(_, _, index)| index);
+        for (start, end, index) in slices {
+            let arch = &table[index * stride..(index + 1) * stride];
+            let image = &data[start..end];
             // Cross-check architecture fields against the actual thin header.
             let (inner_endian, _) = thin_kind(image)?;
             if inner_endian.u32(image, 4)? != endian.u32(arch, 0)?
@@ -172,6 +183,7 @@ impl<'a> Metadata<'a> {
         }
         let mut cursor = 0;
         let mut uuid = None;
+        let mut names = Vec::new();
         for _ in 0..count {
             let header = range(commands, cursor, 8)?;
             let kind = endian.u32(header, 0)?;
@@ -197,7 +209,7 @@ impl<'a> Metadata<'a> {
                     if (kind == 0x19) != wide {
                         return Err(Error("segment class disagrees with image"));
                     }
-                    self.segment(data, command, endian, wide)?;
+                    Self::segment(data, command, endian, wide, &mut names)?;
                 }
                 _ => {} // Unknown commands are skipped using their validated size.
             }
@@ -206,6 +218,31 @@ impl<'a> Metadata<'a> {
         if cursor != commands.len() {
             return Err(Error("load command sizes disagree with header"));
         }
+        // Sections may alias the same payload. Scan in offset order so each
+        // byte is examined at most once, even for hostile overlapping names.
+        // Keep the first section in command order for upstream compatibility.
+        let first_name = names.first().copied();
+        names.sort_unstable();
+        let mut next_nul = None;
+        for (start, end) in names {
+            let nul = match next_nul.filter(|&nul| nul >= start) {
+                Some(nul) if nul < end => nul,
+                Some(_) => return Err(Error("ELF name lacks a NUL inside its section")),
+                None => {
+                    start
+                        + data[start..end]
+                            .iter()
+                            .position(|&b| b == 0)
+                            .ok_or(Error("ELF name lacks a NUL inside its section"))?
+                }
+            };
+            next_nul = Some(nul);
+            if self.elf_dependency.is_none()
+                && first_name.is_some_and(|(first_start, _)| first_start == start)
+            {
+                self.elf_dependency = Some(&data[start..nul]);
+            }
+        }
         if let Some(uuid) = uuid {
             self.uuids.push(uuid);
         }
@@ -213,11 +250,11 @@ impl<'a> Metadata<'a> {
     }
 
     fn segment(
-        &mut self,
         image: &'a [u8],
         command: &[u8],
         endian: Endian,
         wide: bool,
+        names: &mut Vec<(usize, usize)>,
     ) -> Result<(), Error> {
         let (header_size, section_size, count_offset) =
             if wide { (72, 80, 64) } else { (56, 68, 48) };
@@ -248,14 +285,10 @@ impl<'a> Metadata<'a> {
                 endian.u32(section, 36)?.into()
             };
             let offset = endian.u32(section, if wide { 48 } else { 40 })?;
-            let bytes = range(image, host_size(offset.into())?, host_size(size)?)?;
-            let end = bytes
-                .iter()
-                .position(|&b| b == 0)
-                .ok_or(Error("ELF name lacks a NUL inside its section"))?;
-            if self.elf_dependency.is_none() {
-                self.elf_dependency = Some(&bytes[..end]);
-            }
+            let start = host_size(offset.into())?;
+            let size = host_size(size)?;
+            range(image, start, size)?;
+            names.push((start, start + size));
         }
         Ok(())
     }
