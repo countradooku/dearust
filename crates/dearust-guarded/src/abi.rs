@@ -79,6 +79,21 @@ mod runtime {
         with_table(|table| table.check(fd, flags))
     }
     /// # Safety
+    /// Pair with postfork_parent in every parent/error path, or postfork_child
+    /// in the child. Native fork callbacks must not reenter this table.
+    #[unsafe(no_mangle)]
+    pub unsafe extern "C" fn guard_table_prefork() {
+        // SAFETY: static aligned lock; caller owns the fork pairing contract.
+        unsafe { libsimple_lock_lock(LOCK.as_ptr()) };
+    }
+    /// # Safety
+    /// The calling thread must hold the lock acquired by guard_table_prefork.
+    #[unsafe(no_mangle)]
+    pub unsafe extern "C" fn guard_table_postfork_parent() {
+        // SAFETY: the parent/error path releases its own prefork acquisition.
+        unsafe { libsimple_lock_unlock(LOCK.as_ptr()) };
+    }
+    /// # Safety
     /// Call in the sole surviving postfork child before creating any new threads.
     #[unsafe(no_mangle)]
     pub unsafe extern "C" fn guard_table_postfork_child() {
@@ -124,6 +139,10 @@ mod dyld {
     }
     #[unsafe(no_mangle)]
     pub extern "C" fn guard_table_postfork_child() {}
+    #[unsafe(no_mangle)]
+    pub extern "C" fn guard_table_prefork() {}
+    #[unsafe(no_mangle)]
+    pub extern "C" fn guard_table_postfork_parent() {}
     #[test]
     fn bootstrap_table_is_inert() {
         assert_eq!(guard_table_add(3, 1, core::ptr::null()), -78);

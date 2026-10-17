@@ -83,6 +83,8 @@ fn check(triple: &str, label: &str) {
                 "guard_table_remove",
                 "guard_table_check",
                 "guard_table_postfork_child",
+                "guard_table_prefork",
+                "guard_table_postfork_parent",
             ]
             .iter()
             .map(|s| format!("{prefix}{s}"))

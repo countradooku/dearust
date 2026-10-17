@@ -77,6 +77,8 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                                 "guard_table_remove",
                                 "guard_table_check",
                                 "guard_table_postfork_child",
+                                "guard_table_prefork",
+                                "guard_table_postfork_parent",
                             ],
                             _ => vec!["errno_linux_to_bsd", "length_of_translation_array"],
                         }

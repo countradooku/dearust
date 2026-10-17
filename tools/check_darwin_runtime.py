@@ -103,9 +103,9 @@ def verify(args):
                     ('original', work/'table.o', cases[0][1]),
                     ('rust', guarded, objects)]:
                 executable = work/(variant+'-guarded-regressions')
-                run([*common, '-pthread', regression_driver, table, work/'close.o',
+                run([*common, *(['-DDEARUST_GUARDED_FORK'] if variant == 'rust' else []), '-pthread', regression_driver, table, work/'close.o',
                      work/'syscall.o', *implementation, '-Wl,--gc-sections', '-o', executable])
-                for case in ['sentinel', 'callback'] + (['full'] if variant == 'rust' else []):
+                for case in ['sentinel', 'callback'] + (['full', 'fork', 'fork-failure'] if variant == 'rust' else []):
                     result = subprocess.run([executable, case], capture_output=True, text=True, timeout=20)
                     expected = 0 if variant == 'rust' else 1
                     if result.returncode != expected:

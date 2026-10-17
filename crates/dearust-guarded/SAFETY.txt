@@ -52,3 +52,32 @@ lock/futex/errno/table chains. It runs 120000 concurrent table cycles, 1024-slot
 capacity/collision recovery, a real fork with callback/raw close, TLS errno and
 signal-interrupted futex checks, plus separate negative-fd and reentrant callback
 regressions. Original C's full-table negative lookup is checked with ASan/UBSan.
+
+Coherent fork snapshot hooks
+---------------------------
+Two additional private internal C symbols pair guard_table_prefork (acquire)
+with guard_table_postfork_parent (release). The existing postfork_child resets
+its inherited acquired lock. This prevents fork from capturing another thread's
+partially updated fd/flags/callback tuple. The original reset-only child hook
+cannot provide that guarantee. Before the native fork, production callers must
+acquire prefork; every parent result, including fork failure, must release via
+postfork_parent. The same thread must perform the pair. Bootstrap dyld hooks
+remain inert, matching its absent table. Legacy standalone child cleanup is
+still supported only when table mutation is known to be quiescent at the fork.
+
+build_guarded_fork_bridge.py inserts these hooks into a copied matching local
+fork.c, preserving its native ELF fork and original child cleanup order. It
+rejects missing/duplicate anchors and never modifies source/build/install trees.
+The native ELF fork's registered __mldr_fork_prepare/complete callbacks only
+lock/unlock the host socket bitmap. No table operation holds that bitmap mutex;
+close callbacks run outside the table lock. This establishes guard-table then
+socket-bitmap ordering for this matching build. Foreign native atfork callbacks
+must not reenter guard-table APIs. Guest atfork handlers run outside sys_fork.
+Signal reentrancy and recursive fork while holding this lock remain unsupported.
+
+The native regression now keeps a mutation worker active through 100 forks,
+checking that colliding fd entries keep matching callback identities and child
+cleanup terminates. RLIMIT_NPROC=0 causes a real nonroot-host fork failure;
+subsequent guard operations check parent lock release. This failure test requires
+an unprivileged host user (not root/CAP_SYS_RESOURCE). The separate guarded-fork.c
+Mach-O probe exercises actual runtime fork with concurrent RPC thread churn.
