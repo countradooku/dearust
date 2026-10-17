@@ -28,7 +28,29 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def run_process(argv, env, timeout):
+def reap_launcher(process, grace=5):
+    """Give namespace shutdown time to finish; report denied signals/unreaped PIDs."""
+    record = {'pid': process.pid}
+    try:
+        process.wait(timeout=grace)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            record['signal_race'] = 'process group exited before signal'
+        except PermissionError as error:
+            # The Darling setuid launcher can retain real uid 0. Never fall back
+            # to name-based killing or another user's/default prefix.
+            record['signal_error'] = str(error)
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            record['error'] = 'launcher did not exit after bounded cleanup'
+    record.update(reaped=process.returncode is not None, exit_code=process.returncode)
+    return record
+
+
+def run_process(argv, env, timeout, on_timeout=None):
     """Kill and reap the launcher process group on timeout; never kill by name."""
     start = time.monotonic()
     # Daemons started by the launcher may inherit its descriptors after setsid.
@@ -37,22 +59,26 @@ def run_process(argv, env, timeout):
         process = subprocess.Popen(argv, env=env, stdout=out, stderr=err,
                                    start_new_session=True)
         timed_out = False
+        cleanup = None
+        timeout_shutdown = None
         try:
             process.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
             timed_out = True
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass  # The launcher can exit between timeout and killpg.
-            process.wait(timeout=5)
+            if on_timeout is not None:
+                try:
+                    timeout_shutdown = on_timeout()
+                except (OSError, subprocess.SubprocessError) as error:
+                    timeout_shutdown = {'error': str(error)}
+            cleanup = reap_launcher(process, grace=0 if on_timeout is None else 5)
         out.seek(0)
         err.seek(0)
         stdout, stderr = out.read(), err.read()
     return {'exit_code': process.returncode, 'timed_out': timed_out,
             'stdout': stdout.decode(errors='replace'),
             'stderr': stderr.decode(errors='replace'),
-            'seconds': round(time.monotonic() - start, 3)}
+            'seconds': round(time.monotonic() - start, 3),
+            'cleanup': cleanup, 'timeout_shutdown': timeout_shutdown}
 
 
 def classify(launcher, stdout, status, expected, name):
@@ -128,7 +154,8 @@ def variant(args, name, kernel, output):
             expected = (args.tests / (case + '.stdout')).read_text()
             command, stdout, stderr, status = shell_capture(
                 ['/Volumes/SystemRoot' + str(executable)], output, case)
-            launcher = run_process([args.launcher, 'shell', '/bin/bash', '-c', command], env, args.timeout)
+            launcher = run_process([args.launcher, 'shell', '/bin/bash', '-c', command], env, args.timeout,
+                                   on_timeout=lambda: run_process([args.launcher, 'shutdown'], env, 5))
             try:
                 child_status = int(status.read_text().strip())
             except (FileNotFoundError, ValueError):

@@ -16,12 +16,11 @@ from pathlib import Path
 import re
 import shlex
 import shutil
-import signal
 import subprocess
 import tempfile
 import time
 
-from check_mac_apps import digest, mapped_kernel, run_process, shell_capture
+from check_mac_apps import digest, mapped_kernel, reap_launcher, run_process, shell_capture
 
 P, U, I = C.c_void_p, C.c_ulong, C.c_int
 
@@ -155,12 +154,9 @@ def wait_window(display, app, excluded, timeout):
 
 
 def terminate_launcher(process):
-    if process.poll() is None:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        process.wait(timeout=5)
+    # shutdown kills the namespace first; its setuid control CLI needs time to
+    # observe EOF and exit before attempting a signal we may not be allowed to send.
+    return reap_launcher(process, grace=5)
 
 
 def variant(args, name, kernel, display):
@@ -191,7 +187,8 @@ def variant(args, name, kernel, display):
         staged.chmod(0o755)
         record['staged_kernel_sha256'] = digest(staged)
         record['boot'] = run_process([args.launcher, 'shell', '/bin/echo', 'GUI_BOOT_OK'],
-                                     env, args.timeout)
+                                     env, args.timeout,
+                                     on_timeout=lambda: run_process([args.launcher, 'shutdown'], env, 5))
         if (record['boot']['exit_code'] != 0 or record['boot']['timed_out']
                 or 'GUI_BOOT_OK' not in record['boot']['stdout']):
             raise RuntimeError('isolated prefix first boot failed')
@@ -253,8 +250,9 @@ def variant(args, name, kernel, display):
                 record['shutdown'] = run_process([args.launcher, 'shutdown'], env, args.timeout)
             except (OSError, subprocess.SubprocessError) as error:
                 record['shutdown'] = {'error': str(error)}
-        for process in launchers:
-            terminate_launcher(process)
+        record['launcher_cleanup'] = [terminate_launcher(process) for process in launchers]
+        if any(not item['reaped'] for item in record['launcher_cleanup']):
+            record['cleanup_failure'] = 'one or more launchers remain unreaped'
         (output / 'results.json').write_text(json.dumps(record, indent=2) + '\n')
     return record
 
@@ -293,7 +291,7 @@ def main():
         'variants': records}, indent=2) + '\n')
     return 0 if all(len(record['results']) == 2 and record.get('kernel_mappings')
                     and all(result.get('pass') for result in record['results'])
-                    and 'error' not in record for record in records) else 1
+                    and 'error' not in record and 'cleanup_failure' not in record for record in records) else 1
 
 
 if __name__ == '__main__':
