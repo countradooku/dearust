@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Run a command with a replacement Darling server in private user/mount namespaces.
+"""Run a command with a replacement Darling server in private user/mount/PID namespaces.
 
 Example: python3 tools/run_isolated_server.py --server /absolute/darlingserver --
 python3 tools/check_mac_apps.py ...
 
 The child command must own its prefixes and shut them down before returning.
+A private PID namespace additionally ensures residual children die on its exit.
 UID/GID 0 inside the namespace map solely to the invoking user's host IDs.
 No installation or setuid permissions are modified. No host-root privilege is used.
 """
@@ -38,6 +39,7 @@ exec "$@"
 '''
     print('Isolated server SHA-256: ' + hashlib.sha256(server.read_bytes()).hexdigest(), flush=True)
     return subprocess.run(['unshare', '--user', '--map-root-user', '--mount',
+                           '--pid', '--fork', '--kill-child', '--mount-proc',
                            'sh', '-c', script, 'isolated-darling-server', str(server),
                            *command]).returncode
 
