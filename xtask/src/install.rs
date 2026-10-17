@@ -13,22 +13,22 @@ const GRAPH: &str = include_str!("../host-artifacts.tsv");
 const MANIFEST: &str = "darling-host-artifacts.tsv";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Kind {
+pub(super) enum Kind {
     Bin,
     Staticlib,
     Object,
 }
 
-struct Artifact<'a> {
-    kind: Kind,
-    target: &'a str,
-    package: &'a str,
-    destination: &'a str,
-    hidden_symbols: Vec<&'a str>,
+pub(super) struct Artifact<'a> {
+    pub(super) kind: Kind,
+    pub(super) target: &'a str,
+    pub(super) package: &'a str,
+    pub(super) destination: &'a str,
+    pub(super) hidden_symbols: Vec<&'a str>,
 }
 
 impl Artifact<'_> {
-    fn source_name(&self) -> String {
+    pub(super) fn source_name(&self) -> String {
         match self.kind {
             Kind::Bin => format!("{}{}", self.target, std::env::consts::EXE_SUFFIX),
             Kind::Staticlib => format!("lib{}.a", self.target.replace('-', "_")),
@@ -39,8 +39,8 @@ impl Artifact<'_> {
 
 #[derive(Debug)]
 pub struct Error {
-    message: String,
-    code: ExitCode,
+    pub(super) message: String,
+    pub(super) code: ExitCode,
 }
 
 impl Error {
@@ -341,7 +341,7 @@ fn absolute(path: &Path) -> io::Result<PathBuf> {
     })
 }
 
-fn validate_destination(path: &Path) -> io::Result<()> {
+pub(super) fn validate_destination(path: &Path) -> io::Result<()> {
     let path = absolute(path)?;
     let mut current = PathBuf::new();
     for part in path.components() {
@@ -378,6 +378,16 @@ fn regular_file_or_missing(path: &Path) -> io::Result<()> {
 /// publication can leave a partial update; callers must check the exit status.
 /// Use an exclusively owned staging directory (no concurrent path mutation).
 fn stage(release: &Path, destination: &Path, artifacts: &[Artifact<'_>]) -> io::Result<()> {
+    stage_manifest(release, destination, artifacts, MANIFEST, GRAPH)
+}
+
+pub(super) fn stage_manifest(
+    release: &Path,
+    destination: &Path,
+    artifacts: &[Artifact<'_>],
+    manifest_name: &str,
+    graph_text: &str,
+) -> io::Result<()> {
     let destination = absolute(destination)?;
     validate_destination(&destination)?;
     // Check every source and destination before touching the destination tree.
@@ -394,7 +404,7 @@ fn stage(release: &Path, destination: &Path, artifacts: &[Artifact<'_>]) -> io::
         validate_destination(output.parent().expect("artifact has parent"))?;
         regular_file_or_missing(&output)?;
     }
-    regular_file_or_missing(&destination.join(MANIFEST))?;
+    regular_file_or_missing(&destination.join(manifest_name))?;
     fs::create_dir_all(&destination)?;
     let temporary = destination.join(format!(".darling-stage-{}", std::process::id()));
     // Never reuse an existing path, including a symlink or stale transaction.
@@ -409,15 +419,18 @@ fn stage(release: &Path, destination: &Path, artifacts: &[Artifact<'_>]) -> io::
         let mut manifest = OpenOptions::new()
             .write(true)
             .create_new(true)
-            .open(temporary.join(MANIFEST))?;
-        manifest.write_all(GRAPH.as_bytes())?;
+            .open(temporary.join(manifest_name))?;
+        manifest.write_all(graph_text.as_bytes())?;
         manifest.sync_all()?;
         for artifact in artifacts {
             let output = destination.join(artifact.destination);
             fs::create_dir_all(output.parent().expect("artifact has parent"))?;
             fs::rename(temporary.join(artifact.source_name()), output)?;
         }
-        fs::rename(temporary.join(MANIFEST), destination.join(MANIFEST))?;
+        fs::rename(
+            temporary.join(manifest_name),
+            destination.join(manifest_name),
+        )?;
         Ok(())
     })();
     let cleanup = fs::remove_dir_all(&temporary);

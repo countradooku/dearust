@@ -6,11 +6,13 @@ use std::{
 };
 
 mod install;
+mod runtime;
 
-const HELP: &str = "Usage: cargo xtask <build|install|check|test|bench|help>
+const HELP: &str = "Usage: cargo xtask <build|install|runtime|check|test|bench|help>
 
   build  Build ported Rust tools in release mode
   install --destdir PATH  Build and stage host tools in upstream build-tree layout
+  runtime --target TRIPLE --destdir PATH  Build no_std Darling runtime objects/archive
   check  Check formatting, lint all workspace targets, then run tests and doctests
   test   Run workspace tests and doctests
   bench  Benchmark the ported Mach-O metadata parser
@@ -22,6 +24,10 @@ are built; this command does not build or invoke the legacy CMake project.";
 enum Task {
     Build,
     Install(PathBuf),
+    Runtime {
+        target: String,
+        destination: PathBuf,
+    },
     Check,
     Test,
     Bench,
@@ -31,6 +37,35 @@ enum Task {
 fn parse(args: impl IntoIterator<Item = OsString>) -> Result<Task, String> {
     let mut args = args.into_iter();
     let first = args.next();
+    if first.as_deref() == Some(std::ffi::OsStr::new("runtime")) {
+        if args.next().as_deref() != Some(std::ffi::OsStr::new("--target")) {
+            return Err("runtime requires --target TRIPLE --destdir PATH".into());
+        }
+        let target = args
+            .next()
+            .and_then(|s| s.into_string().ok())
+            .filter(|s| {
+                matches!(
+                    s.as_str(),
+                    "x86_64-unknown-linux-gnu" | "x86_64-apple-darwin"
+                )
+            })
+            .ok_or("runtime target must be x86_64-unknown-linux-gnu or x86_64-apple-darwin")?;
+        if args.next().as_deref() != Some(std::ffi::OsStr::new("--destdir")) {
+            return Err("runtime requires --destdir PATH".into());
+        }
+        let destination = args
+            .next()
+            .filter(|s| !s.is_empty())
+            .ok_or("runtime requires nonempty PATH")?;
+        if args.next().is_some() {
+            return Err("unexpected runtime arguments".into());
+        }
+        return Ok(Task::Runtime {
+            target,
+            destination: destination.into(),
+        });
+    }
     if first.as_deref() == Some(std::ffi::OsStr::new("install")) {
         if args.next().as_deref() != Some(std::ffi::OsStr::new("--destdir")) {
             return Err("install requires --destdir PATH".into());
@@ -84,7 +119,7 @@ fn commands(task: &Task) -> Vec<Vec<&'static str>> {
                 "--locked",
             ],
         ],
-        Task::Install(_) => vec![],
+        Task::Install(_) | Task::Runtime { .. } => vec![],
         Task::Check => vec![
             vec!["fmt", "--all", "--", "--check"],
             vec![
@@ -157,6 +192,16 @@ fn main() -> ExitCode {
             return error.code();
         }
     }
+    if let Task::Runtime {
+        target,
+        destination,
+    } = &task
+    {
+        if let Err(error) = runtime::build_and_stage(&cargo, root, target, destination) {
+            eprintln!("xtask: {error}");
+            return error.code();
+        }
+    }
     for args in commands(&task) {
         eprintln!("+ cargo {}", args.join(" "));
         if let Err(code) = run(Command::new(&cargo).current_dir(root).args(args)) {
@@ -180,7 +225,47 @@ mod tests {
             parse(["install".into(), "--destdir".into(), "host tools".into()]),
             Ok(Task::Install(PathBuf::from("host tools")))
         );
+        assert_eq!(
+            parse(
+                [
+                    "runtime",
+                    "--target",
+                    "x86_64-apple-darwin",
+                    "--destdir",
+                    "stage"
+                ]
+                .into_iter()
+                .map(OsString::from)
+            ),
+            Ok(Task::Runtime {
+                target: "x86_64-apple-darwin".into(),
+                destination: "stage".into()
+            })
+        );
         for args in [
+            vec!["runtime"],
+            vec![
+                "runtime",
+                "--target",
+                "i686-apple-darwin",
+                "--destdir",
+                "stage",
+            ],
+            vec![
+                "runtime",
+                "--target",
+                "x86_64-apple-darwin",
+                "--destdir",
+                "",
+            ],
+            vec![
+                "runtime",
+                "--target",
+                "x86_64-apple-darwin",
+                "--destdir",
+                "stage",
+                "extra",
+            ],
             vec!["install"],
             vec!["install", "--destdir"],
             vec!["install", "--destdir", ""],

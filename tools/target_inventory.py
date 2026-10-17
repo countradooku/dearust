@@ -14,6 +14,7 @@ REPLACEMENTS = {
     'bsdln': ('darling-buildtools', 'bsdln', 'host-artifact-verified'),
     'darling-coredump': ('darling-coredump', 'darling-coredump', 'host-artifact-verified'),
     'wrapgen': ('darling-buildtools', 'wrapgen', 'partial-loader-policy'),
+    'libsimple_darling': ('darling-libsimple', 'liblibsimple_darling.a', 'partial-darling-x86_64-consumer-linked'),
     'libsimple_darlingserver': ('darling-libsimple', 'darling_simple', 'partial-native-only'),
 }
 
@@ -38,11 +39,18 @@ def main():
             entry.update(cargo_package=package, cargo_artifact=artifact, status=status)
             found.add(name)
         if name in {'emulation', 'emulation_dyld'}:
-            entry['native_verified_source_slices'] = [{
-                'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/conversion/errno.c',
-                'cargo_package': 'darling-errno', 'cargo_artifact': 'darling_errno.o',
-                'scope': 'Native ELF C ABI validation only; not the required Darwin Mach-O/fat object or complete target',
-            }]
+            entry['verified_source_slices'] = [{
+                'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/' + source,
+                'cargo_package': package, 'cargo_artifact': artifact,
+                'scope': ('Native real-consumer execution and x86_64 Mach-O actual system_kernel link verified; i386 replacement/startup pending'
+                          if name == 'emulation' else 'Same Rust x86_64 source slices built; actual emulation_dyld/static consumer link remains pending'),
+            } for source, package, artifact in [('conversion/errno.c','darling-errno','errno.o'), ('linux_premigration/ext/futex.c','darling-futex','futex.o')]]
+        if name == 'system_kernel':
+            entry['legacy_consumer_integration'] = {
+                'record': 'system-kernel-integration.json',
+                'scope': 'Full original x86_64 final link uses Cargo Rust libsimple/futex/errno slices; other inputs remain original, i386 final slice preserved, actual launch pending',
+                'cargo_target_replacement': False,
+            }
         entries.append(entry)
     if found != REPLACEMENTS.keys():
         raise ValueError(f'expected native targets missing: {sorted(REPLACEMENTS.keys()-found)}')

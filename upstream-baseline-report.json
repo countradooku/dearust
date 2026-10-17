@@ -400,8 +400,20 @@
     "prerequisite_failures": []
   },
   "runtime_build": {
-    "attempted": false,
-    "reason": "This gate reproduces upstream configuration only; compiling the complete runtime and executing ABI/application tests remain pending"
+    "attempted": true,
+    "targets_built": [
+      "emulation",
+      "system_kernel"
+    ],
+    "commands": [
+      "cmake --build BUILD --target emulation -j4",
+      "cmake --build BUILD --target system_kernel -j4"
+    ],
+    "full_darling_runtime_built": false,
+    "darwin_application_execution": false,
+    "original_system_kernel_sha256": "d11cbb9edf11d812d5b1ab40c99757c3745e8808f264d2c1350e7190b6c0c5ea",
+    "mixed_rust_x86_64_final_link": "system-kernel-integration.json",
+    "limitations": "Actual complete system_kernel link only; other production inputs remain original. i386 finalslice preserved unchanged, not Rust. Full Darling/bootstrap/TLS/cancellation/application conformance pending."
   },
   "dependency_pins": [
     {
@@ -1273,7 +1285,7 @@
         "build_success": true
       }
     ],
-    "limitations": "Native host tools and one native lock archive only; no full runtime compilation, ABI conformance, installation or application execution has been demonstrated",
+    "limitations": "These probes cover original native tools/archive. Separate runtime_build records real emulation/system_kernel builds and mixed Rust64 integration; full runtime/installation/application execution remains unverified.",
     "optional_print_target": "src/libelfloader/wrapgen/CMakeLists.txt declares print_wrapped_elf only when WITH_PRINT_WRAPPED_ELF is defined. It was absent under the documented defaults; optional activation was not used and the captured default graph remains unchanged."
   },
   "cmake_graph_capture": {

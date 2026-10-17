@@ -10,8 +10,8 @@
     },
     "inventoried_entries": 265803,
     "entries_by_status": {
-      "partial": 1,
-      "pending": 265802
+      "partial": 2,
+      "pending": 265801
     },
     "license_candidates": 341
   },
@@ -2325295,8 +2325295,8 @@
           "category": "source",
           "status": "partial",
           "replacement": "crates/darling-errno/src/lib.rs",
-          "scope": "Safe no_std errno conversion; native Linux C ABI object with both original hidden globals verified",
-          "limitation": "Darwin Mach-O/architecture linkage and actual emulation consumers remain unverified; no target retirement"
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust source replacement and actual Darling startup/application compatibility remain unverified; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/conversion/fcntl/open.c",
@@ -2325521,7 +2325521,10 @@
           "object_id": "07335f73b2b10a4c2f930f898a090e4d71c90f43",
           "size": 799,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/darling-futex/src/lib.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust source replacement and actual Darling startup/application compatibility remain unverified; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/linux_premigration/ext/inotify_add_watch.c",

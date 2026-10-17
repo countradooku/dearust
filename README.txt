@@ -34,15 +34,17 @@ reproducible generation. Invalid source identifiers/names are rejected.
 A native Linux x86_64 libsimple synchronization archive also provides the
 13 documented C functions plus the externally linked cmpxchg helper, preserving
 four-byte state layouts. C-link concurrency tests compare it with upstream.
-This source is PARTIAL: Darwin futex support, other architectures and runtime startup integration remain
-pending. Cargo build/staging now emits a no_std panic-abort archive; libc supplies
+This source remains PARTIAL: the native and Darling x86_64 futex backends work,
+while i386/other architectures and actual Darwin startup remain pending. Cargo build/staging now emits a no_std panic-abort archive; libc supplies
 syscall and abort. Normal Rust development/tests retain the default std feature.
 
 A separate no_std errno converter now preserves the pinned Linux-to-Darwin
 mapping, sign handling and both original C globals. It fixes signed overflow
 for INT_MIN, verified against compiled original C plus UBSan. Cargo stages a
 native ELF object with hidden symbols and no unresolved runtime dependencies.
-The required Darwin Mach-O objects and full emulation consumers remain pending.
+Darwin Mach-O errno/futex/lock objects now link into the actual original
+libsystem_kernel. Native execution checks real guarded-table and close consumers.
+i386 Rust replacements, full emulation migration and actual startup remain pending.
 
 Build and stage with Cargo
 --------------------------
@@ -61,7 +63,7 @@ host artifact graph. The errno object is staged separately under
 lib/darling/native. See BUILDING.txt and xtask/README.md for boundaries.
 
 This is a Cargo replacement for these host artifact operations. MIG generation,
-Mach-O linking of the runtime, SDK/framework assembly, circular dependencies,
+Full Cargo runtime linking, SDK/framework assembly, circular dependencies,
 architecture slices and the complete upstream install graph remain pending.
 
 Fixes and evidence
@@ -88,8 +90,8 @@ migration-inventory.json covers all 27,274 superproject entries at
 2 partial source replacements, and 27,267 pending entries. Counts include
 headers, resources and gitlinks; they do not measure runtime completeness.
 dependency-inventory.json separately expands exact pinned dependency trees,
-including nested gitlinks and license evidence. One dependency source has a verified native errno ABI slice and remains partial;
-265,802 leaves remain pending. MIGRATION.txt defines full-completion gates. No original ABI, resource,
+including nested gitlinks and license evidence. Two dependency sources (errno/futex) have verified native execution and Darwin
+consumer linkage and remain partial; 265,801 leaves remain pending. MIGRATION.txt defines full-completion gates. No original ABI, resource,
 framework or dependency is waived, and no placeholders count as ports.
 
 The optional upstream-rust-tools.patch remains the earlier THREE-tool adapter
@@ -99,11 +101,24 @@ The isolated original upstream configures with its default CMake options and
 all pinned dependency trees. Forty-four Swift Git LFS binary pointers remain
 unmaterialized; configuration is not a full build. The recorded File API graph
 and baseline report capture remaining migration inputs. migration-targets.json
-tracks 1,629 default targets: six have Cargo artifact slices (including partial
-ones), while 1,623 remain pending. Separate Git worktrees
+tracks 1,629 default targets: seven have Cargo artifact slices (including partial
+ones), while 1,622 remain pending. Separate Git worktrees
 preserve parallel implementation and review history.
 
 The errno conversion microbenchmark measured 3.042 ns/call for pinned C and
 2.803 ns/call for the final safe Rust lookup over mixed signed inputs. The first
 Rust match implementation was slower. Raw measurements, compiler/source hashes
 and limits are in crates/darling-errno; this is not a Darling runtime speedup.
+
+Darling runtime integration
+---------------------------
+`cargo xtask runtime --target x86_64-apple-darwin --destdir /path/to/runtime`
+builds three no_std Mach-O objects and a thin libsimple archive without CMake,
+an allocator or a Rust panic runtime. The native target can build the same
+Darling ABI chain for execution tests. See tools/DARWIN-RUNTIME.txt.
+
+The original emulation/system_kernel targets now build. The complete actual
+system_kernel final link accepts the Rust x86_64 slices with the same 1,362 public
+symbols and 18 imports. Its original i386 final slice is preserved byte-for-byte.
+This is a verified mixed-language integration step, not a complete Cargo runtime
+or a demonstration that macOS applications run.

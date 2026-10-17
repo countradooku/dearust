@@ -174,8 +174,9 @@ stages the replacement at the same archive path, but a complete darlingserver
 consumer build has not been validated. The second libsimple configuration at
 src/CMakeLists.txt:149 instead defines libsimple_darling; libsystem_kernel's
 consumers require feature darling and the real __linux_futex_reterr runtime.
-The backend object now compiles, while complete libsystem_kernel/libSystem
-bootstrap and macOS application execution remain separate pending gates.
+The backend now links into the complete actual system_kernel final link. Its
+libSystem bootstrap, i386 Rust implementation and macOS application execution
+remain separate pending gates.
 
 The staged artifact test inspects archive member names to reject std, alloc and
 unwinder libraries, links the C stress harness with -pthread alone, and verifies
@@ -184,3 +185,18 @@ review repeated the freestanding C harness in an isolated target directory and
 observed only libc.so.6 in the executable's DT_NEEDED. Archive membership and
 link checks supplement the no_std compile configuration; they are not proof of
 arbitrary future Rust core/compiler-builtins bootstrap requirements.
+
+Actual consumer integration
+----------------------------
+Cargo's runtime graph emits the Darling backend as a runtime-free object and
+thin x86_64 archive. Both native ELF and Mach-O objects have exactly the 14 C
+definitions, no public Rust-mangled helpers, and only the intended futex/abort
+imports. Inlining the private backend trait methods prevents ABI symbol leakage.
+Native differential tests execute the unchanged pinned guarded-table and close
+consumers through this backend and the Rust futex/errno chain, including real
+fork cleanup and concurrency. Only host TLS/abort are test adapters there.
+The complete real Mach-O system_kernel final link resolves the chain to original
+cerror/raw linux_syscall/__simple_abort implementations, with identical public
+symbol/import sets. The original i386 final dylib slice is preserved, not ported.
+No actual Darwin process launch, TLS startup or cancellation execution is claimed.
+See runtime-consumer-verification.json and system-kernel-integration.json.

@@ -140,8 +140,8 @@ compiles committed original headers/source and the same bounded C pthread
 harness against upstream and Rust independently. All 14 external symbols,
 state layout, lock/CAS/once/RW/condvar concurrency and publication are checked.
 The state-machine core forbids unsafe; SAFETY.txt inventories the narrow
-native FFI/futex boundary. Native Linux x86_64 is supported; Darwin backend,
-other architectures and runtime startup integration remain pending. Native C
+native FFI/futex boundary. Native Linux and Darling x86_64 backends are supported; i386/other architectures
+and actual Darwin startup remain pending. Native C
 consumers of the staged no_std archive link with -pthread only. This does not
 replace libSystem initialization.
 
@@ -175,3 +175,42 @@ All source/header blobs come from the documented Git pins, not working files or
 host errno constants. It compares 131,073 range inputs and one million random
 inputs, then independently verifies Rust's defined INT_MIN result and C's UBSan
 failure. It verifies both original globals and empty undefined-symbol output.
+
+Darling x86_64 runtime objects and actual consumers
+-------------------------------------------------
+Requires the x86_64-apple-darwin Rust target and LLVM ar/nm tools. It does not
+require an Apple SDK or a target linker just to emit the Rust runtime objects:
+
+    cargo xtask runtime --target x86_64-apple-darwin --destdir /path/to/darwin
+    cargo xtask runtime --target x86_64-unknown-linux-gnu --destdir /path/to/native
+    cargo test -p xtask --test runtime --offline --locked -- --ignored
+
+The runtime graph in xtask/runtime-artifacts.tsv declares libsimple's Darling
+backend, both futex adapters, errno conversion and the thin libsimple archive.
+Every object disables std, LTO and final panic ownership. Mach-O errno globals
+retain private-extern visibility; the futex and 14 lock C exports match upstream.
+The native runtime command uses the Darling ABI too, not libsimple's libc shim.
+
+Execute the real pinned guarded table/close sources with both C and Rust chains
+using tools/check_darwin_runtime.py as documented in tools/DARWIN-RUNTIME.txt.
+The host TLS cerror/abort adapters are explicitly test-only. Actual Darwin TLS,
+cancellation and bootstrap behavior are not inferred from that native execution.
+
+The pinned original targets can be built without source edits:
+
+    cmake --build /path/to/original-build --target emulation system_kernel -j4
+
+Then use its complete final link inputs with the Rust replacements:
+
+    python3 tools/relink_system_kernel.py --build /path/to/original-build \
+      --runtime /path/to/darwin --output /path/to/absent-output \
+      --report /path/to/report.json
+
+This legacy integration command reads the already-built tree and executes the
+original production link argv directly. It replaces exactly the x86_64 errno,
+futex and libsimple slices, adds no stubs/relaxed symbol resolution, writes to a
+fresh directory outside the original build, checks public definitions/imports,
+and preserves the original i386 final dylib slice unchanged. The linker map proves
+that real guarded/close code calls the Rust chain and original cerror/raw syscall/
+bootstrap abort. This is not a Cargo replacement for unported original inputs or
+an executed Darwin startup test. system-kernel-integration.json records the gate.

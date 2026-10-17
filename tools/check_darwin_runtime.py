@@ -87,7 +87,7 @@ def verify(args):
             # Reuse comprehensive ABI stress (once/rwlock/condvar REQUEUE), with
             # the same real raw-syscall/futex backend and host boundary adapters.
             adapters = work/'adapters.c'
-            adapters.write_text('#include <stdlib.h>\nlong cerror(int e) { (void)e; abort(); }\n'
+            adapters.write_text('#include <stdlib.h>\nunsigned __int128 cerror(int e) { (void)e; abort(); }\n'
                                 '_Noreturn void __simple_abort(void) { abort(); }\n')
             run([*common, '-pthread', abi, adapters, work/'syscall.o',
                  *implementation, '-Wl,--gc-sections', '-o', work/(name+'-abi')])
@@ -103,7 +103,7 @@ def verify(args):
                        'fork_children': 1, 'capacity_slots': 1024,
                        'note': 'Additional lock/condvar futex syscall counts vary with scheduling and are not measured'},
             'consumer': results['rust'], 'abi': results['rust_abi'], 'differential': 'identical pinned C and Rust output',
-            'objects': {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in objects},
+            'objects': {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in zip(['libsimple', 'futex', 'errno'], objects)},
             'compiler': run(['clang', '--version']).stdout.splitlines()[0], 'platform': platform.platform(),
         }
 

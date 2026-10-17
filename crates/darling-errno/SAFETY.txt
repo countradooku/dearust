@@ -44,9 +44,10 @@ ownership is invalid. No other original external symbol is omitted. ELF hidden
 visibility from the original CMake target is applied by Cargo staging with
 llvm-objcopy. The plain rlib alone does not enforce shared-library visibility.
 
-The native Linux x86_64 object and scalar ABI are verified separately from
-Darwin runtime startup. Other target architectures, whole libsystem_kernel
-linkage and macOS application compatibility remain unverified. This source
+The native Linux x86_64 object and Mach-O scalar ABI are verified. The Mach-O
+object now participates in the actual complete system_kernel final link. i386
+Rust replacement, actual Darwin startup and macOS application compatibility remain
+unverified. This source
 replacement does not complete the xnu dependency or libsystem_kernel target.
 See UPSTREAM-NOTICES.txt and APPLE_LICENSE for preserved source notices.
 

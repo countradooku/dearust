@@ -39,7 +39,8 @@ print_wrapped_elf and darling-coredump. wrapgen has a functioning safe Rust
 parser/generator, but is marked partial because safe name lookup does not
 reproduce all dynamic-loader policy. Native libsimple is also partial: its Linux x86_64 synchronization C ABI
 and external cmpxchg helper work, including a native no_std C-linked archive.
-Darwin, other architectures and actual runtime startup integration remain unported. There are 27,267 pending superproject entries. Exact diagnostic text is not guaranteed. Each source replacement has
+Darling x86_64 runtime consumers now link; i386/other architectures and actual
+Darwin startup remain unported/unverified. There are 27,267 pending superproject entries. Exact diagnostic text is not guaranteed. Each source replacement has
 behavioral and malformed-input regressions plus a pinned differential suite.
 These gates validate this Linux host slice, not the Darling runtime or macOS ABI.
 
@@ -52,8 +53,8 @@ states remain zero, matching upstream's TODO; no FP extraction port is claimed.
 
 All 149 first-level submodules and 11 nested gitlinks are now expanded at their
 exact pinned commits in dependency-inventory.json. The 160 dependency trees
-contain 265,803 committed leaves (one partial native errno source slice and
-265,802 pending), and 341 filename-based
+contain 265,803 committed leaves (two partial errno/futex source slices and
+265,801 pending), and 341 filename-based
 license candidates with actual blob hashes. No Git trees are unavailable in this
 snapshot. The isolated baseline still contains 44 Swift Git LFS pointers;
 their binary payloads have not been materialized or migrated. Regeneration is byte-identical with the same object cache; see
@@ -79,8 +80,8 @@ payloads remain missing even though their Git pointer objects are inventoried.
 
 upstream-cmake-graph.json captures 1,629 emitted default targets, 7,785 dependency
 edges, 34,478 source records (9,593 generated) and 1,238 targets with installation
-metadata. migration-targets.json maps six default targets to Cargo artifact
-slices, including partial wrapper/native library coverage. There are 1,623
+metadata. migration-targets.json maps seven default targets to Cargo artifact
+slices, including partial wrapper/native/Darling library coverage. There are 1,622
 pending default targets and no claim of legacy target retirement. Optional
 print_wrapped_elf is a verified extra artifact absent from the default graph.
 Custom command bodies, optional component configurations and generator-specific
@@ -191,7 +192,30 @@ hidden globals and size_t object are checked against compiled committed C/header
 INT_MIN overflow is fixed with a UBSan reproducer and regression coverage. Native
 C linkage is verified with no unresolved runtime symbols, including alongside
 the staged synchronization archive. Dependency source status remains partial
-because Darwin target linkage and actual libsystem_kernel consumers are not
-validated. Both emulation and emulation_dyld targets remain pending; their
-source-slice records explicitly describe the native ELF validation boundary.
+because the i386 Rust replacement and actual Darwin startup are not validated.
+The x86_64 errno/futex objects and libsimple archive now participate in the actual
+complete system_kernel final link. Both emulation and emulation_dyld targets remain
+pending because their other sources are unported; the dyld/static variant link
+also remains unverified.
 No additional legacy target is retired by this native validation artifact.
+
+Darling futex and consumer integration gates
+-------------------------------------------
+The new no_std futex crate preserves __linux_futex and __linux_futex_reterr over
+the original seven-argument raw linux_syscall ABI, signed narrowing, pointer/
+REQUEUE bits and Darwin errno side effects. The cerror binding matches its real
+LP64 unsigned __int128 return, correcting the old futex declaration mismatch.
+The lock backend calls __linux_futex_reterr and bootstrap __simple_abort directly.
+
+Compiled native original guarded/table.c and full close.c execute unchanged with
+the Rust chain: concurrent updates, tombstones/capacity, real fork cleanup, pipe
+close and error/TLS/concurrency checks pass differentially against original C.
+Test adapters cover host cerror TLS and fatal abort only; they do not implement
+unported emulation, cancellation or server functionality.
+
+A full original system_kernel link now uses the Rust x86_64 source slices with
+identical 1,362 public definitions and 18 imports, confirmed original/Rust symbol
+provenance and no new stubs or permissive undefined-symbol mode. The i386 final
+slice remains original and is byte-identical. Whole-target migration, original
+C/assembly retirement, Cargo replacement of that complete original graph and
+Darwin process/application execution remain pending.

@@ -4,8 +4,8 @@
   "scope": "Every emitted target in the captured default configuration. Source/install/custom commands, optional configurations and runtime ABI require additional gates; no legacy target retirement is claimed.",
   "counts": {
     "observed_default_targets": 1629,
-    "with_cargo_artifact_slice": 6,
-    "pending_targets": 1623,
+    "with_cargo_artifact_slice": 7,
+    "pending_targets": 1622,
     "legacy_targets_retired": 0
   },
   "additional_optional_artifacts": [
@@ -4086,12 +4086,18 @@
       "graph_reference": "target-emulation-b06b293e0d14d93896c4.json",
       "status": "pending",
       "legacy_target_retired": false,
-      "native_verified_source_slices": [
+      "verified_source_slices": [
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/conversion/errno.c",
           "cargo_package": "darling-errno",
-          "cargo_artifact": "darling_errno.o",
-          "scope": "Native ELF C ABI validation only; not the required Darwin Mach-O/fat object or complete target"
+          "cargo_artifact": "errno.o",
+          "scope": "Native real-consumer execution and x86_64 Mach-O actual system_kernel link verified; i386 replacement/startup pending"
+        },
+        {
+          "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/linux_premigration/ext/futex.c",
+          "cargo_package": "darling-futex",
+          "cargo_artifact": "futex.o",
+          "scope": "Native real-consumer execution and x86_64 Mach-O actual system_kernel link verified; i386 replacement/startup pending"
         }
       ]
     },
@@ -4102,12 +4108,18 @@
       "graph_reference": "target-emulation_dyld-8431b6b988eb4d433238.json",
       "status": "pending",
       "legacy_target_retired": false,
-      "native_verified_source_slices": [
+      "verified_source_slices": [
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/conversion/errno.c",
           "cargo_package": "darling-errno",
-          "cargo_artifact": "darling_errno.o",
-          "scope": "Native ELF C ABI validation only; not the required Darwin Mach-O/fat object or complete target"
+          "cargo_artifact": "errno.o",
+          "scope": "Same Rust x86_64 source slices built; actual emulation_dyld/static consumer link remains pending"
+        },
+        {
+          "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/linux_premigration/ext/futex.c",
+          "cargo_package": "darling-futex",
+          "cargo_artifact": "futex.o",
+          "scope": "Same Rust x86_64 source slices built; actual emulation_dyld/static consumer link remains pending"
         }
       ]
     },
@@ -6118,8 +6130,10 @@
       "id": "libsimple_darling::@ef80fab8e3fdb4d2d78f",
       "type": "STATIC_LIBRARY",
       "graph_reference": "target-libsimple_darling-c9b31e7fbd510ff05281.json",
-      "status": "pending",
-      "legacy_target_retired": false
+      "status": "partial-darling-x86_64-consumer-linked",
+      "legacy_target_retired": false,
+      "cargo_package": "darling-libsimple",
+      "cargo_artifact": "liblibsimple_darling.a"
     },
     {
       "name": "libsimple_darlingserver",
@@ -11529,7 +11543,12 @@
       "type": "SHARED_LIBRARY",
       "graph_reference": "target-system_kernel-ad040e528ea5d1ef81fb.json",
       "status": "pending",
-      "legacy_target_retired": false
+      "legacy_target_retired": false,
+      "legacy_consumer_integration": {
+        "record": "system-kernel-integration.json",
+        "scope": "Full original x86_64 final link uses Cargo Rust libsimple/futex/errno slices; other inputs remain original, i386 final slice preserved, actual launch pending",
+        "cargo_target_replacement": false
+      }
     },
     {
       "name": "system_kernel_firstpass",

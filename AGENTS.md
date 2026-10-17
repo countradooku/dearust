@@ -44,7 +44,8 @@ Reference locations:
 - /home/radud/Documents/Codex/2026-10-18/re/work/full-baseline-build
   Actual configured default Unix Makefiles build. Original elfdep/getuuid/bsdln,
   wrapgen, darling-coredump and libsimple_darlingserver targets build successfully.
-  Full runtime has NOT been built. 44 Swift Git LFS binary payloads remain
+  Original emulation and system_kernel targets now also build; full Darling runtime
+  has NOT been built. 44 Swift Git LFS binary payloads remain
   unmaterialized; pointer objects alone do not satisfy these prerequisites.
 - /home/radud/Documents/Codex/2026-10-18/re/work/dependency-objects
   Isolated bare exact-pin dependency object cache; all 149 first-level plus
@@ -87,8 +88,9 @@ Four-byte C state layouts are preserved. The atomic state-machine module forbids
 unsafe; C state conversion, callback calls and libc futex syscall are narrowly
 unsafe and documented. REQUEUE storage must remain alive/stable through ALL
 requeued waiters, beyond the notifying syscall. Nullable completed-once callback
-is supported. This source is PARTIAL: Darling/Darwin futex backend, other
-architectures and runtime/bootstrap integration remain unported. Cargo
+is supported. This source remains PARTIAL: native and Darling x86_64 backends work and the
+Darling objects link into actual system_kernel. i386/other architectures and
+actual Darwin bootstrap/application execution remain unported/unverified. Cargo
 build/staging emits a no_std panic-abort native archive; C consumers use -pthread.
 Normal Rust development/tests retain default std; see SAFETY.txt for C-only panic
 handler ownership. Darwin startup integration remains pending.
@@ -103,18 +105,18 @@ upstream-rust-tools.patch remains an EARLIER THREE-tool adapter snapshot only.
 
 - Superproject: 27,274 entries; 5 implemented, 2 partial, 27,267 pending.
 - Dependencies: all 160 exact-pin trees inventoried; 265,803 committed leaves,
-  one partial errno source slice and 265,802 pending; 341 license filename candidates with actual blob hashes.
+  two partial errno/futex source slices and 265,801 pending; 341 license filename candidates with actual blob hashes.
   Source category labels are suffix heuristics, not a semantic language count.
 - Observed default CMake File API graph: 1,629 targets, 7,785 dependency edges,
   34,478 source records (9,593 generated), 1,238 targets with install metadata.
-  Six default targets have Cargo artifact slices including partial ones;
-  1,623 remain pending. No legacy target retirement is claimed. Optional
+  Seven default targets have Cargo artifact slices including partial ones;
+  1,622 remain pending. No legacy target retirement is claimed. Optional
   print_wrapped_elf is absent from this default configuration. Custom-command
   bodies, optional configurations and generator-specific recipes need more work.
 
 ## Verification and reproducible commands
 
-Latest cargo xtask check passed formatting, strict Clippy, 77 ordinary tests.
+Latest cargo xtask check passed formatting, strict Clippy, 84 ordinary tests.
 Five optional differential suites were explicitly run successfully. Eight Python
 inventory/graph tests pass; both inventories and graph regenerate identically.
 Cargo release build, native C ABI differential/concurrency tests and generated
@@ -144,8 +146,7 @@ Export those variables, then run:
     python3 tools/check_wrapper_macho.py --upstream /path/to/upstream \
       --wrapgen target/release/wrapgen --elfdep target/release/elfdep
 
-Reference build scripts use pinned committed source objects. Only the native
-x86_64-unknown-linux-gnu Rust target was installed at handoff. Rust 1.85 minimum,
+Reference build scripts use pinned committed source objects. Both x86_64-unknown-linux-gnu and x86_64-apple-darwin Rust targets are installed. Rust 1.85 minimum,
 32-bit host, Miri/sanitizers and unsupported runtime targets remain unverified.
 
 Measured synthetic 64 MiB zero-fill CLI: 31.513 ms upstream vs 22.336 ms Rust,
@@ -157,10 +158,10 @@ Darling performance improvement has been established.
 
 ## Continue with real runtime/build work
 
-Use independently testable components and parallel implementation/review. The
-native libsimple slice is a concrete runtime starting point: remove inappropriate
-std/bootstrap dependencies, implement required target backend only with real ABI
-and concurrency validation, and map it into actual consumers before retiring
+Use independently testable components and parallel implementation/review. Native
+and Darling x86_64 synchronization/futex/errno slices now have real consumer
+execution/link checks. Continue with i386, emulation_dyld/static consumers, actual
+Darwin bootstrap/TLS/cancellation and application validation before retiring
 original targets. Also advance Cargo code-generation/link/install edges using
 the captured original graph and actual generated artifacts. Choose tasks based
 on dependency order and evidence, not the ease of marking inventory entries.
@@ -201,3 +202,48 @@ Continue with real Darwin backend/target linking and actual consumers. The next
 backend path is src/external/xnu/darling/src/libsystem_kernel/emulation/src/
 linux_premigration/ext/futex.c, used by libsimple's __linux_futex_reterr branch.
 Its Linux raw-syscall and Darwin errno/cerror contracts need separate validation.
+
+Continuation 2026-10-18: Darling futex and full actual consumer link
+-----------------------------------------------------------------
+The darling-libsimple feature selects __linux_futex_reterr and bootstrap
+__simple_abort. runtime-object omits the final panic handler; default native
+static archive behavior remains available. darling-futex is no_std and preserves
+both exported wrappers over the original seven-argument raw linux_syscall ABI.
+Its cerror declaration now matches the actual LP64 unsigned128 return, rather
+than the old source's mismatched long declaration; cancellation may terminate
+threads but must not unwind through Rust. Real TLS/cancellation startup is untested.
+
+`cargo xtask runtime --target x86_64-apple-darwin --destdir PATH` emits three
+objects and a thin libsimple archive through xtask/runtime-artifacts.tsv.
+The native target builds the same Darling ABI chain for execution tests. No Rust
+allocator/panic runtime is bundled; exact exports/imports and private-extern errno
+flags are checked, including the explicitly-run optional Darwin artifact test.
+
+Original `emulation` and `system_kernel` CMake targets now build successfully.
+Their build logs are preserved at continuation work/original-emulation-build.log
+and original-system-kernel-build.log. `tools/relink_system_kernel.py` integrates
+the Cargo x86_64 objects/archive into the full actual final link (890 original
+response objects), outside the original build tree. It preserves the same 1,362
+public definitions and 18 imports, verifies real symbol provenance to original
+cerror/raw syscall/abort and real guarded/close consumers, and recombines the
+original i386 final slice byte-identically. No new stubs/dynamic-lookup mode are
+added. This is a mixed-language link, not complete Rust/Cargo runtime migration.
+
+`tools/check_darwin_runtime.py` executes unchanged pinned guarded/table.c and
+full close.c with real raw syscall assembly (ELF spelling adapter only) through
+both original and Rust chains: 120,000 concurrent table cycles, capacity/collisions,
+fork-child cleanup, real pipe close, 22 direct errno/TLS futex checks and the full
+existing C synchronization stress pass. Only host cerror TLS/abort are test
+adapters there; the actual Mach-O full link uses original production boundaries.
+Records: runtime-consumer-verification.json and system-kernel-integration.json.
+84 ordinary tests, eight Python tests, eight feature-darling tests, strict Clippy
+and the optional Darwin artifact integration test pass. No Mach-O launch is claimed.
+
+Retained isolated worktrees (inspect before reuse): continuation work/
+{darwin-libsimple,futex-port,runtime-consumer}. The continuation root is
+/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation.
+Staged runtime objects are under work/{native-runtime,darwin-runtime}; the final
+full linked mixed library is under work/system-kernel-rust-verified. Parent original
+baseline tree/build remain unchanged reference inputs. Full target and source
+counts stay partial: seven target slices, 1,622 pending targets, two partial
+pinned dependency sources and 265,801 pending dependency entries.

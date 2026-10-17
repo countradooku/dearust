@@ -6,6 +6,7 @@
 #![deny(clippy::undocumented_unsafe_blocks)]
 #[cfg(not(all(
     target_arch = "x86_64",
+    target_pointer_width = "64",
     any(target_os = "linux", all(target_os = "macos", feature = "darling"))
 )))]
 compile_error!("supported backends: Linux x86_64, or Darling x86_64 with feature darling");

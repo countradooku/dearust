@@ -44,7 +44,34 @@ They do not implement Darling TLS initialization, server RPC, thread cancellatio
 or Mach calls. The ABI-only stress harness aborts if cerror is unexpectedly used.
 This test verifies executed native Linux ABI integration of real consumers. It
 does not claim to start a Darwin process or validate macOS application behavior.
-The parent integration command separately relinks the actual system_kernel.
+The separate relink_system_kernel.py command links the actual system_kernel.
 
 Recorded successful execution: runtime-consumer-verification.json. The original
 C and Rust outputs matched for both the real consumer and ABI stress harness.
+
+Actual full Mach-O consumer link
+--------------------------------
+
+Build the Rust x86_64 slice and the unmodified original reference targets:
+
+  cargo xtask runtime --target x86_64-apple-darwin --destdir /path/to/darwin
+  cmake --build /path/to/original-build --target emulation system_kernel -j4
+  python3 tools/relink_system_kernel.py --build /path/to/original-build \
+    --runtime /path/to/darwin --output /path/to/absent-output \
+    --report /path/to/system-kernel-record.json
+
+The output directory must be absent and outside the original build tree. The
+script reads the original final link command/890-object response, retains all
+original production inputs except the Rust errno/futex objects and libsimple
+archive, and performs the complete x86_64 final link. It verifies identical
+public definitions/imports and linker-map provenance through the original
+cerror, raw syscall assembly and bootstrap abort. No test adapter participates
+in this Mach-O link. The original i386 final dylib slice is copied byte-for-byte
+and recombined; it remains unported. No permissive undefined-symbol options or
+new stubs are added. The original build tree and its dylib are preserved.
+
+system-kernel-integration.json records a successful link with 1,362 public
+symbols and 18 imports matching the reference. The Mach-O result is linked but
+has not been executed by Darling. Darwin thread cancellation and TLS/bootstrap
+initialization remain unverified. The native fixture cerror has the actual LP64
+128-bit return type; its host TLS implementation is confined to test execution.

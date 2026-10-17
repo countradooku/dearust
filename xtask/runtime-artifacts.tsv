@@ -1,0 +1,7 @@
+# Darling runtime artifact slice v1; target is recorded in the published manifest.
+# Pinned superproject 60ba801decee7a00782f74f6be4c8ffb013f79ff; xnu fa29287aa2f0115271e091f1031f53c9e024005d.
+# kind target package features visibility destination upstream-target-definition
+object	darling_simple	darling-libsimple	darling,runtime-object	default	objects/libsimple.o	src/libsimple/CMakeLists.txt
+object	darling_futex	darling-futex	-	default	objects/futex.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+object	darling_errno	darling-errno	-	private	objects/errno.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+staticlib	simple_darling	darling-libsimple	-	default	lib/liblibsimple_darling.a	src/libsimple/CMakeLists.txt

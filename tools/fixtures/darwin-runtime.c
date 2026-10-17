@@ -17,7 +17,7 @@
 extern int __linux_futex(int *, int, int, const struct timespec *, int *, int);
 extern int __linux_futex_reterr(int *, int, int, const struct timespec *, int *, int);
 static _Thread_local int darwin_errno;
-long cerror(int error) { darwin_errno = error; return -1; }
+unsigned __int128 cerror(int error) { darwin_errno = error; return -1; }
 _Noreturn void __simple_abort(void) { abort(); }
 static int callback_fd = -1;
 static void on_close(int fd) { callback_fd = fd; }

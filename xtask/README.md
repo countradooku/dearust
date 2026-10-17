@@ -28,7 +28,8 @@ static library reproduces the native Linux `libsimple_darlingserver` target's
 build output: upstream adds `libsimple` under binary directory
 `src/libsimple-linux`, and CMake prefixes the target name with `lib`.
 Cargo builds `libdarling_simple.a` and staging gives it that upstream filename.
-The Darwin libsimple backend and its Mach-O/fat archive remain unported.
+The host install command does not emit Darwin artifacts; the separate runtime
+command below builds the Darling x86_64 archive. Its i386 Rust slice remains unported.
 The native staticlib is built with `--no-default-features` and an explicit
 `profile.release.panic="abort"` Cargo override. It is a final C-linked archive
 with its own panic handler, so it must not be linked into a Rust std application
@@ -83,3 +84,24 @@ errno mapping/extrema, both hidden globals, empty undefined-symbol output, ELF
 format and byte-identical objects on repeated staging. `nm` and `readelf` are
 required for these native checks. The object has no panic handler and does not
 introduce another Rust runtime into that combined C executable.
+
+`cargo xtask runtime --target x86_64-apple-darwin --destdir PATH` builds the graph
+in `runtime-artifacts.tsv`, staging `objects/libsimple.o`, `objects/futex.o`,
+`objects/errno.o`, and `lib/liblibsimple_darling.a` with a deterministic target
+manifest. Target `x86_64-unknown-linux-gnu` emits the same Darling ABI chain in
+native ELF for execution tests. Other targets are rejected explicitly.
+
+Both modes use fresh Cargo output directories, rlib-only object emission with
+panic=abort, no default/std features and no bundled panic/allocator runtime.
+The archive contains just libsimple's runtime object. LLVM ar is required;
+LLVM objcopy applies native errno visibility. For Mach-O, a bounds-checked safe
+nlist edit sets only N_PEXT for the two defined errno globals; LLVM objcopy's
+ELF visibility option does not currently apply that Mach-O flag. Tests verify
+actual object formats, exact exports/imports, private extern flags, archive
+members and byte-identical repeat staging. The Mach-O test is explicitly ignored
+by default because it needs the target installed; it has been run successfully.
+
+Runtime publication reuses the same destination validation, temporary copy and
+rename/manifest-last rules as host staging. This is an x86_64 artifact graph,
+not an i386/fat target or a complete runtime install. Actual system_kernel consumer
+integration using the original link graph is described in tools/DARWIN-RUNTIME.txt.

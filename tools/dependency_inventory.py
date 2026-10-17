@@ -21,8 +21,9 @@ from inventory import UPSTREAM_COMMIT, category
 UPSTREAM_URL = "https://github.com/darlinghq/darling.git"
 
 # Qualified source slices are recorded only at their exact dependency commit.
-# Native ABI verification is not Darwin linkage or completion of the dependency.
+# Source-slice native execution and Darwin consumer linking do not complete the dependency.
 NATIVE_ERRNO_SOURCE = "darling/src/libsystem_kernel/emulation/src/conversion/errno.c"
+FUTEX_SOURCE = "darling/src/libsystem_kernel/emulation/src/linux_premigration/ext/futex.c"
 NATIVE_ERRNO_PIN = "fa29287aa2f0115271e091f1031f53c9e024005d"
 
 
@@ -121,12 +122,13 @@ class Inventory:
             for entry in entries:
                 entry["category"] = category(entry["path"], entry["mode"])
                 entry["status"] = "pending"
-                if path == "src/external/xnu" and entry["path"] == NATIVE_ERRNO_SOURCE:
+                if path == "src/external/xnu" and entry["path"] in {NATIVE_ERRNO_SOURCE, FUTEX_SOURCE}:
                     if commit != NATIVE_ERRNO_PIN:
-                        raise ValueError("errno replacement requires its exact xnu pin")
-                    entry.update(status="partial", replacement="crates/darling-errno/src/lib.rs",
-                                 scope="Safe no_std errno conversion; native Linux C ABI object with both original hidden globals verified",
-                                 limitation="Darwin Mach-O/architecture linkage and actual emulation consumers remain unverified; no target retirement")
+                        raise ValueError("runtime source replacement requires its exact xnu pin")
+                    entry.update(status="partial",
+                                 replacement="crates/darling-errno/src/lib.rs" if entry["path"] == NATIVE_ERRNO_SOURCE else "crates/darling-futex/src/lib.rs",
+                                 scope="no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+                                 limitation="i386 Rust source replacement and actual Darling startup/application compatibility remain unverified; no target retirement")
                     dep["migration_status"] = "partial"
                 if entry["mode"] in {"100644", "100755"} and is_license(entry["path"]):
                     blob = git(gitdir, "cat-file", "blob", entry["object_id"])

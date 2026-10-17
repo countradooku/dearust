@@ -1,0 +1,36 @@
+{
+  "scope": "Actual full upstream system_kernel final link with three Rust x86_64 source slices; original i386 final slice preserved, all other implementation remains upstream",
+  "darling_pin": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
+  "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+  "original_response_objects": 890,
+  "replaced_objects": {
+    "emulation/CMakeFiles/emulation.dir/src/conversion/errno.c.o": "05de9b6e4bed666b96b98a9c898e467e6d68e053489b5d25b72ad418318f6f58",
+    "emulation/CMakeFiles/emulation.dir/src/linux_premigration/ext/futex.c.o": "5b690486f4fab3994c8f1cec53118bbbbe64b4ff1a485d436a8dd91c849df0c1"
+  },
+  "rust_archive_sha256": "cbc52c06b300ab050679a2cc5166f79108435e41d83d4788fe5e69137637ec05",
+  "original_link_command_sha256": "4e0edd627ae188c88beee9a63712274a4867509502cdc86edb30717ae3e5b53b",
+  "original_response_sha256": "7e98848d893629c97fb6d99a0f5f14db657b4b4aa4746c85a27345d75c3ad43e",
+  "linked_x86_64_sha256": "2d5f34b6c6f442149c009363775d296ab4a4b90f2f62acbcae8136762d2b3aa5",
+  "universal_dylib_sha256": "fb83bbae4a1be053bc4c2c1a9f82dbdacdcf5f758d07ea9952718f74427bf77d",
+  "original_dylib_sha256": "d11cbb9edf11d812d5b1ab40c99757c3745e8808f264d2c1350e7190b6c0c5ea",
+  "public_defined_symbol_count": 1362,
+  "public_symbol_sets_identical": true,
+  "undefined_symbol_count": 18,
+  "import_symbol_sets_identical": true,
+  "original_non_architecture_link_flags_preserved": true,
+  "stubs_or_dynamic_lookup_added": false,
+  "actual_symbol_provenance": {
+    "_cerror": "$BUILD/src/external/xnu/darling/src/libsystem_kernel/libsyscall/CMakeFiles/libsyscall.dir/custom/errno.c.o",
+    "_guard_table_add": "$BUILD/src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeFiles/emulation.dir/src/common/guarded/table.c.o",
+    "___simple_abort": "$BUILD/src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeFiles/emulation.dir/src/common/simple.c.o",
+    "_errno_linux_to_bsd": "$RUNTIME/objects/errno.o",
+    "___linux_futex": "$RUNTIME/objects/futex.o",
+    "___linux_futex_reterr": "$RUNTIME/objects/futex.o",
+    "_linux_syscall": "$BUILD/src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeFiles/emulation.dir/src/linux_premigration/linux-syscall.S.o",
+    "_close_internal": "$BUILD/src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/close.c.o",
+    "_libsimple_lock_lock": "$RUNTIME/lib/liblibsimple_darling.a(darling_simple.o)"
+  },
+  "i386_preserved_byte_identical": true,
+  "i386_slice_sha256": "d6577770fd4877197fd3818af990cff5de7566a420ede74207394d6faac4eed0",
+  "runtime_execution": "Real guarded-table/close consumers execute through this source chain in native ELF differential tests; this Mach-O dylib has not been launched under Darling"
+}

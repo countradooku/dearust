@@ -43,9 +43,9 @@
   "abi": "abi=4:4 mutex=80000 cas=80000 once=1 publication=4277009102 rw=40000 cond=640",
   "differential": "identical pinned C and Rust output",
   "objects": {
-    "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/work/native-runtime/objects/libsimple.o": "2e455b91d4a4325a80bdb2bf8e2ee536edeed383937f2738a4bb205bafa50986",
-    "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/work/native-runtime/objects/futex.o": "8a153aaecd15f87dd707f88c645e749eaa3633ff430f2dee5b9c1270a9ec842b",
-    "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/work/native-runtime/objects/errno.o": "5eecf441cd8b76daf2afd7ee04cbe59c3a1eac5388d06cc84df237a922e2e303"
+    "libsimple": "c00060b03c829d8a28bc6be0023a88ff57ffd59f60eb9813a054900678db14a8",
+    "futex": "8a153aaecd15f87dd707f88c645e749eaa3633ff430f2dee5b9c1270a9ec842b",
+    "errno": "5eecf441cd8b76daf2afd7ee04cbe59c3a1eac5388d06cc84df237a922e2e303"
   },
   "compiler": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)",
   "platform": "Linux-7.2.9-200.nobara.fc44.x86_64-x86_64-with-glibc2.43"
