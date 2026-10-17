@@ -48,7 +48,7 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
             if !destinations.insert(f[5]) || !sources.insert(f[1]) {
                 return Err(invalid("duplicate runtime artifact"));
             }
-            if f[4] == "private" && f[2] != "darling-errno" {
+            if f[4] == "private" && !matches!(f[2], "darling-errno" | "darling-process") {
                 return Err(invalid("unknown runtime private-symbol policy"));
             }
             let kind = match f[0] {
@@ -63,7 +63,10 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                     package: f[2],
                     destination: f[5],
                     hidden_symbols: if f[4] == "private" {
-                        vec!["errno_linux_to_bsd", "length_of_translation_array"]
+                        match f[2] {
+                            "darling-process" => vec!["sys_proc_info"],
+                            _ => vec!["errno_linux_to_bsd", "length_of_translation_array"],
+                        }
                     } else {
                         vec![]
                     },

@@ -5,3 +5,4 @@ object	darling_simple	darling-libsimple	darling,runtime-object	default	objects/l
 object	darling_futex	darling-futex	-	default	objects/futex.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	darling_errno	darling-errno	-	private	objects/errno.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 staticlib	simple_darling	darling-libsimple	-	default	lib/liblibsimple_darling.a	src/libsimple/CMakeLists.txt
+object	darling_process	darling-process	-	private	objects/process.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt

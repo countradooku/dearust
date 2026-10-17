@@ -1,0 +1,12 @@
+[package]
+name = "darling-process"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+description = "Darling process and vnode queries over namespace-local procfs"
+[lib]
+name = "darling_process"
+crate-type = ["rlib"]
+[lints.clippy]
+undocumented_unsafe_blocks = "deny"

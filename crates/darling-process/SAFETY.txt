@@ -1,0 +1,66 @@
+Darling process-query Rust slice (x86_64 Linux/Darling only)
+=========================================================
+The exported sys_proc_info replaces the original dispatcher. Compile the pinned
+or matching-local proc_info.c with -Dsys_proc_info=darling_legacy_proc_info and
+link it alongside this object. Unported queries still execute that original C
+implementation. This is a partial migration, not a replacement for all libproc.
+
+Rust implements LISTPIDS (all, process group, terminal, effective/real UID,
+parent), PIDLISTFDS, PIDLISTTHREADS, PIDVNODEPATHINFO and PIDFDVNODE[PATH]INFO.
+PID enumeration uses procfs in the running caller's PID/mount namespace and
+only includes registered Darwin tasks. Existing Mach task-name rights and
+TASK_AUDIT_TOKEN supply simulated credentials; every acquired right is released.
+Darling currently has one simulated UID used for getuid and geteuid: both UID
+filters follow that representation, not unrelated Linux credentials. Process
+exit/races between enumeration and queries are normal, not atomic snapshots.
+
+parse.rs contains only safe Rust. abi.rs narrowly owns raw Linux syscalls, C/MIG
+calls and final copies to caller-provided buffers. The syscall entry contract
+requires buffer to be null or a valid exclusively writable allocation of at least
+bufsize bytes; arbitrary inaccessible nonnull pointers are not recoverable by
+Rust, matching the existing in-process emulation convention. Negative sizes are
+rejected before conversion. Record writes are bounded and never partial. All
+local buffers are initialized; procfs parsers reject malformed lengths and
+arithmetic overflow. Raw kernel writes receive the correct live array lengths.
+Linux x86_64 stat offsets and Darwin fixed vinfo ABI layouts are explicit. The
+buffer API avoids references or aligned accesses into foreign caller memory.
+
+Raw syscalls use Darling's seven-argument linux_syscall ABI and translate Linux
+errors once. Read/getdents retry EINTR. Temporary descriptors have O_CLOEXEC and
+RAII cleanup. No allocator, Rust panic handler, standard library, thread-local
+storage or unwinding is introduced. Existing linked C/MIG boundaries must not
+unwind into Rust. Directory/path queries use original vchroot_unexpand, and
+open flag conversion reuses oflags_linux_to_bsd.
+
+No all-process atomic snapshot is promised. Linux lacks Darwin birthtime,
+vnode-generation and guard metadata: unavailable fields remain zero, as in the
+existing port. i386, cancellation and inaccessible-pointer recovery are untested.
+Unported legacy region/task queries retain existing behavior and limitations.
+
+Follow-up behavior verified with the actual mixed runtime
+--------------------------------------------------------
+TBSDINFO retains legacy fields but fills pbi_name from the registered executable
+path, fixing proc_name returning the Linux loader name. REGIONPATHINFO and the
+file-backed REGIONPATHINFO2/3 queries parse bounded /proc/maps records into fully
+initialized structures; no-match errors never copy uninitialized memory. The
+file-backed variants skip anonymous mappings and return EINVAL at end of search.
+
+All proc paths pass through vchroot_expand to the namespace's guest proc mount.
+For stat/readlink, the final procfs magic link is left for the Linux kernel to
+resolve: user-space resolution would prepend the guest prefix twice. Linux
+expansion errors are translated to Darwin errno. Path-unexpansion inputs reserve
+space for the original C implementation's host-path prefix expansion.
+
+Overlayfs mapping records expose backing devices unlike guest stat. For a mapped
+path that still names the same inode, querying that path recovers the overlay
+identity used by libproc's stat comparison. A path replaced by another inode is
+never substituted. Unlinked or inaccessible mappings retain their procfs identity;
+matching deleted overlay mappings by pathname is not guaranteed. Vnode ownership
+uses the same simulated uid/gid presentation as existing stat_linux_to_bsd64.
+Darling's existing single-identity ownership model is preserved, not broadened.
+
+The actual C probe covers PID filters and sizing, invalid filters, negative and
+short-buffer canaries, thread lists, vnode ABI sizes, fd identity/path/offset,
+FREAD/FWRITE flags, cwd/root queries and both open-fd and mmap-only path matches.
+Original libproc.c passes all six checks in the Rust mixed runtime. Tests use
+an isolated matching server and guest prefixes; no installed runtime is modified.
