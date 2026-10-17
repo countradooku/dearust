@@ -67,6 +67,7 @@ fn terminate() -> ! {
 }
 struct Native;
 impl Native {
+    #[inline(always)]
     fn call(
         state: &AtomicU32,
         operation: c_int,
@@ -108,6 +109,7 @@ impl Native {
     }
 }
 impl Futex for Native {
+    #[inline(always)]
     fn wait(&self, state: &AtomicU32, expected: u32, mask: Option<u32>) {
         Self::call(
             state,
@@ -118,6 +120,7 @@ impl Futex for Native {
             mask.unwrap_or(0),
         );
     }
+    #[inline(always)]
     fn wake(&self, state: &AtomicU32, count: u32, mask: Option<u32>) -> i64 {
         Self::call(
             state,
@@ -128,6 +131,7 @@ impl Futex for Native {
             mask.unwrap_or(0),
         )
     }
+    #[inline(always)]
     fn requeue(&self, state: &AtomicU32, target: &AtomicU32) {
         Self::call(state, 128 | 3, 1, i32::MAX as usize, Some(target), 0);
     }
