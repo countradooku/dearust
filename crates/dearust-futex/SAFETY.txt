@@ -44,7 +44,7 @@ and https://blog.rust-lang.org/2025/08/07/Rust-1.89.0/ for compiler provenance.
 
 The original C stores linux_syscall's long result into int before testing its
 sign. This port explicitly preserves narrowing and then converts Linux errors
-using darling-errno's pure function. __linux_futex_reterr never calls cerror;
+using dearust-errno's pure function. __linux_futex_reterr never calls cerror;
 __linux_futex calls cerror on negative results and then returns -1 regardless
 of cerror's return value. Both preserve nonnegative results. Real kernel
 failures lie in -4095..=-1; wrapping negation also gives defined behavior for

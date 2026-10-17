@@ -18,10 +18,10 @@ REPLACEMENTS = {
     "src/bsdln/ln.c": "src/bin/bsdln.rs",
     "src/buildtools/elfdep.c": "src/bin/elfdep.rs",
     "src/buildtools/getuuid.c": "src/bin/getuuid.rs",
-    "src/hosttools/src/coredump/main.cpp": "crates/darling-coredump/src/lib.rs",
+    "src/hosttools/src/coredump/main.cpp": "crates/dearust-coredump/src/lib.rs",
     "src/libelfloader/wrapgen/print_wrapped_elf.cpp": "src/wrapped_elf.rs",
     "src/libelfloader/wrapgen/wrapgen.cpp": "src/elf_wrapper.rs",
-    "src/libsimple/src/lock.c": "crates/darling-libsimple/src/lib.rs",
+    "src/libsimple/src/lock.c": "crates/dearust-libsimple/src/lib.rs",
 }
 PARTIAL_REPLACEMENTS = {"src/libelfloader/wrapgen/wrapgen.cpp", "src/libsimple/src/lock.c"}
 SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".s", ".asm", ".rs"}

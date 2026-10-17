@@ -9,8 +9,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     if args.next().is_some() {
         return Err("Usage: print_wrapped_elf <mach-o file>".into());
     }
-    let data = darling_buildtools::read_input(std::path::Path::new(&path))?;
-    let names = darling_buildtools::wrapped_elf::names(&data)?;
+    let data = dearust::read_input(std::path::Path::new(&path))?;
+    let names = dearust::wrapped_elf::names(&data)?;
     let mut output = std::io::stdout().lock();
     for name in names {
         output.write_all(name)?;

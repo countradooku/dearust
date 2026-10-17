@@ -443055,7 +443055,7 @@
           "size": 3013,
           "category": "source",
           "status": "partial",
-          "replacement": "crates/darling-lockset/src/lib.rs",
+          "replacement": "crates/dearust-lockset/src/lib.rs",
           "scope": "Rust lockset state and ownership with minimal XNU port/scheduler/lifecycle bridge; matching server relink",
           "limitation": "Original server and most duct-tape sources retained; clean pinned full-runtime integration and other architectures pending"
         },
@@ -2325297,7 +2325297,7 @@
           "size": 2983,
           "category": "source",
           "status": "partial",
-          "replacement": "crates/darling-errno/src/lib.rs",
+          "replacement": "crates/dearust-errno/src/lib.rs",
           "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
           "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
@@ -2325525,7 +2325525,7 @@
           "size": 799,
           "category": "source",
           "status": "partial",
-          "replacement": "crates/darling-futex/src/lib.rs",
+          "replacement": "crates/dearust-futex/src/lib.rs",
           "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
           "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
@@ -2326302,7 +2326302,7 @@
           "size": 20687,
           "category": "source",
           "status": "partial",
-          "replacement": "crates/darling-process/src/lib.rs",
+          "replacement": "crates/dearust-process/src/lib.rs",
           "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
           "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },

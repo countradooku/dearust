@@ -1,5 +1,5 @@
 [package]
-name = "darling-libsimple"
+name = "dearust-libsimple"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
@@ -18,7 +18,7 @@ darling = []
 runtime-object = []
 
 [lib]
-name = "darling_simple"
+name = "dearust_simple"
 crate-type = ["staticlib", "rlib"]
 
 [lints.rust]

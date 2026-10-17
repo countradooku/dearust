@@ -36,9 +36,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     if args.len() != 3 {
         return Err("Usage: wrapgen <library-path> <output-file> <var-access-header>".into());
     }
-    let path = darling_buildtools::elf_wrapper::resolve_library(&args[0])?;
-    let data = darling_buildtools::read_input(&path)?;
-    let library = darling_buildtools::elf_wrapper::Library::parse(&data)?;
+    let path = dearust::elf_wrapper::resolve_library(&args[0])?;
+    let data = dearust::read_input(&path)?;
+    let library = dearust::elf_wrapper::Library::parse(&data)?;
     let fallback = path
         .file_name()
         .and_then(|s| s.to_str())

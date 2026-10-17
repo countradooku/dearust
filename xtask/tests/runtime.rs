@@ -102,7 +102,7 @@ fn check(triple: &str, label: &str) {
         .output()
         .unwrap();
     assert!(members.status.success());
-    assert_eq!(members.stdout, b"darling_simple.o\n");
+    assert_eq!(members.stdout, b"dearust_simple.o\n");
     let manifest = fs::read(stage.join("darling-runtime-artifacts.tsv")).unwrap();
     assert!(String::from_utf8_lossy(&manifest).starts_with(&format!("# target {triple}\n")));
     if triple.contains("apple") {

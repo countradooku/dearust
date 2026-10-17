@@ -135,5 +135,5 @@ fn special_inputs_cannot_cause_unbounded_reads() {
         assert!(result.stdout.is_empty());
         assert!(String::from_utf8_lossy(&result.stderr).contains("regular file"));
     }
-    assert!(darling_buildtools::read_input(std::path::Path::new(".")).is_err());
+    assert!(dearust::read_input(std::path::Path::new(".")).is_err());
 }

@@ -10,7 +10,7 @@ and native Linux synchronization library with Cargo. Current paths are:
 - `src/libelfloader/wrapgen/print_wrapped_elf`
 - `bin/darling-coredump`
 - `src/libsimple-linux/liblibsimple_darlingserver.a` (native Linux x86-64 archive)
-- `lib/darling/native/darling_errno.o` (native errno ABI validation object)
+- `lib/darling/native/dearust_errno.o` (native errno ABI validation object)
 
 `host-artifacts.tsv` declares the artifact kind (`bin`, `staticlib` or `object`), Cargo package, target, destination and
 pinned upstream CMake target definition. Object rows additionally declare the
@@ -27,7 +27,7 @@ graph. `darling-coredump` follows its upstream `bin` installation rule. The
 static library reproduces the native Linux `libsimple_darlingserver` target's
 build output: upstream adds `libsimple` under binary directory
 `src/libsimple-linux`, and CMake prefixes the target name with `lib`.
-Cargo builds `libdarling_simple.a` and staging gives it that upstream filename.
+Cargo builds `libdearust_simple.a` and staging gives it that upstream filename.
 The host install command does not emit Darwin artifacts; the separate runtime
 command below builds the Darling x86_64 archive. Its i386 Rust slice remains unported.
 The native staticlib is built with `--no-default-features` and an explicit

@@ -9,13 +9,13 @@ import json
 from pathlib import Path
 
 REPLACEMENTS = {
-    'elfdep': ('darling-buildtools', 'elfdep', 'host-artifact-verified'),
-    'getuuid': ('darling-buildtools', 'getuuid', 'host-artifact-verified'),
-    'bsdln': ('darling-buildtools', 'bsdln', 'host-artifact-verified'),
-    'darling-coredump': ('darling-coredump', 'darling-coredump', 'host-artifact-verified'),
-    'wrapgen': ('darling-buildtools', 'wrapgen', 'partial-loader-policy'),
-    'libsimple_darling': ('darling-libsimple', 'liblibsimple_darling.a', 'partial-darling-x86_64-consumer-linked'),
-    'libsimple_darlingserver': ('darling-libsimple', 'darling_simple', 'partial-native-only'),
+    'elfdep': ('dearust', 'elfdep', 'host-artifact-verified'),
+    'getuuid': ('dearust', 'getuuid', 'host-artifact-verified'),
+    'bsdln': ('dearust', 'bsdln', 'host-artifact-verified'),
+    'darling-coredump': ('dearust-coredump', 'darling-coredump', 'host-artifact-verified'),
+    'wrapgen': ('dearust', 'wrapgen', 'partial-loader-policy'),
+    'libsimple_darling': ('dearust-libsimple', 'liblibsimple_darling.a', 'partial-darling-x86_64-consumer-linked'),
+    'libsimple_darlingserver': ('dearust-libsimple', 'dearust_simple', 'partial-native-only'),
 }
 
 
@@ -44,17 +44,17 @@ def main():
                 'cargo_package': package, 'cargo_artifact': artifact,
                 'scope': ('Native real-consumer execution and x86_64 Mach-O actual system_kernel link verified; i386 replacement/startup pending'
                           if name == 'emulation' else 'Same Rust x86_64 source slices built; actual emulation_dyld/static consumer link remains pending'),
-            } for source, package, artifact in [('conversion/errno.c','darling-errno','errno.o'), ('linux_premigration/ext/futex.c','darling-futex','futex.o')]]
+            } for source, package, artifact in [('conversion/errno.c','dearust-errno','errno.o'), ('linux_premigration/ext/futex.c','dearust-futex','futex.o')]]
         if name == 'emulation':
             entry.setdefault('verified_source_slices', []).append({
                 'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/misc/proc_info.c',
-                'cargo_package': 'darling-process', 'cargo_artifact': 'process.o',
+                'cargo_package': 'dearust-process', 'cargo_artifact': 'process.o',
                 'scope': 'Partial Rust process dispatcher; original fallback flavors retained. Matching local runtime integration recorded in lockset-process-verification.json',
             })
         if name == 'darlingserver':
             entry['verified_source_slices'] = [{
                 'source': 'src/external/darlingserver/duct-tape/xnu/osfmk/kern/sync_lock.c',
-                'cargo_package': 'darling-lockset', 'cargo_artifact': 'libdarling_lockset.a',
+                'cargo_package': 'dearust-lockset', 'cargo_artifact': 'libdearust_lockset.a',
                 'scope': 'Rust lockset ownership/state; original server relink with XNU bridge. Original target remains pending.',
             }]
         if name == 'system_kernel':
@@ -73,7 +73,7 @@ def main():
         'scope': 'Every emitted target in the captured default configuration. Source/install/custom commands, optional configurations and runtime ABI require additional gates; no legacy target retirement is claimed.',
         'counts': {'observed_default_targets': len(entries), 'with_cargo_artifact_slice': len(found),
                    'pending_targets': len(entries)-len(found), 'legacy_targets_retired': 0},
-        'additional_optional_artifacts': [{'name': 'print_wrapped_elf', 'cargo_package': 'darling-buildtools', 'status': 'host-artifact-verified', 'absent_from_default_configuration': True}],
+        'additional_optional_artifacts': [{'name': 'print_wrapped_elf', 'cargo_package': 'dearust', 'status': 'host-artifact-verified', 'absent_from_default_configuration': True}],
         'targets': entries,
     }
     args.output.write_text(json.dumps(output, indent=2)+'\n')

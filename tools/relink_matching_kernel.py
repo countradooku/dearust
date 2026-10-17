@@ -112,7 +112,7 @@ def integrate(args):
         if variant == 'rust':
             wanted = {'_errno_linux_to_bsd': 'objects/errno.o',
                       '___linux_futex': 'objects/futex.o',
-                      '_libsimple_lock_lock': 'liblibsimple_darling.a(darling_simple.o)'}
+                      '_libsimple_lock_lock': 'liblibsimple_darling.a(dearust_simple.o)'}
             if args.process_object:
                 wanted['_sys_proc_info'] = args.process_object.name
                 wanted['_darling_legacy_proc_info'] = 'legacy-proc-info.o'

@@ -191306,7 +191306,7 @@
       "component": "src/hosttools",
       "category": "source",
       "status": "implemented",
-      "replacement": "crates/darling-coredump/src/lib.rs",
+      "replacement": "crates/dearust-coredump/src/lib.rs",
       "scope": "Rust Linux host utility replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
     },
     {
@@ -198144,7 +198144,7 @@
       "component": "src/libsimple",
       "category": "source",
       "status": "partial",
-      "replacement": "crates/darling-libsimple/src/lib.rs",
+      "replacement": "crates/dearust-libsimple/src/lib.rs",
       "scope": "Native Linux x86_64 synchronization C ABI with safe atomic core and documented unavoidable FFI/futex unsafe boundary",
       "limitation": "Linux native and Darling x86_64 backends verified, including Mach-O system_kernel consumer link; i386/other architectures and actual Darwin startup remain unported/unverified; no target retirement"
     },

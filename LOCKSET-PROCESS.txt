@@ -1,11 +1,11 @@
 Rust lockset and process-query integration
 ========================================
 
-crates/darling-lockset implements the server lockset state, references and task/
+crates/dearust-lockset implements the server lockset state, references and task/
 thread ownership. Its small C bridge supplies private XNU structures, scheduler
 calls and Mach-port operations. The isolated bridge builder patches lifecycle
 call sites in copied files; the source/build references remain unchanged.
-crates/darling-process implements selected no_std syscall queries and delegates
+crates/dearust-process implements selected no_std syscall queries and delegates
 remaining flavors to a private renamed original dispatcher. See both SAFETY.txt
 files for exact boundaries and limits.
 
@@ -22,7 +22,7 @@ Reproduce with already-built MATCHING local source/build and runtime SDK paths:
   cargo xtask check
   python3 -m unittest discover -s tools -p 'test_*.py' -v
   cargo xtask runtime --target x86_64-apple-darwin --destdir NEW_RUNTIME
-  cargo build -p darling-lockset --release --offline --locked
+  cargo build -p dearust-lockset --release --offline --locked
   python3 tools/build_lockset_bridge.py --source SOURCE --build BUILD --output NEW_BRIDGE
   python3 tools/relink_matching_kernel.py --build BUILD --runtime NEW_RUNTIME \
     --process-object NEW_RUNTIME/objects/process.o --output NEW_KERNEL
@@ -33,7 +33,7 @@ arguments and the --replace-server src/process.cpp=OBJECT argument:
   python3 tools/relink_darlingserver.py --build BUILD --output NEW_SERVER \
     --replace xnu/osfmk/kern/sync_lock.c=OBJECT [other four replacements] \
     --replace-server src/process.cpp=OBJECT \
-    --archive target/release/libdarling_lockset.a
+    --archive target/release/libdearust_lockset.a
 
 Run the app and GUI harnesses through the namespace wrapper:
 

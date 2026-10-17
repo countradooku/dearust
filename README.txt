@@ -12,7 +12,8 @@ Upstream: https://github.com/darlinghq/darling
 Status: experimental and INCOMPLETE. This repository does not yet build a
 standalone replacement for the full Darling runtime. Runtime integration uses
 an existing matching Darling build; the full server and frameworks are not
-ported. Existing darling-* crate and ABI names are retained for compatibility.
+ported. Cargo packages and crate directories use Dearust names. Exported runtime ABI
+symbols and upstream executable/install interfaces remain compatible.
 
 Current verified work
 ---------------------
@@ -52,7 +53,7 @@ verification.json    Verification records
 Licensing
 ---------
 See LICENSE (GPL-3.0) and component-specific notices, including LICENSE-BSDLN
-and the preserved Apple license under crates/darling-lockset/bridge. Upstream
+and the preserved Apple license under crates/dearust-lockset/bridge. Upstream
 Darling and dependency authors retain their respective copyrights.
 
 Detailed migration notes
@@ -168,7 +169,7 @@ preserve parallel implementation and review history.
 The errno conversion microbenchmark measured 3.042 ns/call for pinned C and
 2.803 ns/call for the final safe Rust lookup over mixed signed inputs. The first
 Rust match implementation was slower. Raw measurements, compiler/source hashes
-and limits are in crates/darling-errno; this is not a Darling runtime speedup.
+and limits are in crates/dearust-errno; this is not a Darling runtime speedup.
 
 Darling runtime integration
 ---------------------------

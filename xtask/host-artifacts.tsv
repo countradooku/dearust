@@ -3,13 +3,13 @@
 # Scope: migrated host tools, native Linux synchronization archive and errno validation object; remaining upstream graph is unported.
 # Build-only targets preserve build-tree consumers; darling-coredump preserves its bin install rule.
 # kind\ttarget\tpackage\tdestination\tupstream target definition[\thidden C symbols]
-bin	bsdln	darling-buildtools	src/bsdln/bsdln	src/bsdln/CMakeLists.txt
-bin	elfdep	darling-buildtools	src/buildtools/elfdep	src/buildtools/CMakeLists.txt
-bin	getuuid	darling-buildtools	src/buildtools/getuuid	src/buildtools/CMakeLists.txt
-bin	wrapgen	darling-buildtools	src/libelfloader/wrapgen/wrapgen	src/libelfloader/wrapgen/CMakeLists.txt
-bin	print_wrapped_elf	darling-buildtools	src/libelfloader/wrapgen/print_wrapped_elf	src/libelfloader/wrapgen/CMakeLists.txt
-bin	darling-coredump	darling-coredump	bin/darling-coredump	src/hosttools/CMakeLists.txt
+bin	bsdln	dearust	src/bsdln/bsdln	src/bsdln/CMakeLists.txt
+bin	elfdep	dearust	src/buildtools/elfdep	src/buildtools/CMakeLists.txt
+bin	getuuid	dearust	src/buildtools/getuuid	src/buildtools/CMakeLists.txt
+bin	wrapgen	dearust	src/libelfloader/wrapgen/wrapgen	src/libelfloader/wrapgen/CMakeLists.txt
+bin	print_wrapped_elf	dearust	src/libelfloader/wrapgen/print_wrapped_elf	src/libelfloader/wrapgen/CMakeLists.txt
+bin	darling-coredump	dearust-coredump	bin/darling-coredump	src/hosttools/CMakeLists.txt
 # Native Linux only; the Darwin libsimple backend remains unported.
-staticlib	darling_simple	darling-libsimple	src/libsimple-linux/liblibsimple_darlingserver.a	src/libsimple/CMakeLists.txt
+staticlib	dearust_simple	dearust-libsimple	src/libsimple-linux/liblibsimple_darlingserver.a	src/libsimple/CMakeLists.txt
 # Native ELF validation slice of emulation; not a Darwin/Mach-O target replacement.
-object	darling_errno	darling-errno	lib/darling/native/darling_errno.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt	errno_linux_to_bsd,length_of_translation_array
+object	dearust_errno	dearust-errno	lib/darling/native/dearust_errno.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt	errno_linux_to_bsd,length_of_translation_array

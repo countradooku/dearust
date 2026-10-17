@@ -75,7 +75,7 @@ def verify(args):
         run([*common, '-DLIBSIMPLE_DARLING=1', '-c', work/'lock.c', '-o', work/'lock.o'])
         fixtures = Path(__file__).resolve().parent/'fixtures'
         driver = fixtures/'darwin-runtime.c'
-        abi = Path(__file__).resolve().parent.parent/'crates/darling-libsimple/tests/abi.c'
+        abi = Path(__file__).resolve().parent.parent/'crates/dearust-libsimple/tests/abi.c'
         cases = [('original', [work/'lock.o', work/'futex.o', work/'errno.o']),
                  ('rust', objects)]
         results = {}

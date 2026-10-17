@@ -129,14 +129,14 @@ class Inventory:
                     if commit != NATIVE_ERRNO_PIN:
                         raise ValueError("runtime source replacement requires its exact xnu pin")
                     entry.update(status="partial",
-                                 replacement={NATIVE_ERRNO_SOURCE: "crates/darling-errno/src/lib.rs", FUTEX_SOURCE: "crates/darling-futex/src/lib.rs", PROCESS_SOURCE: "crates/darling-process/src/lib.rs"}[entry["path"]],
+                                 replacement={NATIVE_ERRNO_SOURCE: "crates/dearust-errno/src/lib.rs", FUTEX_SOURCE: "crates/dearust-futex/src/lib.rs", PROCESS_SOURCE: "crates/dearust-process/src/lib.rs"}[entry["path"]],
                                  scope="no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
                                  limitation="i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement")
                     dep["migration_status"] = "partial"
                 if path == "src/external/darlingserver" and entry["path"] == LOCKSET_SOURCE:
                     if commit != LOCKSET_PIN:
                         raise ValueError("lockset source replacement requires its exact server pin")
-                    entry.update(status="partial", replacement="crates/darling-lockset/src/lib.rs",
+                    entry.update(status="partial", replacement="crates/dearust-lockset/src/lib.rs",
                                  scope="Rust lockset state and ownership with minimal XNU port/scheduler/lifecycle bridge; matching server relink",
                                  limitation="Original server and most duct-tape sources retained; clean pinned full-runtime integration and other architectures pending")
                     dep["migration_status"] = "partial"

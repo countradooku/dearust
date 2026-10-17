@@ -144,7 +144,7 @@ def integrate(args):
         '_errno_linux_to_bsd': 'objects/errno.o',
         '___linux_futex_reterr': 'objects/futex.o',
         '___linux_futex': 'objects/futex.o',
-        '_libsimple_lock_lock': 'liblibsimple_darling.a(darling_simple.o)',
+        '_libsimple_lock_lock': 'liblibsimple_darling.a(dearust_simple.o)',
         '_guard_table_add': 'emulation.dir/src/common/guarded/table.c.o',
         '_close_internal': 'emulation.dir/src/xnu_syscall/bsd/impl/unistd/close.c.o',
         '_linux_syscall': 'emulation.dir/src/linux_premigration/linux-syscall.S.o',

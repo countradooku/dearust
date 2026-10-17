@@ -84,10 +84,10 @@ fn cargo_graph_stages_runnable_tools_and_a_repeatable_manifest() {
     #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
     check_staged_runtime(&stage, &temp.0);
 
-    let errno = fs::read(stage.join("lib/darling/native/darling_errno.o")).unwrap();
+    let errno = fs::read(stage.join("lib/darling/native/dearust_errno.o")).unwrap();
     assert!(install().status.success());
     assert_eq!(
-        fs::read(stage.join("lib/darling/native/darling_errno.o")).unwrap(),
+        fs::read(stage.join("lib/darling/native/dearust_errno.o")).unwrap(),
         errno
     );
     assert_eq!(
@@ -162,7 +162,7 @@ fn check_staged_runtime(stage: &std::path::Path, temporary: &std::path::Path) {
             );
         }
     }
-    let errno = stage.join("lib/darling/native/darling_errno.o");
+    let errno = stage.join("lib/darling/native/dearust_errno.o");
     let bytes = fs::read(&errno).unwrap();
     assert_eq!(&bytes[..4], b"\x7fELF", "stage native ELF, not LTO bitcode");
     let undefined = Command::new("nm").arg("-u").arg(&errno).output().unwrap();
@@ -203,9 +203,9 @@ fn check_staged_runtime(stage: &std::path::Path, temporary: &std::path::Path) {
         ])
         // Preserve the upstream header verbatim. Its always_inline declarations
         // trigger GCC warnings, so treat the imported headers as system headers.
-        .arg(xtask.join("../crates/darling-libsimple/include"))
+        .arg(xtask.join("../crates/dearust-libsimple/include"))
         .arg("-I")
-        .arg(xtask.join("../crates/darling-errno/include"))
+        .arg(xtask.join("../crates/dearust-errno/include"))
         .arg(xtask.join("tests/fixtures/staged-libsimple.c"))
         .arg(&archive)
         .arg(&errno)

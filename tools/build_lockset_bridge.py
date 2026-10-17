@@ -30,7 +30,7 @@ def main():
     compile_flags = sum((shlex.split(flags[k]) for k in ['C_DEFINES', 'C_INCLUDES', 'C_FLAGS']), [])
     repo = Path(__file__).resolve().parents[1]
     patches = {}
-    patches['xnu/osfmk/kern/sync_lock.c'] = (repo / 'crates/darling-lockset/bridge/sync_lock.c').read_text()
+    patches['xnu/osfmk/kern/sync_lock.c'] = (repo / 'crates/dearust-lockset/bridge/sync_lock.c').read_text()
     path = 'xnu/osfmk/kern/ipc_sync.c'
     text = (root / path).read_text()
     anchor = 'lock_set_t\nconvert_port_to_lock_set(__unused ipc_port_t port)'

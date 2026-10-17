@@ -1,5 +1,5 @@
 [package]
-name = "xtask"
+name = "dearust-xtask"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
@@ -11,3 +11,7 @@ unsafe_code = "forbid"
 
 [lints.clippy]
 all = "warn"
+
+[[bin]]
+name = "xtask"
+path = "src/main.rs"

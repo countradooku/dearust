@@ -1,4 +1,4 @@
-use darling_buildtools::elf_wrapper::Library;
+use dearust::elf_wrapper::Library;
 use std::{
     fs,
     path::PathBuf,

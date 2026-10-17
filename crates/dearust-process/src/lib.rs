@@ -6,7 +6,7 @@
     target_pointer_width = "64",
     any(target_os = "linux", target_os = "macos")
 )))]
-compile_error!("darling-process implements only the x86_64 Linux/Darling ABI");
+compile_error!("dearust-process implements only the x86_64 Linux/Darling ABI");
 #[allow(unsafe_code)]
 mod abi;
 mod parse;

@@ -1,2 +1,2 @@
 [alias]
-xtask = "run --offline --locked --package xtask --"
+xtask = "run --offline --locked --package dearust-xtask --"

@@ -122,7 +122,7 @@ def verify(args):
     for name in SYMBOLS:
         if not any('GLOBAL HIDDEN' in line and line.endswith(name) for line in symbols.splitlines()):
             raise ValueError('original global hidden visibility missing: ' + name)
-    with tempfile.TemporaryDirectory(prefix='darling-errno-') as directory:
+    with tempfile.TemporaryDirectory(prefix='dearust-errno-') as directory:
         work = Path(directory)
         inputs = {}
         for filename in ['errno.h', 'cdefs.h', '_types/_errno_t.h']:
@@ -146,7 +146,7 @@ def verify(args):
              '-Dlength_of_translation_array=upstream_length_of_translation_array',
              '-c', work/'errno.c', '-o', work/'original.o'])
         (work/'harness.c').write_text(HARNESS)
-        include = Path(__file__).resolve().parent.parent/'crates/darling-errno/include'
+        include = Path(__file__).resolve().parent.parent/'crates/dearust-errno/include'
         run(['clang', '-O2', '-Wall', '-Wextra', '-Werror', '-I', include,
              work/'harness.c', work/'original.o', rust_object, '-o', work/'compare'])
         command = [work/'compare'] + (['bench'] if args.benchmark else [])

@@ -2,7 +2,7 @@
 #![forbid(unsafe_code)]
 
 use core::ffi::{c_int, c_long};
-use darling_errno::linux_to_bsd;
+use dearust_errno::linux_to_bsd;
 
 /// The original C code first assigns the long syscall return to an int.
 #[inline]

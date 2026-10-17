@@ -208,5 +208,24 @@
     "rust_app_strict_passes": 28,
     "rust_app_explicit_normalized_passes": 29,
     "gui_checks_pass": true
+  },
+  "dearust_rename": {
+    "packages": [
+      "dearust",
+      "dearust-coredump",
+      "dearust-errno",
+      "dearust-futex",
+      "dearust-libsimple",
+      "dearust-lockset",
+      "dearust-process",
+      "dearust-xtask"
+    ],
+    "cargo_xtask_check": "passed",
+    "rust_tests_passed": 97,
+    "python_tests_passed": 24,
+    "cargo_xtask_build": "passed",
+    "darwin_runtime_staging": "passed",
+    "matching_kernel_link": "passed, 1370 public definitions and unchanged imports",
+    "compatibility": "Exported C ABI, upstream executable names and original install interfaces retained. Historical execution records retain their original paths and names."
   }
 }

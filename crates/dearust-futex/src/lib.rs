@@ -10,7 +10,7 @@
     target_pointer_width = "64",
     any(target_os = "linux", target_os = "macos")
 )))]
-compile_error!("darling-futex implements only the LP64 x86_64 Linux/Darling syscall ABI");
+compile_error!("dearust-futex implements only the LP64 x86_64 Linux/Darling syscall ABI");
 
 #[allow(unsafe_code)]
 mod abi;

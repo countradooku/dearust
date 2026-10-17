@@ -1,14 +1,12 @@
 [package]
-name = "darling-errno"
+name = "dearust-process"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
 publish = false
-description = "no_std Linux to Darwin errno conversion with the original C ABI"
-
+description = "Darling process and vnode queries over namespace-local procfs"
 [lib]
-name = "darling_errno"
+name = "dearust_process"
 crate-type = ["rlib"]
-
 [lints.clippy]
 undocumented_unsafe_blocks = "deny"

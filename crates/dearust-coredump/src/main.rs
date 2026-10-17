@@ -19,7 +19,7 @@ fn main() {
             .unwrap_or_else(|| std::path::Path::new("."))
             .join(name)
     });
-    if let Err(error) = darling_coredump::convert_file(&input, &output, &Default::default()) {
+    if let Err(error) = dearust_coredump::convert_file(&input, &output, &Default::default()) {
         eprintln!("darling-coredump: {error}");
         std::process::exit(1);
     }

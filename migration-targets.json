@@ -11,7 +11,7 @@
   "additional_optional_artifacts": [
     {
       "name": "print_wrapped_elf",
-      "cargo_package": "darling-buildtools",
+      "cargo_package": "dearust",
       "status": "host-artifact-verified",
       "absent_from_default_configuration": true
     }
@@ -2768,7 +2768,7 @@
       "graph_reference": "target-bsdln-e72f5aa7cbbeca02dc59.json",
       "status": "host-artifact-verified",
       "legacy_target_retired": false,
-      "cargo_package": "darling-buildtools",
+      "cargo_package": "dearust",
       "cargo_artifact": "bsdln"
     },
     {
@@ -3690,7 +3690,7 @@
       "graph_reference": "target-darling-coredump-46f9687d6b5ee2474847.json",
       "status": "host-artifact-verified",
       "legacy_target_retired": false,
-      "cargo_package": "darling-coredump",
+      "cargo_package": "dearust-coredump",
       "cargo_artifact": "darling-coredump"
     },
     {
@@ -3711,8 +3711,8 @@
       "verified_source_slices": [
         {
           "source": "src/external/darlingserver/duct-tape/xnu/osfmk/kern/sync_lock.c",
-          "cargo_package": "darling-lockset",
-          "cargo_artifact": "libdarling_lockset.a",
+          "cargo_package": "dearust-lockset",
+          "cargo_artifact": "libdearust_lockset.a",
           "scope": "Rust lockset ownership/state; original server relink with XNU bridge. Original target remains pending."
         }
       ]
@@ -4084,7 +4084,7 @@
       "graph_reference": "target-elfdep-be44b82b8707bbb62216.json",
       "status": "host-artifact-verified",
       "legacy_target_retired": false,
-      "cargo_package": "darling-buildtools",
+      "cargo_package": "dearust",
       "cargo_artifact": "elfdep"
     },
     {
@@ -4097,19 +4097,19 @@
       "verified_source_slices": [
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/conversion/errno.c",
-          "cargo_package": "darling-errno",
+          "cargo_package": "dearust-errno",
           "cargo_artifact": "errno.o",
           "scope": "Native real-consumer execution and x86_64 Mach-O actual system_kernel link verified; i386 replacement/startup pending"
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/linux_premigration/ext/futex.c",
-          "cargo_package": "darling-futex",
+          "cargo_package": "dearust-futex",
           "cargo_artifact": "futex.o",
           "scope": "Native real-consumer execution and x86_64 Mach-O actual system_kernel link verified; i386 replacement/startup pending"
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/misc/proc_info.c",
-          "cargo_package": "darling-process",
+          "cargo_package": "dearust-process",
           "cargo_artifact": "process.o",
           "scope": "Partial Rust process dispatcher; original fallback flavors retained. Matching local runtime integration recorded in lockset-process-verification.json"
         }
@@ -4125,13 +4125,13 @@
       "verified_source_slices": [
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/conversion/errno.c",
-          "cargo_package": "darling-errno",
+          "cargo_package": "dearust-errno",
           "cargo_artifact": "errno.o",
           "scope": "Same Rust x86_64 source slices built; actual emulation_dyld/static consumer link remains pending"
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/linux_premigration/ext/futex.c",
-          "cargo_package": "darling-futex",
+          "cargo_package": "dearust-futex",
           "cargo_artifact": "futex.o",
           "scope": "Same Rust x86_64 source slices built; actual emulation_dyld/static consumer link remains pending"
         }
@@ -4448,7 +4448,7 @@
       "graph_reference": "target-getuuid-80539c8282ba382799e7.json",
       "status": "host-artifact-verified",
       "legacy_target_retired": false,
-      "cargo_package": "darling-buildtools",
+      "cargo_package": "dearust",
       "cargo_artifact": "getuuid"
     },
     {
@@ -6146,7 +6146,7 @@
       "graph_reference": "target-libsimple_darling-c9b31e7fbd510ff05281.json",
       "status": "partial-darling-x86_64-consumer-linked",
       "legacy_target_retired": false,
-      "cargo_package": "darling-libsimple",
+      "cargo_package": "dearust-libsimple",
       "cargo_artifact": "liblibsimple_darling.a"
     },
     {
@@ -6156,8 +6156,8 @@
       "graph_reference": "target-libsimple_darlingserver-2397dbd0bb93f8fc189a.json",
       "status": "partial-native-only",
       "legacy_target_retired": false,
-      "cargo_package": "darling-libsimple",
-      "cargo_artifact": "darling_simple"
+      "cargo_package": "dearust-libsimple",
+      "cargo_artifact": "dearust_simple"
     },
     {
       "name": "libssh",
@@ -12499,7 +12499,7 @@
       "graph_reference": "target-wrapgen-8e07ff651873a204a8eb.json",
       "status": "partial-loader-policy",
       "legacy_target_retired": false,
-      "cargo_package": "darling-buildtools",
+      "cargo_package": "dearust",
       "cargo_artifact": "wrapgen"
     },
     {

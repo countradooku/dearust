@@ -101,7 +101,7 @@ fn commands(task: &Task) -> Vec<Vec<&'static str>> {
                 "build",
                 "--workspace",
                 "--exclude",
-                "xtask",
+                "dearust-xtask",
                 "--release",
                 "--offline",
                 "--locked",
@@ -109,7 +109,7 @@ fn commands(task: &Task) -> Vec<Vec<&'static str>> {
             vec![
                 "build",
                 "--package",
-                "darling-libsimple",
+                "dearust-libsimple",
                 "--lib",
                 "--release",
                 "--no-default-features",
@@ -138,7 +138,7 @@ fn commands(task: &Task) -> Vec<Vec<&'static str>> {
         Task::Bench => vec![vec![
             "bench",
             "--package",
-            "darling-buildtools",
+            "dearust",
             "--bench",
             "metadata",
             "--offline",

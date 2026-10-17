@@ -31,7 +31,7 @@ it. It requires --no-default-features and panic=abort. Because the manifest also
 requests a staticlib (which requires a handler), override the crate type using
 Cargo's option BEFORE the `--` rustc separator:
 
-cargo rustc -p darling-libsimple --lib --crate-type=rlib --release \
+cargo rustc -p dearust-libsimple --lib --crate-type=rlib --release \
   --no-default-features --features darling,runtime-object \
   --target x86_64-apple-darwin --config profile.release.lto=false \
   --config profile.release.panic='"abort"' --offline --locked -- --emit=obj
@@ -142,11 +142,11 @@ upstream concurrency defect was found or silently changed.
 Verification
 ------------
 
-cargo test -p darling-libsimple runs seven bounded deterministic safe-core tests:
+cargo test -p dearust-libsimple runs seven bounded deterministic safe-core tests:
 spurious waits, once publication/wake-all, reader/writer masks and preference,
 last-reader wake, condvar contended reacquisition, and wrapping notifications.
 
-cargo build -p darling-libsimple --release produces libdarling_simple.a.
+cargo build -p dearust-libsimple --release produces libdearust_simple.a.
 scripts/check-abi.sh UPSTREAM_CHECKOUT ARCHIVE OUTPUT_DIR compiles committed
 upstream C source and the identical C harness against that archive separately:
 cc -O2 -std=gnu11 -Wno-attributes -pthread -I<headers> tests/abi.c

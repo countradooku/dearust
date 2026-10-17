@@ -40,7 +40,7 @@ the task fail; a nonzero child exit code is forwarded when representable.
 
 Ordinary Cargo commands also work without xtask:
 
-    cargo build --offline --locked --release --package darling-buildtools
+    cargo build --offline --locked --release --package dearust
     cargo test --offline --locked --workspace
 
 This workspace currently migrates selected host utilities. It is not yet a
@@ -75,7 +75,7 @@ xtask/README.md for publication semantics and filesystem regression coverage.
 The typed graph also stages libsimple at the upstream Linux static archive
 path. Its C-link integration harness checks the staged archive. The manifest
 is deterministic. It also stages a native no_std errno ELF object at
-lib/darling/native/darling_errno.o. This stages six tools, a native library and
+lib/darling/native/dearust_errno.o. This stages six tools, a native library and
 a native validation object, not the complete runtime or required Darwin objects.
 
 Legacy integration (optional)
@@ -133,8 +133,8 @@ These are remaining engineering requirements, not implemented task commands.
 Native synchronization ABI check
 --------------------------------
 
-  crates/darling-libsimple/scripts/check-abi.sh /path/to/upstream \
-    target/release/libdarling_simple.a /path/to/reference-output
+  crates/dearust-libsimple/scripts/check-abi.sh /path/to/upstream \
+    target/release/libdearust_simple.a /path/to/reference-output
 
 Requires cc, nm, timeout and POSIX shell in addition to the Cargo build. It
 compiles committed original headers/source and the same bounded C pthread
@@ -157,7 +157,7 @@ its captured default target graph are migration inputs, not a full Cargo port.
 
 Pinned errno runtime slice
 -------------------------
-`cargo xtask build` builds darling-errno as an always-no_std rlib. `install`
+`cargo xtask build` builds dearust-errno as an always-no_std rlib. `install`
 also invokes Cargo rustc in an isolated fresh output directory to emit one native
 PIC object with LTO disabled. llvm-objcopy preserves global linkage while setting
 the two original C symbols to hidden visibility. No panic handler, allocator,
@@ -168,7 +168,7 @@ require Darwin Mach-O/fat objects; this ELF object does not replace those target
 Verify committed original sources/headers and reproduce the signed overflow:
 
     python3 tools/check_errno.py --upstream /path/to/darling \
-      --xnu /path/to/exact-pin/xnu --object /path/to/stage/lib/darling/native/darling_errno.o
+      --xnu /path/to/exact-pin/xnu --object /path/to/stage/lib/darling/native/dearust_errno.o
 
 Add --benchmark --report /path/to/record.json for 21 alternating synthetic call
 measurements after warmup. This optional check needs clang, UBSan, nm and readelf.

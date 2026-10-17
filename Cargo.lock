@@ -3,36 +3,36 @@
 version = 4
 
 [[package]]
-name = "darling-buildtools"
+name = "dearust"
 version = "0.1.0"
 
 [[package]]
-name = "darling-coredump"
+name = "dearust-coredump"
 version = "0.1.0"
 
 [[package]]
-name = "darling-errno"
+name = "dearust-errno"
 version = "0.1.0"
 
 [[package]]
-name = "darling-futex"
+name = "dearust-futex"
 version = "0.1.0"
 dependencies = [
- "darling-errno",
+ "dearust-errno",
 ]
 
 [[package]]
-name = "darling-libsimple"
+name = "dearust-libsimple"
 version = "0.1.0"
 
 [[package]]
-name = "darling-lockset"
+name = "dearust-lockset"
 version = "0.1.0"
 
 [[package]]
-name = "darling-process"
+name = "dearust-process"
 version = "0.1.0"
 
 [[package]]
-name = "xtask"
+name = "dearust-xtask"
 version = "0.1.0"

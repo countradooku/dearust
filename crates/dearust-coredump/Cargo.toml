@@ -1,5 +1,5 @@
 [package]
-name = "darling-coredump"
+name = "dearust-coredump"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
@@ -9,3 +9,8 @@ description = "Safe ELF to Mach-O core dump converter for Darling"
 
 [lints.rust]
 unsafe_code = "forbid"
+
+# Preserve the upstream executable interface for runtime integration.
+[[bin]]
+name = "darling-coredump"
+path = "src/main.rs"

@@ -1,7 +1,7 @@
 # Dearust
 
 Public repository: https://github.com/countradooku/dearust
-Project branding is Dearust; retain darling-* package/ABI names for compatibility.
+Project branding is Dearust; use Dearust Cargo package/crate names; preserve exported runtime ABI names.
 
 # Darling full Rust migration: continuation instructions
 
@@ -25,7 +25,7 @@ Follow later user instructions if they revise these priorities.
 ## Read first
 
 - README.txt, BUILDING.txt, MIGRATION.txt, verification.json
-- This file and crates/darling-libsimple/SAFETY.txt
+- This file and crates/dearust-libsimple/SAFETY.txt
 - Inventory summaries in migration-inventory.json, dependency-inventory.json,
   migration-targets.json, upstream-cmake-graph.json
 - tools/BASELINE.txt, tools/DEPENDENCY-INVENTORY.txt,
@@ -149,8 +149,8 @@ For optional differential tests, set:
 Export those variables, then run:
 
     cargo test --workspace --offline --locked -- --ignored
-    crates/darling-libsimple/scripts/check-abi.sh /path/to/upstream \
-      target/release/libdarling_simple.a /path/to/reference-output
+    crates/dearust-libsimple/scripts/check-abi.sh /path/to/upstream \
+      target/release/libdearust_simple.a /path/to/reference-output
     python3 tools/check_wrapper_macho.py --upstream /path/to/upstream \
       --wrapgen target/release/wrapgen --elfdep target/release/elfdep
 
@@ -194,7 +194,7 @@ See verification.json for exact record. Source/target status counts are unchange
 
 Continuation 2026-10-18: native errno runtime slice
 ------------------------------------------------
-crates/darling-errno ports exact-pin xnu emulation conversion/errno.c as no_std
+crates/dearust-errno ports exact-pin xnu emulation conversion/errno.c as no_std
 with no OS calls, allocator or panic handler. Both original global C symbols,
 hidden visibility, length=512, signed mapping and unknown passthrough are retained.
 INT_MIN overflow is fixed; tools/check_errno.py reproduces original UBSan failure
@@ -214,9 +214,9 @@ Its Linux raw-syscall and Darwin errno/cerror contracts need separate validation
 
 Continuation 2026-10-18: Darling futex and full actual consumer link
 -----------------------------------------------------------------
-The darling-libsimple feature selects __linux_futex_reterr and bootstrap
+The dearust-libsimple feature selects __linux_futex_reterr and bootstrap
 __simple_abort. runtime-object omits the final panic handler; default native
-static archive behavior remains available. darling-futex is no_std and preserves
+static archive behavior remains available. dearust-futex is no_std and preserves
 both exported wrappers over the original seven-argument raw linux_syscall ABI.
 Its cerror declaration now matches the actual LP64 unsigned128 return, rather
 than the old source's mismatched long declaration; cancellation may terminate

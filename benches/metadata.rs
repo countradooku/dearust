@@ -1,6 +1,6 @@
 #[path = "../tests/common/mod.rs"]
 mod common;
-use darling_buildtools::Metadata;
+use dearust::Metadata;
 use std::{hint::black_box, time::Instant};
 
 fn main() {

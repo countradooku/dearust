@@ -1,6 +1,6 @@
 mod common;
 use common::*;
-use darling_buildtools::wrapped_elf::names;
+use dearust::wrapped_elf::names;
 use std::{
     path::PathBuf,
     process::{Command, Output},
