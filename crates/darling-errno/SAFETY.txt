@@ -1,0 +1,51 @@
+Darling errno conversion: provenance, ABI and safety
+===================================================
+
+Source: darlinghq/darling superproject 60ba801decee7a00782f74f6be4c8ffb013f79ff,
+external xnu dependency fa29287aa2f0115271e091f1031f53c9e024005d.
+This crate replaces exactly darling/src/libsystem_kernel/emulation/src/
+conversion/errno.c (blob d259ef9f116b02e1319d5a077aa3dd59f67d7f02).
+
+Constants were checked against the pinned files:
+- darling/src/libsystem_kernel/emulation/include/conversion/duct_errno.h
+  blob 187a112f854219e8a68bf2c60c7ad623e7b58d77
+- bsd/sys/errno.h, blob 502fabcd0cbb57ce09ee4aa501b92c96929bb70e
+
+The selected Darwin ABI is __DARWIN_UNIX03=1, where EOPNOTSUPP is 102 and
+ENOTSUP is 45. Host libc headers are never consulted by the Rust conversion.
+LINUX_ENOTSUP is surprisingly defined as the unprefixed EOPNOTSUPP in the
+original duct_errno.h. Its first [102]=45 designator is later overwritten by
+[LINUX_ENETRESET]=52. The final original table has 84 nonzero slots, including
+Linux 95 -> Darwin 102 and Linux 102 -> Darwin 52. This port preserves these
+final semantics. Unknown values (even holes within the 512-slot table) pass
+through with their sign unchanged. Linux E2BIG=7 is absent from the original
+table; it also passes through. The conversion matches that behavior.
+
+Confirmed upstream defect: signed negation of INT_MIN in errno_linux_to_bsd
+is undefined behavior in C. Rust uses unsigned_abs, which is defined for every
+i32, and returns INT_MIN unchanged because it is unmapped. Regression tests
+cover this value, both extrema, the 511/512 boundary, all supported mappings,
+holes, negative errors, and the ENOTSUP/EOPNOTSUPP designator behavior.
+
+The pure conversion module forbids unsafe code. It performs a bounded match
+and sign restoration on positive Darwin values <=102: no allocation, pointer,
+OS call, indexing panic, initialization or runtime support is needed. The
+crate is always no_std and has no panic handler. Cargo emits an rlib for Rust
+consumers; the build orchestrator can emit a native object for C consumers
+without introducing a duplicate final-runtime panic handler.
+
+The ABI module alone permits Rust 2024 unsafe no_mangle attributes. These
+attributes reserve the original global C symbol names and are the only unsafe
+constructs. The function itself is safe: C int is represented by core::ffi::c_int,
+all scalar input values are valid, and no pointer contract is required. The
+immutable usize static is the C size_t object length_of_translation_array=512.
+Link this object once, replacing the original errno.c object; duplicate symbol
+ownership is invalid. No other original external symbol is omitted. ELF hidden
+visibility from the original CMake target must be selected by the final linker;
+this crate by itself does not assert the original shared-library visibility.
+
+The native Linux x86_64 object and scalar ABI are verified separately from
+Darwin runtime startup. Other target architectures, whole libsystem_kernel
+linkage and macOS application compatibility remain unverified. This source
+replacement does not complete the xnu dependency or libsystem_kernel target.
+See UPSTREAM-NOTICES.txt and APPLE_LICENSE for preserved source notices.
