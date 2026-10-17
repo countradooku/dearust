@@ -111,12 +111,44 @@
   ],
   "remaining_failure": "bsdtar archive creation segfaults identically on original and Rust; investigation ongoing.",
   "additional_gui": {
-    "sample": "Unchanged Cocotron CGShadingCreate",
-    "build": "tools/build_gui_apps.py",
-    "raw_report": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/new-gui-validation-corrected/comparison.json",
-    "raw_report_sha256": "95a76d362e9e77024c1fe405097c24dc25d5c4a8abe7a8c1ca6f203e0f832642",
-    "result": "No newly mapped window within 25 seconds on either variant. No GUI compatibility claim.",
-    "binary_sha256": "8e1316541d8ad24941283cdd248c24db0daa56bd2f9eb483fa16d000799a7983",
-    "cleanup": "Both prefixes shut down, launchers reaped, task-owned Xephyr stopped."
+    "sample": "Cocotron CGShadingCreate with unchanged executable sources and repaired copied nib resource",
+    "historical_failure": {
+      "sample": "Unchanged Cocotron CGShadingCreate",
+      "build": "tools/build_gui_apps.py",
+      "raw_report": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/new-gui-validation-corrected/comparison.json",
+      "raw_report_sha256": "95a76d362e9e77024c1fe405097c24dc25d5c4a8abe7a8c1ca6f203e0f832642",
+      "result": "No newly mapped window within 25 seconds on either variant. No GUI compatibility claim.",
+      "binary_sha256": "8e1316541d8ad24941283cdd248c24db0daa56bd2f9eb483fa16d000799a7983",
+      "cleanup": "Both prefixes shut down, launchers reaped, task-owned Xephyr stopped."
+    },
+    "raw_report": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/new-gui-resource-verified/comparison.json",
+    "raw_report_sha256": "6d28cfddf4e2695f06eeb1668334ff754a76cda314ff0aa9fd721c4ef643c5e6",
+    "result": "Both variants map a window and render the red/black axial gradient and controls; manually inspected both screenshots. No radial/control interaction coverage.",
+    "resource_repairs": {
+      "CGShadingCreate.app/Contents/Resources/English.lproj/MainMenu.nib/keyedobjects.nib": {
+        "converted_references": 1677,
+        "original_sha256": "f805baeda76713aadc91f3ec73a609e0c116187a3168bd70bfd03b49dd761f3b",
+        "repaired_sha256": "af5f1199f5d2480b1fe8cd4a8633c97017bd580011410fb762789cfbf883eb1a"
+      }
+    },
+    "variants": [
+      {
+        "variant": "original",
+        "pass": true,
+        "screenshot_sha256": "213ba91b0d9454fa28d4543e022f3f5cd8482eb3c72574060c4076df07052a9d",
+        "kernel_sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f",
+        "mapping_verified": true,
+        "launcher_reaped": true
+      },
+      {
+        "variant": "rust",
+        "pass": true,
+        "screenshot_sha256": "213ba91b0d9454fa28d4543e022f3f5cd8482eb3c72574060c4076df07052a9d",
+        "kernel_sha256": "b2f18936961a70b028cba4d505ac94ecb870856f049a61e30ef25f332018d47f",
+        "mapping_verified": true,
+        "launcher_reaped": true
+      }
+    ],
+    "cleanup": "Both prefixes shut down, launchers reaped, task-owned hidden Xephyr stopped."
   }
 }

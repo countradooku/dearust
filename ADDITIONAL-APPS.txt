@@ -15,9 +15,16 @@ hashes are referenced in additional-app-verification.json. The first exploratory
 run also exposed harness mistakes (unsupported ditto invocation and wrong grep
 path), both corrected before recording the seven passing results.
 
-build_gui_apps.py additionally builds the unchanged Cocotron CGShadingCreate
-sample with its original resources. check_gui_apps.py --cases CGShadingCreate
-attempts window capture on an explicitly supplied isolated X display. Neither
-variant produced a mapped window within 25 seconds. This is a recorded failure,
-not additional GUI compatibility. Existing default Calculator/TextEditor checks
-remain available. Shutdown/reaping succeeded and the owned hidden Xephyr stopped.
+build_gui_apps.py additionally builds Cocotron CGShadingCreate. Its upstream
+binary nib encodes object references as literal CF$UID dictionaries, preventing
+the sample window from loading. --repair-shading-nib explicitly converts those
+to binary plist UID references in the copied resource, with before/after hashes
+and conversion count. Source files and reference resources remain untouched.
+Regression tests cover conversion, idempotence and rejecting invalid references
+without modifying files.
+
+With that resource repair, check_gui_apps.py --cases CGShadingCreate passes under
+both kernels on the isolated display. Both screenshots were manually inspected:
+the controls and red/black axial gradient render. Radial mode and control actions
+are not covered. Existing Calculator/TextEditor checks remain the default. Both
+owned prefixes/launchers and the hidden Xephyr display were cleaned up.

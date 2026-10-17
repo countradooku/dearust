@@ -220,6 +220,10 @@ def variant(args, name, kernel, display):
                         result['typed_text'] = display.type_editor(window)
                         time.sleep(0.6)
                         result['content_assertion'] = 'Manual screenshot inspection required; no OCR assertion'
+                    if app == 'CGShadingCreate':
+                        # Mapping precedes first drawing; allow the gradient to paint.
+                        time.sleep(0.8)
+                        result['content_assertion'] = 'Manual gradient screenshot inspection required'
                     screenshot = output / (app + '.png')
                     subprocess.run(['import', '-display', args.display, '-window',
                                     str(window['window_id']), str(screenshot)],

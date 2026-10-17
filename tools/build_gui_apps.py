@@ -18,12 +18,49 @@ import subprocess
 SDK_HEADERS = Path('Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include')
 
 
+
+def repair_legacy_keyed_archive(path):
+    """Repair XML-style UID dictionaries incorrectly serialized inside a binary nib.
+
+    Only called for the copied CGShadingCreate resource, never reference sources.
+    Genuine keyed-archive binary UIDs must use the plist UID primitive.
+    """
+    before = path.read_bytes()
+    archive = plistlib.loads(before)
+    if archive.get('$archiver') != 'NSKeyedArchiver' or not isinstance(archive.get('$objects'), list):
+        raise ValueError('expected NSKeyedArchiver object archive')
+    count = 0
+
+    def convert(value):
+        nonlocal count
+        if isinstance(value, dict):
+            if set(value) == {'CF$UID'}:
+                index = value['CF$UID']
+                if type(index) is not int or not 0 <= index < len(archive['$objects']):
+                    raise ValueError('invalid keyed archive object reference')
+                count += 1
+                return plistlib.UID(index)
+            return {key: convert(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [convert(item) for item in value]
+        return value
+
+    converted = convert(archive)
+    after = plistlib.dumps(converted, fmt=plistlib.FMT_BINARY) if count else before
+    path.write_bytes(after)
+    return {'converted_references': count,
+            'original_sha256': hashlib.sha256(before).hexdigest(),
+            'repaired_sha256': hashlib.sha256(after).hexdigest()}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('source', 'build', 'sdk', 'output'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--clang', default='clang')
     parser.add_argument('--linker', default='ld64.lld')
+    parser.add_argument('--repair-shading-nib', action='store_true',
+                        help='Repair malformed upstream binary UID references in the copied shading nib')
     args = parser.parse_args()
     try:
         source, build, sdk = (getattr(args, name).resolve(strict=True)
@@ -71,6 +108,7 @@ def main():
                  '-framework', 'Foundation', '-framework', 'ApplicationServices', '-lobjc', '-lSystem']
     output.mkdir(parents=True, exist_ok=False)
     commands = []
+    resource_repairs = {}
 
     def run(command):
         commands.append(command)
@@ -91,6 +129,9 @@ def main():
         if name in ('TextEditor', 'CGShadingCreate'):
             upstream = sample if name == 'TextEditor' else gradient
             shutil.copytree(upstream / 'Resources', app / 'Contents/Resources')
+            if name == 'CGShadingCreate' and args.repair_shading_nib:
+                nib = app / 'Contents/Resources/English.lproj/MainMenu.nib/keyedobjects.nib'
+                resource_repairs[str(nib.relative_to(output))] = repair_legacy_keyed_archive(nib)
             info = plistlib.loads((upstream / 'Info.plist').read_bytes())
             info['CFBundleExecutable'] = name
             info['CFBundleName'] = name
@@ -103,6 +144,7 @@ def main():
     # Preserve upstream source license notices next to the artifacts.
     shutil.copy2(sample / 'main.m', output / 'TextEditor-main-source-license.m')
     record = {'scope': 'Build only; GUI launch and rendering require separate execution checks.',
+              'resource_repairs': resource_repairs,
               'source': str(source), 'build': str(build), 'sdk': str(sdk), 'commands': commands,
               'source_sha256': {str(path): hashlib.sha256(path.read_bytes()).hexdigest()
                                 for path in (sample / 'main.m', sample / 'MyDocument.m', calculator, gradient / 'main.m', gradient / 'GradientView.m')},
