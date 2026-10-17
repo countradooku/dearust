@@ -191,9 +191,15 @@ def main():
     parser.add_argument('--sdk', default='10.8')
     parser.add_argument('--output', type=Path, required=True, help='New output directory')
     parser.add_argument('--timeout', type=float, default=20)
-    parser.add_argument('--cases', nargs='+', choices=CASES, default=list(CASES))
+    parser.add_argument('--cases', nargs='+', default=list(CASES),
+                        help='Fixture names with .bin and .stdout inputs; defaults to regression suite')
     args = parser.parse_args()
     args.tests = args.tests.resolve(strict=True)
+    for case in args.cases:
+        if Path(case).name != case or case in ('.', '..'):
+            parser.error('case must be a fixture basename')
+        if not (args.tests / args.sdk / (case + '.bin')).is_file() or not (args.tests / (case + '.stdout')).is_file():
+            parser.error('case executable or expected stdout is missing: ' + case)
     for kernel in (args.original_kernel, args.rust_kernel):
         if not kernel.is_file():
             parser.error('kernel is not a regular file: ' + str(kernel))
