@@ -9,9 +9,10 @@ uses its own guest temporary directory. All namespaces/prefixes are task-owned.
 The installed ditto is a shell wrapper around cp; it is not a native utility or
 a migrated implementation. The remaining executables are installed Mac binaries.
 
-Current evidence: seven of eight workloads pass under both kernel variants;
-bsdtar crashes while creating an archive on both. Raw evidence and exact input
-hashes are referenced in additional-app-verification.json. The first exploratory
+Current evidence: all eight workloads pass under the combined Rust kernel.
+The original kernel still crashes in bsdtar (seven other workloads pass).
+The Rust lstat null-pointer fix resolves the archive-creation crash. Raw evidence
+and exact input hashes are referenced in additional-app-verification.json. The first exploratory
 run also exposed harness mistakes (unsupported ditto invocation and wrong grep
 path), both corrected before recording the seven passing results.
 
@@ -28,3 +29,9 @@ both kernels on the isolated display. Both screenshots were manually inspected:
 the controls and red/black axial gradient render. Radial mode and control actions
 are not covered. Existing Calculator/TextEditor checks remain the default. Both
 owned prefixes/launchers and the hidden Xephyr display were cleaned up.
+
+A separate real Darwin ABI probe, tools/fixtures/lstat-regression.c, covers both
+lstat and lstat64: regular files, symlinks, missing paths, NULL path/output pointers
+and long/non-terminated paths. The Rust candidate passes; original crashes at the
+NULL path. Build with build_runtime_probes.py and copy the explicit .stdout golden
+next to the SDK directory before running check_mac_apps.py --cases.

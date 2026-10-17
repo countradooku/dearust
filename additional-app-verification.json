@@ -1,17 +1,42 @@
 {
   "scope": "Actual installed Mac utility data roundtrips under original and Rust kernels; matching Rust lockset server. ditto is the installed shell wrapper, not a migrated implementation.",
-  "raw_report": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/new-app-validation-corrected/comparison.json",
-  "raw_report_sha256": "5e4c72f6fc7e405157c7dbf5d026ec0b8519504c0a8d2921f43cecf8bc316123",
   "utilities_sha256": {
-    "usr/libexec/PlistBuddy": "636f3f2fb2c307de752fdec6541f658aa1261cae0443305c7e858cd64eaef0ea",
-    "usr/bin/bsdtar": "a7996d6432499b29c487beb608cb26fdae8de4a2378e87b39d7e50fe311ec6f7",
-    "usr/bin/ditto": "ed42e2d80af6b9842daa1940f67124c9db90fa333ad6bcdf003b028ec5fe8966",
-    "usr/bin/gzip": "8c5c1f98fd491888a5856e4798e3f2775248f9751665da1c7fcadeb6a9a4e44a",
-    "bin/bzip2": "6781e0165165d5e2cf4043fdfe04348137ea7092e0bdf93fcdc46fab72315cee",
-    "usr/bin/xz": "5fcd0e0a89d65b5d93ed60206330920d491acf61393f6949d04dfe7c35108e09",
-    "usr/bin/zip": "835b081dab0d495813db2bb93e5c98e3c9ad1f9f17e7aa5b2ab5df103b249ca6",
-    "usr/bin/unzip": "c835f44fb58a6a029b5c836ecb9ad7c05af6e6a7d721f5f298bb344e6e123b72",
-    "usr/bin/openssl": "c38688ffb6ed4b600c8d5fd2109c2ad1d00c6083c77b03bd00e4bc332d4d371d"
+    "usr/libexec/PlistBuddy": {
+      "sha256": "636f3f2fb2c307de752fdec6541f658aa1261cae0443305c7e858cd64eaef0ea",
+      "kind": "binary"
+    },
+    "usr/bin/bsdtar": {
+      "sha256": "a7996d6432499b29c487beb608cb26fdae8de4a2378e87b39d7e50fe311ec6f7",
+      "kind": "binary"
+    },
+    "usr/bin/ditto": {
+      "sha256": "ed42e2d80af6b9842daa1940f67124c9db90fa333ad6bcdf003b028ec5fe8966",
+      "kind": "shell wrapper"
+    },
+    "usr/bin/gzip": {
+      "sha256": "8c5c1f98fd491888a5856e4798e3f2775248f9751665da1c7fcadeb6a9a4e44a",
+      "kind": "binary"
+    },
+    "bin/bzip2": {
+      "sha256": "6781e0165165d5e2cf4043fdfe04348137ea7092e0bdf93fcdc46fab72315cee",
+      "kind": "binary"
+    },
+    "usr/bin/xz": {
+      "sha256": "5fcd0e0a89d65b5d93ed60206330920d491acf61393f6949d04dfe7c35108e09",
+      "kind": "binary"
+    },
+    "usr/bin/zip": {
+      "sha256": "835b081dab0d495813db2bb93e5c98e3c9ad1f9f17e7aa5b2ab5df103b249ca6",
+      "kind": "binary"
+    },
+    "usr/bin/unzip": {
+      "sha256": "c835f44fb58a6a029b5c836ecb9ad7c05af6e6a7d721f5f298bb344e6e123b72",
+      "kind": "binary"
+    },
+    "usr/bin/openssl": {
+      "sha256": "c38688ffb6ed4b600c8d5fd2109c2ad1d00c6083c77b03bd00e4bc332d4d371d",
+      "kind": "binary"
+    }
   },
   "variants": [
     {
@@ -63,7 +88,7 @@
     },
     {
       "variant": "rust",
-      "kernel_sha256": "b2f18936961a70b028cba4d505ac94ecb870856f049a61e30ef25f332018d47f",
+      "kernel_sha256": "3921f82883332b158d1959b8cd67b3d4942c94199a78bd7fa982a6e986f50ddf",
       "mapping_verified": true,
       "results": [
         {
@@ -73,8 +98,8 @@
         },
         {
           "name": "bsdtar",
-          "pass": false,
-          "exit_code": 139
+          "pass": true,
+          "exit_code": 0
         },
         {
           "name": "ditto",
@@ -109,7 +134,6 @@
       ]
     }
   ],
-  "remaining_failure": "bsdtar archive creation segfaults identically on original and Rust; investigation ongoing.",
   "additional_gui": {
     "sample": "Cocotron CGShadingCreate with unchanged executable sources and repaired copied nib resource",
     "historical_failure": {
@@ -150,5 +174,30 @@
       }
     ],
     "cleanup": "Both prefixes shut down, launchers reaped, task-owned hidden Xephyr stopped."
+  },
+  "historical_utility_failure": "bsdtar archive creation segfaults identically on original and Rust; investigation ongoing.",
+  "historical_utility_report": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/new-app-validation-corrected/comparison.json",
+  "historical_utility_report_sha256": "5e4c72f6fc7e405157c7dbf5d026ec0b8519504c0a8d2921f43cecf8bc316123",
+  "raw_report": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/new-app-lstat-preview/comparison.json",
+  "raw_report_sha256": "8fb22ad30502d816d6110ed34d5d82b013b1c4bb884fc65e1f05858730bcd471",
+  "utility_result": "All eight Rust workloads pass with combined process/guarded/lstat candidate. Original bsdtar still crashes.",
+  "lstat_guest_probe": {
+    "raw_report": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/lstat-guest-regression/comparison.json",
+    "raw_report_sha256": "b52947989ccdfdc678e2b2e6c596317564388a7baf7ab6e6a0765675d10581fd",
+    "scope": "lstat and lstat64 regular files, symlinks, ENOENT, NULL path/buffer EFAULT, non-NUL and long path ENAMETOOLONG",
+    "variants": [
+      {
+        "variant": "original",
+        "pass": false,
+        "exit_code": 139,
+        "kernel_sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f"
+      },
+      {
+        "variant": "rust",
+        "pass": true,
+        "exit_code": 0,
+        "kernel_sha256": "3921f82883332b158d1959b8cd67b3d4942c94199a78bd7fa982a6e986f50ddf"
+      }
+    ]
   }
 }
