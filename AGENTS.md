@@ -24,7 +24,7 @@ Follow later user instructions if they revise these priorities.
 
 ## Read first
 
-- README.txt, BUILDING.txt, MIGRATION.txt, verification.json
+- README.md, BUILDING.txt, MIGRATION.txt, verification.json
 - This file and crates/dearust-libsimple/SAFETY.txt
 - Inventory summaries in migration-inventory.json, dependency-inventory.json,
   migration-targets.json, upstream-cmake-graph.json

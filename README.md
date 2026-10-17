@@ -5,6 +5,8 @@
 
 Dearust is an incremental migration of [Darling](https://github.com/darlinghq/darling) to Rust for running macOS applications on Linux. It is an independent project with upstream attribution and original source-specific license notices preserved.
 
+Dearust is a project by [@countradooku](https://github.com/countradooku), developed using AI assistance from OpenAI Codex for implementation, code review, and test automation. Verification records describe what has actually been built and tested.
+
 > [!WARNING]
 > **Status: Experimental & Incomplete**
 > This workspace does not yet build a standalone replacement for the full Darling runtime. Runtime integration currently relies on an existing matching Darling build; the full server and frameworks are not yet fully ported. Cargo packages and crate directories use Dearust naming, while exported runtime ABI symbols and upstream executable/install interfaces remain backward-compatible.
@@ -13,7 +15,7 @@ Dearust is an incremental migration of [Darling](https://github.com/darlinghq/da
 
 ## Current Status & Verified Work
 
-These results reflect a locally modified, matching `x86_64` runtime environment. They do **not** claim arbitrary macOS app compatibility. Full reproduction boundaries and verification details are documented in [`LOCKSET-PROCESS.txt`](https://www.google.com/search?q=LOCKSET-PROCESS.txt) and [`lockset-process-verification.json`](https://www.google.com/search?q=lockset-process-verification.json).
+These results reflect a locally modified, matching `x86_64` runtime environment. They do **not** claim arbitrary macOS app compatibility. Full reproduction boundaries and verification details are documented in [`LOCKSET-PROCESS.txt`](LOCKSET-PROCESS.txt) and [`lockset-process-verification.json`](lockset-process-verification.json).
 
 * **6 Host Utilities:** Fully ported to Rust, handling Mach-O/ELF metadata parsing and core file conversion.
 * **Low-Level Synchronization:** Safe Rust synchronization primitives, Linux `futex` backends, and Darwin/Linux `errno` translation layers.
@@ -51,7 +53,7 @@ All utilities build via Cargo without requiring CMake. The parsers, conversion l
 
 ## Migration Progress
 
-Progress is tracked granularly against upstream commit [`60ba801`](https://www.google.com/search?q=https://github.com/darlinghq/darling/commit/60ba801decee7a00782f74f6be4c8ffb013f79ff).
+Progress is tracked granularly against upstream commit [`60ba801`](https://github.com/darlinghq/darling/commit/60ba801decee7a00782f74f6be4c8ffb013f79ff).
 
 ```
 Superproject Entries [27,274 total]
@@ -64,10 +66,10 @@ Default Build Targets [1,629 total]
 
 Detailed breakdowns are maintained in:
 
-* [`migration-inventory.json`](https://www.google.com/search?q=migration-inventory.json): Full superproject file-by-file tracking.
-* [`dependency-inventory.json`](https://www.google.com/search?q=dependency-inventory.json): Pinned submodules, license records, and leaf dependencies.
-* [`migration-targets.json`](https://www.google.com/search?q=migration-targets.json): Upstream build targets vs. Cargo implementations.
-* [`MIGRATION.txt`](https://www.google.com/search?q=MIGRATION.txt): Completion gates, architectural boundaries, and pending ABI specs.
+* [`migration-inventory.json`](migration-inventory.json): Full superproject file-by-file tracking.
+* [`dependency-inventory.json`](dependency-inventory.json): Pinned submodules, license records, and leaf dependencies.
+* [`migration-targets.json`](migration-targets.json): Upstream build targets vs. Cargo implementations.
+* [`MIGRATION.txt`](MIGRATION.txt): Completion gates, architectural boundaries, and pending ABI specs.
 
 ---
 
@@ -118,20 +120,20 @@ These benchmarks demonstrate isolated, workload-specific behavior only. **They d
 
 | File | Purpose |
 | --- | --- |
-| [`BUILDING.txt`](https://www.google.com/search?q=BUILDING.txt) | Detailed build requirements, linker flags, and environment vars |
-| [`MIGRATION.txt`](https://www.google.com/search?q=MIGRATION.txt) | Subsystem boundaries, migration rules, and remaining milestones |
-| [`LOCKSET-PROCESS.txt`](https://www.google.com/search?q=LOCKSET-PROCESS.txt) | Latest runtime lockset implementation details and verification |
-| [`GUI-VERIFICATION.txt`](https://www.google.com/search?q=GUI-VERIFICATION.txt) | Test notes and execution constraints for Cocoa GUI applications |
-| [`verification.json`](https://www.google.com/search?q=verification.json) | SHA-256 artifacts, suite outputs, and machine-readable test records |
+| [`BUILDING.txt`](BUILDING.txt) | Detailed build requirements, linker flags, and environment vars |
+| [`MIGRATION.txt`](MIGRATION.txt) | Subsystem boundaries, migration rules, and remaining milestones |
+| [`LOCKSET-PROCESS.txt`](LOCKSET-PROCESS.txt) | Latest runtime lockset implementation details and verification |
+| [`GUI-VERIFICATION.txt`](GUI-VERIFICATION.txt) | Test notes and execution constraints for Cocoa GUI applications |
+| [`verification.json`](verification.json) | SHA-256 artifacts, suite outputs, and machine-readable test records |
 
 ---
 
 ## Licensing
 
-Dearust is licensed under the **GNU General Public License v3.0** ([`LICENSE`](https://www.google.com/search?q=LICENSE)).
+Dearust is licensed under the **GNU General Public License v3.0** ([`LICENSE`](LICENSE)).
 
 Individual ported components, bridge files, and headers retain their original upstream licenses:
 
-* `bsdln`: Distributed under the BSD 3-Clause License ([`LICENSE-BSDLN`](https://www.google.com/search?q=LICENSE-BSDLN)).
+* `bsdln`: Distributed under the BSD 3-Clause License ([`LICENSE-BSDLN`](LICENSE-BSDLN)).
 * Lockset bridge sources (`crates/dearust-lockset/bridge`): Retain original Apple Public Source License (APSL) notices.
 * Upstream Darling contributors and third-party dependency authors retain all respective copyrights.
