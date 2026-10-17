@@ -1,0 +1,22 @@
+[package]
+name = "darling-buildtools"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "GPL-3.0-or-later"
+publish = false
+description = "Safe Mach-O metadata readers for Darling's elfdep and getuuid tools"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = "warn"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+
+[[bench]]
+name = "metadata"
+harness = false
