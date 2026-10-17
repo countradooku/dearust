@@ -1,0 +1,27 @@
+Change Dir: '$BUILD'
+
+Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile -j2 darling-coredump
+/usr/bin/cmake -S$BASELINE -B$BUILD --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/gmake  -f CMakeFiles/Makefile2 darling-coredump
+gmake[1]: Entering directory '$BUILD'
+/usr/bin/cmake -S$BASELINE -B$BUILD --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start $BUILD/CMakeFiles 0
+/usr/bin/gmake  -f CMakeFiles/Makefile2 src/hosttools/CMakeFiles/darling-coredump.dir/all
+gmake[2]: Entering directory '$BUILD'
+/usr/bin/gmake  -f src/hosttools/CMakeFiles/darling-coredump.dir/build.make src/hosttools/CMakeFiles/darling-coredump.dir/depend
+gmake[3]: Entering directory '$BUILD'
+cd $BUILD && /usr/bin/cmake -E cmake_depends "Unix Makefiles" $BASELINE $BASELINE/src/hosttools $BUILD $BUILD/src/hosttools $BUILD/src/hosttools/CMakeFiles/darling-coredump.dir/DependInfo.cmake "--color=" darling-coredump
+gmake[3]: Leaving directory '$BUILD'
+/usr/bin/gmake  -f src/hosttools/CMakeFiles/darling-coredump.dir/build.make src/hosttools/CMakeFiles/darling-coredump.dir/build
+gmake[3]: Entering directory '$BUILD'
+Building CXX object src/hosttools/CMakeFiles/darling-coredump.dir/src/coredump/main.cpp.o
+cd $BUILD/src/hosttools && /usr/bin/clang++ -DDARLING -I$BUILD/src/include -I$BASELINE/src/include -I$BASELINE/src/hosttools/include -I$BASELINE/src/hosttools/../startup/mldr/include -isystem /usr/bin/../lib/clang/22/include -Wno-nullability-completeness -Wno-deprecated-declarations -Wno-availability -Wno-expansion-to-defined -Wno-elaborated-enum-base -Wno-undef-prefix -std=c++17 -MD -MT src/hosttools/CMakeFiles/darling-coredump.dir/src/coredump/main.cpp.o -MF CMakeFiles/darling-coredump.dir/src/coredump/main.cpp.o.d -o CMakeFiles/darling-coredump.dir/src/coredump/main.cpp.o -c $BASELINE/src/hosttools/src/coredump/main.cpp
+Linking CXX executable darling-coredump
+cd $BUILD/src/hosttools && /usr/bin/cmake -E cmake_link_script CMakeFiles/darling-coredump.dir/link.txt --verbose=1
+/usr/bin/clang++  -Wno-nullability-completeness -Wno-deprecated-declarations -Wno-availability -Wno-expansion-to-defined -Wno-elaborated-enum-base -Wno-undef-prefix "CMakeFiles/darling-coredump.dir/src/coredump/main.cpp.o" -o darling-coredump
+gmake[3]: Leaving directory '$BUILD'
+Built target darling-coredump
+gmake[2]: Leaving directory '$BUILD'
+/usr/bin/cmake -E cmake_progress_start $BUILD/CMakeFiles 0
+gmake[1]: Leaving directory '$BUILD'
+

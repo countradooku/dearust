@@ -1222,6 +1222,11 @@
         "command": "cmake --build BUILD --target wrapgen -j2 --verbose",
         "exit_code": 0,
         "log_file": "upstream-wrapgen-build.log"
+      },
+      {
+        "command": "cmake --build BUILD --target darling-coredump -j2 --verbose",
+        "exit_code": 0,
+        "log_file": "upstream-coredump-build.log"
       }
     ],
     "artifacts": [
@@ -1259,9 +1264,17 @@
         "size": 65048,
         "sha256": "e688948020fe1223b197b8a472af9e63574a4c841cac93314f8ecd660045ac6d",
         "build_success": true
+      },
+      {
+        "target": "darling-coredump",
+        "path": "$BUILD/src/hosttools/darling-coredump",
+        "size": 58000,
+        "sha256": "4d9df378b440af2a2e23043c4ea500ccf6ec90cdd7c71b56c9760cdb9686be78",
+        "build_success": true
       }
     ],
-    "limitations": "Native host tools and one native lock archive only; no full runtime compilation, ABI conformance, installation or application execution has been demonstrated"
+    "limitations": "Native host tools and one native lock archive only; no full runtime compilation, ABI conformance, installation or application execution has been demonstrated",
+    "optional_print_target": "src/libelfloader/wrapgen/CMakeLists.txt declares print_wrapped_elf only when WITH_PRINT_WRAPPED_ELF is defined. It was absent under the documented defaults; optional activation was not used and the captured default graph remains unchanged."
   },
   "cmake_graph_capture": {
     "command": "python3 tools/cmake_graph.py BUILD --output upstream-cmake-graph.json",

@@ -48,3 +48,8 @@ The attempted print_wrapped_elf target does not exist in upstream's emitted grap
 that command stopped after building elfdep, getuuid and bsdln. wrapgen was then
 built separately. See the baseline report for commands, statuses and artifact
 hashes. These successes do not establish a complete runtime build.
+
+A further native probe built darling-coredump successfully from the default graph;
+its log and artifact hash are included in the report. print_wrapped_elf is gated
+by DEFINED WITH_PRINT_WRAPPED_ELF in the pinned CMake source. It was deliberately
+left at its default so the captured graph remains the default configuration.
