@@ -101,9 +101,8 @@ def integrate(args):
         argv.extend(['-arch', 'x86_64', '-Wl,-map,'+str(mapfile)])
         (output/(variant+'-argv.json')).write_text(json.dumps(argv, indent=2)+'\n')
         run(argv, cwd=kernel)
-        allowed = {'_darling_legacy_proc_info'} if variant == 'rust' and args.process_object else set()
         defined = symbols(target, '--defined-only')
-        expected = symbols(original, '--defined-only') | allowed
+        expected = symbols(original, '--defined-only')
         if defined != expected:
             raise ValueError(f'definitions changed: added={defined-expected}, removed={expected-defined}')
         if symbols(target, '--undefined-only') != symbols(original, '--undefined-only'):
