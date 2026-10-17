@@ -339,3 +339,5 @@ pub fn run(tool: &str) -> Result<bool, Box<dyn std::error::Error>> {
         Ok(true)
     }
 }
+
+pub mod elf_wrapper;
