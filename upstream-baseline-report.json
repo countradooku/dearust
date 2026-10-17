@@ -1204,5 +1204,90 @@
       "commit": "4a7a6ebf6216395c7db698a4993db16e484aa54d",
       "independent_git_directory": true
     }
-  ]
+  ],
+  "native_build_probes": {
+    "commands": [
+      {
+        "command": "cmake --build BUILD --target libsimple_darlingserver -j2 --verbose",
+        "exit_code": 0,
+        "log_file": "upstream-libsimple-build.log"
+      },
+      {
+        "command": "cmake --build BUILD --target elfdep getuuid bsdln print_wrapped_elf wrapgen -j2 --verbose",
+        "exit_code": 2,
+        "log_file": "upstream-hosttools-build.log",
+        "explanation": "elfdep, getuuid and bsdln built successfully; then Make stopped because print_wrapped_elf is not an emitted upstream target; wrapgen was attempted separately"
+      },
+      {
+        "command": "cmake --build BUILD --target wrapgen -j2 --verbose",
+        "exit_code": 0,
+        "log_file": "upstream-wrapgen-build.log"
+      }
+    ],
+    "artifacts": [
+      {
+        "target": "libsimple_darlingserver",
+        "path": "$BUILD/src/libsimple-linux/liblibsimple_darlingserver.a",
+        "size": 6140,
+        "sha256": "89f0f9616a4255f868bf636e0d7465303d34312ed8ef08cccccfed4fc09123b1",
+        "build_success": true
+      },
+      {
+        "target": "elfdep",
+        "path": "$BUILD/src/buildtools/elfdep",
+        "size": 13384,
+        "sha256": "79b7028ad86ec9bc0fdd0c3fbc19825acf55abe2eb6d7f7bc8bc59b2b70f20bc",
+        "build_success": true
+      },
+      {
+        "target": "getuuid",
+        "path": "$BUILD/src/buildtools/getuuid",
+        "size": 13416,
+        "sha256": "7e86efd375661a5dd5c5f8b8ce4c514a8786c8d76eb1e22e3fc5ac0549e82c6e",
+        "build_success": true
+      },
+      {
+        "target": "bsdln",
+        "path": "$BUILD/src/bsdln/bsdln",
+        "size": 13904,
+        "sha256": "e905104b35c64163c06196a3a1e4364515fee5524795bdf37f2d88d7571d7319",
+        "build_success": true
+      },
+      {
+        "target": "wrapgen",
+        "path": "$BUILD/src/libelfloader/wrapgen/wrapgen",
+        "size": 65048,
+        "sha256": "e688948020fe1223b197b8a472af9e63574a4c841cac93314f8ecd660045ac6d",
+        "build_success": true
+      }
+    ],
+    "limitations": "Native host tools and one native lock archive only; no full runtime compilation, ABI conformance, installation or application execution has been demonstrated"
+  },
+  "cmake_graph_capture": {
+    "command": "python3 tools/cmake_graph.py BUILD --output upstream-cmake-graph.json",
+    "query": "BUILD/.cmake/api/v1/query/codemodel-v2",
+    "reconfigure_command": "cmake -S BASELINE -B BUILD",
+    "reconfigure_exit_code": 0,
+    "counts": {
+      "by_type": {
+        "EXECUTABLE": 547,
+        "OBJECT_LIBRARY": 128,
+        "SHARED_LIBRARY": 771,
+        "STATIC_LIBRARY": 137,
+        "UTILITY": 46
+      },
+      "configurations": 1,
+      "generated_source_records": 9593,
+      "source_records": 34478,
+      "target_dependency_edges": 7785,
+      "targets": 1629,
+      "targets_with_install_metadata": 1238
+    },
+    "artifact": "upstream-cmake-graph.json",
+    "limitations": [
+      "Observed default stock component configuration only; optional excluded components require additional configurations",
+      "Retains complete emitted File API target/directory objects; custom command bodies and generator recipes are not fully represented by the codemodel",
+      "This captures migration input; it is not an equivalent Cargo execution graph or proof that the full runtime builds"
+    ]
+  }
 }

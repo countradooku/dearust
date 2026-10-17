@@ -1,0 +1,29 @@
+Change Dir: '$BUILD'
+
+Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile -j2 libsimple_darlingserver
+/usr/bin/cmake -S$BASELINE -B$BUILD --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/gmake  -f CMakeFiles/Makefile2 libsimple_darlingserver
+gmake[1]: Entering directory '$BUILD'
+/usr/bin/cmake -S$BASELINE -B$BUILD --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start $BUILD/CMakeFiles 0
+/usr/bin/gmake  -f CMakeFiles/Makefile2 src/libsimple-linux/CMakeFiles/libsimple_darlingserver.dir/all
+gmake[2]: Entering directory '$BUILD'
+/usr/bin/gmake  -f src/libsimple-linux/CMakeFiles/libsimple_darlingserver.dir/build.make src/libsimple-linux/CMakeFiles/libsimple_darlingserver.dir/depend
+gmake[3]: Entering directory '$BUILD'
+cd $BUILD && /usr/bin/cmake -E cmake_depends "Unix Makefiles" $BASELINE $BASELINE/src/libsimple $BUILD $BUILD/src/libsimple-linux $BUILD/src/libsimple-linux/CMakeFiles/libsimple_darlingserver.dir/DependInfo.cmake "--color=" libsimple_darlingserver
+gmake[3]: Leaving directory '$BUILD'
+/usr/bin/gmake  -f src/libsimple-linux/CMakeFiles/libsimple_darlingserver.dir/build.make src/libsimple-linux/CMakeFiles/libsimple_darlingserver.dir/build
+gmake[3]: Entering directory '$BUILD'
+Building C object src/libsimple-linux/CMakeFiles/libsimple_darlingserver.dir/src/lock.c.o
+cd $BUILD/src/libsimple-linux && /usr/bin/clang -DDARLING -DLIBSIMPLE_LINUX=1 -I$BUILD/src/include -I$BASELINE/src/include -I$BASELINE/src/libsimple/include -isystem /usr/bin/../lib/clang/22/include -Wno-nullability-completeness -Wno-deprecated-declarations -Wno-availability -Wno-expansion-to-defined -Wno-elaborated-enum-base -Wno-undef-prefix -MD -MT src/libsimple-linux/CMakeFiles/libsimple_darlingserver.dir/src/lock.c.o -MF CMakeFiles/libsimple_darlingserver.dir/src/lock.c.o.d -o CMakeFiles/libsimple_darlingserver.dir/src/lock.c.o -c $BASELINE/src/libsimple/src/lock.c
+Linking C static library liblibsimple_darlingserver.a
+cd $BUILD/src/libsimple-linux && /usr/bin/cmake -P CMakeFiles/libsimple_darlingserver.dir/cmake_clean_target.cmake
+cd $BUILD/src/libsimple-linux && /usr/bin/cmake -E cmake_link_script CMakeFiles/libsimple_darlingserver.dir/link.txt --verbose=1
+/usr/bin/llvm-ar qc liblibsimple_darlingserver.a CMakeFiles/libsimple_darlingserver.dir/src/lock.c.o
+/usr/bin/llvm-ranlib liblibsimple_darlingserver.a
+gmake[3]: Leaving directory '$BUILD'
+Built target libsimple_darlingserver
+gmake[2]: Leaving directory '$BUILD'
+/usr/bin/cmake -E cmake_progress_start $BUILD/CMakeFiles 0
+gmake[1]: Leaving directory '$BUILD'
+

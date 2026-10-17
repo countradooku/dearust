@@ -91,4 +91,4 @@ Found required libraries; building with Metal support
 -- Found LibXml2: /usr/lib64/libxml2.so (found version "2.12.10")
 -- Configuring done (8.7s)
 -- Generating done (5.5s)
--- Build files have been written to: $BASELINE-build
+-- Build files have been written to: $BUILD

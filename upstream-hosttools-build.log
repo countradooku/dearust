@@ -1,0 +1,72 @@
+Change Dir: '$BUILD'
+
+Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile -j2 elfdep getuuid bsdln print_wrapped_elf wrapgen
+/usr/bin/cmake -S$BASELINE -B$BUILD --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/gmake  -f CMakeFiles/Makefile2 elfdep
+gmake[1]: Entering directory '$BUILD'
+/usr/bin/cmake -S$BASELINE -B$BUILD --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start $BUILD/CMakeFiles 0
+/usr/bin/gmake  -f CMakeFiles/Makefile2 src/buildtools/CMakeFiles/elfdep.dir/all
+gmake[2]: Entering directory '$BUILD'
+/usr/bin/gmake  -f src/buildtools/CMakeFiles/elfdep.dir/build.make src/buildtools/CMakeFiles/elfdep.dir/depend
+gmake[3]: Entering directory '$BUILD'
+cd $BUILD && /usr/bin/cmake -E cmake_depends "Unix Makefiles" $BASELINE $BASELINE/src/buildtools $BUILD $BUILD/src/buildtools $BUILD/src/buildtools/CMakeFiles/elfdep.dir/DependInfo.cmake "--color=" elfdep
+gmake[3]: Leaving directory '$BUILD'
+/usr/bin/gmake  -f src/buildtools/CMakeFiles/elfdep.dir/build.make src/buildtools/CMakeFiles/elfdep.dir/build
+gmake[3]: Entering directory '$BUILD'
+Building C object src/buildtools/CMakeFiles/elfdep.dir/elfdep.c.o
+cd $BUILD/src/buildtools && /usr/bin/clang -DDARLING -I$BUILD/src/include -I$BASELINE/src/include -I$BASELINE/src/buildtools/include -I$BASELINE/src/buildtools/../external/cctools-port/cctools/include -isystem /usr/bin/../lib/clang/22/include -Wno-nullability-completeness -Wno-deprecated-declarations -Wno-availability -Wno-expansion-to-defined -Wno-elaborated-enum-base -Wno-undef-prefix -MD -MT src/buildtools/CMakeFiles/elfdep.dir/elfdep.c.o -MF CMakeFiles/elfdep.dir/elfdep.c.o.d -o CMakeFiles/elfdep.dir/elfdep.c.o -c $BASELINE/src/buildtools/elfdep.c
+Linking C executable elfdep
+cd $BUILD/src/buildtools && /usr/bin/cmake -E cmake_link_script CMakeFiles/elfdep.dir/link.txt --verbose=1
+/usr/bin/clang  -Wno-nullability-completeness -Wno-deprecated-declarations -Wno-availability -Wno-expansion-to-defined -Wno-elaborated-enum-base -Wno-undef-prefix CMakeFiles/elfdep.dir/elfdep.c.o -o elfdep
+gmake[3]: Leaving directory '$BUILD'
+Built target elfdep
+gmake[2]: Leaving directory '$BUILD'
+/usr/bin/cmake -E cmake_progress_start $BUILD/CMakeFiles 0
+gmake[1]: Leaving directory '$BUILD'
+/usr/bin/gmake  -f CMakeFiles/Makefile2 getuuid
+gmake[1]: Entering directory '$BUILD'
+/usr/bin/cmake -S$BASELINE -B$BUILD --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start $BUILD/CMakeFiles 0
+/usr/bin/gmake  -f CMakeFiles/Makefile2 src/buildtools/CMakeFiles/getuuid.dir/all
+gmake[2]: Entering directory '$BUILD'
+/usr/bin/gmake  -f src/buildtools/CMakeFiles/getuuid.dir/build.make src/buildtools/CMakeFiles/getuuid.dir/depend
+gmake[3]: Entering directory '$BUILD'
+cd $BUILD && /usr/bin/cmake -E cmake_depends "Unix Makefiles" $BASELINE $BASELINE/src/buildtools $BUILD $BUILD/src/buildtools $BUILD/src/buildtools/CMakeFiles/getuuid.dir/DependInfo.cmake "--color=" getuuid
+gmake[3]: Leaving directory '$BUILD'
+/usr/bin/gmake  -f src/buildtools/CMakeFiles/getuuid.dir/build.make src/buildtools/CMakeFiles/getuuid.dir/build
+gmake[3]: Entering directory '$BUILD'
+Building C object src/buildtools/CMakeFiles/getuuid.dir/getuuid.c.o
+cd $BUILD/src/buildtools && /usr/bin/clang -DDARLING -I$BUILD/src/include -I$BASELINE/src/include -I$BASELINE/src/buildtools/include -I$BASELINE/src/buildtools/../external/cctools-port/cctools/include -isystem /usr/bin/../lib/clang/22/include -Wno-nullability-completeness -Wno-deprecated-declarations -Wno-availability -Wno-expansion-to-defined -Wno-elaborated-enum-base -Wno-undef-prefix -MD -MT src/buildtools/CMakeFiles/getuuid.dir/getuuid.c.o -MF CMakeFiles/getuuid.dir/getuuid.c.o.d -o CMakeFiles/getuuid.dir/getuuid.c.o -c $BASELINE/src/buildtools/getuuid.c
+Linking C executable getuuid
+cd $BUILD/src/buildtools && /usr/bin/cmake -E cmake_link_script CMakeFiles/getuuid.dir/link.txt --verbose=1
+/usr/bin/clang  -Wno-nullability-completeness -Wno-deprecated-declarations -Wno-availability -Wno-expansion-to-defined -Wno-elaborated-enum-base -Wno-undef-prefix CMakeFiles/getuuid.dir/getuuid.c.o -o getuuid
+gmake[3]: Leaving directory '$BUILD'
+Built target getuuid
+gmake[2]: Leaving directory '$BUILD'
+/usr/bin/cmake -E cmake_progress_start $BUILD/CMakeFiles 0
+gmake[1]: Leaving directory '$BUILD'
+/usr/bin/gmake  -f CMakeFiles/Makefile2 bsdln
+gmake[1]: Entering directory '$BUILD'
+/usr/bin/cmake -S$BASELINE -B$BUILD --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start $BUILD/CMakeFiles 0
+/usr/bin/gmake  -f CMakeFiles/Makefile2 src/bsdln/CMakeFiles/bsdln.dir/all
+gmake[2]: Entering directory '$BUILD'
+/usr/bin/gmake  -f src/bsdln/CMakeFiles/bsdln.dir/build.make src/bsdln/CMakeFiles/bsdln.dir/depend
+gmake[3]: Entering directory '$BUILD'
+cd $BUILD && /usr/bin/cmake -E cmake_depends "Unix Makefiles" $BASELINE $BASELINE/src/bsdln $BUILD $BUILD/src/bsdln $BUILD/src/bsdln/CMakeFiles/bsdln.dir/DependInfo.cmake "--color=" bsdln
+gmake[3]: Leaving directory '$BUILD'
+/usr/bin/gmake  -f src/bsdln/CMakeFiles/bsdln.dir/build.make src/bsdln/CMakeFiles/bsdln.dir/build
+gmake[3]: Entering directory '$BUILD'
+Building C object src/bsdln/CMakeFiles/bsdln.dir/ln.c.o
+cd $BUILD/src/bsdln && /usr/bin/clang   -Wno-nullability-completeness -Wno-deprecated-declarations -Wno-availability -Wno-expansion-to-defined -Wno-elaborated-enum-base -Wno-undef-prefix -MD -MT src/bsdln/CMakeFiles/bsdln.dir/ln.c.o -MF CMakeFiles/bsdln.dir/ln.c.o.d -o CMakeFiles/bsdln.dir/ln.c.o -c $BASELINE/src/bsdln/ln.c
+Linking C executable bsdln
+cd $BUILD/src/bsdln && /usr/bin/cmake -E cmake_link_script CMakeFiles/bsdln.dir/link.txt --verbose=1
+/usr/bin/clang  -Wno-nullability-completeness -Wno-deprecated-declarations -Wno-availability -Wno-expansion-to-defined -Wno-elaborated-enum-base -Wno-undef-prefix CMakeFiles/bsdln.dir/ln.c.o -o bsdln  -lbsd
+gmake[3]: Leaving directory '$BUILD'
+Built target bsdln
+gmake[2]: Leaving directory '$BUILD'
+/usr/bin/cmake -E cmake_progress_start $BUILD/CMakeFiles 0
+gmake[1]: Leaving directory '$BUILD'
+gmake: *** No rule to make target 'print_wrapped_elf'.  Stop.
+

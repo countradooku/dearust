@@ -21,3 +21,30 @@ The log normalizes the source and build absolute directories to $BASELINE/$BUILD
 The report records exact pins, tools, defaults, and prerequisite observations.
 Configuration success alone does not prove the runtime builds or applications run.
 No system package installation or source changes are part of this gate.
+
+Capture the observed CMake File API graph
+----------------------------------------
+
+  mkdir -p BUILD/.cmake/api/v1/query
+  touch BUILD/.cmake/api/v1/query/codemodel-v2
+  cmake -S BASELINE -B BUILD
+  python3 tools/cmake_graph.py BUILD --output upstream-cmake-graph.json
+
+The artifact includes every emitted target and directory object for the default
+configuration, retaining target/pass names, IDs, generated-source markers, compile
+and link fragments, dependencies, install destinations and backtrace metadata.
+Only source/build absolute roots change to $SOURCE/$BUILD; the timestamped reply
+index is omitted. Directory and target JSON references remain intact in the object
+map. Re-extracting the same replies produces identical bytes.
+
+This is migration input, not a Cargo replacement. The codemodel does not fully
+represent custom command bodies or generator-specific recipes. The default stock
+component selection also excludes optional components; their graphs require
+additional configurations. Compilation, ABI and installation gates remain.
+
+The native build logs record a successful actual libsimple_darlingserver archive
+build and four original host-tool builds from this configured upstream graph.
+The attempted print_wrapped_elf target does not exist in upstream's emitted graph;
+that command stopped after building elfdep, getuuid and bsdln. wrapgen was then
+built separately. See the baseline report for commands, statuses and artifact
+hashes. These successes do not establish a complete runtime build.

@@ -1,0 +1,27 @@
+Change Dir: '$BUILD'
+
+Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile -j2 wrapgen
+/usr/bin/cmake -S$BASELINE -B$BUILD --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/gmake  -f CMakeFiles/Makefile2 wrapgen
+gmake[1]: Entering directory '$BUILD'
+/usr/bin/cmake -S$BASELINE -B$BUILD --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start $BUILD/CMakeFiles 0
+/usr/bin/gmake  -f CMakeFiles/Makefile2 src/libelfloader/wrapgen/CMakeFiles/wrapgen.dir/all
+gmake[2]: Entering directory '$BUILD'
+/usr/bin/gmake  -f src/libelfloader/wrapgen/CMakeFiles/wrapgen.dir/build.make src/libelfloader/wrapgen/CMakeFiles/wrapgen.dir/depend
+gmake[3]: Entering directory '$BUILD'
+cd $BUILD && /usr/bin/cmake -E cmake_depends "Unix Makefiles" $BASELINE $BASELINE/src/libelfloader/wrapgen $BUILD $BUILD/src/libelfloader/wrapgen $BUILD/src/libelfloader/wrapgen/CMakeFiles/wrapgen.dir/DependInfo.cmake "--color=" wrapgen
+gmake[3]: Leaving directory '$BUILD'
+/usr/bin/gmake  -f src/libelfloader/wrapgen/CMakeFiles/wrapgen.dir/build.make src/libelfloader/wrapgen/CMakeFiles/wrapgen.dir/build
+gmake[3]: Entering directory '$BUILD'
+Building CXX object src/libelfloader/wrapgen/CMakeFiles/wrapgen.dir/wrapgen.cpp.o
+cd $BUILD/src/libelfloader/wrapgen && /usr/bin/clang++ -DDARLING -I$BUILD/src/include -I$BASELINE/src/include -isystem /usr/bin/../lib/clang/22/include -Wno-nullability-completeness -Wno-deprecated-declarations -Wno-availability -Wno-expansion-to-defined -Wno-elaborated-enum-base -Wno-undef-prefix -MD -MT src/libelfloader/wrapgen/CMakeFiles/wrapgen.dir/wrapgen.cpp.o -MF CMakeFiles/wrapgen.dir/wrapgen.cpp.o.d -o CMakeFiles/wrapgen.dir/wrapgen.cpp.o -c $BASELINE/src/libelfloader/wrapgen/wrapgen.cpp
+Linking CXX executable wrapgen
+cd $BUILD/src/libelfloader/wrapgen && /usr/bin/cmake -E cmake_link_script CMakeFiles/wrapgen.dir/link.txt --verbose=1
+/usr/bin/clang++  -Wno-nullability-completeness -Wno-deprecated-declarations -Wno-availability -Wno-expansion-to-defined -Wno-elaborated-enum-base -Wno-undef-prefix CMakeFiles/wrapgen.dir/wrapgen.cpp.o -o wrapgen  -ldl
+gmake[3]: Leaving directory '$BUILD'
+Built target wrapgen
+gmake[2]: Leaving directory '$BUILD'
+/usr/bin/cmake -E cmake_progress_start $BUILD/CMakeFiles 0
+gmake[1]: Leaving directory '$BUILD'
+
