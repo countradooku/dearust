@@ -45,6 +45,18 @@ def main():
                 'scope': ('Native real-consumer execution and x86_64 Mach-O actual system_kernel link verified; i386 replacement/startup pending'
                           if name == 'emulation' else 'Same Rust x86_64 source slices built; actual emulation_dyld/static consumer link remains pending'),
             } for source, package, artifact in [('conversion/errno.c','darling-errno','errno.o'), ('linux_premigration/ext/futex.c','darling-futex','futex.o')]]
+        if name == 'emulation':
+            entry.setdefault('verified_source_slices', []).append({
+                'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/misc/proc_info.c',
+                'cargo_package': 'darling-process', 'cargo_artifact': 'process.o',
+                'scope': 'Partial Rust process dispatcher; original fallback flavors retained. Matching local runtime integration recorded in lockset-process-verification.json',
+            })
+        if name == 'darlingserver':
+            entry['verified_source_slices'] = [{
+                'source': 'src/external/darlingserver/duct-tape/xnu/osfmk/kern/sync_lock.c',
+                'cargo_package': 'darling-lockset', 'cargo_artifact': 'libdarling_lockset.a',
+                'scope': 'Rust lockset ownership/state; original server relink with XNU bridge. Original target remains pending.',
+            }]
         if name == 'system_kernel':
             entry['legacy_consumer_integration'] = {
                 'record': 'system-kernel-integration.json',

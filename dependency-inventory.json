@@ -10,8 +10,8 @@
     },
     "inventoried_entries": 265803,
     "entries_by_status": {
-      "partial": 2,
-      "pending": 265801
+      "partial": 4,
+      "pending": 265799
     },
     "license_candidates": 341
   },
@@ -427690,7 +427690,7 @@
       "repository_url": "https://github.com/darlinghq/darlingserver.git",
       "declared_url": "../darlingserver.git",
       "commit": "89751e64bc6c2082f7725061824ee0e33395b0de",
-      "migration_status": "pending",
+      "migration_status": "partial",
       "availability": "inventoried",
       "entries": [
         {
@@ -443054,7 +443054,10 @@
           "object_id": "4a0e9c05d673dfeb1929ce205c5187948ae86633",
           "size": 3013,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/darling-lockset/src/lib.rs",
+          "scope": "Rust lockset state and ownership with minimal XNU port/scheduler/lifecycle bridge; matching server relink",
+          "limitation": "Original server and most duct-tape sources retained; clean pinned full-runtime integration and other architectures pending"
         },
         {
           "path": "duct-tape/xnu/osfmk/kern/sync_lock.h",
@@ -2325296,7 +2325299,7 @@
           "status": "partial",
           "replacement": "crates/darling-errno/src/lib.rs",
           "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
-          "limitation": "i386 Rust source replacement and actual Darling startup/application compatibility remain unverified; no target retirement"
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/conversion/fcntl/open.c",
@@ -2325524,7 +2325527,7 @@
           "status": "partial",
           "replacement": "crates/darling-futex/src/lib.rs",
           "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
-          "limitation": "i386 Rust source replacement and actual Darling startup/application compatibility remain unverified; no target retirement"
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/linux_premigration/ext/inotify_add_watch.c",
@@ -2326298,7 +2326301,10 @@
           "object_id": "c2f70fbb0e3b399c69a4b6fa890fa3fbf0f282eb",
           "size": 20687,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/darling-process/src/lib.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/misc/ptrace.c",

@@ -25,6 +25,9 @@ UPSTREAM_URL = "https://github.com/darlinghq/darling.git"
 NATIVE_ERRNO_SOURCE = "darling/src/libsystem_kernel/emulation/src/conversion/errno.c"
 FUTEX_SOURCE = "darling/src/libsystem_kernel/emulation/src/linux_premigration/ext/futex.c"
 NATIVE_ERRNO_PIN = "fa29287aa2f0115271e091f1031f53c9e024005d"
+PROCESS_SOURCE = "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/misc/proc_info.c"
+LOCKSET_SOURCE = "duct-tape/xnu/osfmk/kern/sync_lock.c"
+LOCKSET_PIN = "89751e64bc6c2082f7725061824ee0e33395b0de"
 
 
 def git(gitdir, *args):
@@ -122,13 +125,20 @@ class Inventory:
             for entry in entries:
                 entry["category"] = category(entry["path"], entry["mode"])
                 entry["status"] = "pending"
-                if path == "src/external/xnu" and entry["path"] in {NATIVE_ERRNO_SOURCE, FUTEX_SOURCE}:
+                if path == "src/external/xnu" and entry["path"] in {NATIVE_ERRNO_SOURCE, FUTEX_SOURCE, PROCESS_SOURCE}:
                     if commit != NATIVE_ERRNO_PIN:
                         raise ValueError("runtime source replacement requires its exact xnu pin")
                     entry.update(status="partial",
-                                 replacement="crates/darling-errno/src/lib.rs" if entry["path"] == NATIVE_ERRNO_SOURCE else "crates/darling-futex/src/lib.rs",
+                                 replacement={NATIVE_ERRNO_SOURCE: "crates/darling-errno/src/lib.rs", FUTEX_SOURCE: "crates/darling-futex/src/lib.rs", PROCESS_SOURCE: "crates/darling-process/src/lib.rs"}[entry["path"]],
                                  scope="no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
-                                 limitation="i386 Rust source replacement and actual Darling startup/application compatibility remain unverified; no target retirement")
+                                 limitation="i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement")
+                    dep["migration_status"] = "partial"
+                if path == "src/external/darlingserver" and entry["path"] == LOCKSET_SOURCE:
+                    if commit != LOCKSET_PIN:
+                        raise ValueError("lockset source replacement requires its exact server pin")
+                    entry.update(status="partial", replacement="crates/darling-lockset/src/lib.rs",
+                                 scope="Rust lockset state and ownership with minimal XNU port/scheduler/lifecycle bridge; matching server relink",
+                                 limitation="Original server and most duct-tape sources retained; clean pinned full-runtime integration and other architectures pending")
                     dep["migration_status"] = "partial"
                 if entry["mode"] in {"100644", "100755"} and is_license(entry["path"]):
                     blob = git(gitdir, "cat-file", "blob", entry["object_id"])
