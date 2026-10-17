@@ -37,7 +37,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         return Err("Usage: wrapgen <library-path> <output-file> <var-access-header>".into());
     }
     let path = darling_buildtools::elf_wrapper::resolve_library(&args[0])?;
-    let data = std::fs::read(&path)?;
+    let data = darling_buildtools::read_input(&path)?;
     let library = darling_buildtools::elf_wrapper::Library::parse(&data)?;
     let fallback = path
         .file_name()

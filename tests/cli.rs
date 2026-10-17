@@ -125,3 +125,15 @@ fn differential_against_pinned_upstream() {
         }
     }
 }
+
+#[cfg(unix)]
+#[test]
+fn special_inputs_cannot_cause_unbounded_reads() {
+    for exe in [ELFDEP, GETUUID, env!("CARGO_BIN_EXE_print_wrapped_elf")] {
+        let result = Command::new(exe).arg("/dev/zero").output().unwrap();
+        assert_eq!(result.status.code(), Some(1));
+        assert!(result.stdout.is_empty());
+        assert!(String::from_utf8_lossy(&result.stderr).contains("regular file"));
+    }
+    assert!(darling_buildtools::read_input(std::path::Path::new(".")).is_err());
+}

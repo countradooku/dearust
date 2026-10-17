@@ -306,6 +306,34 @@ fn thin_kind(data: &[u8]) -> Result<(Endian, bool), Error> {
     }
 }
 
+/// Read a regular binary input with a snapshot size bound. Special files such
+/// as /dev/zero must not turn a metadata CLI into an unbounded allocation loop.
+/// A concurrent file size change is reported rather than parsed as a snapshot.
+pub fn read_input(path: &std::path::Path) -> std::io::Result<Vec<u8>> {
+    use std::io::{self, Read};
+    let file = std::fs::File::open(path)?;
+    let metadata = file.metadata()?;
+    if !metadata.is_file() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "input must be a regular file",
+        ));
+    }
+    let bound = metadata
+        .len()
+        .checked_add(1)
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "input size overflow"))?;
+    let mut data = Vec::new();
+    file.take(bound).read_to_end(&mut data)?;
+    if data.len() as u64 != metadata.len() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "input size changed during read",
+        ));
+    }
+    Ok(data)
+}
+
 /// Shared command-line implementation. Returns only after parsing the complete
 /// input, so a corrupt later architecture cannot leave partial success output.
 pub fn run(tool: &str) -> Result<bool, Box<dyn std::error::Error>> {
@@ -317,7 +345,7 @@ pub fn run(tool: &str) -> Result<bool, Box<dyn std::error::Error>> {
     if args.next().is_some() {
         return Err(format!("Usage: {tool} <macho-file>").into());
     }
-    let data = std::fs::read(&path)
+    let data = read_input(std::path::Path::new(&path))
         .map_err(|e| format!("Cannot read {}: {e}", std::path::Path::new(&path).display()))?;
     let metadata = Metadata::parse(&data)?;
     let mut stdout = std::io::stdout().lock();
