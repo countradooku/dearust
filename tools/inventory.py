@@ -15,6 +15,7 @@ import subprocess
 
 UPSTREAM_COMMIT = "60ba801decee7a00782f74f6be4c8ffb013f79ff"
 REPLACEMENTS = {
+    "src/bsdln/ln.c": "src/bin/bsdln.rs",
     "src/buildtools/elfdep.c": "src/bin/elfdep.rs",
     "src/buildtools/getuuid.c": "src/bin/getuuid.rs",
 }
@@ -83,7 +84,7 @@ def inventory(repo):
         }
         if path in REPLACEMENTS:
             entry["replacement"] = REPLACEMENTS[path]
-            entry["scope"] = "Rust host build-tool replacement; not a runtime or framework port"
+            entry["scope"] = "Rust Linux host build-tool replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
         if kind == "submodule":
             entry["upstream_url"] = modules.get(path, "")
             entry["scope"] = "pinned gitlink only; contents and nested dependencies need separate inventory"

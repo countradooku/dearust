@@ -34,6 +34,13 @@ At this pin there are 27,274 entries:
      819 other resources or metadata
 
 Only the Rust replacements explicitly listed with status "implemented" are ported.
+There are 3 implemented entries (elfdep, getuuid and bsdln) and 27,271 pending.
+These are Linux host executables. Exact diagnostic wording is not guaranteed.
+bsdln has seven normal tests and a differential test against the compiled pinned
+upstream ln.c covering symbolic/hard links, directory handling and interactive
+flags. A regression guard for "-f source source" preserves the source, which
+upstream can delete. These checks validate the host tool slice, not Darling ABI
+or runtime compatibility.
 All other entries are "pending", including resources which may require faithful
 preservation instead of translation. Category classification is a planning aid,
 not a semantic language parser or proof of compatibility. A gitlink is one entry,

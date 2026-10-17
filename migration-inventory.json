@@ -19,8 +19,8 @@
       "symlink": 2890
     },
     "by_status": {
-      "implemented": 2,
-      "pending": 27272
+      "implemented": 3,
+      "pending": 27271
     },
     "by_component": {
       ".github": 8,
@@ -31780,7 +31780,9 @@
       "object_id": "f69afbcd85cd3852880af1106f25e2f88bc23cad",
       "component": "src/bsdln",
       "category": "source",
-      "status": "pending"
+      "status": "implemented",
+      "replacement": "src/bin/bsdln.rs",
+      "scope": "Rust Linux host build-tool replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
     },
     {
       "path": "src/buildtools/CMakeLists.txt",
@@ -32079,7 +32081,7 @@
       "category": "source",
       "status": "implemented",
       "replacement": "src/bin/elfdep.rs",
-      "scope": "Rust host build-tool replacement; not a runtime or framework port"
+      "scope": "Rust Linux host build-tool replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
     },
     {
       "path": "src/buildtools/getuuid.c",
@@ -32090,7 +32092,7 @@
       "category": "source",
       "status": "implemented",
       "replacement": "src/bin/getuuid.rs",
-      "scope": "Rust host build-tool replacement; not a runtime or framework port"
+      "scope": "Rust Linux host build-tool replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
     },
     {
       "path": "src/clt/CMakeLists.txt",
