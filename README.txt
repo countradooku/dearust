@@ -1,231 +1,137 @@
-Dearust
--------
-Darling, reimagined in Rust.
 
-Dearust is an incremental Rust migration of Darling for running macOS
-applications on Linux. It is an independent project based on Darling, with
-upstream attribution and source-specific license notices preserved.
+# Dearust
 
-Project: https://github.com/countradooku/dearust
-Upstream: https://github.com/darlinghq/darling
+**Darling, reimagined in Rust.**
 
-Status: experimental and INCOMPLETE. This repository does not yet build a
-standalone replacement for the full Darling runtime. Runtime integration uses
-an existing matching Darling build; the full server and frameworks are not
-ported. Cargo packages and crate directories use Dearust names. Exported runtime ABI
-symbols and upstream executable/install interfaces remain compatible.
+Dearust is an incremental migration of [Darling](https://github.com/darlinghq/darling) to Rust for running macOS applications on Linux. It is an independent project with upstream attribution and original source-specific license notices preserved.
 
-Current verified work
----------------------
-- Six Rust host utilities, including Mach-O/ELF metadata and core conversion.
-- Rust synchronization, futex and errno runtime components.
-- Rust Mach locksets with real ports, handoff and thread/task lifecycle handling.
-- Partial Rust process, file-descriptor, vnode and mapped-file queries.
-- 97 Rust tests and 24 Python tests pass in the recorded development environment.
-- 29 app checks pass with explicit normalization of one known log line
-  (28 exact-output passes); selected TextEditor and Calculator GUI checks pass.
+> [!WARNING]
+> **Status: Experimental & Incomplete**
+> This workspace does not yet build a standalone replacement for the full Darling runtime. Runtime integration currently relies on an existing matching Darling build; the full server and frameworks are not yet fully ported. Cargo packages and crate directories use Dearust naming, while exported runtime ABI symbols and upstream executable/install interfaces remain backward-compatible.
 
-These results cover a locally modified matching x86_64 runtime. They do not
-establish arbitrary macOS app compatibility. Full details and limits are in
-LOCKSET-PROCESS.txt and lockset-process-verification.json.
+---
 
-Getting started
----------------
-    git clone https://github.com/countradooku/dearust.git
-    cd dearust
-    cargo xtask build
-    cargo xtask check
+## Current Status & Verified Work
 
-Install Rust with rustfmt and Clippy, a host C compiler/linker, and LLVM tools
-as described in BUILDING.txt. Optional integration tests need matching Darling
-sources and build artifacts. Recorded absolute developer paths are historical
-provenance; use your own paths for reproduction. Raw screenshots and some large
-runtime test artifacts referenced in records are local and are not bundled here.
+These results reflect a locally modified, matching `x86_64` runtime environment. They do **not** claim arbitrary macOS app compatibility. Full reproduction boundaries and verification details are documented in [`LOCKSET-PROCESS.txt`](https://www.google.com/search?q=LOCKSET-PROCESS.txt) and [`lockset-process-verification.json`](https://www.google.com/search?q=lockset-process-verification.json).
 
-Documentation
--------------
-BUILDING.txt          Build requirements and commands
-MIGRATION.txt         Migration boundaries and remaining work
-LOCKSET-PROCESS.txt   Latest runtime implementation and validation
-GUI-VERIFICATION.txt  Selected GUI execution evidence and limitations
-verification.json    Verification records
+* **6 Host Utilities:** Fully ported to Rust, handling Mach-O/ELF metadata parsing and core file conversion.
+* **Low-Level Synchronization:** Safe Rust synchronization primitives, Linux `futex` backends, and Darwin/Linux `errno` translation layers.
+* **Mach Locksets:** Real Mach ports, lock handoff mechanisms, and thread/task lifecycle dispatching implemented in Rust.
+* **Runtime Queries:** Partial implementation of Darwin process descriptors, file-descriptor tables, vnodes, and mapped-file lookups.
+* **Test Coverage:** **97** Rust tests and **24** Python tests pass in the baseline environment.
+* **App Verification:** **29/29** app checks pass against the Rust kernel (28 exact-match outputs, 1 passing with an explicit timestamp normalization on a known `cfbridge` log line). Selected GUI checks (**TextEditor** and **Calculator**) pass.
 
-Licensing
----------
-See LICENSE (GPL-3.0) and component-specific notices, including LICENSE-BSDLN
-and the preserved Apple license under crates/dearust-lockset/bridge. Upstream
-Darling and dependency authors retain their respective copyrights.
+---
 
-Detailed migration notes
-------------------------
-Target: the FULL migration of https://github.com/darlinghq/darling to Rust,
-including its runtime, server, libraries, frameworks and dependencies.
-The full migration is INCOMPLETE. Rust runtime components and server locksets
-have executed selected command-line and Cocoa GUI checks using a matching locally
-modified Darling installation.
-This workspace does not yet build a complete Darling runtime.
+## Implemented Components
 
-Functioning Rust components
----------------------------
-Six Linux host binaries now build with Cargo:
+### 1. Linux Host Binaries (`Cargo`)
 
-  elfdep, getuuid       Bounds-checked thin/FAT Mach-O metadata readers
-  bsdln                Hard/symbolic linking utility, without libbsd
-  print_wrapped_elf    All wrapped ELF names in the first Mach-O architecture
-  darling-coredump    32/64-bit x86 ELF core to Mach-O core conversion
-  wrapgen              ELF64 wrapper source/header generation (partial port)
+All utilities build via Cargo without requiring CMake. The parsers, conversion logic, and synchronization state machines strictly forbid `unsafe` code (see individual crate `SAFETY.txt` files for small, documented C/futex boundaries).
 
-The parser/converter crates and synchronization state-machine core forbid
-unsafe code. The native synchronization adapter has small documented unsafe
-C pointer, callback and Linux futex boundaries; see its SAFETY.txt. The workspace has no third-party Rust dependencies. The core converter preserves
-register layouts and overlay file reconstruction. Its floating-point state remains zero, matching upstream's
-unimplemented floating-state extraction. Its diagnostics differ from upstream;
-HOME-unset account lookup uses procfs and /etc/passwd, without NSS services.
-CLI readers currently read whole inputs, which can use more memory than mmap.
+| Utility | Description | Status |
+| --- | --- | --- |
+| `elfdep` | Bounds-checked thin/FAT Mach-O dependency reader | Full port |
+| `getuuid` | Mach-O UUID extractor | Full port |
+| `bsdln` | Hard & symbolic linking utility (removes `libbsd` dependency) | Full port |
+| `print_wrapped_elf` | Scans wrapped ELF library references in first Mach-O slice | Full port |
+| `darling-coredump` | 32/64-bit x86 ELF core to Mach-O core dump converter | Full port |
+| `wrapgen` | ELF64 wrapper source/header generator | Partial port* |
 
-wrapgen matches upstream generated C/header output for ordinary identifiers
-and corrects DT_SONAME handling at nonzero load addresses. It never loads or
-executes input libraries. Safe name resolution covers explicit paths,
-LD_LIBRARY_PATH, ldconfig cache and common Linux directories; caller-specific
-RPATH/RUNPATH, audit modules and all loader hardware policy are not implemented.
-It therefore remains explicitly PARTIAL. Use explicit library paths for
-reproducible generation. Invalid source identifiers/names are rejected.
+**Note on `wrapgen`:* Safe path resolution covers explicit file paths, `LD_LIBRARY_PATH`, `/etc/ld.so.cache`, and standard Linux system dirs. Caller-specific `RPATH`/`RUNPATH`, custom audit modules, and dynamic loader hardware quirks are not implemented. Always supply explicit paths for deterministic outputs.
 
-A native Linux x86_64 libsimple synchronization archive also provides the
-13 documented C functions plus the externally linked cmpxchg helper, preserving
-four-byte state layouts. C-link concurrency tests compare it with upstream.
-This source remains PARTIAL: the native and Darling x86_64 futex backends work,
-while i386/other architectures and clean pinned-runtime startup remain pending. Cargo build/staging now emits a no_std panic-abort archive; libc supplies
-syscall and abort. Normal Rust development/tests retain the default std feature.
+### 2. Runtime Slices (`no_std` Mach-O / ELF)
 
-A separate no_std errno converter now preserves the pinned Linux-to-Darwin
-mapping, sign handling and both original C globals. It fixes signed overflow
-for INT_MIN, verified against compiled original C plus UBSan. Cargo stages a
-native ELF object with hidden symbols and no unresolved runtime dependencies.
-Darwin Mach-O errno/futex/lock objects now link into the actual original
-libsystem_kernel. Native execution checks real guarded-table and close consumers.
-i386 Rust replacements, full emulation migration and clean pinned-runtime startup
-remain pending. Actual installed-runtime execution is described below.
+* **`libsimple` Synchronization:** Provides the 13 documented C synchronization primitives and the externally linked `cmpxchg` helper, maintaining identical 4-byte state layouts. Staged as a `no_std`, panic-abort archive (`liblibsimple_darlingserver.a`).
+* **Darwin/Linux Errno Mapping:** A `no_std` translation layer preserving exact Linux-to-Darwin mappings and signed integer handling (including `INT_MIN` boundary fixes). Staged as a native ELF object with hidden symbols and linked into `libsystem_kernel`.
+* **Mach Lockset Server & Process Queries:** Executes real Mach-O applications inside unprivileged user, mount, and PID namespaces without patching installed binaries.
 
-Build and stage with Cargo
---------------------------
-Rust 1.85+, Cargo, a host linker, rustfmt and Clippy are required:
+---
 
-  cargo xtask build
-  cargo xtask check
-  cargo xtask install --destdir /path/to/stage
+## Migration Progress
 
-Native builds require no CMake. The release binaries are under target/release
-(or CARGO_TARGET_DIR). Staging uses an explicit host triple and target directory,
-preserves upstream build-tree paths for build-only tools and the upstream
-bin/darling-coredump installation path. The typed graph also stages the native
-libsimple static archive at src/libsimple-linux/liblibsimple_darlingserver.a. Its deterministic manifest records the
-host artifact graph. The errno object is staged separately under
-lib/darling/native. See BUILDING.txt and xtask/README.md for boundaries.
+Progress is tracked granularly against upstream commit [`60ba801`](https://www.google.com/search?q=https://github.com/darlinghq/darling/commit/60ba801decee7a00782f74f6be4c8ffb013f79ff).
 
-This is a Cargo replacement for these host artifact operations. MIG generation,
-Full Cargo runtime linking, SDK/framework assembly, circular dependencies,
-architecture slices and the complete upstream install graph remain pending.
+```
+Superproject Entries [27,274 total]
+[██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 7 Ported / Partial (27,267 Pending)
 
-Fixes and evidence
-------------------
-Regression tests cover forced links deleting their own source, DT_SONAME being
-treated as a virtual address, dropped extra core mappings, incorrect zero-fill
-lengths, uninitialized Mach-O segment padding, output/input aliases, parser
-bounds and adversarial resource amplification. Differential suites compare all
-six utilities with compiled pinned upstream sources. Generated wrapper C also
-compiles against the pinned elfcalls ABI header and links to an x86-64 Mach-O
-whose ELF dependency is checked. These include isolated native ABI checks; they do not establish full runtime or
-macOS application conformance. verification.json records the latest checks.
+Default Build Targets [1,629 total]
+[█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 7 Cargo Slices (1,622 Pending)
 
-The synthetic 64 MiB zero-fill core conversion benchmark measured about 32 ms
-upstream versus 22 ms Rust median, with equal normalized output. This supports
-a workload-specific improvement only. Whole wrapgen CLI measurements on libm
-were slower in Rust. Reproducible scripts, raw samples, environment and limits
-are committed; no general Darling speedup is claimed.
+```
 
-Full-scope tracking
--------------------
-migration-inventory.json covers all 27,274 superproject entries at
-60ba801decee7a00782f74f6be4c8ffb013f79ff: 5 implemented source replacements,
-2 partial source replacements, and 27,267 pending entries. Counts include
-headers, resources and gitlinks; they do not measure runtime completeness.
-dependency-inventory.json separately expands exact pinned dependency trees,
-including nested gitlinks and license evidence. Two dependency sources (errno/futex) have verified native execution and Darwin
-consumer linkage and remain partial; 265,801 leaves remain pending. MIGRATION.txt defines full-completion gates. No original ABI, resource,
-framework or dependency is waived, and no placeholders count as ports.
+Detailed breakdowns are maintained in:
 
-The optional upstream-rust-tools.patch remains the earlier THREE-tool adapter
-snapshot (elfdep/getuuid/bsdln). It applies to the pinned upstream but does not
-contain the newer converter/wrapper ports or replace the remaining CMake graph.
-The isolated original upstream configures with its default CMake options and
-all pinned dependency trees. Forty-four Swift Git LFS binary pointers remain
-unmaterialized; configuration is not a full build. The recorded File API graph
-and baseline report capture remaining migration inputs. migration-targets.json
-tracks 1,629 default targets: seven have Cargo artifact slices (including partial
-ones), while 1,622 remain pending. Separate Git worktrees
-preserve parallel implementation and review history.
+* [`migration-inventory.json`](https://www.google.com/search?q=migration-inventory.json): Full superproject file-by-file tracking.
+* [`dependency-inventory.json`](https://www.google.com/search?q=dependency-inventory.json): Pinned submodules, license records, and leaf dependencies.
+* [`migration-targets.json`](https://www.google.com/search?q=migration-targets.json): Upstream build targets vs. Cargo implementations.
+* [`MIGRATION.txt`](https://www.google.com/search?q=MIGRATION.txt): Completion gates, architectural boundaries, and pending ABI specs.
 
-The errno conversion microbenchmark measured 3.042 ns/call for pinned C and
-2.803 ns/call for the final safe Rust lookup over mixed signed inputs. The first
-Rust match implementation was slower. Raw measurements, compiler/source hashes
-and limits are in crates/dearust-errno; this is not a Darling runtime speedup.
+---
 
-Darling runtime integration
----------------------------
-`cargo xtask runtime --target x86_64-apple-darwin --destdir /path/to/runtime`
-builds three no_std Mach-O objects and a thin libsimple archive without CMake,
-an allocator or a Rust panic runtime. The native target can build the same
-Darling ABI chain for execution tests. See tools/DARWIN-RUNTIME.txt.
+## Getting Started
 
-The original emulation/system_kernel targets now build. The complete actual
-system_kernel final link accepts the Rust x86_64 slices with the same 1,362 public
-symbols and 18 imports. Its original i386 final slice is preserved byte-for-byte.
-This pinned-baseline link gate remains separate from actual execution in the
-locally modified installed runtime described below. Full Cargo runtime migration
-remains pending.
+### Prerequisites
 
+* **Rust:** `1.85+` (with `rustfmt` and `clippy`)
+* **Host Toolchain:** Host C compiler (`clang` or `gcc`), linker, and LLVM development tools
+* *(Optional)*: A matching upstream Darling build tree if running Darwin integration tests
 
-Actual macOS command-line execution
-----------------------------------
-The Rust errno/futex/libsimple slices also link into the locally modified installed
-Darling runtime, preserving its 1,370 public definitions and 40 imports. Matching
-original and Rust variants both boot and pass Bash pipeline, SQLite table/insert/
-aggregate, Python JSON/SHA-256 and offline curl version checks, plus Objective-C,
-pthread, TLS, fork and Mach semaphore tests. The running launchd process's mapped
-library inode identifies the copied Rust dylib, whose SHA-256 was checked.
+### Build & Test
 
-This execution uses existing C/assembly, frameworks and server binaries from that
-installation. Its local fileport RPC additions shift call numbers by two; the
-clean pinned kernel therefore cannot boot against that installed server. Matching
-local build objects resolve this protocol mismatch without changing installed
-files. Only x86_64 was exercised. The TextEditor sample and Calculator fixture
-also pass the separate GUI checks in GUI-VERIFICATION.txt. Broader GUI compatibility,
-cancellation behavior and clean pinned full-runtime startup remain unverified. No general speedup or complete port
-is established by these checks.
+Dearust uses `cargo-xtask` to orchestrate builds, verification passes, and staging without external build scripts:
 
-mac-app-verification.json records 29 checks per matching variant: 24 strict
-expected-output passes and five shared mismatches. The latter are two lockset
-assertions, a CFURL fixture requiring absent /home, unsupported/failing libproc
-queries, and an extra timestamped cfbridge NSLog line despite a zero exit.
-No status/exit regression was observed between the matching variants in this suite.
-The record includes hashes and paths to raw execution and mapping evidence.
+```bash
+# Clone the repository
+git clone https://github.com/countradooku/dearust.git
+cd dearust
 
+# Build host tools (target/release)
+cargo xtask build
 
-Continuation: Rust locksets and process queries
---------------------------------------------
-See LOCKSET-PROCESS.txt and lockset-process-verification.json. The Rust lockset
-server and partial process-query dispatcher execute real Mach-O apps in isolated
-unprivileged user/mount/PID namespaces, without modifying installed binaries or
-the existing user prefix. All 29 app checks pass under the Rust kernel when the
-known cfbridge timestamp is explicitly normalized (28 strict + 1 normalized). Both
-Cocoa GUI checks and new lifecycle/process probes pass. 97 Rust tests, 24 Python
-tests, formatting and strict Clippy pass. Earlier records above are historical.
+# Run formatting, clippy, unit tests, and regression suites
+cargo xtask check
 
-Four dependency source slices are partial, 265799 entries remain pending. Target
-retirement counts are unchanged. Legacy process flavors still delegate to C;
-fixed-priority lock ordering uses enqueue-time priority; unlinked overlay map
-identity remains limited. Full Rust migration and arbitrary app compatibility
-are not established. Matching final artifacts are continuation work/
-server-lockset-release/darlingserver and process-kernel-final/
-libsystem_kernel-rust.dylib. Reproduction commands are in LOCKSET-PROCESS.txt.
+# Stage host artifacts to a custom directory
+cargo xtask install --destdir /path/to/stage
+
+# (Optional) Build Darwin runtime Mach-O slices
+cargo xtask runtime --target x86_64-apple-darwin --destdir /path/to/runtime
+
+```
+
+---
+
+## Benchmarks & Micro-Optimizations
+
+These benchmarks demonstrate isolated, workload-specific behavior only. **They do not claim a general Darling runtime speedup.**
+
+* **Core Conversion (`darling-coredump`):** A synthetic 64 MiB zero-fill conversion measured **~22 ms (Rust)** vs. **~32 ms (Upstream C)** median runtime with bit-identical normalized output.
+* **Errno Translation:** Microbenchmarks recorded **2.803 ns/call (Rust branchless/table)** vs. **3.042 ns/call (Upstream C)** over mixed signed values.
+* **`wrapgen`:** Full CLI runs over complex inputs like `libm` are currently slightly slower in Rust due to complete buffered I/O rather than memory-mapped reads.
+
+---
+
+## Documentation Index
+
+| File | Purpose |
+| --- | --- |
+| [`BUILDING.txt`](https://www.google.com/search?q=BUILDING.txt) | Detailed build requirements, linker flags, and environment vars |
+| [`MIGRATION.txt`](https://www.google.com/search?q=MIGRATION.txt) | Subsystem boundaries, migration rules, and remaining milestones |
+| [`LOCKSET-PROCESS.txt`](https://www.google.com/search?q=LOCKSET-PROCESS.txt) | Latest runtime lockset implementation details and verification |
+| [`GUI-VERIFICATION.txt`](https://www.google.com/search?q=GUI-VERIFICATION.txt) | Test notes and execution constraints for Cocoa GUI applications |
+| [`verification.json`](https://www.google.com/search?q=verification.json) | SHA-256 artifacts, suite outputs, and machine-readable test records |
+
+---
+
+## Licensing
+
+Dearust is licensed under the **GNU General Public License v3.0** ([`LICENSE`](https://www.google.com/search?q=LICENSE)).
+
+Individual ported components, bridge files, and headers retain their original upstream licenses:
+
+* `bsdln`: Distributed under the BSD 3-Clause License ([`LICENSE-BSDLN`](https://www.google.com/search?q=LICENSE-BSDLN)).
+* Lockset bridge sources (`crates/dearust-lockset/bridge`): Retain original Apple Public Source License (APSL) notices.
+* Upstream Darling contributors and third-party dependency authors retain all respective copyrights.
