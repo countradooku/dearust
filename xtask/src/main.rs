@@ -1,13 +1,16 @@
 use std::{
     env,
     ffi::OsString,
-    path::Path,
+    path::{Path, PathBuf},
     process::{Command, ExitCode, ExitStatus},
 };
 
-const HELP: &str = "Usage: cargo xtask <build|check|test|bench|help>
+mod install;
+
+const HELP: &str = "Usage: cargo xtask <build|install|check|test|bench|help>
 
   build  Build ported Rust tools in release mode
+  install --destdir PATH  Build and stage host tools in upstream build-tree layout
   check  Check formatting, lint all workspace targets, then run tests and doctests
   test   Run workspace tests and doctests
   bench  Benchmark the ported Mach-O metadata parser
@@ -18,6 +21,7 @@ are built; this command does not build or invoke the legacy CMake project.";
 #[derive(Debug, PartialEq, Eq)]
 enum Task {
     Build,
+    Install(PathBuf),
     Check,
     Test,
     Bench,
@@ -27,6 +31,19 @@ enum Task {
 fn parse(args: impl IntoIterator<Item = OsString>) -> Result<Task, String> {
     let mut args = args.into_iter();
     let first = args.next();
+    if first.as_deref() == Some(std::ffi::OsStr::new("install")) {
+        if args.next().as_deref() != Some(std::ffi::OsStr::new("--destdir")) {
+            return Err("install requires --destdir PATH".into());
+        }
+        let path = args
+            .next()
+            .filter(|path| !path.is_empty())
+            .ok_or("install requires a nonempty destination path")?;
+        if args.next().is_some() {
+            return Err("unexpected additional install arguments".into());
+        }
+        return Ok(Task::Install(path.into()));
+    }
     if args.next().is_some() {
         return Err("expected exactly one task; additional arguments are not supported".into());
     }
@@ -52,6 +69,7 @@ fn commands(task: &Task) -> Vec<Vec<&'static str>> {
             "--offline",
             "--locked",
         ]],
+        Task::Install(_) => vec![],
         Task::Check => vec![
             vec!["fmt", "--all", "--", "--check"],
             vec![
@@ -118,6 +136,12 @@ fn main() -> ExitCode {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .expect("xtask is a workspace member");
+    if let Task::Install(path) = &task {
+        if let Err(error) = install::build_and_stage(&cargo, root, path) {
+            eprintln!("xtask: {error}");
+            return error.code();
+        }
+    }
     for args in commands(&task) {
         eprintln!("+ cargo {}", args.join(" "));
         if let Err(code) = run(Command::new(&cargo).current_dir(root).args(args)) {
@@ -137,6 +161,19 @@ mod tests {
         assert!(parse(["test".into(), "--release".into()]).is_err());
         assert_eq!(parse([]), Ok(Task::Help));
         assert_eq!(parse(["check".into()]), Ok(Task::Check));
+        assert_eq!(
+            parse(["install".into(), "--destdir".into(), "host tools".into()]),
+            Ok(Task::Install(PathBuf::from("host tools")))
+        );
+        for args in [
+            vec!["install"],
+            vec!["install", "--destdir"],
+            vec!["install", "--destdir", ""],
+            vec!["install", "--prefix", "stage"],
+            vec!["install", "--destdir", "stage", "extra"],
+        ] {
+            assert!(parse(args.into_iter().map(OsString::from)).is_err());
+        }
     }
 
     #[test]
