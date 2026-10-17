@@ -54,3 +54,7 @@ client library. Existing server, scheduler, Mach IPC, and frameworks remain in
 C/C++. A passing lockset suite does not establish arbitrary application or full
 Darling compatibility. Interruption, priority, lifecycle and handoff state tests
 supplement actual Mach guest execution; they do not prove all scheduling races.
+
+Licensing: Rust implementation follows the workspace GPL-3.0-or-later license.
+The small bridge retains Apple APSL-2.0 attribution for port conversion and
+no-senders patterns adapted from ipc_sync.c; bridge/APPLE_LICENSE is preserved.
