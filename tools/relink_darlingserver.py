@@ -40,7 +40,8 @@ def defined_symbols(path):
     return result.stdout
 
 
-def relink(build, output, replace, archives):
+def relink(build, output, replace, archives, server_replace=None):
+    server_replace = server_replace or {}
     validate_output(build, output)
     server = build / 'src/external/darlingserver'
     duct = server / 'duct-tape'
@@ -70,6 +71,8 @@ def relink(build, output, replace, archives):
     subprocess.run([archive_command[0], 's', str(archive)], check=True)
     original_link = shlex.split((server / 'CMakeFiles/darlingserver.dir/link.txt').read_text())
     link = []
+    server_used = set()
+    server_inputs = []
     skip = False
     for i, item in enumerate(original_link):
         if skip:
@@ -81,12 +84,24 @@ def relink(build, output, replace, archives):
         elif item == 'duct-tape/libdarlingserver_duct_tape.a':
             link.extend([str(archive), *map(str, archives)])
         elif item.endswith(('.o', '.a')):
-            link.append(str((server / item).resolve(strict=True)))
+            original = (server / item).resolve(strict=True)
+            server_prefix = 'CMakeFiles/darlingserver.dir/'
+            key = item[len(server_prefix):-2] if item.startswith(server_prefix) and item.endswith('.o') else None
+            selected = server_replace.get(key, original)
+            if key in server_replace:
+                server_used.add(key)
+            server_inputs.append({'source': key, 'original': str(original),
+                                  'original_sha256': digest(original), 'selected': str(selected),
+                                  'selected_sha256': digest(selected)})
+            link.append(str(selected))
         else:
             link.append(item)
+    if server_used != set(server_replace):
+        raise ValueError('unknown server replacements: ' + ', '.join(set(server_replace) - server_used))
     link.append('-Wl,-Map,' + str(output / 'darlingserver.map'))
     subprocess.run(link, check=True)
-    report = {'build': str(build), 'replacements': sorted(used), 'inputs': provenance,
+    report = {'build': str(build), 'replacements': sorted(used), 'inputs': provenance, 'server_inputs': server_inputs,
+              'server_replacements': sorted(server_used),
               'extra_archives': [{'path': str(p), 'sha256': digest(p)} for p in archives],
               'link_argv': link, 'archive_argv': ar,
               'server_sha256': digest(output / 'darlingserver'),
@@ -104,10 +119,11 @@ def main():
     parser.add_argument('--build', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--replace', action='append', default=[], metavar='SOURCE=OBJECT')
+    parser.add_argument('--replace-server', action='append', default=[], metavar='SOURCE=OBJECT')
     parser.add_argument('--archive', action='append', type=Path, default=[])
     args = parser.parse_args()
     relink(args.build.resolve(strict=True), args.output.resolve(), replacements(args.replace),
-           [p.resolve(strict=True) for p in args.archive])
+           [p.resolve(strict=True) for p in args.archive], replacements(args.replace_server))
 
 
 if __name__ == '__main__':
