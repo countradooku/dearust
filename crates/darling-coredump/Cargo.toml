@@ -1,0 +1,11 @@
+[package]
+name = "darling-coredump"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "GPL-3.0-or-later"
+publish = false
+description = "Safe ELF to Mach-O core dump converter for Darling"
+
+[lints.rust]
+unsafe_code = "forbid"

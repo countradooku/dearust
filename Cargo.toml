@@ -8,7 +8,7 @@ publish = false
 description = "Safe Rust ports of Darling host utilities"
 
 [workspace]
-members = ["xtask"]
+members = ["xtask", "crates/darling-coredump"]
 resolver = "3"
 
 [lints.rust]

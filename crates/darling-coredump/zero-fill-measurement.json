@@ -1,0 +1,75 @@
+{
+  "scenario": "synthetic 64 MiB zero mapping, temporary regular file, warm cache, no fsync",
+  "samples_ms": {
+    "upstream": [
+      32.477308,
+      32.40478,
+      31.73775,
+      30.318458,
+      31.51584,
+      32.749121,
+      31.571907,
+      32.90749,
+      31.674781,
+      31.634424,
+      33.661535,
+      31.667256,
+      32.686924,
+      33.234819,
+      31.379824,
+      31.017248,
+      34.621019,
+      33.5105,
+      33.584901,
+      32.30924,
+      29.882664
+    ],
+    "rust": [
+      21.632582,
+      21.811762,
+      22.87998,
+      21.581727,
+      22.330852,
+      20.610721,
+      20.443164,
+      22.448585,
+      21.794048,
+      22.185508,
+      21.112249,
+      24.274626,
+      23.543403,
+      20.655516,
+      21.831348,
+      22.671205,
+      22.736209,
+      22.575765,
+      24.041926,
+      21.2506,
+      21.84834
+    ]
+  },
+  "median_ms": {
+    "upstream": 32.30924,
+    "rust": 21.84834
+  },
+  "median_speedup": 1.4787961007563963,
+  "validation": {
+    "upstream": {
+      "output_bytes": 67108968,
+      "normalized_sha256": "d575ae53f6667a6cdbc07bbd655635c831cfdd84df0d50ffd2de52272178b8a3",
+      "peak_rss_kib": 3504
+    },
+    "rust": {
+      "output_bytes": 67108968,
+      "normalized_sha256": "d575ae53f6667a6cdbc07bbd655635c831cfdd84df0d50ffd2de52272178b8a3",
+      "peak_rss_kib": 1856
+    }
+  },
+  "upstream_baseline": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
+  "upstream_compile_flags": "g++ -O2 -std=gnu++17",
+  "rust_compile_flags": "cargo build -p darling-coredump --release (workspace thin LTO, codegen-units=1)",
+  "platform": "Linux-7.2.9-200.nobara.fc44.x86_64-x86_64-with-glibc2.43",
+  "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "g++": "g++ (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)",
+  "limitations": "Synthetic zero-backed region only; warm cached temporary regular file, no fsync. RSS is one separate GNU time measurement. Input reading cost is tiny here; Rust currently reads complete ELF files, whereas upstream mmap can reduce memory on large actual cores. Semantics compare output size and SHA256 with only uninitialized upstream segment name padding normalized."
+}
