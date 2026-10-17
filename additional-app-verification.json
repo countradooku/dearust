@@ -199,5 +199,83 @@
         "kernel_sha256": "3921f82883332b158d1959b8cd67b3d4942c94199a78bd7fa982a6e986f50ddf"
       }
     ]
+  },
+  "final_combined_gui": {
+    "raw_report": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/runtime-expansion-gui-final/comparison.json",
+    "raw_report_sha256": "8414a40523c7360781eaf5d817f6dd61400b38a6169e9a1fdced7f0a4b297b29",
+    "manual_screenshot_review": "All six final screenshots inspected: both TextEditors display rust gui edit verified; both Calculators display19 and controls before actions; both shading apps display controls and red/black axial gradient. Calculator logs assert42 after actions.",
+    "scope": "Three sample/fixture GUIs only; no save/reopen, radial controls, arbitrary third-party compatibility claim.",
+    "cleanup": "All owned prefixes shut down, launchers reaped, hidden Xephyr stopped.",
+    "variants": [
+      {
+        "variant": "original",
+        "kernel_sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f",
+        "mapped_kernel_verified": true,
+        "shutdown_exit": 0,
+        "all_launchers_reaped": true,
+        "results": [
+          {
+            "name": "Calculator",
+            "pass": true,
+            "screenshot_sha256": "639cdd1f0781f6e4d195109902aa43a3e9c6d6614e29a8f628912df3b6820182"
+          },
+          {
+            "name": "TextEditor",
+            "pass": true,
+            "screenshot_sha256": "211220a7fa0094aedf00e37cee2697b6a3bcc0c74b6410c2e7c871ec908a6809"
+          },
+          {
+            "name": "CGShadingCreate",
+            "pass": true,
+            "screenshot_sha256": "213ba91b0d9454fa28d4543e022f3f5cd8482eb3c72574060c4076df07052a9d"
+          }
+        ]
+      },
+      {
+        "variant": "rust",
+        "kernel_sha256": "109981424c7be844ab02ab10c0ff1a8efea048f3bc93af6bf9cffcca9f422219",
+        "mapped_kernel_verified": true,
+        "shutdown_exit": 0,
+        "all_launchers_reaped": true,
+        "results": [
+          {
+            "name": "Calculator",
+            "pass": true,
+            "screenshot_sha256": "639cdd1f0781f6e4d195109902aa43a3e9c6d6614e29a8f628912df3b6820182"
+          },
+          {
+            "name": "TextEditor",
+            "pass": true,
+            "screenshot_sha256": "211220a7fa0094aedf00e37cee2697b6a3bcc0c74b6410c2e7c871ec908a6809"
+          },
+          {
+            "name": "CGShadingCreate",
+            "pass": true,
+            "screenshot_sha256": "213ba91b0d9454fa28d4543e022f3f5cd8482eb3c72574060c4076df07052a9d"
+          }
+        ]
+      }
+    ]
+  },
+  "final_combined_utilities": {
+    "raw_report": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/runtime-expansion-utilities/comparison.json",
+    "raw_report_sha256": "ff8921f40842634358570a80fccb5f098f393e86029b67147c9d7369735f2ba7",
+    "variants": [
+      {
+        "variant": "original",
+        "kernel_sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f",
+        "mapped_kernel_verified": true,
+        "passed": 7,
+        "total": 8
+      },
+      {
+        "variant": "rust",
+        "kernel_sha256": "109981424c7be844ab02ab10c0ff1a8efea048f3bc93af6bf9cffcca9f422219",
+        "mapped_kernel_verified": true,
+        "passed": 8,
+        "total": 8
+      }
+    ],
+    "result": "Rust8/8 pass; original7/8 pass, bsdtar SIGSEGV unchanged."
   }
 }
