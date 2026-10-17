@@ -1,0 +1,132 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Native ABI/concurrency harness. Identical source links to pinned C and Rust.
+#include <assert.h>
+#include <pthread.h>
+#include <signal.h>
+#include <stdatomic.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h>
+#include <libsimple/lock.h>
+#define THREADS 8
+#define LOOPS 10000
+#define ROUNDS 80
+#define ABI(type) _Static_assert(sizeof(type)==4 && _Alignof(type)==4,#type " must be 4-byte ABI")
+ABI(libsimple_lock_t);
+ABI(libsimple_once_t);
+ABI(libsimple_rwlock_t);
+ABI(libsimple_condvar_t);
+static libsimple_lock_t mutex=LIBSIMPLE_LOCK_INITIALIZER;
+static libsimple_once_t once=LIBSIMPLE_ONCE_INITIALIZER;
+static libsimple_rwlock_t rw=LIBSIMPLE_RWLOCK_INITIALIZER;
+static libsimple_condvar_t work=LIBSIMPLE_CONDVAR_INITIALIZER;
+static libsimple_condvar_t progress=LIBSIMPLE_CONDVAR_INITIALIZER;
+static pthread_barrier_t start;
+static uint64_t counter, rw_count, rw_check=0x12345678, published;
+static atomic_uint calls, readers, writers;
+static unsigned generation, ready, completed;
+static void spawn_join(void* (*entry)(void*)) {
+    pthread_t threads[THREADS];
+    for(uintptr_t i=0;i<THREADS;i++) assert(pthread_create(&threads[i],NULL,entry,(void*)i)==0);
+    for(unsigned i=0;i<THREADS;i++) assert(pthread_join(threads[i],NULL)==0);
+}
+static void initialize(void* context) {
+    assert(context==&published);
+    assert(atomic_fetch_add(&calls,1)==0);
+    struct timespec delay={0,2000000};
+    nanosleep(&delay,NULL);
+    published=0xfeedface;
+}
+static void* test_mutex_once(void* ignored) {
+    (void)ignored;
+    int result=pthread_barrier_wait(&start);
+    assert(result==0 || result==PTHREAD_BARRIER_SERIAL_THREAD);
+    libsimple_once(&once,initialize,&published);
+    assert(published==0xfeedface);
+    for(unsigned i=0;i<LOOPS;i++) {
+        libsimple_lock_lock(&mutex);
+        counter++;
+        libsimple_lock_unlock(&mutex);
+    }
+    return NULL;
+}
+static void* test_rw(void* context) {
+    int writer=((uintptr_t)context%2)==0;
+    for(unsigned i=0;i<LOOPS;i++) {
+        if(writer) {
+            libsimple_rwlock_lock_write(&rw);
+            assert(atomic_fetch_add(&writers,1)==0);
+            assert(atomic_load(&readers)==0);
+            rw_count++;
+            rw_check=rw_count^0x12345678;
+            assert(atomic_fetch_sub(&writers,1)==1);
+            libsimple_rwlock_unlock_write(&rw);
+        } else {
+            libsimple_rwlock_lock_read(&rw);
+            atomic_fetch_add(&readers,1);
+            assert(atomic_load(&writers)==0);
+            assert(rw_check==(rw_count^0x12345678));
+            atomic_fetch_sub(&readers,1);
+            libsimple_rwlock_unlock_read(&rw);
+        }
+    }
+    return NULL;
+}
+static void* test_cond(void* ignored) {
+    (void)ignored;
+    libsimple_lock_lock(&mutex);
+    for(unsigned round=1;round<=ROUNDS;round++) {
+        ready++;
+        libsimple_condvar_notify_one(&progress,&mutex);
+        while(generation<round) libsimple_condvar_wait(&work,&mutex);
+        completed++;
+        libsimple_condvar_notify_one(&progress,&mutex);
+    }
+    libsimple_lock_unlock(&mutex);
+    return NULL;
+}
+int main(void) {
+    alarm(20); // Fail boundedly if a lost wakeup or deadlock occurs.
+    libsimple_lock_init(&mutex);
+    libsimple_once_init(&once);
+    libsimple_rwlock_init(&rw);
+    libsimple_condvar_init(&work);
+    libsimple_condvar_init(&progress);
+    assert(libsimple_lock_try_lock(&mutex));
+    assert(!libsimple_lock_try_lock(&mutex));
+    libsimple_lock_unlock(&mutex);
+    assert(pthread_barrier_init(&start,NULL,THREADS)==0);
+    spawn_join(test_mutex_once);
+    assert(pthread_barrier_destroy(&start)==0);
+    assert(counter==THREADS*LOOPS && atomic_load(&calls)==1);
+    libsimple_once(&once,initialize,&published);
+    assert(atomic_load(&calls)==1);
+    libsimple_once(&once,NULL,NULL); // Completed once must not inspect callback/context.
+    assert(libsimple_rwlock_try_lock_read(&rw));
+    assert(libsimple_rwlock_try_lock_read(&rw));
+    assert(!libsimple_rwlock_try_lock_write(&rw));
+    libsimple_rwlock_unlock_read(&rw);
+    libsimple_rwlock_unlock_read(&rw);
+    assert(libsimple_rwlock_try_lock_write(&rw));
+    assert(!libsimple_rwlock_try_lock_read(&rw));
+    assert(!libsimple_rwlock_try_lock_write(&rw));
+    libsimple_rwlock_unlock_write(&rw);
+    spawn_join(test_rw);
+    assert(rw_count==(THREADS/2)*LOOPS);
+    pthread_t waiters[THREADS];
+    for(unsigned i=0;i<THREADS;i++) assert(pthread_create(&waiters[i],NULL,test_cond,NULL)==0);
+    for(unsigned round=1;round<=ROUNDS;round++) {
+        libsimple_lock_lock(&mutex);
+        while(ready<THREADS*round) libsimple_condvar_wait(&progress,&mutex);
+        generation=round;
+        libsimple_condvar_notify_all(&work,&mutex);
+        while(completed<THREADS*round) libsimple_condvar_wait(&progress,&mutex);
+        libsimple_lock_unlock(&mutex);
+    }
+    for(unsigned i=0;i<THREADS;i++) assert(pthread_join(waiters[i],NULL)==0);
+    assert(completed==THREADS*ROUNDS);
+    printf("abi=4:4 mutex=%lu once=%u publication=%lu rw=%lu cond=%u\n",
+        (unsigned long)counter,atomic_load(&calls),(unsigned long)published,(unsigned long)rw_count,completed);
+    return 0;
+}

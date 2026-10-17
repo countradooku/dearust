@@ -1,0 +1,18 @@
+[package]
+name = "darling-libsimple"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "GPL-3.0-or-later"
+publish = false
+description = "Native Linux x86_64 libsimple lock C ABI with a safe atomic core"
+
+[lib]
+name = "darling_simple"
+crate-type = ["staticlib", "rlib"]
+
+[lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+
+[lints.clippy]
+undocumented_unsafe_blocks = "deny"

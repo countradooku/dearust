@@ -1,0 +1,115 @@
+Native libsimple lock slice: safety contract and scope
+====================================================
+
+Source: Darling src/libsimple/src/lock.c and public lock.h/base.h at
+60ba801decee7a00782f74f6be4c8ffb013f79ff, adapted under GPL-3.0-or-later.
+All 13 synchronization functions declared in lock.h are provided. Header-only
+initializers remain verbatim C. Each public state struct remains one uint32_t:
+size 4, alignment 4, initially zero. No heap object, pointer, Rust Mutex, or hidden
+per-lock storage replaces that word. The internal, non-header C helper
+cmpxchg_wrapper_u32 is not a public ABI export in this port.
+
+Scope is PARTIAL for the original source: only native Linux x86_64 is supported.
+The Darling/Darwin __linux_futex_reterr backend and other native architectures
+remain unported. Unsupported target OS/architecture combinations fail to compile.
+No Darling runtime, libSystem bootstrap, or macOS application integration is
+claimed. The production state-machine module uses core atomics and forbids all
+unsafe code; it is suitable for a future no_std crate. The current native archive
+still links Rust std. A no_std final staticlib requires a separate panic/startup
+integration decision and is not delivered here. Linux C consumers link with
+-pthread -ldl -lm, as exercised by scripts/check-abi.sh and its C harness.
+
+Unsafe inventory
+----------------
+
+1. AtomicU32::from_ptr in the private atomic() helper is necessary because C owns
+   the exact four-byte storage. All exported functions that convert state call
+   this helper inside a documented unsafe block. The caller must provide a
+   non-null, initialized, writable, four-byte-aligned uint32_t state object, live
+   and at the same address for the entire call and while any waiter exists. Rust
+   compile-time assertions and C ABI harness assertions verify atomic/C size and
+   alignment. A shared AtomicU32 reference is used; no exclusive Rust reference
+   to concurrently accessed C storage is ever created. C initialization and
+   reinitialization may access the word non-atomically only before publication or
+   after all users/waiters are gone. All concurrent state accesses must use
+   these functions or compatible atomic accesses; mixed atomic/non-atomic
+   accesses and mixed-size atomic accesses are forbidden. The C caller owns
+   lifetime, publication, initialization, and legal lock/once operation order.
+
+2. The native syscall call is necessary to enter Linux futex without implementing
+   an unsafe hand-written syscall instruction. libc's variadic syscall is bound
+   with core C ABI types. On the only supported target (Linux x86_64), SYS_futex
+   is 202 and c_long is 64 bits. Operations are FUTEX_WAIT/WAKE/REQUEUE and
+   WAIT_BITSET/WAKE_BITSET, always PRIVATE. Valid shared AtomicU32 references
+   supply stable aligned addresses for this synchronous call. Kernel futex
+   access is compatible with atomic user accesses, and the kernel retains no
+   userspace reference after the call returns. For untimed waits the fourth
+   argument is zero (null timeout); for REQUEUE it is INT_MAX (integer val2),
+   not a dereferenceable timeout pointer. The second address is null except
+   REQUEUE, where it references the same live mutex used by the condvar.
+   Bitset masks are 1 for readers, 2 for writers. No arbitrary pointer or syscall
+   operation can enter this safe backend interface. EINTR and EAGAIN simply
+   cause state-machine rechecks, matching upstream. There are no timed APIs.
+
+3. Invoking the once callback is necessary to call C code. Its nullable function
+   pointer uses Option<unsafe extern "C" fn(*mut c_void)> with C-compatible null
+   representation. If initialization can occur, the caller must supply a valid
+   callback/context; callback must return normally, must not unwind or longjmp,
+   and must not recursively enter the same once. A completed once accepts NULL
+   callback/context because neither is inspected, matching C. A NULL callback
+   on the winning initializer path aborts rather than invoking a null pointer.
+   Callback completion is published with an acquire/release exchange to state3;
+   every normal waiter return observes state3 with Acquire. State2 completion
+   wakes all waiters. The native ABI has no Rust panic path on valid inputs.
+
+4. The unsafe(no_mangle) attributes assert that this archive owns the 13 public
+   libsimple symbol names with precisely the C header's signatures. Link this
+   replacement or upstream lock.c, never both in the same final binary. The
+   external declarations for syscall are unsafe because Rust cannot verify
+   their ABI implementation. The remaining unsafe blocks only forward the
+   state contract above, or call the once callback described above. There are
+   no other unsafe operations in this crate; clippy requires block comments and
+   unsafe_op_in_unsafe_fn is denied.
+
+Synchronization invariants
+--------------------------
+
+The private safe core implements atomic state changes and futex coordination;
+it does not produce safe references or guards to caller-owned protected data.
+It is the C caller's responsibility to access that data only under the correct
+lock and to balance lock/unlock operations, just as with the original C API.
+Read locks are counted in low 30 bits; writer ownership is bit30, waiter marker
+is bit31. At most 2^30-1 simultaneous read holds are representable. Once states
+are 0 untriggered, 1 running, 2 running/contended, 3 completed. Mutex states are
+0 unlocked, 1 locked/uncontended, 2 locked/contended. Condvar low bits track wake
+one/all and high bits are the wrapping notification generation.
+
+All condvar operations must use the same mutex. Wait requires mutex ownership,
+releases it, allows a spurious wake, then reacquires as CONTENDED (state2). That
+last rule maintains the mutex wake chain for notify_all's requeued sleepers.
+The caller must check its predicate in a loop. Notifications are coordinated
+under that same mutex in the exercised C protocol. Fairness is the inherited
+writer-preferring state machine; no additional cancellation, robust owner-death,
+process-shared, or priority-inheritance semantics are claimed. No confirmed
+upstream concurrency defect was found or silently changed.
+
+Verification
+------------
+
+cargo test -p darling-libsimple runs seven bounded deterministic safe-core tests:
+spurious waits, once publication/wake-all, reader/writer masks and preference,
+last-reader wake, condvar contended reacquisition, and wrapping notifications.
+
+cargo build -p darling-libsimple --release produces libdarling_simple.a.
+scripts/check-abi.sh UPSTREAM_CHECKOUT ARCHIVE OUTPUT_DIR compiles committed
+upstream C source and the identical C harness against that archive separately:
+cc -O2 -std=gnu11 -Wno-attributes -pthread -I<headers> tests/abi.c
+   <upstream lock.c or Rust staticlib> [-ldl -lm] -o <executable>
+Each process is bounded by alarm(20) and timeout25. The test verifies all four
+size/alignment layouts, header-only init functions, all 13 public ABI symbols,
+try-lock results, 8-thread 80,000 protected increments, callback-once publication
+including completed NULL callback, 40,000 exclusive writer updates concurrent
+with readers, and 8 waiters through 80 notify-all generations plus notify-one
+progress coordination. Rust and pinned C deterministic summaries must match.
+These tests establish the native slice's exercised behavior, not formal proof
+of all schedules or validation of the unported Darwin backend.

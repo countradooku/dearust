@@ -11,5 +11,9 @@ name = "darling-coredump"
 version = "0.1.0"
 
 [[package]]
+name = "darling-libsimple"
+version = "0.1.0"
+
+[[package]]
 name = "xtask"
 version = "0.1.0"
