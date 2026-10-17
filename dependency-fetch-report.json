@@ -1,0 +1,660 @@
+{
+  "fetch_policy": "Explicit bounded all-pin expansion; at most four parallel fetch processes, depth=1, no tags, 75-second per-fetch maximum and 290-second run deadline; successful pins retained under refs/darling-pins",
+  "attempts": [
+    {
+      "repository_url": "https://github.com/antirez/linenoise.git",
+      "commit": "c894b9e59f02203dbe4e2be657572cf88c4230c3",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-BerkeleyDB.git",
+      "commit": "1411173f0eb71f96ab6134de4e052d16acb8c673",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-DSTools.git",
+      "commit": "e015256b16965ac032412f2277c608c7213c03b3",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-DirectoryService.git",
+      "commit": "feb9742f574ab812a210634fd3997f19b645095f",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-Heimdal.git",
+      "commit": "3dfb09751063d6c144143edfb2ef13aa3e8c57de",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-IOGraphics.git",
+      "commit": "905186151d713259296f3ae9458195a7097ea323",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-IOHIDFamily.git",
+      "commit": "189e98e32092d5f5a2c365cc85fd36ac7da2d371",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-IOKitTools.git",
+      "commit": "df58be2f134f7adbdd3c760a165ad3501ee82fb5",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-IONetworkingFamily.git",
+      "commit": "28afb431947b8e8dbbb120db7632ba6de229bf23",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-JavaScriptCore.git",
+      "commit": "93410cc0dbc7a961d58d048c151117acdb18a566",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-MITKerberosShim.git",
+      "commit": "39c014d0c54f9ae922be0d697aa6cc1b19c117b6",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-SecurityTokend.git",
+      "commit": "c826860db4061667af6f0c3aa55282aab0924e1a",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-SmartCardServices.git",
+      "commit": "ec53ce56972565047a716ab166176f203f520393",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-TextEdit.git",
+      "commit": "99ec72a94dab166eefa264e9802ebd0d80aca845",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-WTF.git",
+      "commit": "88a36e496a6f285a9e15140c2c431b817bae353b",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-WebCore.git",
+      "commit": "47fac4c8130ea9afc9b9df68c81ade56ca7ea57e",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-adv_cmds.git",
+      "commit": "56dcf5ebeb822650d7929f666be58544b2391f6e",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-apr.git",
+      "commit": "5aa6eba89e497a67f1b9db7842371141a8616674",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-awk.git",
+      "commit": "5d46e527461bce5fa10b89320a1c6ce5f1ae38b6",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-bash.git",
+      "commit": "2ebbba45039182784202b17069e122367ee63946",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-basic_cmds.git",
+      "commit": "b1ed4f0f6a981590542071d8b36535cf3e441be0",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-bc.git",
+      "commit": "666e93c8223f509ae9c3c69e3c20af45d49a749c",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-bind9.git",
+      "commit": "7542d50b3087edb4a46a2bdb11ba75034aa2bffa",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-bmalloc.git",
+      "commit": "66c88bc0b977ef843a9eaa706d586d9cec2608da",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-bootstrap_cmds.git",
+      "commit": "0f300a7a04bb1174a3b7db58b57d738aadc14e13",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-bsm.git",
+      "commit": "bec0dd61bb07469d1fcb3985822d350abc9934f7",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-bzip2.git",
+      "commit": "dc8c6839093afed1f288715260d32314ad362084",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-cctools.git",
+      "commit": "8777b6dc7c4de87087c028e17db075795b3684d3",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-cfnetwork.git",
+      "commit": "e7e3db881008d883f82914765a72ce842bcba735",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-cocotron.git",
+      "commit": "c8d38d16a9f613d300157bebbab2b9501bc0c274",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-commoncrypto.git",
+      "commit": "2434540f41a5f94f149cfddd67da244961b716e5",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-compiler-rt.git",
+      "commit": "5fd9bc0effa307b99b35da59ce579e8e031c22da",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-configd.git",
+      "commit": "98e52de19c52f7938e581ed20385f38abd7fa197",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-copyfile.git",
+      "commit": "ed6094c9a2f8ba19aa55b7b504c3665797078e8f",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-coretls.git",
+      "commit": "b61a4f075726e7d5ef4652033f8d7b829c008d06",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-crontabs.git",
+      "commit": "b5bc00d2a75f6c622976e2ebbe244fb2d7d602ea",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-cups.git",
+      "commit": "51b7c251ef5ff81adc20284544394de8cc2e1315",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-curl.git",
+      "commit": "92f54fd7eceabed2c2382a4acc0f7293dedd92ff",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-dbuskit.git",
+      "commit": "890e51fda949e4dd2c46765e39074f790c10ca18",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-dmg.git",
+      "commit": "1a6de10c5886c40a414090701b2520bd0417ce29",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-doc_cmds.git",
+      "commit": "60c6a2b858abe1f27b441f479aad2b0a9d0f9ba2",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-dtrace.git",
+      "commit": "fd2a404c772e8ce1d29f210032e9831fa845f688",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-energytrace.git",
+      "commit": "e277fcfd430ddab2d8b52187cf480f2857629104",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-expat.git",
+      "commit": "70006a0c32d7c8653c11e53fc0c905f1bb498218",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-file.git",
+      "commit": "c6ee65265d253d24b1a496f8ca54b5e449fe108c",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-file_cmds.git",
+      "commit": "c0d72b5c98888a9d8e0b73cf8aac0df908e615f2",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-files.git",
+      "commit": "1c45a50ae0d6ca5bbb8b01d2b588f52bc0e39263",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-glut.git",
+      "commit": "b53a2d8f0c6dc0c2052aef410a120d14ee553056",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-gnudiff.git",
+      "commit": "ae0ab716658296164a032be7406f082cdc31c954",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-gnutar.git",
+      "commit": "1414bc8a8bd2e9dae701831e749febe2e2e84d68",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-gpatch.git",
+      "commit": "49acc897e8cb832a26b7ac4d2f7db51d3c6ba037",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-grep.git",
+      "commit": "62d70fada3a01de87aff927a86b8df0f7f2a837a",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-groff.git",
+      "commit": "10dd5a6be4915a99065bc15dfc6b6b1e9e1a2714",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-icu.git",
+      "commit": "6b609b2b0ce9a620543f357de4e549f09afec4ea",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-installer.git",
+      "commit": "88764e6149f92f1747442c27ab00231f40de278c",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-iokitd.git",
+      "commit": "5549ac4cd2db923c256f016a1381b3bfb716730a",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-iokituser.git",
+      "commit": "534684e6748dffbd875c6cd1942477a52b66a077",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-iostoragefamily.git",
+      "commit": "33178aef923d9c99f1819db2ada253054f4dd812",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-less.git",
+      "commit": "a6bc77c8e72aaa35da92b903172a70eaa4ef78fa",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libarchive.git",
+      "commit": "998d739c602a1b35e2377ec9161e9c13d1d8604d",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libauto.git",
+      "commit": "2be7312b25736a8e9fc12058d63cbb79eb5f4e25",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libedit.git",
+      "commit": "f9b44b8541614e33b09451fc2847f7e30bfb9b70",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libiconv.git",
+      "commit": "0d6f47d33a7cc97e468e864099fff74875b41937",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libkqueue.git",
+      "commit": "b0795a2e1dab5331116770139bfea8d832478f5f",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-liblzma.git",
+      "commit": "855ebc93f8208ae4b6e77a018d4ba4a4be4d2ab7",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libnetwork.git",
+      "commit": "56c5fad43f24a40d8ca7f8a1d0badedfeaf7e64e",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libresolv.git",
+      "commit": "cf955392e5449efb269b8b3510c755085fd36a2d",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libressl.git",
+      "commit": "1f663b5bdc9082178717c080e4728fe3e7084de4",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libressl.git",
+      "commit": "2a56b36b77a00573c53ccd8e6932eb136172c950",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libressl.git",
+      "commit": "30826df38d7c0f416158a94e0112c928188e0327",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libressl.git",
+      "commit": "c5e9edb9d82ccf5fde5d8ae32b162fec8fe11318",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-librpcsvc.git",
+      "commit": "0cc1d42e53c61446616719597e96b29aeda51eb3",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libstdcxx.git",
+      "commit": "73eb757fe23170c372bef17d6de41787c1271c80",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libtelnet.git",
+      "commit": "1ebd4eef48d06e6411ed2a0f60ba5d3fce5ab455",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libtrace.git",
+      "commit": "8cf07f02b15f7dca6436882a03678fff0392eaf6",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libutil.git",
+      "commit": "e3782a467c248c8d181aba1200ee0642abb65baf",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libxml2.git",
+      "commit": "d4f2967c8ca84a23a886978098c0520fe2963b92",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-libxslt.git",
+      "commit": "50d22bd5b761a1885009b690e48d858ff73e768b",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-mDNSResponder.git",
+      "commit": "7e38ef562b4f3d41bffabb3e30d844d8042d3bbd",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-mail_cmds.git",
+      "commit": "4afbcf4b9b8a6c33acaf7e9025e51ce72b3725a7",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-man.git",
+      "commit": "9af6690f3c7c3c713bb0a20ba1163d3c4278257d",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-metal.git",
+      "commit": "ae20248dc144beab899e38752f5a530f28a0ea56",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-misc_cmds.git",
+      "commit": "85b24ec0e2625d75e7ee75b597b9134a49d18b1f",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-nano.git",
+      "commit": "7514f5f1115fffedd8fc2095107ca86ff82c54d6",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-ncurses.git",
+      "commit": "4cc72a9a1bce214593c10811b0154a8d51db0239",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-netcat.git",
+      "commit": "fd29177d56d84f88406e33784c327ebabfe7be58",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-network_cmds.git",
+      "commit": "9a0a90e2021ecdde91986b91f65a236eda158023",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-nghttp2.git",
+      "commit": "1a1853837b4350d4393bd25e1e4cb6018ab2d918",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-openal.git",
+      "commit": "7c60cf7109b7a3a8f5d41ed8b84d340a8d768525",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-opendirectory.git",
+      "commit": "67a8ad2ed0b06775bf53839446e2df7d49ab1c96",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-openldap.git",
+      "commit": "3b15390bbcad8234aabb3246b0552105b17118d0",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-openpam.git",
+      "commit": "8362545bac04032fcf59287cd66e6f4662a3692b",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-openssh.git",
+      "commit": "9137305e5793d31124bcf2fdf0c6fa28c2e3e812",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-openssl.git",
+      "commit": "dc7bf84efa5a0befa0d970d4d5177853ac448d6f",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-openssl_certificates.git",
+      "commit": "cca4f47e3ca18b58961157ef0ec6a6fc135b8cd2",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-pam_modules.git",
+      "commit": "241bbee0da845d1dfebc747b16a62aaed22f165b",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-passwordserver_sasl.git",
+      "commit": "45019fa25adf5ad5713d9e39df3b72e420dccc96",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-patch_cmds.git",
+      "commit": "0670c7fbadfd715ac78d5476552788416cad0020",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-pcre.git",
+      "commit": "6f67e33869a2b08da9465034c41e64e16fc7faf9",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-perl.git",
+      "commit": "a65d68be2146d85928e511aabc8f3a2b05e564ba",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-pyobjc.git",
+      "commit": "d1a7440efe1c1090b256273ae91831186f7afde4",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-python.git",
+      "commit": "4856509729cc320006a1235291e47408cd7b13ce",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-python_modules.git",
+      "commit": "24d01b41cb38fafc810cdd27562224c4014a4761",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-remote_cmds.git",
+      "commit": "3bb9f88724726d0d3073c04dfdc4785564113341",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-removefile.git",
+      "commit": "3cd493871f27130f9cf64c31daab9cca2ee17726",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-rsync.git",
+      "commit": "316c5b6b2780a28179f692f3fc0d63ebc2985705",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-ruby.git",
+      "commit": "423f2439478d2e24d7c19b2e0ea4a67ee3e80c3d",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-screen.git",
+      "commit": "4bed52587563ede850bf9ff834567478ac1e616b",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-security.git",
+      "commit": "3cfffcf2c5b5900169c964facdf42cc05c23005c",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-shell_cmds.git",
+      "commit": "5191dabbeff0aec230fc1275bae1653281ba52b2",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-sqlite.git",
+      "commit": "3472e2568cb7fcc25fe91af80da8d2fe884d9ac0",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-swift.git",
+      "commit": "471514f4b4985a604b192e1facac9bbc53dedad3",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-syslog.git",
+      "commit": "36ab27964cac4affe3907a598047bd21b8958919",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-system_cmds.git",
+      "commit": "b01129f3dc0ecab524dbd0fd08e29ec9f0e18196",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-tcsh.git",
+      "commit": "7737644ec31303be19c533aab093209f3458e060",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-text_cmds.git",
+      "commit": "3edd740c82b8b87c17ec9cfaae7606f6176626df",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-top.git",
+      "commit": "4e27f81b5cfeef9d31d8fe5d938a80d26cca9ab5",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-usertemplate.git",
+      "commit": "5f8cca97aa03ff9290d6ccc0a4d185aa1a913875",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-vim.git",
+      "commit": "7f8da1dd66fc8f0654ebfa597b6013c8cf15185a",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-xar.git",
+      "commit": "887bd4f42eb4ac9139a7f621b5811065aa86f3e3",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-zip.git",
+      "commit": "caf41ebbc3ebab0250e4d13aa42221ef91a9802c",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-zlib.git",
+      "commit": "677de9b1c2bea1e428f56d8fc63300aa471eaf99",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/darling-zsh.git",
+      "commit": "4a7a6ebf6216395c7db698a4993db16e484aa54d",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/fmdb.git",
+      "commit": "ad2fdd660d02c24b262d64d7d23d3d4645768f44",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/indium.git",
+      "commit": "8423a7d2f053167030d2bc4a227f96243c740667",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/lzfse.git",
+      "commit": "451f291743bb919cb1b78ced4110402fca52cf97",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/openjdk.git",
+      "commit": "5a541c1844a9508e48b3addaf2d38775683abb38",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/darlinghq/xcbuild.git",
+      "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/google/googletest.git",
+      "commit": "a2b8a8e07628e5fd60644b6dd99c1b5e7d7f1f47",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/mruby/mruby",
+      "commit": "7c91efc1ffda769a5f1a872c646c82b00698f1b8",
+      "status": "fetched"
+    },
+    {
+      "repository_url": "https://github.com/tatsuhiro-t/neverbleed.git",
+      "commit": "b967ca054f48a36f82d8fcdd32e54ec5144f2751",
+      "status": "fetched"
+    }
+  ]
+}
