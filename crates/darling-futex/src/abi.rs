@@ -15,7 +15,9 @@ unsafe extern "C" {
         a6: c_long,
         nr: c_int,
     ) -> c_long;
-    fn cerror(error: c_int) -> c_long;
+    // libsyscall/custom/errno.c uses unsigned __int128 on LP64. Original
+    // futex.c's `extern long` declaration mismatches that real callee.
+    fn cerror(error: c_int) -> u128;
 }
 
 /// Execute a Linux futex operation and return negative Darwin errno directly.
@@ -46,8 +48,9 @@ pub unsafe extern "C" fn __linux_futex_reterr(
 ///
 /// # Safety
 /// The same kernel and linked-syscall contracts as __linux_futex_reterr apply.
-/// The linked cerror must accept a Darwin errno, set the current thread's errno,
-/// and return normally according to the original `long cerror(int)` C ABI.
+/// The linked cerror must implement the actual LP64 `unsigned __int128
+/// cerror(int)` C ABI and set the current thread's errno when returning. It may
+/// terminate a canceled thread, but must not unwind or longjmp through Rust.
 // SAFETY: This replaces the original global symbol; never link futex.c too.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn __linux_futex(
@@ -121,11 +124,16 @@ mod tests {
     }
 
     // SAFETY: Test binary alone owns this symbol, with the declared C ABI.
+    // Rust 1.85 still warns on u128 extern definitions despite its LLVM ABI
+    // support; the lint was removed in 1.89. This matches the real LP64 callee.
+    #[allow(improper_ctypes_definitions)]
     #[unsafe(no_mangle)]
-    extern "C" fn cerror(error: c_int) -> c_long {
+    extern "C" fn cerror(error: c_int) -> u128 {
         ERROR.store(error as i64, Relaxed);
         ERROR_CALLS.fetch_add(1, Relaxed);
-        987 // The adapter must return -1 independently of cerror's return.
+        // Nonzero high and low halves exercise the actual LP64 return ABI.
+        // The adapter must return -1 independently of either returned register.
+        (123 << 64) | 987
     }
 
     #[test]

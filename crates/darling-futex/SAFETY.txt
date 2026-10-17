@@ -30,7 +30,17 @@ dereferences the pointers or creates references to foreign memory. The caller
 must still meet Linux futex operation-specific address, four-byte alignment,
 atomic access, sharing and lifetime requirements. REQUEUE destination storage
 must remain stable and alive through all requeued waiters. cerror must accept
-positive Darwin errno, set current thread's errno, and return normally.
+positive Darwin errno and set current thread's errno when returning. The real
+LP64 callee in pinned xnu libsyscall/custom/errno.c returns unsigned __int128;
+this Rust binding uses u128 to match it. That repairs original futex.c's
+incompatible extern-long declaration, despite its ignored return value. The
+callee may terminate a thread through _pthread_exit_if_canceled; it must not
+unwind or longjmp through Rust. Its normal return is always ignored.
+Rust's x86_64 __int128 ABI correction landed in 1.77/1.78, before this
+workspace's 1.85 minimum. The test mock alone allows the historical
+improper_ctypes_definitions lint removed in 1.89; no production binding lint
+allowance is needed. See https://blog.rust-lang.org/2024/03/30/i128-layout-update/
+and https://blog.rust-lang.org/2025/08/07/Rust-1.89.0/ for compiler provenance.
 
 The original C stores linux_syscall's long result into int before testing its
 sign. This port explicitly preserves narrowing and then converts Linux errors
@@ -49,7 +59,8 @@ the final runtime must supply actual linux_syscall/cerror implementations.
 
 Unit tests separate safe result policy from a linked recording syscall/cerror
 boundary. They check argument order, pointer bits, sign extension, narrowing,
-errno signs, success counts, cerror effects and independent -1 return policy.
+errno signs, success counts, cerror effects and independent -1 return policy,
+including nonzero high and low halves of the mock's 128-bit cerror return.
 These mocks validate ABI policy only. Actual Linux syscall, runtime consumer
 and Mach-O linkage validation must be checked separately; this crate alone
 does not establish Darling startup or macOS application compatibility.
