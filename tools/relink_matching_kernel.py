@@ -13,6 +13,7 @@ import shlex
 from relink_system_kernel import KERNEL, REPLACEMENTS, digest, link_provenance, run, symbols
 
 PROC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/misc/proc_info.c.o'
+GUARDED = 'emulation/CMakeFiles/emulation.dir/src/common/guarded/table.c.o'
 
 
 def compile_legacy(build, source, output):
@@ -60,6 +61,10 @@ def integrate(args):
             raise ValueError('missing unique runtime replacement '+key)
     if args.process_object and (inputs.count(PROC) != 1 or not args.process_object.is_file()):
         raise ValueError('missing process-query input')
+    if args.guarded_object:
+        if inputs.count(GUARDED) != 1 or not args.guarded_object.is_file():
+            raise ValueError('missing unique guarded-table input')
+        replacements[GUARDED] = args.guarded_object.resolve(strict=True)
     output.mkdir(parents=True, exist_ok=False)
     if args.process_object:
         replacements[PROC] = compile_legacy(build, source, output)
@@ -119,6 +124,9 @@ def integrate(args):
                 nm = run(['llvm-nm', '--format=darwin', target])
                 if not any('private external' in line and line.rstrip().endswith('_darling_legacy_proc_info') for line in nm.splitlines()):
                     raise ValueError('legacy fallback must remain private external')
+            if args.guarded_object:
+                for name in ('add', 'modify', 'remove', 'check', 'postfork_child'):
+                    wanted['_guard_table_' + name] = args.guarded_object.name
             details['provenance'] = link_provenance(mapfile.read_text(), wanted)
         record['variants'][variant] = details
     record['replacements'] = {key: {'path': str(value), 'sha256': digest(value)} for key, value in replacements.items()}
@@ -133,6 +141,7 @@ def main():
     for name in ('build', 'runtime', 'output'):
         parser.add_argument('--'+name, type=Path, required=True)
     parser.add_argument('--process-object', type=Path)
+    parser.add_argument('--guarded-object', type=Path)
     args = parser.parse_args()
     print(json.dumps(integrate(args)['variants'], indent=2))
 

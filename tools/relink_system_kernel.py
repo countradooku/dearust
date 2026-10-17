@@ -93,6 +93,11 @@ def integrate(args):
         if not path.is_file():
             raise ValueError('missing Rust runtime object: ' + replacement)
         replacements[name] = path
+    if args.guarded_object:
+        name = 'emulation/CMakeFiles/emulation.dir/src/common/guarded/table.c.o'
+        if inputs.count(name) != 1 or not args.guarded_object.is_file():
+            raise ValueError('missing unique guarded-table input')
+        replacements[name] = args.guarded_object.resolve(strict=True)
     archive = (build/'src/libsimple-darling/liblibsimple_darling.a').resolve(strict=True)
     # Compile/link commands are executed directly as argv, never as shell text.
     # Every original production input remains, except the declared source slices.
@@ -151,6 +156,9 @@ def integrate(args):
         '_cerror': 'libsyscall.dir/custom/errno.c.o',
         '___simple_abort': 'emulation.dir/src/common/simple.c.o',
     }
+    if args.guarded_object:
+        for name in ('add', 'modify', 'remove', 'check', 'postfork_child'):
+            wanted['_guard_table_' + name] = args.guarded_object.name
     provenance = link_provenance(linkmap.read_text(), wanted)
     original32 = output/'original-i386.dylib'
     run(['llvm-lipo', original, '-thin', 'i386', '-output', original32])
@@ -163,7 +171,7 @@ def integrate(args):
     def normalize(value):
         return value.replace(str(build), '$BUILD').replace(str(runtime), '$RUNTIME').replace(str(output), '$OUTPUT')
     return {
-        'scope': 'Actual full upstream system_kernel final link with three Rust x86_64 source slices; original i386 final slice preserved, all other implementation remains upstream',
+        'scope': 'Actual full upstream system_kernel final link with declared Rust x86_64 source slices; original i386 final slice preserved, all other implementation remains upstream',
         'darling_pin': DARLING_PIN, 'xnu_pin': XNU_PIN,
         'original_response_objects': len(inputs),
         'replaced_objects': {name: digest(path) for name, path in replacements.items()},
@@ -187,6 +195,7 @@ def main():
     parser.add_argument('--runtime', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--report', type=Path)
+    parser.add_argument('--guarded-object', type=Path)
     args = parser.parse_args()
     record = integrate(args)
     if args.report:
