@@ -1,8 +1,11 @@
 # Darling host artifact graph v1
 # Baseline: 60ba801decee7a00782f74f6be4c8ffb013f79ff
 # Scope: migrated host build tools only; remaining upstream graph is unported.
-# These targets have no upstream installation rule. Paths preserve build-tree consumers.
+# Build-only targets preserve build-tree consumers; darling-coredump preserves its bin install rule.
 # binary	package	build-tree destination	upstream target definition
 bsdln	darling-buildtools	src/bsdln/bsdln	src/bsdln/CMakeLists.txt
 elfdep	darling-buildtools	src/buildtools/elfdep	src/buildtools/CMakeLists.txt
 getuuid	darling-buildtools	src/buildtools/getuuid	src/buildtools/CMakeLists.txt
+wrapgen	darling-buildtools	src/libelfloader/wrapgen/wrapgen	src/libelfloader/wrapgen/CMakeLists.txt
+print_wrapped_elf	darling-buildtools	src/libelfloader/wrapgen/print_wrapped_elf	src/libelfloader/wrapgen/CMakeLists.txt
+darling-coredump	darling-coredump	bin/darling-coredump	src/hosttools/CMakeLists.txt

@@ -323,7 +323,15 @@ mod tests {
                     artifact.binary
                 );
             }
-            assert_eq!(fs::read_dir(&dest).unwrap().count(), 2);
+            let top_directories: BTreeSet<_> = graph()
+                .unwrap()
+                .iter()
+                .map(|a| a.destination.split('/').next().unwrap())
+                .collect();
+            assert_eq!(
+                fs::read_dir(&dest).unwrap().count(),
+                top_directories.len() + 1
+            );
         }
     }
 

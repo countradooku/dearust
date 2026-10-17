@@ -4,7 +4,8 @@
   "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
   "coverage": "all committed superproject leaf entries, including symlinks and pinned gitlinks; excludes submodule contents",
   "status_definition": {
-    "implemented": "Rust replacement exists for this host build tool; compatibility claims require its tests",
+    "implemented": "Rust replacement exists for this host utility; compatibility claims require its tests",
+    "partial": "functioning Rust component exists with explicitly recorded unported behavior",
     "pending": "not migrated; includes assets and headers that must be preserved or explicitly reviewed"
   },
   "counts": {
@@ -19,8 +20,9 @@
       "symlink": 2890
     },
     "by_status": {
-      "implemented": 3,
-      "pending": 27271
+      "implemented": 5,
+      "partial": 1,
+      "pending": 27268
     },
     "by_component": {
       ".github": 8,
@@ -31782,7 +31784,7 @@
       "category": "source",
       "status": "implemented",
       "replacement": "src/bin/bsdln.rs",
-      "scope": "Rust Linux host build-tool replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
+      "scope": "Rust Linux host utility replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
     },
     {
       "path": "src/buildtools/CMakeLists.txt",
@@ -32081,7 +32083,7 @@
       "category": "source",
       "status": "implemented",
       "replacement": "src/bin/elfdep.rs",
-      "scope": "Rust Linux host build-tool replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
+      "scope": "Rust Linux host utility replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
     },
     {
       "path": "src/buildtools/getuuid.c",
@@ -32092,7 +32094,7 @@
       "category": "source",
       "status": "implemented",
       "replacement": "src/bin/getuuid.rs",
-      "scope": "Rust Linux host build-tool replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
+      "scope": "Rust Linux host utility replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
     },
     {
       "path": "src/clt/CMakeLists.txt",
@@ -191303,7 +191305,9 @@
       "object_id": "ecd9fe6ec3acd87692735bcb59f7d6660c15f577",
       "component": "src/hosttools",
       "category": "source",
-      "status": "pending"
+      "status": "implemented",
+      "replacement": "crates/darling-coredump/src/lib.rs",
+      "scope": "Rust Linux host utility replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
     },
     {
       "path": "src/include/darling-config.h.in",
@@ -192410,7 +192414,9 @@
       "object_id": "c12c01045ee7505f9a8ef23c66e33d4436975d0b",
       "component": "src/libelfloader",
       "category": "source",
-      "status": "pending"
+      "status": "implemented",
+      "replacement": "src/wrapped_elf.rs",
+      "scope": "Rust Linux host utility replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
     },
     {
       "path": "src/libelfloader/wrapgen/produce_stubs_example.h",
@@ -192437,7 +192443,10 @@
       "object_id": "7079e613ecf6d38190d3ac985d7939c8320d5ffa",
       "component": "src/libelfloader",
       "category": "source",
-      "status": "pending"
+      "status": "partial",
+      "replacement": "src/elf_wrapper.rs",
+      "scope": "Rust Linux host utility replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed",
+      "limitation": "ELF64 parsing/generation ported; safe library lookup covers explicit paths, LD_LIBRARY_PATH, ldconfig cache and common Linux directories, not arbitrary caller RPATH/RUNPATH or loader audit/hardware policy"
     },
     {
       "path": "src/libgcc/CMakeLists.txt",

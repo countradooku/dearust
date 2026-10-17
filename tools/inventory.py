@@ -18,7 +18,11 @@ REPLACEMENTS = {
     "src/bsdln/ln.c": "src/bin/bsdln.rs",
     "src/buildtools/elfdep.c": "src/bin/elfdep.rs",
     "src/buildtools/getuuid.c": "src/bin/getuuid.rs",
+    "src/hosttools/src/coredump/main.cpp": "crates/darling-coredump/src/lib.rs",
+    "src/libelfloader/wrapgen/print_wrapped_elf.cpp": "src/wrapped_elf.rs",
+    "src/libelfloader/wrapgen/wrapgen.cpp": "src/elf_wrapper.rs",
 }
+PARTIAL_REPLACEMENTS = {"src/libelfloader/wrapgen/wrapgen.cpp"}
 SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".s", ".asm", ".rs"}
 HEADER_SUFFIXES = {".h", ".hh", ".hpp", ".hxx", ".inc", ".defs"}
 
@@ -80,11 +84,13 @@ def inventory(repo):
             "object_id": object_id,
             "component": component(path),
             "category": kind,
-            "status": "implemented" if path in REPLACEMENTS else "pending",
+            "status": ("partial" if path in PARTIAL_REPLACEMENTS else "implemented") if path in REPLACEMENTS else "pending",
         }
         if path in REPLACEMENTS:
             entry["replacement"] = REPLACEMENTS[path]
-            entry["scope"] = "Rust Linux host build-tool replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
+            entry["scope"] = "Rust Linux host utility replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
+            if path in PARTIAL_REPLACEMENTS:
+                entry["limitation"] = "ELF64 parsing/generation ported; safe library lookup covers explicit paths, LD_LIBRARY_PATH, ldconfig cache and common Linux directories, not arbitrary caller RPATH/RUNPATH or loader audit/hardware policy"
         if kind == "submodule":
             entry["upstream_url"] = modules.get(path, "")
             entry["scope"] = "pinned gitlink only; contents and nested dependencies need separate inventory"
@@ -104,7 +110,8 @@ def inventory(repo):
         "upstream_commit": UPSTREAM_COMMIT,
         "coverage": "all committed superproject leaf entries, including symlinks and pinned gitlinks; excludes submodule contents",
         "status_definition": {
-            "implemented": "Rust replacement exists for this host build tool; compatibility claims require its tests",
+            "implemented": "Rust replacement exists for this host utility; compatibility claims require its tests",
+            "partial": "functioning Rust component exists with explicitly recorded unported behavior",
             "pending": "not migrated; includes assets and headers that must be preserved or explicitly reviewed",
         },
         "counts": {

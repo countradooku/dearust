@@ -69,6 +69,18 @@ fn cargo_graph_stages_runnable_tools_and_a_repeatable_manifest() {
     assert!(dependencies.status.success());
     assert!(dependencies.stdout.is_empty());
 
+    let names = Command::new(stage.join("src/libelfloader/wrapgen/print_wrapped_elf"))
+        .arg(&object)
+        .output()
+        .unwrap();
+    assert!(names.status.success());
+    assert!(names.stdout.is_empty());
+    for tool in ["src/libelfloader/wrapgen/wrapgen", "bin/darling-coredump"] {
+        let result = Command::new(stage.join(tool)).output().unwrap();
+        assert_eq!(result.status.code(), Some(1));
+        assert!(String::from_utf8_lossy(&result.stderr).contains("Usage:"));
+    }
+
     assert!(install().status.success());
     assert_eq!(
         fs::read(stage.join("darling-host-artifacts.tsv")).unwrap(),

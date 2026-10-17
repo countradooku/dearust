@@ -63,8 +63,9 @@ fn commands(task: &Task) -> Vec<Vec<&'static str>> {
     match task {
         Task::Build => vec![vec![
             "build",
-            "--package",
-            "darling-buildtools",
+            "--workspace",
+            "--exclude",
+            "xtask",
             "--release",
             "--offline",
             "--locked",
