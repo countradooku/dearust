@@ -1,0 +1,133 @@
+{
+  "scope": "Actual x86_64 Cocoa execution in locally modified installed Darling, with only errno/futex/libsimple replaced by Rust. Not a clean pinned full runtime or arbitrary third-party app compatibility.",
+  "apps": {
+    "TextEditor": "Unchanged Cocotron sample sources and nibs; real XTest mouse click and keyboard text, manually verified rendered content in both screenshots. Saving/printing not verified.",
+    "Calculator": "Purpose-built Cocoa fixture; mapped window and AppKit button actions assert42 and visiblewindow, exit0 in both variants."
+  },
+  "results": [
+    {
+      "variant": "original",
+      "prefix": "/tmp/dr-gui-v83xkany/p",
+      "kernel_sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f",
+      "staged_kernel_sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f",
+      "kernel_mapping_processes": 8,
+      "shutdown_exit": 0,
+      "launcher_cleanup": [
+        {
+          "pid": 289539,
+          "reaped": true,
+          "exit_code": 0
+        },
+        {
+          "pid": 289621,
+          "reaped": true,
+          "exit_code": 1
+        }
+      ],
+      "apps": [
+        {
+          "name": "Calculator",
+          "pass": true,
+          "mapped_window": {
+            "window_id": 6291463,
+            "title": "Darling Rust Calculator",
+            "map_state": 2,
+            "width": 440,
+            "height": 234
+          },
+          "executable_sha256": "ff4a1cd59c02004f22cfd026a664738b52311bb2a0b2688c5dd07e7c5c5df4e9",
+          "screenshot_sha256": "639cdd1f0781f6e4d195109902aa43a3e9c6d6614e29a8f628912df3b6820182",
+          "child_exit_code": 0,
+          "typed_text": null
+        },
+        {
+          "name": "TextEditor",
+          "pass": true,
+          "mapped_window": {
+            "window_id": 6291463,
+            "title": "Untitled 1 - TextEditor",
+            "map_state": 2,
+            "width": 489,
+            "height": 621
+          },
+          "executable_sha256": "004e3489b471b74847217d94d66198419e88df4c2efba0db07c61958a4b94f81",
+          "screenshot_sha256": "211220a7fa0094aedf00e37cee2697b6a3bcc0c74b6410c2e7c871ec908a6809",
+          "child_exit_code": null,
+          "typed_text": "rust gui edit verified"
+        }
+      ]
+    },
+    {
+      "variant": "rust",
+      "prefix": "/tmp/dr-gui-xtxbalu_/p",
+      "kernel_sha256": "cb63eb32207f13d28beaf62ecb753708b4d0053ed8cbd2ad314e93a4d60b1480",
+      "staged_kernel_sha256": "cb63eb32207f13d28beaf62ecb753708b4d0053ed8cbd2ad314e93a4d60b1480",
+      "kernel_mapping_processes": 8,
+      "shutdown_exit": 0,
+      "launcher_cleanup": [
+        {
+          "pid": 289753,
+          "reaped": true,
+          "exit_code": 0
+        },
+        {
+          "pid": 289840,
+          "reaped": true,
+          "exit_code": 1
+        }
+      ],
+      "apps": [
+        {
+          "name": "Calculator",
+          "pass": true,
+          "mapped_window": {
+            "window_id": 6291463,
+            "title": "Darling Rust Calculator",
+            "map_state": 2,
+            "width": 440,
+            "height": 234
+          },
+          "executable_sha256": "ff4a1cd59c02004f22cfd026a664738b52311bb2a0b2688c5dd07e7c5c5df4e9",
+          "screenshot_sha256": "639cdd1f0781f6e4d195109902aa43a3e9c6d6614e29a8f628912df3b6820182",
+          "child_exit_code": 0,
+          "typed_text": null
+        },
+        {
+          "name": "TextEditor",
+          "pass": true,
+          "mapped_window": {
+            "window_id": 6291463,
+            "title": "Untitled 1 - TextEditor",
+            "map_state": 2,
+            "width": 489,
+            "height": 621
+          },
+          "executable_sha256": "004e3489b471b74847217d94d66198419e88df4c2efba0db07c61958a4b94f81",
+          "screenshot_sha256": "211220a7fa0094aedf00e37cee2697b6a3bcc0c74b6410c2e7c871ec908a6809",
+          "child_exit_code": null,
+          "typed_text": "rust gui edit verified"
+        }
+      ]
+    }
+  ],
+  "manual_visual_qa": "Parent inspected original and Rust TextEditor screenshots; exact rust gui edit verified is rendered. Prior run independently inspected by a second agent. Calculator screenshot shows real controls before timed selftest; log proves result42.",
+  "fixed_verification_bugs": [
+    "Inherited stdout/stderr PIPE descriptors held by daemon hung capture after launcher exit; bounded file capture fixes it.",
+    "Timed-out launcher or stale child-exit file could create misleading result; explicit status/timeout checks and freshcaptures now reject these.",
+    "Missing private/tmp writablefixture and /home caused shared false file-test failures; prepare them before boot.",
+    "Shutdown could signal setuid-root launcher too soon and raise EPERM, losing reports; wait for namespace shutdown, bounded reap, record denied signals and fail on unreaped cleanup.",
+    "Mesa native shadercache tried guest HOME /Users on host; GUI harness supplies its owned native cache directory."
+  ],
+  "runtime_audit": "No confirmed implementation defect reproduced in Rust atomics/futex/errno/cerror source audit. Real SIGUSR1/EINTR retry passes pinnedC/nativeRust/DarlingRust-chain differentials. No assertion of absence of all bugs.",
+  "remaining_limits": [
+    "Clean pinned complete runtime, i386 Rust backend and cancellation semantics remain unverified.",
+    "Legacy lockset_create returns KERN_FAILURE unconditionally; migrated Rust locks are not reached.",
+    "Legacy proc_info call1 returns ENOTSUP; no replacement implemented in this work.",
+    "General GUI or commercial app compatibility is not established. Existing Riot/League prefix and installed files preserved."
+  ],
+  "evidence_directory": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/gui-comparison-final",
+  "raw_comparison_sha256": "89354516c1fdfb85a2f7d61fddfb6b5442efca17240c1a14e11ce33a6ee2206f",
+  "rust_checks": "cargo xtask check passed 84 ordinary tests, fmt, strict Clippy; 20Python tests passed",
+  "interrupted_futex_record": "runtime-consumer-verification.json",
+  "build_record_sha256": "323750e4963584744233d890ceb1e66fffb4d2aecfcdc410145dd758921e83b2"
+}

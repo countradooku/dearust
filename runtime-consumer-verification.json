@@ -40,7 +40,7 @@
     "note": "Additional lock/condvar futex syscall counts vary with scheduling and are not measured"
   },
   "consumer": "guard_table: collisions, tombstones, capacity, 120000 concurrent cycles, postfork callback/raw close; futex: EAGAIN/ETIMEDOUT/EFAULT/EINVAL and cerror TLS",
-  "abi": "abi=4:4 mutex=80000 cas=80000 once=1 publication=4277009102 rw=40000 cond=640",
+  "abi": "abi=4:4 mutex=80000 cas=80000 once=1 publication=4277009102 rw=40000 cond=640 eintr=1",
   "differential": "identical pinned C and Rust output",
   "objects": {
     "libsimple": "c00060b03c829d8a28bc6be0023a88ff57ffd59f60eb9813a054900678db14a8",

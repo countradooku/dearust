@@ -268,8 +268,8 @@ maps the copied Rust dylib's inode, and its SHA-256 is checked.
 Verified workloads include Bash pipelines, SQLite table/insert/aggregate, Python
 JSON/SHA-256, offline curl version output, Objective-C, pthread, TLS, fork and Mach
 semaphores. Original and Rust comparisons pass. Do not expand this evidence into
-a claim that arbitrary apps or GUI programs work; GUI and cancellation semantics
-remain untested. Most runtime code, server and frameworks remain C/assembly.
+a claim that arbitrary apps or GUI programs work. Selected GUI checks below pass;
+cancellation semantics remain untested. Most runtime code, server and frameworks remain C/assembly.
 
 The installed local protocol adds fileport_makeport/fileport_makefd, shifting
 subsequent RPC numbers by 2. Pinned task_self_trap=33 becomes installed
@@ -290,3 +290,24 @@ assertions, a CFURL fixture requiring absent /home, unsupported/failing libproc
 queries, and an extra timestamped cfbridge NSLog line despite a zero exit.
 No status/exit regression was observed between the matching variants in this suite.
 The record includes hashes and paths to raw execution and mapping evidence.
+
+
+Continuation: GUI execution and verification runner fixes
+--------------------------------------------------------
+See GUI-VERIFICATION.txt and gui-verification.json. The unchanged Cocotron
+TextEditor sample displays and accepts real XTest keyboard input; an independent
+visual check confirms the text in its screenshot. The Calculator Cocoa fixture
+displays controls and its button actions produce 42. These checks execute both
+matching original and Rust kernels on a separate task-owned nested X display,
+with actual copied-kernel inode/hash evidence. They are sample/fixture coverage,
+not verification of arbitrary third-party apps. Existing Riot/League stays intact.
+
+The old app runner had genuine bugs: daemon-inherited PIPEs could hang it, timeout
+or stale completion could be mishandled, and missing /private/tmp and /home fixture
+paths caused false failures. The reusable tools/check_mac_apps.py fixes these
+with regressions. Legacy lockset_create is an unconditional KERN_FAILURE stub;
+legacy proc_info call1 returns ENOTSUP. Neither failure is in the migrated slices.
+No Rust runtime implementation defect was reproduced during atomics, futex,
+errno, cerror/cancellation-source audit. Real SIGUSR1/EINTR retry now runs in
+original/native Rust/Darling-backend ABI differentials, with eintr=1 in the record.
+Do not convert passing source audits into untested cancellation claims.

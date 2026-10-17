@@ -1,0 +1,73 @@
+Cocoa GUI execution and current bug fixes
+=========================================
+
+The unchanged Cocotron TextEditor sample and a small Cocoa Calculator test app
+execute with the locally modified installed x86_64 Darling runtime, both with
+its original kernel objects and with Rust errno/futex/libsimple substitutions.
+TextEditor renders its nib-based UI and accepts real mouse/keyboard input. Manual
+inspection confirms the expected text in both screenshots. Calculator renders
+controls and its AppKit button actions produce42, assert window visibility and
+exit0. These are sample/fixture tests, not broad third-party app compatibility.
+
+Both final GUI variants passed, shut down their isolated prefixes and reaped all
+launchers. gui-verification.json records the hashes and raw evidence location.
+Only three source slices are migrated. The original server/frameworks/remaining
+kernel inputs are still required. The clean pinned kernel uses a different RPC
+protocol from the locally modified installed server; no clean full-runtime boot
+or i386 Rust compatibility is claimed. Cancellation and save/print workflows
+remain unverified.
+
+Reproduce with existing matching source/build/runtime inputs
+-----------------------------------------------------------
+
+Build into a new directory with explicit input paths:
+
+  python3 tools/build_gui_apps.py --source SOURCE --build BUILD \
+    --sdk INSTALLED_DARLING_ROOT --output NEW_APPS_DIRECTORY
+
+This uses Clang and ld64.lld directly. It preserves the sample's original source,
+nib resources and license notice. Build commands and source/binary hashes are
+written alongside the bundles. No installation or original build mutation occurs.
+
+Use a separate task-owned local X server, such as Xephyr on :99. The runner
+requires an explicit display and rejects :0 to avoid sending test input to the
+user's normal desktop. X11, Xtst and ImageMagick's import command are required.
+A software-rendered nested Xephyr was used for the recorded run, with its parent
+window unmapped; no test keystrokes were sent to the user's display. Then run:
+
+  python3 tools/check_gui_apps.py --apps NEW_APPS_DIRECTORY \
+    --original-kernel MATCHING_ORIGINAL_DYLIB --rust-kernel MATCHING_RUST_DYLIB \
+    --display :99 --output NEW_RESULT_DIRECTORY
+
+The supplied kernels must match the installed server's protocol. The check makes
+new short /tmp prefixes, prepares required directories before boot, stages only
+the selected kernel and verifies its actual mapped inode/hash. It records child
+output and per-window screenshots, stops the task-owned prefixes and reaps their
+launchers. TextEditor content is a manual screenshot check, not an OCR assertion.
+An explicit owned Mesa shader-cache directory avoids the native Linux renderer
+trying to write under the guest HOME path.
+
+Problems fixed and limits investigated
+--------------------------------------
+
+The old one-off verification runner could hang on descriptors inherited by a
+daemon, mishandle timeouts/stale child completion, and report false filesystem
+failures when /private/tmp or /home fixtures were missing. The GUI runner also
+initially signaled a privileged launcher before shutdown finished, raising EPERM
+and losing its final report. Bounded capture/cleanup, explicit prefix shutdown
+and fresh fixtures now cover these cases; 20 Python tests pass. Actual final GUI
+execution also confirms that all control launchers exit after shutdown.
+
+The Rust atomics, futex argument/timespec forwarding, errno mapping and cerror
+boundary were audited without reproducing an implementation defect. A new real
+SIGUSR1 test interrupts a blocked futex and requires retry plus eventual lock
+acquisition. Original C, native Rust and Darling-backend Rust differentials pass,
+with eintr=1 in runtime-consumer-verification.json. cargo xtask check passes its
+84 ordinary tests, formatting and strict Clippy.
+
+Remaining shared failures are outside these Rust slices: legacy lock_set_create
+is an unconditional KERN_FAILURE stub and legacy proc_info call1 is unsupported.
+CFbridge's correct output has an extra timestamped NSLog line; the runner reports
+strict output separately from declared diagnostic normalization. No golden output
+or runtime stub was changed to conceal these results. Existing user applications
+and installed binaries were preserved.

@@ -237,8 +237,9 @@ Do not inject the clean pinned kernel into this installed server: two locally
 added fileport RPC calls shift the protocol numbering. That mismatch prevents
 boot in both the original pinned and Rust pinned variants. The pinned link script
 above also preserves an i386 slice, whereas the installed build is x86_64 only.
-GUI applications, cancellation semantics and clean pinned full-runtime boot need
-separate validation. App smoke checks do not retire any original build target.
+Broader GUI compatibility, cancellation semantics and clean pinned full-runtime
+boot need separate validation. Selected executed GUI checks are documented in
+GUI-VERIFICATION.txt. App smoke checks do not retire any original build target.
 
 mac-app-verification.json records 29 checks per matching variant: 24 strict
 expected-output passes and five shared mismatches. The latter are two lockset

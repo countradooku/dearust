@@ -22,7 +22,10 @@
     "Eight Python tests including exact-pin partial errno source inventory gate; 84 ordinary Rust tests including late object failure preservation and runtime artifacts",
     "Cargo Darling runtime graph builds native ELF and x86_64 Mach-O lock/futex/errno objects and thin archive with exact exports/imports and private-extern errno flags; optional Darwin test explicitly passed",
     "Actual unchanged original guarded-table/close consumers execute through Rust Darling backend, differential C synchronization/concurrency/fork/TLS-error tests pass",
-    "Full actual original system_kernel final link integrates three Rust x86_64 source slices; all1362 public definitions and18 imports identical, originali386 finalslice byteidentical; independent review passed"
+    "Full actual original system_kernel final link integrates three Rust x86_64 source slices; all1362 public definitions and18 imports identical, originali386 finalslice byteidentical; independent review passed",
+    "Mac app harness regressions: daemon inherited-descriptor capture, bounded timeout/exit race, missing or stale child completion, shell quoting and explicitly separate NSLog normalization; 20 Python tests pass",
+    "Real non-SA_RESTART SIGUSR1 interrupts a blocked futex; original C/native Rust/Darling Rust chains retry and acquire correctly (eintr=1)",
+    "Actual isolated original/Rust Cocoa GUI execution: TextEditor window + real XTest input visually verified, Calculator actions42/exit0; kernel inode/hash proof, all prefixes shutdown and launchers reaped"
   ],
   "same_file_forced_link_regression": {
     "upstream": {
@@ -54,14 +57,14 @@
   },
   "not_verified": [
     "Full Darling build or runtime",
-    "macOS application compatibility",
+    "General macOS application compatibility beyond recorded test workloads",
     "32-bit host build",
     "minimum Rust 1.85 toolchain",
     "Completion of the 265803 dependency entries (two errno/futex source slices partial, 265801 pending)",
     "Complete dynamic loader policy for wrapgen bare library-name lookup",
     "Coredump floating-point extraction (zero states match upstream TODO)",
     "Full upstream CMake graph replacement and macOS target ABI",
-    "Actual Darling startup/TLS/cancellation and i386 Rust backend (x86_64 backend and full system_kernel consumer link verified)",
+    "Clean pinned full runtime startup, cancellation semantics and i386 Rust backend; selected installed locally modified x86_64 startup/TLS and GUI workloads execute",
     "44 Swift LFS binary payloads and their runtime/packaging use",
     "Formal concurrency-model proof, Miri/sanitizers of the new native futex adapter"
   ],
@@ -107,7 +110,7 @@
     "state_size_bytes": 4,
     "state_alignment_bytes": 4,
     "safe_core_tests_passed": 7,
-    "c_differential_summary": "abi=4:4 mutex=80000 cas=80000 once=1 publication=4277009102 rw=40000 cond=640",
+    "c_differential_summary": "abi=4:4 mutex=80000 cas=80000 once=1 publication=4277009102 rw=40000 cond=640 eintr=1",
     "independent_staged_c_stress": "Passed C-link once publication/completed null callback, 48000 mutex increments, 16000 writes concurrent with readers, 12 waiters through 100 notify-all generations",
     "unsafe_ledger": "crates/darling-libsimple/SAFETY.txt",
     "freestanding": {
@@ -189,6 +192,9 @@
     "darwin_full_consumer_link_record": "system-kernel-integration.json",
     "unsafe_ledger": "crates/darling-futex/SAFETY.txt",
     "darwin_artifact_test_explicitly_run": true,
-    "full_runtime_or_application_launch_claimed": false
+    "full_runtime_build_claimed": false,
+    "selected_installed_runtime_applications_executed": true,
+    "installed_runtime_application_record": "mac-app-verification.json",
+    "installed_runtime_gui_record": "gui-verification.json"
   }
 }

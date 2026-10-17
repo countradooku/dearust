@@ -75,3 +75,15 @@ symbols and 18 imports matching the reference. The Mach-O result is linked but
 has not been executed by Darling. Darwin thread cancellation and TLS/bootstrap
 initialization remain unverified. The native fixture cerror has the actual LP64
 128-bit return type; its host TLS implementation is confined to test execution.
+
+
+Separate installed-runtime execution
+------------------------------------
+The clean pinned final dylib above remains a link-only result. A distinct relink
+against locally modified installed objects has booted and executed CLI and Cocoa
+GUI workloads. That local server has additional RPC calls, so its kernel cannot
+be mixed with clean pinned protocol objects. See GUI-VERIFICATION.txt,
+mac-app-verification.json and gui-verification.json for exact scope/provenance.
+Only errno, futex and libsimple are substituted; other code remains original.
+The native ABI harness now also forces a real SIGUSR1-interrupted futex wait,
+observes retry and eventual acquisition in both C and Rust (eintr=1).

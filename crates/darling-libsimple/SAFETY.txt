@@ -204,5 +204,8 @@ fork cleanup and concurrency. Only host TLS/abort are test adapters there.
 The complete real Mach-O system_kernel final link resolves the chain to original
 cerror/raw linux_syscall/__simple_abort implementations, with identical public
 symbol/import sets. The original i386 final dylib slice is preserved, not ported.
-No actual Darwin process launch, TLS startup or cancellation execution is claimed.
-See runtime-consumer-verification.json and system-kernel-integration.json.
+This clean pinned-link gate does not claim process launch or cancellation execution.
+The separate locally modified installed runtime now executes selected CLI and
+Cocoa GUI workloads with these three slices and actual mapped-dylib evidence;
+see mac-app-verification.json and gui-verification.json. Cancellation semantics
+remain untested. See runtime-consumer-verification.json and system-kernel-integration.json.

@@ -4,7 +4,8 @@ Darling Rust migration
 Target: the FULL migration of https://github.com/darlinghq/darling to Rust,
 including its runtime, server, libraries, frameworks and dependencies.
 The full migration is INCOMPLETE. Three Rust runtime slices have executed macOS
-command-line applications inside an existing locally modified Darling installation.
+command-line programs and selected Cocoa GUI test apps inside an existing locally
+modified Darling installation.
 This workspace does not yet build a complete Darling runtime.
 
 Functioning Rust components
@@ -141,8 +142,9 @@ This execution uses existing C/assembly, frameworks and server binaries from tha
 installation. Its local fileport RPC additions shift call numbers by two; the
 clean pinned kernel therefore cannot boot against that installed server. Matching
 local build objects resolve this protocol mismatch without changing installed
-files. Only x86_64 was exercised; GUI applications, cancellation behavior and clean
-pinned full-runtime startup remain unverified. No general speedup or complete port
+files. Only x86_64 was exercised. The TextEditor sample and Calculator fixture
+also pass the separate GUI checks in GUI-VERIFICATION.txt. Broader GUI compatibility,
+cancellation behavior and clean pinned full-runtime startup remain unverified. No general speedup or complete port
 is established by these checks.
 
 mac-app-verification.json records 29 checks per matching variant: 24 strict
