@@ -4085,7 +4085,15 @@
       "type": "OBJECT_LIBRARY",
       "graph_reference": "target-emulation-b06b293e0d14d93896c4.json",
       "status": "pending",
-      "legacy_target_retired": false
+      "legacy_target_retired": false,
+      "native_verified_source_slices": [
+        {
+          "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/conversion/errno.c",
+          "cargo_package": "darling-errno",
+          "cargo_artifact": "darling_errno.o",
+          "scope": "Native ELF C ABI validation only; not the required Darwin Mach-O/fat object or complete target"
+        }
+      ]
     },
     {
       "name": "emulation_dyld",
@@ -4093,7 +4101,15 @@
       "type": "OBJECT_LIBRARY",
       "graph_reference": "target-emulation_dyld-8431b6b988eb4d433238.json",
       "status": "pending",
-      "legacy_target_retired": false
+      "legacy_target_retired": false,
+      "native_verified_source_slices": [
+        {
+          "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/conversion/errno.c",
+          "cargo_package": "darling-errno",
+          "cargo_artifact": "darling_errno.o",
+          "scope": "Native ELF C ABI validation only; not the required Darwin Mach-O/fat object or complete target"
+        }
+      ]
     },
     {
       "name": "energytrace",

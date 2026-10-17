@@ -10,6 +10,8 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 #include <libsimple/lock.h>
+#include <darling_errno.h>
+#include <limits.h>
 
 #define THREADS 12
 #define GENERATIONS 100
@@ -81,6 +83,14 @@ static void *run(void *argument) {
 int main(void) {
     // Bound deadlocks in CI even if the external test runner has no timeout.
     alarm(30);
+    // The independently compiled no_std object links alongside libsimple's final
+    // panic runtime without introducing an allocator or another panic handler.
+    assert(length_of_translation_array == 512);
+    assert(errno_linux_to_bsd(11) == 35);
+    assert(errno_linux_to_bsd(-35) == -11);
+    assert(errno_linux_to_bsd(95) == 102);
+    assert(errno_linux_to_bsd(102) == 52);
+    assert(errno_linux_to_bsd(INT_MIN) == INT_MIN);
     // The no_std C archive must terminate an invalid initializer without a
     // Rust panic runtime, allocation or unwinding across the foreign boundary.
     pid_t child = fork();

@@ -1,7 +1,7 @@
 {
   "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
   "rust_toolchain": "rustc 1.99.0 (b940084d7 2026-09-28)",
-  "normal_tests_passed": 73,
+  "normal_tests_passed": 77,
   "optional_upstream_differential_tests_explicitly_run_and_passed": 5,
   "checks": [
     "cargo xtask check",
@@ -15,9 +15,11 @@
     "Generated ELF wrapper C compiled against pinned elfcalls header and linked with ld64.lld to Mach-O, then dependency verified",
     "All 149 first-level and 11 nested dependency pins expanded; 265803 committed entries; byte-identical regeneration",
     "Native libsimple 14-symbol C ABI differential/concurrency suite; independent staged staticlib C link and stress",
-    "Complete default emitted CMake File API graph captured/re-extracted byte-identically; seven Python tests pass",
+    "Complete default emitted CMake File API graph captured/re-extracted byte-identically; eight Python tests pass",
     "Regular-file input and bounded concurrent size change checks for metadata/wrapper/core readers",
-    "Native no_std panic-abort libsimple build/staging, C ABI concurrency without dl/m, isolated independent review, staged archive membership and SIGABRT regression"
+    "Native no_std panic-abort libsimple build/staging, C ABI concurrency without dl/m, isolated independent review, staged archive membership and SIGABRT regression",
+    "Native errno exact two hidden globals/no undefineds, original pinned C+real header differential over 1131073 inputs, original INT_MIN UBSan reproducer, combined C link with no_std libsimple",
+    "Eight Python tests including exact-pin partial errno source inventory gate; 77 ordinary Rust tests including late object failure preservation"
   ],
   "same_file_forced_link_regression": {
     "upstream": {
@@ -52,7 +54,7 @@
     "macOS application compatibility",
     "32-bit host build",
     "minimum Rust 1.85 toolchain",
-    "Migration of the 265803 inventoried dependency entries",
+    "Completion of the 265803 dependency entries (one native source slice partial, 265802 pending)",
     "Complete dynamic loader policy for wrapgen bare library-name lookup",
     "Coredump floating-point extraction (zero states match upstream TODO)",
     "Full upstream CMake graph replacement and macOS target ABI",
@@ -60,8 +62,8 @@
     "44 Swift LFS binary payloads and their runtime/packaging use",
     "Formal concurrency-model proof, Miri/sanitizers of the new native futex adapter"
   ],
-  "implementation_status": "Six functioning Linux host binaries (wrapgen loader policy partial), plus native Linux x86_64 libsimple C ABI static archive (native no_std C archive verified; Darwin/other architectures/runtime startup integration partial). Full migration remains incomplete.",
-  "python_dependency_inventory_tests_passed": 5,
+  "implementation_status": "Six functioning Linux host binaries (wrapgen loader policy partial), plus native Linux x86_64 libsimple C ABI static archive (native no_std C archive verified; Darwin/other architectures/runtime startup integration partial). Full migration remains incomplete. Native no_std errno C ABI object implemented and verified; Darwin target linkage remains pending.",
+  "python_dependency_inventory_tests_passed": 6,
   "host_source_status": {
     "implemented": 5,
     "partial": 2,
@@ -71,8 +73,9 @@
     "inventoried_trees": 160,
     "unavailable_trees": 0,
     "entries": 265803,
-    "entries_pending_migration": 265803,
-    "license_candidates": 341
+    "entries_pending_migration": 265802,
+    "license_candidates": 341,
+    "entries_partial": 1
   },
   "coredump_zero_fill_benchmark": {
     "record": "crates/darling-coredump/zero-fill-measurement.json",
@@ -145,5 +148,20 @@
     "default_graph_targets_pending": 1623,
     "legacy_target_retirement_claimed": 0,
     "limitations": "Default configured graph only; custom command bodies and optional configurations require further capture. Configure/native target success is not full runtime verification."
+  },
+  "native_errno": {
+    "scope": "Partial exact-pin xnu errno source replacement; native ELF C ABI only, Darwin Mach-O and whole emulation consumers pending",
+    "record": "crates/darling-errno/verification.json",
+    "upstream_signed_overflow": "INT_MIN negation reproduced with UBSan; Rust passes unknown INT_MIN through safely",
+    "ordinary_tests_passed": 3,
+    "c_differential_inputs_passed": 1131073,
+    "defined_c_globals": 2,
+    "visibility": "GLOBAL HIDDEN",
+    "undefined_symbols": 0,
+    "cargo_staging": "Native PIC object emitted through Cargo rustc in fresh output directory with LTO disabled; llvm-objcopy applies original hidden global policy",
+    "c_integration": "Combined staged errno object + no_std libsimple archive passes concurrency and error/alias/extrema checks; late object build failure preserves stage and status43",
+    "independent_review": "Separate C compile/differential/UBSan reproduction and source/symbol review passed",
+    "performance": "Initial match slower than pinned C; bounded reference table with arithmetic sign restoration measured 2.803ns/call Rust vs3.042ns C in21 alternating synthetic mixed-input samples. No general runtime speedup.",
+    "safety_ledger": "crates/darling-errno/SAFETY.txt"
   }
 }

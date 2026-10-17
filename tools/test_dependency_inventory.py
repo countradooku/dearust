@@ -5,8 +5,9 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 
-from dependency_inventory import Inventory, resolve_url
+from dependency_inventory import Inventory, resolve_url, NATIVE_ERRNO_SOURCE
 
 
 class DependencyInventoryTests(unittest.TestCase):
@@ -92,6 +93,22 @@ class DependencyInventoryTests(unittest.TestCase):
         linked = Inventory(checkout).run(root_commit, "https://example.invalid/root.git")
         self.assertEqual(direct, linked)
         self.assertEqual(linked["counts"]["by_availability"], {"inventoried": 1})
+
+    def test_native_errno_slice_remains_partial_and_requires_its_exact_pin(self):
+        child, commit = self.repo("xnu", {NATIVE_ERRNO_SOURCE: "fixture source", "other.c": "unported"})
+        root, root_commit = self.repo("root", {}, [("src/external/xnu", "../xnu.git", commit)])
+        self.store(child, "https://example.invalid/xnu.git")
+        # The source path alone cannot mark a different version as ported.
+        with self.assertRaisesRegex(ValueError, "exact xnu pin"):
+            Inventory(root, self.cache).run(root_commit, "https://example.invalid/root.git")
+        with patch("dependency_inventory.NATIVE_ERRNO_PIN", commit):
+            data = Inventory(root, self.cache).run(root_commit, "https://example.invalid/root.git")
+        self.assertEqual(data["counts"]["entries_by_status"], {"partial": 1, "pending": 1})
+        dependency = data["dependencies"][0]
+        self.assertEqual(dependency["migration_status"], "partial")
+        source = next(e for e in dependency["entries"] if e["path"] == NATIVE_ERRNO_SOURCE)
+        self.assertEqual(source["status"], "partial")
+        self.assertIn("Darwin Mach-O", source["limitation"])
 
     def test_git_relative_url_rules(self):
         self.assertEqual(resolve_url("https://host/org/repo.git", "../child.git"), "https://host/org/child.git")

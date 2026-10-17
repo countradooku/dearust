@@ -84,7 +84,12 @@ fn cargo_graph_stages_runnable_tools_and_a_repeatable_manifest() {
     #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
     check_staged_runtime(&stage, &temp.0);
 
+    let errno = fs::read(stage.join("lib/darling/native/darling_errno.o")).unwrap();
     assert!(install().status.success());
+    assert_eq!(
+        fs::read(stage.join("lib/darling/native/darling_errno.o")).unwrap(),
+        errno
+    );
     assert_eq!(
         fs::read(stage.join("darling-host-artifacts.tsv")).unwrap(),
         manifest
@@ -115,6 +120,33 @@ fn failed_cargo_build_propagates_status_without_creating_stage() {
     assert!(!stage.exists());
 }
 
+#[cfg(unix)]
+#[test]
+fn late_object_build_failure_preserves_the_stage() {
+    use std::os::unix::fs::PermissionsExt;
+    let directory =
+        std::env::temp_dir().join(format!("darling-object-failure-{}", std::process::id()));
+    fs::create_dir(&directory).unwrap();
+    let temp = Temp(directory);
+    let cargo = temp.0.join("cargo");
+    // Ordinary package builds succeed; the later runtime object build fails.
+    fs::write(&cargo, "#!/bin/sh\nif [ \"$1\" = '-vV' ]; then printf 'host: x86_64-unknown-linux-gnu\\n'; exit 0; fi\nif [ \"$1\" = 'rustc' ]; then exit 43; fi\nexit 0\n").unwrap();
+    fs::set_permissions(&cargo, fs::Permissions::from_mode(0o755)).unwrap();
+    let stage = temp.0.join("stage");
+    fs::create_dir(&stage).unwrap();
+    let manifest = stage.join("darling-host-artifacts.tsv");
+    fs::write(&manifest, "previous manifest").unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_xtask"))
+        .args(["install", "--destdir"])
+        .arg(&stage)
+        .env("CARGO", cargo)
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(43), "{output:?}");
+    assert_eq!(fs::read_to_string(manifest).unwrap(), "previous manifest");
+    assert_eq!(fs::read_dir(stage).unwrap().count(), 1);
+}
+
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 fn check_staged_runtime(stage: &std::path::Path, temporary: &std::path::Path) {
     let xtask = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -130,6 +162,41 @@ fn check_staged_runtime(stage: &std::path::Path, temporary: &std::path::Path) {
             );
         }
     }
+    let errno = stage.join("lib/darling/native/darling_errno.o");
+    let bytes = fs::read(&errno).unwrap();
+    assert_eq!(&bytes[..4], b"\x7fELF", "stage native ELF, not LTO bitcode");
+    let undefined = Command::new("nm").arg("-u").arg(&errno).output().unwrap();
+    assert!(undefined.status.success());
+    assert!(
+        undefined.stdout.is_empty(),
+        "errno object must need no runtime: {undefined:?}"
+    );
+    let symbols = Command::new("readelf")
+        .arg("-sW")
+        .arg(&errno)
+        .output()
+        .unwrap();
+    assert!(symbols.status.success());
+    let symbols = String::from_utf8(symbols.stdout).unwrap();
+    let globals: std::collections::BTreeSet<_> = symbols
+        .lines()
+        .filter(|line| line.split_whitespace().nth(4) == Some("GLOBAL"))
+        .filter_map(|line| line.split_whitespace().last())
+        .collect();
+    assert_eq!(
+        globals,
+        ["errno_linux_to_bsd", "length_of_translation_array"]
+            .into_iter()
+            .collect()
+    );
+    for name in ["errno_linux_to_bsd", "length_of_translation_array"] {
+        assert!(
+            symbols
+                .lines()
+                .any(|line| line.contains("GLOBAL HIDDEN") && line.ends_with(name)),
+            "original hidden global missing: {symbols}"
+        );
+    }
     let compiler = Command::new("cc")
         .args([
             "-std=c11", "-O2", "-Wall", "-Wextra", "-Werror", "-pthread", "-isystem",
@@ -137,8 +204,11 @@ fn check_staged_runtime(stage: &std::path::Path, temporary: &std::path::Path) {
         // Preserve the upstream header verbatim. Its always_inline declarations
         // trigger GCC warnings, so treat the imported headers as system headers.
         .arg(xtask.join("../crates/darling-libsimple/include"))
+        .arg("-I")
+        .arg(xtask.join("../crates/darling-errno/include"))
         .arg(xtask.join("tests/fixtures/staged-libsimple.c"))
         .arg(&archive)
+        .arg(&errno)
         .arg("-o")
         .arg(&executable)
         .output()

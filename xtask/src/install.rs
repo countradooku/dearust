@@ -16,6 +16,7 @@ const MANIFEST: &str = "darling-host-artifacts.tsv";
 enum Kind {
     Bin,
     Staticlib,
+    Object,
 }
 
 struct Artifact<'a> {
@@ -23,6 +24,7 @@ struct Artifact<'a> {
     target: &'a str,
     package: &'a str,
     destination: &'a str,
+    hidden_symbols: Vec<&'a str>,
 }
 
 impl Artifact<'_> {
@@ -30,6 +32,7 @@ impl Artifact<'_> {
         match self.kind {
             Kind::Bin => format!("{}{}", self.target, std::env::consts::EXE_SUFFIX),
             Kind::Staticlib => format!("lib{}.a", self.target.replace('-', "_")),
+            Kind::Object => format!("{}.o", self.target.replace('-', "_")),
         }
     }
 }
@@ -76,7 +79,7 @@ fn parse_graph(text: &str) -> io::Result<Vec<Artifact<'_>>> {
         .filter(|line| !line.starts_with('#') && !line.is_empty())
         .map(|line| {
             let fields: Vec<_> = line.split('\t').collect();
-            if fields.len() != 5 || fields.iter().any(|value| value.is_empty()) {
+            if !(5..=6).contains(&fields.len()) || fields.iter().any(|value| value.is_empty()) {
                 return Err(invalid("invalid host artifact graph record"));
             }
             for name in &fields[1..3] {
@@ -87,7 +90,7 @@ fn parse_graph(text: &str) -> io::Result<Vec<Artifact<'_>>> {
                     return Err(invalid("invalid Cargo target or package name"));
                 }
             }
-            for path in &fields[3..] {
+            for path in &fields[3..5] {
                 if !Path::new(path)
                     .components()
                     .all(|part| matches!(part, Component::Normal(_)))
@@ -103,13 +106,27 @@ fn parse_graph(text: &str) -> io::Result<Vec<Artifact<'_>>> {
             let kind = match fields[0] {
                 "bin" => Kind::Bin,
                 "staticlib" => Kind::Staticlib,
+                "object" => Kind::Object,
                 _ => return Err(invalid("unsupported host artifact kind")),
             };
+            let hidden_symbols: Vec<_> = fields
+                .get(5)
+                .map_or(Vec::new(), |value| value.split(',').collect());
+            if (kind == Kind::Object) != !hidden_symbols.is_empty()
+                || hidden_symbols.iter().any(|name| {
+                    name.is_empty() || !name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_')
+                })
+            {
+                return Err(invalid(
+                    "only object artifacts declare hidden C ABI symbols",
+                ));
+            }
             let artifact = Artifact {
                 kind,
                 target: fields[1],
                 package: fields[2],
                 destination: fields[3],
+                hidden_symbols,
             };
             if !sources.insert(artifact.source_name()) {
                 return Err(invalid("duplicate host artifact source filename"));
@@ -156,6 +173,7 @@ pub fn build_and_stage(cargo: &OsStr, root: &Path, destination: &Path) -> Result
     let target_dir = root.join("target/host-tools");
     for package in artifacts
         .iter()
+        .filter(|artifact| artifact.kind != Kind::Object)
         .map(|artifact| artifact.package)
         .collect::<BTreeSet<_>>()
     {
@@ -177,7 +195,7 @@ pub fn build_and_stage(cargo: &OsStr, root: &Path, destination: &Path) -> Result
         // Declare every executable/library rather than discovering target files.
         for artifact in artifacts
             .iter()
-            .filter(|artifact| artifact.package == package)
+            .filter(|artifact| artifact.package == package && artifact.kind != Kind::Object)
         {
             match artifact.kind {
                 Kind::Bin => {
@@ -191,6 +209,7 @@ pub fn build_and_stage(cargo: &OsStr, root: &Path, destination: &Path) -> Result
                         "profile.release.panic=\"abort\"",
                     ]);
                 }
+                Kind::Object => unreachable!("object packages use the dedicated build below"),
             }
         }
         eprintln!("+ {command:?}");
@@ -203,12 +222,105 @@ pub fn build_and_stage(cargo: &OsStr, root: &Path, destination: &Path) -> Result
         }
     }
     let release = target_dir.join(&triple).join("release");
+    for artifact in artifacts
+        .iter()
+        .filter(|artifact| artifact.kind == Kind::Object)
+    {
+        build_object(cargo, root, &triple, &target_dir, &release, artifact)?;
+    }
     stage(&release, destination, &artifacts)?;
     eprintln!(
         "Staged {} host artifacts at {} (remaining Darling graph is unported)",
         artifacts.len(),
         destination.display()
     );
+    Ok(())
+}
+
+/// Build a single no_std C ABI object without bundling a panic runtime. A fresh
+/// private Cargo directory prevents a cached rlib from hiding a missing custom
+/// --emit=obj output: Cargo does not track that side output as a normal artifact.
+fn build_object(
+    cargo: &OsStr,
+    root: &Path,
+    triple: &str,
+    target_dir: &Path,
+    release: &Path,
+    artifact: &Artifact<'_>,
+) -> Result<(), Error> {
+    struct Scratch(PathBuf);
+    impl Drop for Scratch {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+    fs::create_dir_all(target_dir)?;
+    let scratch = target_dir.join(format!(
+        ".object-{}-{}",
+        artifact.target,
+        std::process::id()
+    ));
+    fs::create_dir(&scratch)?;
+    let scratch = Scratch(scratch);
+    let object = scratch.0.join(artifact.source_name());
+    let mut command = Command::new(cargo);
+    command
+        .current_dir(root)
+        .args([
+            "rustc",
+            "--package",
+            artifact.package,
+            "--lib",
+            "--release",
+            "--offline",
+            "--locked",
+            "--config",
+            "profile.release.lto=false",
+            "--target",
+            triple,
+            "--target-dir",
+        ])
+        .arg(scratch.0.join("cargo"))
+        .args([
+            "--",
+            "-C",
+            "lto=off",
+            "-C",
+            "codegen-units=1",
+            "-C",
+            "relocation-model=pic",
+            "-C",
+            "embed-bitcode=no",
+            "-C",
+            "panic=abort",
+        ])
+        .arg(format!("--emit=obj={}", object.display()));
+    eprintln!("+ {command:?}");
+    let status = command.status()?;
+    if !status.success() {
+        return Err(Error {
+            message: "runtime object build failed".into(),
+            code: super::exit_code(status),
+        });
+    }
+    // Stable Rust's C exports have default visibility. Match the original
+    // emulation object's -fvisibility=hidden without changing global linkage.
+    let mut visibility = Command::new("llvm-objcopy");
+    for symbol in &artifact.hidden_symbols {
+        visibility.arg(format!("--set-symbol-visibility={symbol}=hidden"));
+    }
+    visibility.arg(&object);
+    eprintln!("+ {visibility:?}");
+    let status = visibility.status()?;
+    if !status.success() {
+        return Err(Error {
+            message: "runtime object visibility adjustment failed".into(),
+            code: super::exit_code(status),
+        });
+    }
+    fs::create_dir_all(release)?;
+    // Rename replaces a previous file without writing through a symlink/hardlink.
+    fs::rename(&object, release.join(artifact.source_name()))?;
     Ok(())
 }
 

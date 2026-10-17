@@ -52,12 +52,14 @@ states remain zero, matching upstream's TODO; no FP extraction port is claimed.
 
 All 149 first-level submodules and 11 nested gitlinks are now expanded at their
 exact pinned commits in dependency-inventory.json. The 160 dependency trees
-contain 265,803 committed leaves, all pending migration, and 341 filename-based
+contain 265,803 committed leaves (one partial native errno source slice and
+265,802 pending), and 341 filename-based
 license candidates with actual blob hashes. No Git trees are unavailable in this
 snapshot. The isolated baseline still contains 44 Swift Git LFS pointers;
 their binary payloads have not been materialized or migrated. Regeneration is byte-identical with the same object cache; see
 tools/DEPENDENCY-INVENTORY.txt and tools/dependency_inventory.py.
-No dependency implementation has been ported by inventorying it. Source-category
+The errno source has a separately implemented and C-verified native ABI slice;
+inventorying the remaining dependency entries does not port them. Source-category
 counts use suffix heuristics; Java, Swift and other code may fall under metadata.
 Every committed leaf remains in scope regardless of its category label.
 
@@ -83,7 +85,8 @@ pending default targets and no claim of legacy target retirement. Optional
 print_wrapped_elf is a verified extra artifact absent from the default graph.
 Custom command bodies, optional component configurations and generator-specific
 recipes are not fully represented by the File API and require separate gates.
-The typed Cargo graph builds/stages six tools plus the native static archive;
+The typed Cargo graph stages six tools, the native static archive and a native
+errno validation object;
 it is not a replacement for all 1,629 upstream targets. Reproduction scripts,
 logs and reports are listed in tools/BASELINE.txt.
 
@@ -179,3 +182,16 @@ benchmark environment, workloads, allocations, latency/throughput and variance;
 do not infer performance from language choice. Full completion additionally
 requires no unexplained compatibility or performance regression and no pending
 inventory entries. These criteria have not yet been met.
+
+Errno source slice and target boundary
+-------------------------------------
+The pinned xnu dependency's emulation conversion/errno.c now has a safe no_std
+replacement. Its sparse mapping, signed/unknown-value behavior, two original
+hidden globals and size_t object are checked against compiled committed C/headers.
+INT_MIN overflow is fixed with a UBSan reproducer and regression coverage. Native
+C linkage is verified with no unresolved runtime symbols, including alongside
+the staged synchronization archive. Dependency source status remains partial
+because Darwin target linkage and actual libsystem_kernel consumers are not
+validated. Both emulation and emulation_dyld targets remain pending; their
+source-slice records explicitly describe the native ELF validation boundary.
+No additional legacy target is retired by this native validation artifact.

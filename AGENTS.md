@@ -56,6 +56,11 @@ Existing migration worktrees (inspect status before reusing):
 - /home/radud/Documents/Codex/2026-10-18/re/work/parser-review
 - /home/radud/Documents/Codex/2026-10-18/re/work/cargo-build
 - /home/radud/Documents/Codex/2026-10-18/re/work/full-inventory
+Additional errno implementation/review work is preserved under:
+- /home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/work/errno-port
+- /home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/work/errno-review
+The first is a detached Git worktree; the second holds independent reference
+builds and UBSan evidence. Inspect status before reusing either location.
 Their integrated commits may have different ancestry after cherry-picking.
 Preserve scratch/reference binaries under work/ and never reset dirty work.
 
@@ -88,7 +93,7 @@ build/staging emits a no_std panic-abort native archive; C consumers use -pthrea
 Normal Rust development/tests retain default std; see SAFETY.txt for C-only panic
 handler ownership. Darwin startup integration remains pending.
 
-Cargo xtask builds migrated packages and stages six tools plus the native archive
+Cargo xtask builds migrated packages and stages six tools, the native archive and native errno validation object
 using the typed graph xtask/host-artifacts.tsv. Real staged tools are executed;
 a separate C stress harness links the staged archive. This does NOT replace all
 upstream generation, cross-linking, architecture or install rules. The optional
@@ -98,7 +103,7 @@ upstream-rust-tools.patch remains an EARLIER THREE-tool adapter snapshot only.
 
 - Superproject: 27,274 entries; 5 implemented, 2 partial, 27,267 pending.
 - Dependencies: all 160 exact-pin trees inventoried; 265,803 committed leaves,
-  all pending migration; 341 license filename candidates with actual blob hashes.
+  one partial errno source slice and 265,802 pending; 341 license filename candidates with actual blob hashes.
   Source category labels are suffix heuristics, not a semantic language count.
 - Observed default CMake File API graph: 1,629 targets, 7,785 dependency edges,
   34,478 source records (9,593 generated), 1,238 targets with install metadata.
@@ -109,8 +114,8 @@ upstream-rust-tools.patch remains an EARLIER THREE-tool adapter snapshot only.
 
 ## Verification and reproducible commands
 
-Latest cargo xtask check passed formatting, strict Clippy, 73 ordinary tests.
-Five optional differential suites were explicitly run successfully. Seven Python
+Latest cargo xtask check passed formatting, strict Clippy, 77 ordinary tests.
+Five optional differential suites were explicitly run successfully. Eight Python
 inventory/graph tests pass; both inventories and graph regenerate identically.
 Cargo release build, native C ABI differential/concurrency tests and generated
 wrapper compilation/linking to Mach-O pass. No full runtime/app validation exists.
@@ -176,3 +181,23 @@ or full darlingserver consumer build is claimed. C ABI differential/concurrency,
 staged no-std archive member checks and SIGABRT invalid-callback test pass.
 Independent review rebuilt/linked/reran the C harness in an isolated target dir.
 See verification.json for exact record. Source/target status counts are unchanged.
+
+Continuation 2026-10-18: native errno runtime slice
+------------------------------------------------
+crates/darling-errno ports exact-pin xnu emulation conversion/errno.c as no_std
+with no OS calls, allocator or panic handler. Both original global C symbols,
+hidden visibility, length=512, signed mapping and unknown passthrough are retained.
+INT_MIN overflow is fixed; tools/check_errno.py reproduces original UBSan failure
+and compares 131,073 range inputs plus one million random inputs using committed
+headers. Cargo stages a runtime-free native ELF object; it is not the required
+Darwin Mach-O/fat object. Full emulation targets remain pending with source-slice
+annotations; dependency inventory has one partial source and 265,802 pending.
+77 ordinary tests, eight Python tests, C linkage beside libsimple, exact two
+hidden globals/no undefineds, deterministic repeated object staging and late
+object-build failure tests pass. Independent review reproduced differential and
+UBSan gates. Native call benchmark: C3.042ns, Rust2.803ns; raw match/const-array/final
+records are preserved, and no general runtime speedup is established.
+Continue with real Darwin backend/target linking and actual consumers. The next
+backend path is src/external/xnu/darling/src/libsystem_kernel/emulation/src/
+linux_premigration/ext/futex.c, used by libsimple's __linux_futex_reterr branch.
+Its Linux raw-syscall and Darwin errno/cerror contracts need separate validation.

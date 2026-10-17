@@ -17,8 +17,8 @@ Six Linux host binaries now build with Cargo:
 
 The parser/converter crates and synchronization state-machine core forbid
 unsafe code. The native synchronization adapter has small documented unsafe
-C pointer, callback and Linux futex boundaries; see its SAFETY.txt. The workspace has no third-party Rust dependencies. The core converter preserves register layouts and overlay file
-reconstruction. Its floating-point state remains zero, matching upstream's
+C pointer, callback and Linux futex boundaries; see its SAFETY.txt. The workspace has no third-party Rust dependencies. The core converter preserves
+register layouts and overlay file reconstruction. Its floating-point state remains zero, matching upstream's
 unimplemented floating-state extraction. Its diagnostics differ from upstream;
 HOME-unset account lookup uses procfs and /etc/passwd, without NSS services.
 CLI readers currently read whole inputs, which can use more memory than mmap.
@@ -38,6 +38,12 @@ This source is PARTIAL: Darwin futex support, other architectures and runtime st
 pending. Cargo build/staging now emits a no_std panic-abort archive; libc supplies
 syscall and abort. Normal Rust development/tests retain the default std feature.
 
+A separate no_std errno converter now preserves the pinned Linux-to-Darwin
+mapping, sign handling and both original C globals. It fixes signed overflow
+for INT_MIN, verified against compiled original C plus UBSan. Cargo stages a
+native ELF object with hidden symbols and no unresolved runtime dependencies.
+The required Darwin Mach-O objects and full emulation consumers remain pending.
+
 Build and stage with Cargo
 --------------------------
 Rust 1.85+, Cargo, a host linker, rustfmt and Clippy are required:
@@ -51,7 +57,8 @@ Native builds require no CMake. The release binaries are under target/release
 preserves upstream build-tree paths for build-only tools and the upstream
 bin/darling-coredump installation path. The typed graph also stages the native
 libsimple static archive at src/libsimple-linux/liblibsimple_darlingserver.a. Its deterministic manifest records the
-host artifact graph. See BUILDING.txt and xtask/README.md for boundaries.
+host artifact graph. The errno object is staged separately under
+lib/darling/native. See BUILDING.txt and xtask/README.md for boundaries.
 
 This is a Cargo replacement for these host artifact operations. MIG generation,
 Mach-O linking of the runtime, SDK/framework assembly, circular dependencies,
@@ -65,8 +72,8 @@ lengths, uninitialized Mach-O segment padding, output/input aliases, parser
 bounds and adversarial resource amplification. Differential suites compare all
 six utilities with compiled pinned upstream sources. Generated wrapper C also
 compiles against the pinned elfcalls ABI header and links to an x86-64 Mach-O
-whose ELF dependency is checked. These are host artifact tests, not runtime ABI
-or macOS application conformance. verification.json records the latest checks.
+whose ELF dependency is checked. These include isolated native ABI checks; they do not establish full runtime or
+macOS application conformance. verification.json records the latest checks.
 
 The synthetic 64 MiB zero-fill core conversion benchmark measured about 32 ms
 upstream versus 22 ms Rust median, with equal normalized output. This supports
@@ -81,8 +88,8 @@ migration-inventory.json covers all 27,274 superproject entries at
 2 partial source replacements, and 27,267 pending entries. Counts include
 headers, resources and gitlinks; they do not measure runtime completeness.
 dependency-inventory.json separately expands exact pinned dependency trees,
-including nested gitlinks and license evidence. Every dependency entry remains
-pending. MIGRATION.txt defines full-completion gates. No original ABI, resource,
+including nested gitlinks and license evidence. One dependency source has a verified native errno ABI slice and remains partial;
+265,802 leaves remain pending. MIGRATION.txt defines full-completion gates. No original ABI, resource,
 framework or dependency is waived, and no placeholders count as ports.
 
 The optional upstream-rust-tools.patch remains the earlier THREE-tool adapter
@@ -95,3 +102,8 @@ and baseline report capture remaining migration inputs. migration-targets.json
 tracks 1,629 default targets: six have Cargo artifact slices (including partial
 ones), while 1,623 remain pending. Separate Git worktrees
 preserve parallel implementation and review history.
+
+The errno conversion microbenchmark measured 3.042 ns/call for pinned C and
+2.803 ns/call for the final safe Rust lookup over mixed signed inputs. The first
+Rust match implementation was slower. Raw measurements, compiler/source hashes
+and limits are in crates/darling-errno; this is not a Darling runtime speedup.

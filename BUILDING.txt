@@ -3,7 +3,8 @@ Cargo build and migration boundaries
 
 Requirements for this Rust workspace
 ------------------------------------
-Rust 1.85 or later, Cargo, and a host linker are required. `cargo xtask check`
+Rust 1.85 or later, Cargo, and a host linker are required. Native object staging
+also requires llvm-objcopy; integration checks use cc, ar, nm and readelf. `cargo xtask check`
 also requires the rustfmt and Clippy toolchain components. There are no
 third-party Rust dependencies, build scripts, CMake calls, network downloads,
 or generated-code prerequisites in the migrated workspace. Optional differential
@@ -72,8 +73,9 @@ converter uses its upstream bin/darling-coredump install rule. See
 xtask/README.md for publication semantics and filesystem regression coverage.
 The typed graph also stages libsimple at the upstream Linux static archive
 path. Its C-link integration harness checks the staged archive. The manifest
-is deterministic. This stages six tools and a native library slice, not the
-complete runtime.
+is deterministic. It also stages a native no_std errno ELF object at
+lib/darling/native/darling_errno.o. This stages six tools, a native library and
+a native validation object, not the complete runtime or required Darwin objects.
 
 Legacy integration (optional)
 -----------------------------
@@ -151,3 +153,25 @@ default CMake configuration succeeds on the recorded host. Forty-four Swift
 LFS pointer files still need actual binary payloads for packaging/runtime;
 Git object scope coverage does not materialize them. This configuration and
 its captured default target graph are migration inputs, not a full Cargo port.
+
+Pinned errno runtime slice
+-------------------------
+`cargo xtask build` builds darling-errno as an always-no_std rlib. `install`
+also invokes Cargo rustc in an isolated fresh output directory to emit one native
+PIC object with LTO disabled. llvm-objcopy preserves global linkage while setting
+the two original C symbols to hidden visibility. No panic handler, allocator,
+OS shim or unresolved symbol is bundled into this object. It can link beside
+libsimple's final C-linked no_std archive. The remaining emulation CMake targets
+require Darwin Mach-O/fat objects; this ELF object does not replace those targets.
+
+Verify committed original sources/headers and reproduce the signed overflow:
+
+    python3 tools/check_errno.py --upstream /path/to/darling \
+      --xnu /path/to/exact-pin/xnu --object /path/to/stage/lib/darling/native/darling_errno.o
+
+Add --benchmark --report /path/to/record.json for 21 alternating synthetic call
+measurements after warmup. This optional check needs clang, UBSan, nm and readelf.
+All source/header blobs come from the documented Git pins, not working files or
+host errno constants. It compares 131,073 range inputs and one million random
+inputs, then independently verifies Rust's defined INT_MIN result and C's UBSan
+failure. It verifies both original globals and empty undefined-symbol output.

@@ -10,9 +10,11 @@ and native Linux synchronization library with Cargo. Current paths are:
 - `src/libelfloader/wrapgen/print_wrapped_elf`
 - `bin/darling-coredump`
 - `src/libsimple-linux/liblibsimple_darlingserver.a` (native Linux x86-64 archive)
+- `lib/darling/native/darling_errno.o` (native errno ABI validation object)
 
-`host-artifacts.tsv` declares the artifact kind (`bin` or `staticlib`), Cargo package, target, destination and
-pinned upstream CMake target definition. The same deterministic file is written
+`host-artifacts.tsv` declares the artifact kind (`bin`, `staticlib` or `object`), Cargo package, target, destination and
+pinned upstream CMake target definition. Object rows additionally declare the
+C globals requiring hidden visibility. The same deterministic file is written
 to `darling-host-artifacts.tsv` at the staging root. It has no timestamps or
 checkout-specific paths. It describes the artifact graph, not content hashes.
 
@@ -66,3 +68,18 @@ and mutex reacquisition with 12 waiters. An alarm bounds deadlocks at 30 seconds
 cover symlink rejection, missing inputs, executable modes and hard-link
 preservation. Add new functioning artifacts to the graph only after their
 Cargo targets and compatibility tests exist.
+
+The errno object requires `llvm-objcopy`, which sets the two original C globals
+to hidden visibility while preserving global linkage. Cargo builds it in a fresh
+private directory for each staging operation, with an explicit object output,
+PIC, one codegen unit and LTO disabled. A cached rlib cannot hide a missing object
+side output. Compiler/tool failure preserves the stage and forwards its status;
+a regression specifically covers failure after the normal package builds.
+
+This native ELF object is not the Darwin Mach-O/fat object required by emulation
+and emulation_dyld. It preserves their errno C ABI in native validation only.
+The integration harness links it alongside the no_std libsimple archive, checks
+errno mapping/extrema, both hidden globals, empty undefined-symbol output, ELF
+format and byte-identical objects on repeated staging. `nm` and `readelf` are
+required for these native checks. The object has no panic handler and does not
+introduce another Rust runtime into that combined C executable.

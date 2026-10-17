@@ -1,8 +1,8 @@
-# Darling host artifact graph v2
+# Darling host artifact graph v3
 # Baseline: 60ba801decee7a00782f74f6be4c8ffb013f79ff
-# Scope: migrated host tools and native Linux synchronization archive; remaining upstream graph is unported.
+# Scope: migrated host tools, native Linux synchronization archive and errno validation object; remaining upstream graph is unported.
 # Build-only targets preserve build-tree consumers; darling-coredump preserves its bin install rule.
-# binary	package	build-tree destination	upstream target definition
+# kind\ttarget\tpackage\tdestination\tupstream target definition[\thidden C symbols]
 bin	bsdln	darling-buildtools	src/bsdln/bsdln	src/bsdln/CMakeLists.txt
 bin	elfdep	darling-buildtools	src/buildtools/elfdep	src/buildtools/CMakeLists.txt
 bin	getuuid	darling-buildtools	src/buildtools/getuuid	src/buildtools/CMakeLists.txt
@@ -11,3 +11,5 @@ bin	print_wrapped_elf	darling-buildtools	src/libelfloader/wrapgen/print_wrapped_
 bin	darling-coredump	darling-coredump	bin/darling-coredump	src/hosttools/CMakeLists.txt
 # Native Linux only; the Darwin libsimple backend remains unported.
 staticlib	darling_simple	darling-libsimple	src/libsimple-linux/liblibsimple_darlingserver.a	src/libsimple/CMakeLists.txt
+# Native ELF validation slice of emulation; not a Darwin/Mach-O target replacement.
+object	darling_errno	darling-errno	lib/darling/native/darling_errno.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt	errno_linux_to_bsd,length_of_translation_array

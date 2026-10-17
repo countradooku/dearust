@@ -27,8 +27,8 @@ i32, and returns INT_MIN unchanged because it is unmapped. Regression tests
 cover this value, both extrema, the 511/512 boundary, all supported mappings,
 holes, negative errors, and the ENOTSUP/EOPNOTSUPP designator behavior.
 
-The pure conversion module forbids unsafe code. It performs a bounded match
-and sign restoration on positive Darwin values <=102: no allocation, pointer,
+The pure conversion module forbids unsafe code. It uses a bounded reference to an immutable 126-byte table
+and arithmetic sign restoration on positive Darwin values <=102: no allocation, pointer,
 OS call, indexing panic, initialization or runtime support is needed. The
 crate is always no_std and has no panic handler. Cargo emits an rlib for Rust
 consumers; the build orchestrator can emit a native object for C consumers
@@ -41,11 +41,28 @@ all scalar input values are valid, and no pointer contract is required. The
 immutable usize static is the C size_t object length_of_translation_array=512.
 Link this object once, replacing the original errno.c object; duplicate symbol
 ownership is invalid. No other original external symbol is omitted. ELF hidden
-visibility from the original CMake target must be selected by the final linker;
-this crate by itself does not assert the original shared-library visibility.
+visibility from the original CMake target is applied by Cargo staging with
+llvm-objcopy. The plain rlib alone does not enforce shared-library visibility.
 
 The native Linux x86_64 object and scalar ABI are verified separately from
 Darwin runtime startup. Other target architectures, whole libsystem_kernel
 linkage and macOS application compatibility remain unverified. This source
 replacement does not complete the xnu dependency or libsystem_kernel target.
 See UPSTREAM-NOTICES.txt and APPLE_LICENSE for preserved source notices.
+
+Cargo staging emits one PIC native object with release LTO disabled (otherwise
+an rlib side output can be LLVM bitcode), sets the original global-hidden symbol
+policy and tests exact C exports/no undefined symbols. tools/check_errno.py
+compiles all reference source/header inputs from pinned Git blobs; it validates
+UNIX03=1, compares 1,131,073 inputs, and reproduces the original signed overflow
+using fail-fast UBSan. The staged object links alongside native no_std libsimple
+without adding a panic handler. Repeated stage contents are identical.
+
+Measurement records preserve the initial match and by-value const-array variants
+as well as the final reference-to-table implementation. The by-value const array
+caused a stack copy in generated code; a reference avoids that copy. Arithmetic
+sign restoration avoids an unpredictable branch for mixed-sign errors; its XOR
+mask is 0 or -1, and subtraction is bounded because mapped errno values are at
+most 102. All variants pass the same independent C comparison. Final synthetic
+calls measured 2.803ns Rust vs 3.042ns C locally (21 alternating samples); this
+establishes no syscall latency or macOS application performance improvement.

@@ -7,7 +7,7 @@ pub const TRANSLATION_ARRAY_LENGTH: usize = 512;
 // Every mapped Darwin errno fits in one byte. Unmapped entries retain the
 // original zero sentinel. Linux errno 125 is the last supported input, so
 // trimming the original trailing zero slots preserves observable behavior.
-const LINUX_TO_DARWIN: [u8; 126] = {
+const LINUX_TO_DARWIN: &[u8; 126] = &{
     let mut table = [0; 126];
     table[1] = 1; // LINUX_EPERM -> EPERM
     table[2] = 2; // LINUX_ENOENT -> ENOENT
@@ -111,7 +111,11 @@ pub const fn linux_to_bsd(err: i32) -> i32 {
     if translated == 0 {
         return err;
     }
-    if err < 0 { -translated } else { translated }
+    // Restore sign arithmetically so this hot scalar conversion does not need
+    // a branch on the sign of each error. translated is at most 102, so neither
+    // XOR nor subtraction can overflow for the two masks 0 and -1.
+    let sign = err >> 31;
+    (translated ^ sign) - sign
 }
 
 #[cfg(test)]

@@ -1,0 +1,152 @@
+{
+  "scope": "Native Linux C ABI errno object only; no Darwin runtime or whole emulation target verification",
+  "darling_pin": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
+  "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+  "input_sha256": {
+    "xnu:bsd/sys/errno.h": "c8a527ee020cee45bf69cd150b0c5743c148863d54bfa29e1193caa6af274f36",
+    "xnu:bsd/sys/cdefs.h": "5da8400624468e678cf69ec5231aba7e4bd5f89e04a05395e08994b02601cd0b",
+    "xnu:bsd/sys/_types/_errno_t.h": "ca230b22b22becab1bb191bfe5a8dd4595ea0566f5c8cc9b299eca308ee5a271",
+    "xnu:darling/src/libsystem_kernel/emulation/include/conversion/errno.h": "6aa8322e7afce8772e67e5d1730ecca17df5afd708dc15d1e822e6179f4585eb",
+    "xnu:darling/src/libsystem_kernel/emulation/include/conversion/duct_errno.h": "eb3c3891198cbe014ee2375450e78b8652abb00b4a810407a76034b74eabb459",
+    "xnu:darling/src/libsystem_kernel/emulation/include/common/base.h": "129194fc0eead08ab0815e2d971c96b053c32da7539f3a4ced08a783e53d74dc",
+    "xnu:darling/src/libsystem_kernel/emulation/src/conversion/errno.c": "18899636de568ae5b5ff487e7f0912f9ef8b999e1262496cf3f65372ea276eca",
+    "darling:Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/_symbol_aliasing.h": "ead22f184d3505851bda8ea7eed81091caeff0bd4875ff4cbbd5885c5068b53b",
+    "darling:Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/_posix_availability.h": "452bff9ae32655a49b65802e29b21c67a546be1446553f908ef9850a694746bd"
+  },
+  "differential": "range=131073 random=1000000 length=512 min=-2147483648 hash=ab61019b2e66666d",
+  "original_int_min_ubsan": "Confirmed signed negation overflow; fail-fast UBSan exit 1",
+  "rust_int_min": -2147483648,
+  "object": {
+    "defined_globals": [
+      "errno_linux_to_bsd",
+      "length_of_translation_array"
+    ],
+    "undefined_symbols": [],
+    "visibility": "GLOBAL HIDDEN",
+    "size_bytes": 1512,
+    "sha256": "0c546d938586c08cd37c6b14ad61ca1d09547c085738a7b58c16d637bbeac4dc"
+  },
+  "compiler": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)",
+  "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "rust_source_sha256": {
+    "lib.rs": "0a66a5f44114167a65d8ed7a94046d8496c1b9276620063dc79b2d626aa495a9",
+    "abi.rs": "26b90263a0ef0eb27f08e3318d3b5e008f35b3715f54b0435f6b8a2c0083130b",
+    "conversion.rs": "6e0f7ae2bd1f0e7418c40ac76f1c68b964c5c9a9d9e1098ea94b02aa8365d918"
+  },
+  "platform": "Linux-7.2.9-200.nobara.fc44.x86_64-x86_64-with-glibc2.43",
+  "benchmark": {
+    "workload": "1000000 out-of-line conversion calls per sample, deterministic mixed signed errors/holes, 2 warmups and 21 alternating samples",
+    "samples": [
+      {
+        "sample": 0,
+        "upstream_ns": 3326426,
+        "rust_ns": 2890863
+      },
+      {
+        "sample": 1,
+        "upstream_ns": 2999198,
+        "rust_ns": 2731342
+      },
+      {
+        "sample": 2,
+        "upstream_ns": 2997775,
+        "rust_ns": 2823956
+      },
+      {
+        "sample": 3,
+        "upstream_ns": 3009317,
+        "rust_ns": 2718928
+      },
+      {
+        "sample": 4,
+        "upstream_ns": 3068299,
+        "rust_ns": 2812916
+      },
+      {
+        "sample": 5,
+        "upstream_ns": 3002755,
+        "rust_ns": 2714690
+      },
+      {
+        "sample": 6,
+        "upstream_ns": 3066565,
+        "rust_ns": 2823296
+      },
+      {
+        "sample": 7,
+        "upstream_ns": 3041668,
+        "rust_ns": 2714430
+      },
+      {
+        "sample": 8,
+        "upstream_ns": 3166183,
+        "rust_ns": 3210637
+      },
+      {
+        "sample": 9,
+        "upstream_ns": 3089558,
+        "rust_ns": 2802837
+      },
+      {
+        "sample": 10,
+        "upstream_ns": 3074310,
+        "rust_ns": 2758573
+      },
+      {
+        "sample": 11,
+        "upstream_ns": 3038542,
+        "rust_ns": 2749316
+      },
+      {
+        "sample": 12,
+        "upstream_ns": 3090410,
+        "rust_ns": 2912063
+      },
+      {
+        "sample": 13,
+        "upstream_ns": 3018595,
+        "rust_ns": 2729669
+      },
+      {
+        "sample": 14,
+        "upstream_ns": 3370469,
+        "rust_ns": 2817785
+      },
+      {
+        "sample": 15,
+        "upstream_ns": 3024827,
+        "rust_ns": 2754826
+      },
+      {
+        "sample": 16,
+        "upstream_ns": 3034064,
+        "rust_ns": 2835138
+      },
+      {
+        "sample": 17,
+        "upstream_ns": 3025367,
+        "rust_ns": 2740079
+      },
+      {
+        "sample": 18,
+        "upstream_ns": 3084219,
+        "rust_ns": 2850266
+      },
+      {
+        "sample": 19,
+        "upstream_ns": 3018164,
+        "rust_ns": 2730159
+      },
+      {
+        "sample": 20,
+        "upstream_ns": 3079299,
+        "rust_ns": 2823817
+      }
+    ],
+    "upstream_median_ns_per_call": 3.041668,
+    "rust_median_ns_per_call": 2.802837,
+    "checksums_identical": true,
+    "limitations": "Single local synthetic conversion workload, includes call overhead; not syscall latency, macOS app performance or general Darling speedup"
+  },
+  "cpu": "AMD Ryzen 9 7950X 16-Core Processor"
+}

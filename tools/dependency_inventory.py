@@ -20,6 +20,11 @@ from inventory import UPSTREAM_COMMIT, category
 
 UPSTREAM_URL = "https://github.com/darlinghq/darling.git"
 
+# Qualified source slices are recorded only at their exact dependency commit.
+# Native ABI verification is not Darwin linkage or completion of the dependency.
+NATIVE_ERRNO_SOURCE = "darling/src/libsystem_kernel/emulation/src/conversion/errno.c"
+NATIVE_ERRNO_PIN = "fa29287aa2f0115271e091f1031f53c9e024005d"
+
 
 def git(gitdir, *args):
     return subprocess.check_output(["git", "--git-dir", str(gitdir), *args], stderr=subprocess.DEVNULL)
@@ -116,6 +121,13 @@ class Inventory:
             for entry in entries:
                 entry["category"] = category(entry["path"], entry["mode"])
                 entry["status"] = "pending"
+                if path == "src/external/xnu" and entry["path"] == NATIVE_ERRNO_SOURCE:
+                    if commit != NATIVE_ERRNO_PIN:
+                        raise ValueError("errno replacement requires its exact xnu pin")
+                    entry.update(status="partial", replacement="crates/darling-errno/src/lib.rs",
+                                 scope="Safe no_std errno conversion; native Linux C ABI object with both original hidden globals verified",
+                                 limitation="Darwin Mach-O/architecture linkage and actual emulation consumers remain unverified; no target retirement")
+                    dep["migration_status"] = "partial"
                 if entry["mode"] in {"100644", "100755"} and is_license(entry["path"]):
                     blob = git(gitdir, "cat-file", "blob", entry["object_id"])
                     licenses.append({"path": entry["path"], "object_id": entry["object_id"],
@@ -135,6 +147,7 @@ class Inventory:
                 "counts": {"dependencies": len(self.dependencies), "by_availability": dict(sorted(Counter(
                     d["availability"] for d in self.dependencies).items())),
                     "inventoried_entries": sum(len(d.get("entries", [])) for d in self.dependencies),
+                    "entries_by_status": dict(sorted(Counter(e["status"] for d in self.dependencies for e in d.get("entries", [])).items())),
                     "license_candidates": sum(len(d.get("license_candidates", [])) for d in self.dependencies)},
                 "dependencies": self.dependencies}
 

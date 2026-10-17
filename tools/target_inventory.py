@@ -37,6 +37,12 @@ def main():
             package, artifact, status = REPLACEMENTS[name]
             entry.update(cargo_package=package, cargo_artifact=artifact, status=status)
             found.add(name)
+        if name in {'emulation', 'emulation_dyld'}:
+            entry['native_verified_source_slices'] = [{
+                'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/conversion/errno.c',
+                'cargo_package': 'darling-errno', 'cargo_artifact': 'darling_errno.o',
+                'scope': 'Native ELF C ABI validation only; not the required Darwin Mach-O/fat object or complete target',
+            }]
         entries.append(entry)
     if found != REPLACEMENTS.keys():
         raise ValueError(f'expected native targets missing: {sorted(REPLACEMENTS.keys()-found)}')

@@ -9,6 +9,10 @@
       "inventoried": 160
     },
     "inventoried_entries": 265803,
+    "entries_by_status": {
+      "partial": 1,
+      "pending": 265802
+    },
     "license_candidates": 341
   },
   "dependencies": [
@@ -2307774,7 +2307778,7 @@
       "repository_url": "https://github.com/darlinghq/darling-xnu.git",
       "declared_url": "../darling-xnu.git",
       "commit": "fa29287aa2f0115271e091f1031f53c9e024005d",
-      "migration_status": "pending",
+      "migration_status": "partial",
       "availability": "inventoried",
       "entries": [
         {
@@ -2325289,7 +2325293,10 @@
           "object_id": "d259ef9f116b02e1319d5a077aa3dd59f67d7f02",
           "size": 2983,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/darling-errno/src/lib.rs",
+          "scope": "Safe no_std errno conversion; native Linux C ABI object with both original hidden globals verified",
+          "limitation": "Darwin Mach-O/architecture linkage and actual emulation consumers remain unverified; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/conversion/fcntl/open.c",

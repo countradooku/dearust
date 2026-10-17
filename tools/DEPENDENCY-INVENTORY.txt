@@ -41,7 +41,9 @@ size and migration category/status. A dependency's path plus its entry path give
 the qualified source path. Nested gitlinks remain entries in their parent tree;
 their full contents are separately inventoried when available. Counts therefore
 include parent gitlinks as well as expanded child entries. Symlinks are preserved
-as mode 120000 blobs, and never followed. All dependency entries remain pending.
+as mode 120000 blobs, and never followed. One exact-pin xnu errno source is partial with a verified native C ABI slice;
+all other 265,802 entries remain pending. The original dependency and Darwin
+link/consumer gates remain incomplete.
 
 License filename candidates include regular committed LICENSE, LICENCE, COPYING,
 COPYRIGHT, NOTICE and APSL prefixes, with Git blob IDs, byte sizes and SHA256 hashes
@@ -54,7 +56,8 @@ Hermetic regression suite:
 
   python3 -m unittest discover -s tools -p 'test_dependency_inventory.py' -v
 
-The tests use local committed fixtures to verify nested traversal, exact pin
+The tests use local committed fixtures to verify partial-source pin gating,
+nested traversal, exact pin
 matching, working-tree/HEAD independence, committed license hashing, deterministic
 output without local paths, URL resolution and rejection of inconsistent module
 metadata. They do not fetch repositories or treat inventory as runtime testing.
