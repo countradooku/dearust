@@ -1,0 +1,14 @@
+[package]
+name = "dearust-guarded"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+description = "Allocation-free guarded descriptor table for the Darling runtime"
+license = "GPL-3.0-or-later"
+
+[features]
+dyld = []
+
+[lints.clippy]
+undocumented_unsafe_blocks = "deny"

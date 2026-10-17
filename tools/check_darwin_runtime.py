@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Run pinned real guarded-table/close consumers through Darling's futex ABI.
+"""Compare pinned C and migrated Rust guarded tables through Darling's futex ABI.
 
 Native x86-64 Linux execution, not a macOS process test. Production C files are
 read from pinned Git blobs. The original raw syscall assembly changes only its
-Mach-O symbol/directive spelling for ELF. No runtime subsystem is substituted;
+Mach-O symbol/directive spelling for ELF. An optional --guarded-object migrates the table itself;
 unused close.c cancellation/logging sections are removed by linker GC. The test
 harness supplies host TLS cerror and panic abort adapters explicitly.
 """
@@ -26,6 +26,7 @@ def run(args):
 
 
 def verify(args):
+    guarded = args.guarded_object.resolve(strict=True) if args.guarded_object else None
     objects = [path.resolve(strict=True) for path in
                [args.libsimple_object, args.futex_object, args.errno_object]]
     with tempfile.TemporaryDirectory(prefix='darling-runtime-') as directory:
@@ -81,7 +82,8 @@ def verify(args):
         results = {}
         for name, implementation in cases:
             executable = work/name
-            run([*common, '-pthread', driver, work/'table.o', work/'close.o',
+            table = guarded if name == 'rust' and guarded else work/'table.o'
+            run([*common, '-pthread', driver, table, work/'close.o',
                  work/'syscall.o', *implementation, '-Wl,--gc-sections', '-o', executable])
             results[name] = run([executable]).stdout.strip()
             # Reuse comprehensive ABI stress (once/rwlock/condvar REQUEUE), with
@@ -94,10 +96,40 @@ def verify(args):
             results[name+'_abi'] = run([work/(name+'-abi')]).stdout.strip()
         if results['original'] != results['rust'] or results['original_abi'] != results['rust_abi']:
             raise ValueError('pinned C/Rust runtime consumer output mismatch: '+str(results))
+        regressions = {}
+        if guarded:
+            regression_driver = fixtures/'guarded-regressions.c'
+            for variant, table, implementation in [
+                    ('original', work/'table.o', cases[0][1]),
+                    ('rust', guarded, objects)]:
+                executable = work/(variant+'-guarded-regressions')
+                run([*common, '-pthread', regression_driver, table, work/'close.o',
+                     work/'syscall.o', *implementation, '-Wl,--gc-sections', '-o', executable])
+                for case in ['sentinel', 'callback'] + (['full'] if variant == 'rust' else []):
+                    result = subprocess.run([executable, case], capture_output=True, text=True, timeout=20)
+                    expected = 0 if variant == 'rust' else 1
+                    if result.returncode != expected:
+                        raise ValueError(f'{variant} {case} unexpected result: {result}')
+                    regressions[variant+'_'+case] = {'returncode': result.returncode,
+                                                   'stdout': result.stdout.strip()}
+            # The original negative-fd wraparound search runs past the fixed table
+            # only when every slot is nonempty. Diagnose it in the original C.
+            run([*common, '-fsanitize=address,undefined', '-c', work/'table.c', '-o', work/'table-sanitized.o'])
+            executable = work/'original-sanitized'
+            run([*common, '-pthread', '-fsanitize=address,undefined', regression_driver,
+                 work/'table-sanitized.o', work/'close.o', work/'syscall.o',
+                 *cases[0][1], '-Wl,--gc-sections', '-o', executable])
+            result = subprocess.run([executable, 'full'], capture_output=True, text=True, timeout=20)
+            if result.returncode == 0 or 'global-buffer-overflow' not in result.stderr:
+                raise ValueError('original negative-fd overflow was not reproduced: '+str(result))
+            regressions['original_full_sanitizer'] = {'returncode': result.returncode,
+                'diagnostic': result.stderr, 'confirmed': 'AddressSanitizer global-buffer-overflow'}
         return {
-            'scope': 'Actual pinned guard_table.c and full close.c linked with section GC, native Linux x86_64 execution through Darling futex ABI; not macOS application startup',
+            'guarded_regressions': regressions,
+            'guarded_object_sha256': hashlib.sha256(guarded.read_bytes()).hexdigest() if guarded else None,
+            'scope': 'Pinned C guard table versus optional migrated Rust table, with original full close.c linked with section GC; native Linux x86_64 execution through Darling futex ABI, not macOS startup',
             'darling_pin': DARLING_PIN, 'xnu_pin': XNU_PIN, 'input_sha256': inputs,
-            'source_changes': 'Only linux-syscall.S Mach-O symbol/directive spelling adapted to ELF; C files unmodified',
+            'source_changes': 'Only linux-syscall.S Mach-O symbol/directive spelling adapted to ELF; original C files unmodified; optional guarded object replaces C table in Rust variant',
             'test_adapters': 'Host _Thread_local Darwin errno cerror and abort-backed __simple_abort; no emulation subsystem stubs',
             'counts': {'direct_futex_calls': 22, 'guard_table_thread_cycles': 120000,
                        'fork_children': 1, 'capacity_slots': 1024,
@@ -115,6 +147,7 @@ def main():
     parser.add_argument('--libsimple-object', type=Path, required=True)
     parser.add_argument('--futex-object', type=Path, required=True)
     parser.add_argument('--errno-object', type=Path, required=True)
+    parser.add_argument('--guarded-object', type=Path)
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
     record = verify(args)

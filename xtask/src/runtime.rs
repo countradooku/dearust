@@ -48,7 +48,12 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
             if !destinations.insert(f[5]) || !sources.insert(f[1]) {
                 return Err(invalid("duplicate runtime artifact"));
             }
-            if f[4] == "private" && !matches!(f[2], "dearust-errno" | "dearust-process") {
+            if f[4] == "private"
+                && !matches!(
+                    f[2],
+                    "dearust-errno" | "dearust-process" | "dearust-guarded"
+                )
+            {
                 return Err(invalid("unknown runtime private-symbol policy"));
             }
             let kind = match f[0] {
@@ -65,6 +70,13 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                     hidden_symbols: if f[4] == "private" {
                         match f[2] {
                             "dearust-process" => vec!["sys_proc_info"],
+                            "dearust-guarded" => vec![
+                                "guard_table_add",
+                                "guard_table_modify",
+                                "guard_table_remove",
+                                "guard_table_check",
+                                "guard_table_postfork_child",
+                            ],
                             _ => vec!["errno_linux_to_bsd", "length_of_translation_array"],
                         }
                     } else {

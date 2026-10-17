@@ -1,0 +1,54 @@
+Guarded descriptor table: scope and safety contract
+==================================================
+
+Port of Darling xnu darling/src/libsystem_kernel/emulation/src/common/guarded/table.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later.
+The safe, allocation-free table module owns the fixed 1024-entry open-addressed
+state machine. It preserves duplicate/capacity/not-found errors, any-bit checks,
+collision/tombstone probing, optional callback copying, and close-on-fork behavior.
+Negative descriptors return -EBADF (checks return zero); the upstream C aliases
+its -1/-2 sentinels and reads past the table when a negative lookup wraps after
+all slots are occupied. Both bugs have executable original-C reproducers.
+
+The five C ABI functions are private externs matching the original emulation
+object. guard_flags_t is represented by u32. Options is repr(C), containing one
+nullable C function pointer (eight bytes/alignment eight on the supported x86_64
+ABI). close_internal returns a signed LP64 long (i64). dyld feature preserves
+VARIANT_DYLD's inert table and Darwin -ENOSYS (-78); normal runtime staging builds
+without that feature. No new allocator, TLS, Rust panic runtime, or OS mutex is
+used. Only x86_64 Linux-hosted Darling is validated; this is not a macOS-kernel
+implementation or a validation of other architectures.
+
+Unsafe boundaries are confined to abi.rs:
+- Shared Table UnsafeCell is accessed with a mutable borrow only while holding
+  the original libsimple_lock_lock/unlock ABI. The static atomic u32 lock has
+  the original zero-initialized four-byte layout. Its Acquire/Release behavior
+  is provided by the production libsimple implementation. Lock operations must
+  not unwind and a caller must not reenter from a signal handler while locked.
+- Non-null options pointers must refer to live, aligned C options objects and
+  must not be concurrently mutated. The struct is copied during the call; its
+  pointer is never retained. Registered callbacks must remain callable until
+  their entry is replaced/removed or invoked; callbacks must not unwind.
+- postfork_child must run in the sole surviving fork-child thread before any
+  new threads are started. It resets the inherited lock with a relaxed atomic
+  store; parent memory and lock are unaffected by fork's copy-on-write semantics.
+  For each close-on-fork entry it copies and retires that entry under the lock,
+  then drops the borrow and unlocks BEFORE calling close_internal or the callback.
+  Callbacks may reenter table APIs. A callback that removes/reinserts the same fd
+  now retains its replacement guard, fixing the upstream post-callback deletion
+  that silently erased that guard. New entries at later table positions may be
+  visited by this pass, matching the upstream index-ordered scan. Recursive
+  postfork notification from a callback is outside the lifecycle contract.
+
+The existing close-on-fork kqueue notification limitation is retained. This table
+is internal runtime bookkeeping, not a new implementation of Darwin guarded-fd
+syscalls. No broader API claims are made.
+
+Verification: cargo test -p dearust-guarded; cargo clippy -p dearust-guarded
+--all-targets -- -D warnings; cargo test -p dearust-xtask --test runtime (and the
+explicit ignored Darwin case). tools/check_darwin_runtime.py --guarded-object
+OBJECT executes the full unchanged original close.c with original C and Rust
+lock/futex/errno/table chains. It runs 120000 concurrent table cycles, 1024-slot
+capacity/collision recovery, a real fork with callback/raw close, TLS errno and
+signal-interrupted futex checks, plus separate negative-fd and reentrant callback
+regressions. Original C's full-table negative lookup is checked with ASan/UBSan.

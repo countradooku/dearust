@@ -36,7 +36,7 @@ fn check(triple: &str, label: &str) {
     };
     install();
     assert!(!temp.0.join("wrong-target-dir").exists());
-    let names = ["libsimple", "futex", "errno"];
+    let names = ["libsimple", "futex", "errno", "guarded"];
     let initial: Vec<_> = names
         .iter()
         .map(|name| fs::read(stage.join(format!("objects/{name}.o"))).unwrap())
@@ -73,6 +73,16 @@ fn check(triple: &str, label: &str) {
             .iter()
             .map(|s| format!("{prefix}{s}"))
             .collect(),
+            "guarded" => [
+                "guard_table_add",
+                "guard_table_modify",
+                "guard_table_remove",
+                "guard_table_check",
+                "guard_table_postfork_child",
+            ]
+            .iter()
+            .map(|s| format!("{prefix}{s}"))
+            .collect(),
             "futex" => ["__linux_futex", "__linux_futex_reterr"]
                 .iter()
                 .map(|s| format!("{prefix}{s}"))
@@ -90,6 +100,11 @@ fn check(triple: &str, label: &str) {
                 format!("{prefix}__linux_futex_reterr"),
                 format!("{prefix}__simple_abort"),
             ],
+            "guarded" => vec![
+                format!("{prefix}close_internal"),
+                format!("{prefix}libsimple_lock_lock"),
+                format!("{prefix}libsimple_lock_unlock"),
+            ],
             "futex" => vec![format!("{prefix}cerror"), format!("{prefix}linux_syscall")],
             _ => vec![],
         };
@@ -106,19 +121,21 @@ fn check(triple: &str, label: &str) {
     let manifest = fs::read(stage.join("darling-runtime-artifacts.tsv")).unwrap();
     assert!(String::from_utf8_lossy(&manifest).starts_with(&format!("# target {triple}\n")));
     if triple.contains("apple") {
-        let private = Command::new("llvm-nm")
-            .arg("-m")
-            .arg(stage.join("objects/errno.o"))
-            .output()
-            .unwrap();
-        assert!(private.status.success());
-        assert_eq!(
-            String::from_utf8_lossy(&private.stdout)
-                .lines()
-                .filter(|l| l.contains("private external"))
-                .count(),
-            2
-        );
+        for (name, count) in [("errno", 2), ("guarded", 5)] {
+            let private = Command::new("llvm-nm")
+                .arg("-m")
+                .arg(stage.join(format!("objects/{name}.o")))
+                .output()
+                .unwrap();
+            assert!(private.status.success());
+            assert_eq!(
+                String::from_utf8_lossy(&private.stdout)
+                    .lines()
+                    .filter(|l| l.contains("private external"))
+                    .count(),
+                count
+            );
+        }
     }
     install();
     for (name, bytes) in names.iter().zip(initial) {
