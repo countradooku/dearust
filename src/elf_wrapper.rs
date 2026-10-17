@@ -144,6 +144,11 @@ impl<'a> Library<'a> {
         if syms.len() % 24 != 0 {
             return Err("partial ELF dynamic symbol");
         }
+        // Symbol names may repeatedly alias a long shared string or suffixes
+        // thereof. Bound total scanning and eventual generated-source size by
+        // the input size rather than allowing quadratic amplification.
+        let mut name_budget = data.len().saturating_mul(8);
+        let mut seen_names = BTreeSet::new();
         for symbol in syms.chunks_exact(24) {
             let kind = symbol[4] & 15;
             if !matches!(kind, 1 | 2)
@@ -154,7 +159,14 @@ impl<'a> Library<'a> {
             {
                 continue;
             }
-            let name = string_at(strings, u32_at(symbol, 0)?.into())?;
+            let name_offset = u32_at(symbol, 0)?;
+            if !seen_names.insert((kind, name_offset)) {
+                continue;
+            }
+            let name = string_at(strings, name_offset.into())?;
+            name_budget = name_budget
+                .checked_sub(name.len())
+                .ok_or("ELF symbol names exceed bounded parsing/output budget")?;
             if !identifier(name) {
                 return Err("symbol cannot be represented as a C identifier");
             }
@@ -224,6 +236,12 @@ pub fn resolve_library(name: &std::ffi::OsStr) -> std::io::Result<std::path::Pat
     if let Some(paths) = std::env::var_os("LD_LIBRARY_PATH") {
         candidates.extend(std::env::split_paths(&paths).map(|p| p.join(name)));
     }
+    // Honor the earlier search locations before spawning the cache reader.
+    for candidate in candidates.drain(..) {
+        if candidate_is_x86_64(&candidate) {
+            return Ok(candidate);
+        }
+    }
     for ldconfig in ["/sbin/ldconfig", "/usr/sbin/ldconfig"] {
         let Ok(output) = Command::new(ldconfig).arg("-p").env("LC_ALL", "C").output() else {
             continue;
@@ -256,17 +274,8 @@ pub fn resolve_library(name: &std::ffi::OsStr) -> std::io::Result<std::path::Pat
         candidates.push(Path::new(directory).join(name));
     }
     for candidate in candidates {
-        // Skip another architecture in an LD_LIBRARY_PATH directory, as the
-        // loader does. Read only the identification bytes during resolution.
-        use std::io::Read;
-        if let Ok(mut file) = std::fs::File::open(&candidate) {
-            let mut header = [0u8; 20];
-            if file.read_exact(&mut header).is_ok()
-                && &header[..7] == b"\x7fELF\x02\x01\x01"
-                && header[18..20] == [62, 0]
-            {
-                return Ok(candidate);
-            }
+        if candidate_is_x86_64(&candidate) {
+            return Ok(candidate);
         }
     }
     Err(io::Error::new(
@@ -276,4 +285,17 @@ pub fn resolve_library(name: &std::ffi::OsStr) -> std::io::Result<std::path::Pat
             name
         ),
     ))
+}
+
+fn candidate_is_x86_64(candidate: &std::path::Path) -> bool {
+    use std::io::Read;
+    // Skip another architecture as the loader does. Resolution only reads the
+    // identification bytes and never loads or executes an input library.
+    let Ok(mut file) = std::fs::File::open(candidate) else {
+        return false;
+    };
+    let mut header = [0u8; 20];
+    file.read_exact(&mut header).is_ok()
+        && &header[..7] == b"\x7fELF\x02\x01\x01"
+        && header[18..20] == [62, 0]
 }

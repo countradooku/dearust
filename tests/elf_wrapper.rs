@@ -207,3 +207,87 @@ fn library_name_lookup_uses_ld_library_path_without_loading_code() {
             .contains("libfixture.so")
     );
 }
+
+#[test]
+fn new_output_aliases_are_rejected_before_either_file_is_written() {
+    let tmp = Temp::new();
+    let input = tmp.0.join("input");
+    fs::write(&input, fixture()).unwrap();
+    fs::create_dir(tmp.0.join("sub")).unwrap();
+    let source = tmp.0.join("source");
+    for header in [tmp.0.join("./source"), tmp.0.join("sub/../source")] {
+        let output = Command::new(env!("CARGO_BIN_EXE_wrapgen"))
+            .args([&input, &source, &header])
+            .output()
+            .unwrap();
+        assert!(!output.status.success());
+        assert!(!source.exists());
+        assert_eq!(fs::read(&input).unwrap(), fixture());
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn dangling_output_alias_and_invalid_second_output_preserve_existing_source() {
+    use std::os::unix::fs::symlink;
+    let tmp = Temp::new();
+    let input = tmp.0.join("input");
+    fs::write(&input, fixture()).unwrap();
+    let source = tmp.0.join("source");
+    let alias = tmp.0.join("header");
+    symlink(&source, &alias).unwrap();
+    let result = Command::new(env!("CARGO_BIN_EXE_wrapgen"))
+        .args([&input, &source, &alias])
+        .output()
+        .unwrap();
+    assert!(!result.status.success());
+    assert!(!source.exists());
+    fs::remove_file(&alias).unwrap();
+    fs::create_dir(&alias).unwrap();
+    fs::write(&source, "preserve").unwrap();
+    let result = Command::new(env!("CARGO_BIN_EXE_wrapgen"))
+        .args([&input, &source, &alias])
+        .output()
+        .unwrap();
+    assert!(!result.status.success());
+    assert_eq!(fs::read_to_string(source).unwrap(), "preserve");
+}
+
+#[test]
+fn repeated_and_overlapping_symbol_names_cannot_amplify_parsing_or_output() {
+    // 4 KiB string table plus 2,000 symbols referring to that single long name
+    // previously scanned and generated millions of bytes from a small input.
+    for suffixes in [false, true] {
+        let mut d = fixture();
+        let string_offset = 512;
+        let name_size = 4096;
+        let symbol_offset = string_offset + name_size + 1;
+        let symbol_count = 2000;
+        d.resize(symbol_offset + 24 * symbol_count, b'a');
+        d[string_offset + name_size] = 0;
+        put64(&mut d, 96, (symbol_offset + 24 * symbol_count) as u64);
+        put64(&mut d, 248, 0x400000 + string_offset as u64);
+        put64(&mut d, 264, (name_size + 1) as u64);
+        put64(&mut d, 280, 0);
+        put64(&mut d, 200, symbol_offset as u64);
+        put64(&mut d, 208, (24 * symbol_count) as u64);
+        for i in 0..symbol_count {
+            let base = symbol_offset + 24 * i;
+            d[base..base + 24].fill(0);
+            put32(&mut d, base, if suffixes { i as u32 } else { 0 });
+            d[base + 4] = 18;
+            put16(&mut d, base + 6, 1);
+            put64(&mut d, base + 8, 0x400080);
+        }
+        if suffixes {
+            assert_eq!(
+                Library::parse(&d).unwrap_err(),
+                "ELF symbol names exceed bounded parsing/output budget"
+            );
+        } else {
+            let library = Library::parse(&d).unwrap();
+            assert_eq!(library.functions.len(), 1);
+            assert!(library.generate("fixture").unwrap().0.len() < 20_000);
+        }
+    }
+}

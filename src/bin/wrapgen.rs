@@ -1,6 +1,35 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #![forbid(unsafe_code)]
-use std::{env, path::PathBuf, process::ExitCode};
+use std::{
+    env,
+    path::{Path, PathBuf},
+    process::ExitCode,
+};
+
+// Canonicalize the parent even when the output does not yet exist. This detects
+// aliases such as out and ./out, including symlinked parent directories. Refuse
+// output symlinks rather than following dangling links to an unchecked alias.
+fn output_path(path: &Path) -> std::io::Result<PathBuf> {
+    let filename = path.file_name().ok_or_else(|| {
+        std::io::Error::new(std::io::ErrorKind::InvalidInput, "output must name a file")
+    })?;
+    match std::fs::symlink_metadata(path) {
+        Ok(meta) if !meta.is_file() || meta.is_symlink() => {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "output must be a regular file, not a symlink or directory",
+            ));
+        }
+        Ok(_) => (),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => (),
+        Err(error) => return Err(error),
+    }
+    let parent = path
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or(Path::new("."));
+    Ok(parent.canonicalize()?.join(filename))
+}
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = env::args_os().skip(1).collect();
@@ -15,8 +44,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         .and_then(|s| s.to_str())
         .ok_or("invalid library filename")?;
     let (source, header) = library.generate(fallback)?;
-    let output = PathBuf::from(&args[1]);
-    let header_path = PathBuf::from(&args[2]);
+    let output = output_path(Path::new(&args[1]))?;
+    let header_path = output_path(Path::new(&args[2]))?;
     // Validate all aliases before truncating either output, including hard links.
     let input_meta = std::fs::metadata(&path)?;
     for candidate in [&output, &header_path] {
