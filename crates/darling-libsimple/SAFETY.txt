@@ -158,6 +158,12 @@ increments, try-lock results, 8-thread 80,000 protected increments, callback-onc
 including completed NULL callback, 40,000 exclusive writer updates concurrent
 with readers, and 8 waiters through 80 notify-all generations plus notify-one
 progress coordination. Rust and pinned C deterministic summaries must match.
+The harness also observes a worker blocked in SYS_futex through Linux procfs,
+delivers SIGUSR1 without SA_RESTART, observes acknowledgement by the lock-free
+signal handler and re-entry into SYS_futex, then releases the mutex and verifies
+acquisition. This establishes real interrupted-wait retry for both native and
+Darling backends when run through their respective differential harnesses; it
+does not establish pthread cancellation. This test requires host /proc access.
 These tests establish the native slice's exercised behavior, not formal proof
 of all schedules. Feature darling adds an explicitly synthetic ABI unit test
 covering argument bit patterns, null timeout/address slots, both bitset masks,

@@ -2,10 +2,12 @@
 // Native ABI/concurrency harness. Identical source links to pinned C and Rust.
 #include <assert.h>
 #include <pthread.h>
+#include <sched.h>
 #include <signal.h>
 #include <stdatomic.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <sys/syscall.h>
 #include <time.h>
 #include <unistd.h>
 #include <libsimple/lock.h>
@@ -28,6 +30,61 @@ static uint64_t counter, rw_count, rw_check=0x12345678, published;
 static atomic_uint calls, readers, writers;
 static _Atomic uint32_t cas_count;
 static unsigned generation, ready, completed;
+// A real signal must interrupt a kernel futex wait, rather than only simulating
+// a spurious return in the safe-core tests. Linux procfs lets the controller
+// establish both the original wait and its re-entry without timing guesses.
+_Static_assert(ATOMIC_INT_LOCK_FREE==2,"signal acknowledgement must be lock-free");
+static atomic_uint signal_calls, interrupted_acquired;
+static atomic_int interrupted_tid;
+static void acknowledge_signal(int signo) {
+    (void)signo;
+    atomic_fetch_add_explicit(&signal_calls,1,memory_order_relaxed);
+}
+static void wait_for_futex(pid_t tid) {
+    char path[128];
+    assert(snprintf(path,sizeof(path),"/proc/self/task/%d/syscall",tid)>0);
+    for(;;) {
+        FILE* input=fopen(path,"r");
+        assert(input);
+        long number=-1;
+        int parsed=fscanf(input,"%ld",&number);
+        assert(fclose(input)==0);
+        if(parsed==1 && number==SYS_futex) return;
+        sched_yield();
+    }
+}
+static void* interrupted_mutex_wait(void* ignored) {
+    (void)ignored;
+    sigset_t signals;
+    assert(sigemptyset(&signals)==0);
+    assert(sigaddset(&signals,SIGUSR1)==0);
+    assert(pthread_sigmask(SIG_UNBLOCK,&signals,NULL)==0);
+    atomic_store(&interrupted_tid,(int)syscall(SYS_gettid));
+    libsimple_lock_lock(&mutex);
+    atomic_store(&interrupted_acquired,1);
+    libsimple_lock_unlock(&mutex);
+    return NULL;
+}
+static void test_interrupted_mutex(void) {
+    struct sigaction action={.sa_handler=acknowledge_signal}, previous;
+    assert(sigemptyset(&action.sa_mask)==0);
+    // In particular do not set SA_RESTART: the wait must return EINTR.
+    assert(sigaction(SIGUSR1,&action,&previous)==0);
+    libsimple_lock_lock(&mutex);
+    pthread_t waiter;
+    assert(pthread_create(&waiter,NULL,interrupted_mutex_wait,NULL)==0);
+    pid_t tid;
+    while((tid=atomic_load(&interrupted_tid))==0) sched_yield();
+    wait_for_futex(tid);
+    assert(pthread_kill(waiter,SIGUSR1)==0);
+    while(atomic_load(&signal_calls)==0) sched_yield();
+    wait_for_futex(tid);
+    assert(atomic_load(&interrupted_acquired)==0);
+    libsimple_lock_unlock(&mutex);
+    assert(pthread_join(waiter,NULL)==0);
+    assert(atomic_load(&interrupted_acquired)==1);
+    assert(sigaction(SIGUSR1,&previous,NULL)==0);
+}
 static void spawn_join(void* (*entry)(void*)) {
     pthread_t threads[THREADS];
     for(uintptr_t i=0;i<THREADS;i++) assert(pthread_create(&threads[i],NULL,entry,(void*)i)==0);
@@ -135,7 +192,8 @@ int main(void) {
     }
     for(unsigned i=0;i<THREADS;i++) assert(pthread_join(waiters[i],NULL)==0);
     assert(completed==THREADS*ROUNDS);
-    printf("abi=4:4 mutex=%lu cas=%u once=%u publication=%lu rw=%lu cond=%u\n",
-        (unsigned long)counter,atomic_load(&cas_count),atomic_load(&calls),(unsigned long)published,(unsigned long)rw_count,completed);
+    test_interrupted_mutex();
+    printf("abi=4:4 mutex=%lu cas=%u once=%u publication=%lu rw=%lu cond=%u eintr=%u\n",
+        (unsigned long)counter,atomic_load(&cas_count),atomic_load(&calls),(unsigned long)published,(unsigned long)rw_count,completed,atomic_load(&signal_calls));
     return 0;
 }
