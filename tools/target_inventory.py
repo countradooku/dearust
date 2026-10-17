@@ -51,6 +51,14 @@ def main():
                 'cargo_package': 'dearust-process', 'cargo_artifact': 'process.o',
                 'scope': 'Partial Rust process dispatcher; original fallback flavors retained. Matching local runtime integration recorded in lockset-process-verification.json',
             })
+            for source, package, artifact in (
+                    ('common/guarded/table.c', 'dearust-guarded', 'guarded.o'),
+                    ('xnu_syscall/bsd/impl/stat/lstat.c', 'dearust-lstat', 'lstat.o')):
+                entry['verified_source_slices'].append({
+                    'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/' + source,
+                    'cargo_package': package, 'cargo_artifact': artifact,
+                    'scope': 'x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-expansion-verification.json. Other architectures and original target retirement remain pending.',
+                })
         if name == 'darlingserver':
             entry['verified_source_slices'] = [{
                 'source': 'src/external/darlingserver/duct-tape/xnu/osfmk/kern/sync_lock.c',

@@ -13,6 +13,8 @@ import shlex
 from relink_system_kernel import KERNEL, REPLACEMENTS, digest, link_provenance, run, symbols
 
 PROC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/misc/proc_info.c.o'
+FORK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/process/fork.c.o'
+LSTAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/lstat.c.o'
 GUARDED = 'emulation/CMakeFiles/emulation.dir/src/common/guarded/table.c.o'
 
 
@@ -61,6 +63,18 @@ def integrate(args):
             raise ValueError('missing unique runtime replacement '+key)
     if args.process_object and (inputs.count(PROC) != 1 or not args.process_object.is_file()):
         raise ValueError('missing process-query input')
+    if args.fork_object:
+        if not args.guarded_object or inputs.count(FORK) != 1 or not args.fork_object.is_file():
+            raise ValueError('fork bridge requires a guarded object and unique original fork input')
+        replacements[FORK] = args.fork_object.resolve(strict=True)
+    if bool(args.lstat_object) != bool(args.lstat_bridge):
+        raise ValueError('lstat object and TLS bridge must be supplied together')
+    if args.lstat_bridge and not args.lstat_bridge.is_file():
+        raise ValueError('missing lstat TLS bridge')
+    if args.lstat_object:
+        if inputs.count(LSTAT) != 1 or not args.lstat_object.is_file():
+            raise ValueError('missing unique lstat input')
+        replacements[LSTAT] = args.lstat_object.resolve(strict=True)
     if args.guarded_object:
         if inputs.count(GUARDED) != 1 or not args.guarded_object.is_file():
             raise ValueError('missing unique guarded-table input')
@@ -77,6 +91,8 @@ def integrate(args):
                         else (kernel/x).resolve(strict=True)) for x in inputs]
         if variant == 'rust' and args.process_object:
             selected.append(str(args.process_object.resolve(strict=True)))
+        if variant == 'rust' and args.lstat_bridge:
+            selected.append(str(args.lstat_bridge.resolve(strict=True)))
         response = output/(variant+'.rsp')
         response.write_text(shlex.join(selected)+'\n')
         target = output/('libsystem_kernel-'+variant+'.dylib')
@@ -124,11 +140,21 @@ def integrate(args):
                 nm = run(['llvm-nm', '--format=darwin', target])
                 if not any('private external' in line and line.rstrip().endswith('_darling_legacy_proc_info') for line in nm.splitlines()):
                     raise ValueError('legacy fallback must remain private external')
+            if args.lstat_object:
+                wanted['_dearust_get_perthread_wd'] = args.lstat_bridge.name
+                wanted['_sys_lstat'] = args.lstat_object.name
+                wanted['_sys_lstat64'] = args.lstat_object.name
+            if args.fork_object:
+                wanted['_sys_fork'] = args.fork_object.name
+                for name in ('prefork', 'postfork_parent'):
+                    wanted['_guard_table_' + name] = args.guarded_object.name
             if args.guarded_object:
                 for name in ('add', 'modify', 'remove', 'check', 'postfork_child'):
                     wanted['_guard_table_' + name] = args.guarded_object.name
             details['provenance'] = link_provenance(mapfile.read_text(), wanted)
         record['variants'][variant] = details
+    if args.lstat_bridge:
+        record['lstat_bridge'] = {'path': str(args.lstat_bridge.resolve()), 'sha256': digest(args.lstat_bridge)}
     record['replacements'] = {key: {'path': str(value), 'sha256': digest(value)} for key, value in replacements.items()}
     if args.process_object:
         record['process_object_sha256'] = digest(args.process_object)
@@ -142,6 +168,9 @@ def main():
         parser.add_argument('--'+name, type=Path, required=True)
     parser.add_argument('--process-object', type=Path)
     parser.add_argument('--guarded-object', type=Path)
+    parser.add_argument('--fork-object', type=Path)
+    parser.add_argument('--lstat-object', type=Path)
+    parser.add_argument('--lstat-bridge', type=Path)
     args = parser.parse_args()
     print(json.dumps(integrate(args)['variants'], indent=2))
 

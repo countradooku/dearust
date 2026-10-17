@@ -4112,6 +4112,18 @@
           "cargo_package": "dearust-process",
           "cargo_artifact": "process.o",
           "scope": "Partial Rust process dispatcher; original fallback flavors retained. Matching local runtime integration recorded in lockset-process-verification.json"
+        },
+        {
+          "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/common/guarded/table.c",
+          "cargo_package": "dearust-guarded",
+          "cargo_artifact": "guarded.o",
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+        },
+        {
+          "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/lstat.c",
+          "cargo_package": "dearust-lstat",
+          "cargo_artifact": "lstat.o",
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         }
       ]
     },

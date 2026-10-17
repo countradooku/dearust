@@ -26,6 +26,8 @@ NATIVE_ERRNO_SOURCE = "darling/src/libsystem_kernel/emulation/src/conversion/err
 FUTEX_SOURCE = "darling/src/libsystem_kernel/emulation/src/linux_premigration/ext/futex.c"
 NATIVE_ERRNO_PIN = "fa29287aa2f0115271e091f1031f53c9e024005d"
 PROCESS_SOURCE = "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/misc/proc_info.c"
+GUARDED_SOURCE = "darling/src/libsystem_kernel/emulation/src/common/guarded/table.c"
+LSTAT_SOURCE = "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/lstat.c"
 LOCKSET_SOURCE = "duct-tape/xnu/osfmk/kern/sync_lock.c"
 LOCKSET_PIN = "89751e64bc6c2082f7725061824ee0e33395b0de"
 
@@ -125,11 +127,11 @@ class Inventory:
             for entry in entries:
                 entry["category"] = category(entry["path"], entry["mode"])
                 entry["status"] = "pending"
-                if path == "src/external/xnu" and entry["path"] in {NATIVE_ERRNO_SOURCE, FUTEX_SOURCE, PROCESS_SOURCE}:
+                if path == "src/external/xnu" and entry["path"] in {NATIVE_ERRNO_SOURCE, FUTEX_SOURCE, PROCESS_SOURCE, GUARDED_SOURCE, LSTAT_SOURCE}:
                     if commit != NATIVE_ERRNO_PIN:
                         raise ValueError("runtime source replacement requires its exact xnu pin")
                     entry.update(status="partial",
-                                 replacement={NATIVE_ERRNO_SOURCE: "crates/dearust-errno/src/lib.rs", FUTEX_SOURCE: "crates/dearust-futex/src/lib.rs", PROCESS_SOURCE: "crates/dearust-process/src/lib.rs"}[entry["path"]],
+                                 replacement={NATIVE_ERRNO_SOURCE: "crates/dearust-errno/src/lib.rs", FUTEX_SOURCE: "crates/dearust-futex/src/lib.rs", PROCESS_SOURCE: "crates/dearust-process/src/lib.rs", GUARDED_SOURCE: "crates/dearust-guarded/src/lib.rs", LSTAT_SOURCE: "crates/dearust-lstat/src/lib.rs"}[entry["path"]],
                                  scope="no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
                                  limitation="i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement")
                     dep["migration_status"] = "partial"

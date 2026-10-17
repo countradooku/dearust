@@ -14,6 +14,8 @@ import subprocess
 
 from check_errno import DARLING_PIN, XNU_PIN
 
+FORK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/process/fork.c.o'
+LSTAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/lstat.c.o'
 KERNEL = Path('src/external/xnu/darling/src/libsystem_kernel')
 REPLACEMENTS = {
     'emulation/CMakeFiles/emulation.dir/src/conversion/errno.c.o': 'objects/errno.o',
@@ -93,6 +95,18 @@ def integrate(args):
         if not path.is_file():
             raise ValueError('missing Rust runtime object: ' + replacement)
         replacements[name] = path
+    if args.fork_object:
+        if not args.guarded_object or inputs.count(FORK) != 1 or not args.fork_object.is_file():
+            raise ValueError('fork bridge requires a guarded object and unique original fork input')
+        replacements[FORK] = args.fork_object.resolve(strict=True)
+    if bool(args.lstat_object) != bool(args.lstat_bridge):
+        raise ValueError('lstat object and TLS bridge must be supplied together')
+    if args.lstat_bridge and not args.lstat_bridge.is_file():
+        raise ValueError('missing lstat TLS bridge')
+    if args.lstat_object:
+        if inputs.count(LSTAT) != 1 or not args.lstat_object.is_file():
+            raise ValueError('missing unique lstat input')
+        replacements[LSTAT] = args.lstat_object.resolve(strict=True)
     if args.guarded_object:
         name = 'emulation/CMakeFiles/emulation.dir/src/common/guarded/table.c.o'
         if inputs.count(name) != 1 or not args.guarded_object.is_file():
@@ -102,6 +116,8 @@ def integrate(args):
     # Compile/link commands are executed directly as argv, never as shell text.
     # Every original production input remains, except the declared source slices.
     new_inputs = [str(replacements.get(name, (kernel/name).resolve(strict=True))) for name in inputs]
+    if args.lstat_bridge:
+        new_inputs.append(str(args.lstat_bridge.resolve(strict=True)))
     for name in new_inputs:
         if not Path(name).is_file():
             raise ValueError('missing original runtime link object: ' + name)
@@ -156,6 +172,14 @@ def integrate(args):
         '_cerror': 'libsyscall.dir/custom/errno.c.o',
         '___simple_abort': 'emulation.dir/src/common/simple.c.o',
     }
+    if args.lstat_object:
+        wanted['_dearust_get_perthread_wd'] = args.lstat_bridge.name
+        wanted['_sys_lstat'] = args.lstat_object.name
+        wanted['_sys_lstat64'] = args.lstat_object.name
+    if args.fork_object:
+        wanted['_sys_fork'] = args.fork_object.name
+        for name in ('prefork', 'postfork_parent'):
+            wanted['_guard_table_' + name] = args.guarded_object.name
     if args.guarded_object:
         for name in ('add', 'modify', 'remove', 'check', 'postfork_child'):
             wanted['_guard_table_' + name] = args.guarded_object.name
@@ -196,6 +220,9 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--report', type=Path)
     parser.add_argument('--guarded-object', type=Path)
+    parser.add_argument('--fork-object', type=Path)
+    parser.add_argument('--lstat-object', type=Path)
+    parser.add_argument('--lstat-bridge', type=Path)
     args = parser.parse_args()
     record = integrate(args)
     if args.report:
