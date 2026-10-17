@@ -341,3 +341,5 @@ pub fn run(tool: &str) -> Result<bool, Box<dyn std::error::Error>> {
 }
 
 pub mod elf_wrapper;
+
+pub mod wrapped_elf;
