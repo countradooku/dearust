@@ -5,7 +5,8 @@ edition = "2024"
 rust-version = "1.85"
 license = "GPL-3.0-or-later"
 publish = false
-description = "Safe Rust ports of Darling host utilities"
+description = "Dearust: Rust ports of Darling host utilities"
+repository = "https://github.com/countradooku/dearust"
 
 [workspace]
 members = ["xtask", "crates/darling-coredump", "crates/darling-libsimple", "crates/darling-errno", "crates/darling-futex", "crates/darling-lockset", "crates/darling-process"]

@@ -1,10 +1,66 @@
-Darling Rust migration
-=====================
+Dearust
+=======
+Darling, reimagined in Rust.
 
+Dearust is an incremental Rust migration of Darling for running macOS
+applications on Linux. It is an independent project based on Darling, with
+upstream attribution and source-specific license notices preserved.
+
+Project: https://github.com/countradooku/dearust
+Upstream: https://github.com/darlinghq/darling
+
+Status: experimental and INCOMPLETE. This repository does not yet build a
+standalone replacement for the full Darling runtime. Runtime integration uses
+an existing matching Darling build; the full server and frameworks are not
+ported. Existing darling-* crate and ABI names are retained for compatibility.
+
+Current verified work
+---------------------
+- Six Rust host utilities, including Mach-O/ELF metadata and core conversion.
+- Rust synchronization, futex and errno runtime components.
+- Rust Mach locksets with real ports, handoff and thread/task lifecycle handling.
+- Partial Rust process, file-descriptor, vnode and mapped-file queries.
+- 97 Rust tests and 24 Python tests pass in the recorded development environment.
+- 29 app checks pass with explicit normalization of one known log line
+  (28 exact-output passes); selected TextEditor and Calculator GUI checks pass.
+
+These results cover a locally modified matching x86_64 runtime. They do not
+establish arbitrary macOS app compatibility. Full details and limits are in
+LOCKSET-PROCESS.txt and lockset-process-verification.json.
+
+Getting started
+---------------
+    git clone https://github.com/countradooku/dearust.git
+    cd dearust
+    cargo xtask build
+    cargo xtask check
+
+Install Rust with rustfmt and Clippy, a host C compiler/linker, and LLVM tools
+as described in BUILDING.txt. Optional integration tests need matching Darling
+sources and build artifacts. Recorded absolute developer paths are historical
+provenance; use your own paths for reproduction. Raw screenshots and some large
+runtime test artifacts referenced in records are local and are not bundled here.
+
+Documentation
+-------------
+BUILDING.txt          Build requirements and commands
+MIGRATION.txt         Migration boundaries and remaining work
+LOCKSET-PROCESS.txt   Latest runtime implementation and validation
+GUI-VERIFICATION.txt  Selected GUI execution evidence and limitations
+verification.json    Verification records
+
+Licensing
+---------
+See LICENSE (GPL-3.0) and component-specific notices, including LICENSE-BSDLN
+and the preserved Apple license under crates/darling-lockset/bridge. Upstream
+Darling and dependency authors retain their respective copyrights.
+
+Detailed migration notes
+------------------------
 Target: the FULL migration of https://github.com/darlinghq/darling to Rust,
 including its runtime, server, libraries, frameworks and dependencies.
-The full migration is INCOMPLETE. Three Rust runtime slices have executed macOS
-command-line programs and selected Cocoa GUI test apps inside an existing locally
+The full migration is INCOMPLETE. Rust runtime components and server locksets
+have executed selected command-line and Cocoa GUI checks using a matching locally
 modified Darling installation.
 This workspace does not yet build a complete Darling runtime.
 

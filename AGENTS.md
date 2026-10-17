@@ -1,3 +1,8 @@
+# Dearust
+
+Public repository: https://github.com/countradooku/dearust
+Project branding is Dearust; retain darling-* package/ABI names for compatibility.
+
 # Darling full Rust migration: continuation instructions
 
 ## Objective and authorization
