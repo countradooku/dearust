@@ -1,0 +1,137 @@
+Darling Rust migration: full scope, partial implementation
+========================================================
+
+Upstream: https://github.com/darlinghq/darling.git
+Pinned commit: 60ba801decee7a00782f74f6be4c8ffb013f79ff
+
+This repository currently provides Rust host build tools. It does not yet provide
+a complete Darling runtime, a replacement SDK, or a full Cargo build of Darling.
+The migration scope includes every upstream library, framework, executable,
+resource, SDK link and external dependency; existing stubs are not grounds for
+silently deleting an ABI. Performance improvements must be measured per workload.
+
+Reproduce the scope inventory
+----------------------------
+
+Run from this repository with a local upstream checkout at the pinned HEAD:
+
+  python3 tools/inventory.py /path/to/darling --output migration-inventory.json
+
+The generator requires Python 3 and Git, makes no network requests, reads committed
+Git objects rather than working files, and rejects a different HEAD. It inventories
+every superproject leaf exactly once, including symbolic links and gitlinks.
+Directories are represented by their leaves. Deleted or untracked working files
+do not change the inventory. Object IDs make each source and dependency pin
+traceable. Outputs have no timestamps or checkout-dependent absolute paths.
+
+At this pin there are 27,274 entries:
+  10,852 source files
+  12,273 ABI headers or interfaces
+     280 CMake files
+     149 external submodule gitlinks
+   2,890 symbolic links
+      11 scripts
+     819 other resources or metadata
+
+Only the Rust replacements explicitly listed with status "implemented" are ported.
+All other entries are "pending", including resources which may require faithful
+preservation instead of translation. Category classification is a planning aid,
+not a semantic language parser or proof of compatibility. A gitlink is one entry,
+not one source file: the 149 submodule trees and any nested submodules remain
+unexpanded. Their exact commits and repository URLs are recorded. Inventory each
+one at that commit before implementing it; these counts are NOT whole-dependency
+source counts. No external source tree is implicitly waived from full scope.
+
+Migration order and executable gates
+-----------------------------------
+
+1. Reproduce upstream builds and behavior in an isolated baseline environment.
+   Expand the 149 pinned dependencies incrementally, inventory their own gitlinks,
+   record licensing and generated inputs, and extract target, install and link
+   graphs from CMake. Record supported architectures, host requirements, symbol
+   exports and test workloads. Preserve the original checkout as reference.
+
+2. Move host-side parsing and code generation to Cargo packages. Current metadata
+   readers are a first slice. Port the remaining buildtools and hosttools, test
+   valid and malformed inputs against upstream and independent binary fixtures,
+   and preserve CLI exits and output consumed by build rules.
+
+3. Add a Cargo-invoked orchestration command with an explicit artifact graph.
+   Capture each CMake target's generated sources, architectures, flags, Mach-O
+   install names, rpaths, exported symbols, linker scripts, framework versions,
+   symlinks and installation destinations. Cargo alone does not implement Mach-O
+   cross-linking, SDK assembly or framework layouts. Initially an orchestration
+   layer may invoke existing tools; remove each CMake edge only after its Cargo
+   equivalent produces and installs the same required artifacts. A Cargo build
+   of the host utilities is not a full replacement of CMake.
+
+4. Port pure data transformations, Mach-O/ELF parsing, archive handling and safe
+   filesystem utilities. Use checked offsets, bounded slices and owned types.
+   Differential tests must distinguish upstream defects from intended behavior.
+   Add a regression case before changing a confirmed defect.
+
+5. Establish reviewed ABI crates and port low-level loading, startup, vchroot,
+   libelfloader, tracing, process/thread management and darlingserver/XNU-facing
+   interfaces in dependency order. Preserve wire formats, syscall results, errno,
+   signal behavior, virtual addresses, calling conventions and thread-local state.
+   Boot and process-launch smoke tests gate higher-level runtime migration.
+
+6. Port libSystem and dependent runtimes, including libc, libpthread, libmalloc,
+   libdispatch, dyld, Objective-C, exceptions/unwinding and blocks. Expand their
+   pinned submodule inventories first. Rust implementations must retain the ABI
+   expected by existing C, C++ and Objective-C macOS binaries; translating API
+   names or exporting a stub is insufficient. Cross-language conformance tests
+   and representative unmodified macOS binaries are required.
+
+7. Port CoreFoundation/Foundation and the complete public/private framework
+   dependency graph, including third-party components, then command-line tools,
+   services, UI/graphics/audio and language runtimes. Inventory entries identify
+   each component; split large components into independently tested crates.
+   Preserve framework metadata, Objective-C classes/selectors, resources and SDK
+   links. Do not count a placeholder or missing export as a completed port.
+
+8. Replace packaging and SDK installation rules, then exercise clean Cargo-driven
+   builds and installations on every supported host/target combination without
+   requiring CMake. Verify package contents, relocatability, dependency discovery
+   and runtime loader behavior. Retire upstream implementation paths only when
+   every corresponding target has passed its migration gate.
+
+Safety boundaries and ABI obligations
+------------------------------------
+
+Keep parsing, policy, state machines and ownership in safe Rust. Forbid unsafe
+code in those crates. Low-level adapters may need unsafe for exported C ABI raw
+pointer access, mapped executable memory, foreign function calls, direct syscalls,
+signal handlers, machine context manipulation, thread-local storage and assembly
+trampolines. Each use needs a documented invariant, ownership/lifetime argument,
+validation of sizes/alignment/provenance and a small reviewed safe wrapper.
+Do not declare arbitrary foreign pointers safe merely by wrapping them in a slice.
+Representations crossing ABI boundaries need explicit layout, widths, alignment,
+endianness and calling conventions. Prevent Rust unwinding across incompatible
+foreign boundaries and preserve the required foreign exception semantics.
+
+Avoid claiming that all machine-level behavior can be replaced with safe Rust.
+Architecture-specific glue can be necessary, but convenience alone does not
+justify unsafe. Rust also cannot automatically detect a foreign caller violating
+its ABI contract. Run Miri where supported, sanitizers and fuzzing at parsers and
+FFI boundaries, and native target integration tests for platform behavior those
+tools cannot model. Record each remaining unsafe operation and its justification.
+
+Full-completion criteria
+-----------------------
+
+All superproject and recursively inventoried dependency entries must resolve to
+a verified Rust implementation or an explicitly reviewed preserved non-code
+artifact. Any surviving foreign implementation means full Rust migration is
+still incomplete. Assembly/FFI glue must have documented unavoidable boundaries.
+Every original build/install target and exported ABI needs a mapped equivalent;
+libraries and frameworks cannot disappear from the build to satisfy this gate.
+
+Require clean Cargo-driven builds, packaging and installation, ABI/symbol/layout
+checks, upstream regression coverage, malformed-input/fuzz tests, concurrency and
+process/signal tests, and representative application compatibility against a
+recorded baseline. Every bug fix needs a reproducer and regression test. Report
+benchmark environment, workloads, allocations, latency/throughput and variance;
+do not infer performance from language choice. Full completion additionally
+requires no unexplained compatibility or performance regression and no pending
+inventory entries. These criteria have not yet been met.
