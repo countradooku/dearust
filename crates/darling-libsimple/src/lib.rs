@@ -31,7 +31,9 @@ impl Native {
         let target = target.map_or(std::ptr::null_mut(), AtomicU32::as_ptr);
         // SAFETY: x86_64 Linux SYS_futex=202. AtomicU32 is four-byte aligned and
         // remains alive throughout this synchronous kernel call. The kernel only
-        // accesses atomic state through its futex protocol; it retains no pointer.
+        // accesses atomic state through its futex protocol. REQUEUE can leave
+        // other waits associated with the target after return; the FFI contract
+        // requires both words to remain stable and live until all waiters finish.
         // fourth is null for untimed waits or INT_MAX for REQUEUE's integer val2.
         unsafe {
             syscall(

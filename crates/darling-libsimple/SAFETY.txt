@@ -42,8 +42,11 @@ Unsafe inventory
    is 202 and c_long is 64 bits. Operations are FUTEX_WAIT/WAKE/REQUEUE and
    WAIT_BITSET/WAKE_BITSET, always PRIVATE. Valid shared AtomicU32 references
    supply stable aligned addresses for this synchronous call. Kernel futex
-   access is compatible with atomic user accesses, and the kernel retains no
-   userspace reference after the call returns. For untimed waits the fourth
+   access is compatible with atomic user accesses. REQUEUE can leave other
+   threads' pending waits associated with the target address after its syscall
+   returns. The caller must keep both state words at stable live addresses until
+   all waiters finish; the syscall's return does not end this obligation.
+   For untimed waits the fourth
    argument is zero (null timeout); for REQUEUE it is INT_MAX (integer val2),
    not a dereferenceable timeout pointer. The second address is null except
    REQUEUE, where it references the same live mutex used by the condvar.
