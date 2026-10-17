@@ -1,0 +1,122 @@
+{
+  "scope": "Actual installed Mac utility data roundtrips under original and Rust kernels; matching Rust lockset server. ditto is the installed shell wrapper, not a migrated implementation.",
+  "raw_report": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/new-app-validation-corrected/comparison.json",
+  "raw_report_sha256": "5e4c72f6fc7e405157c7dbf5d026ec0b8519504c0a8d2921f43cecf8bc316123",
+  "utilities_sha256": {
+    "usr/libexec/PlistBuddy": "636f3f2fb2c307de752fdec6541f658aa1261cae0443305c7e858cd64eaef0ea",
+    "usr/bin/bsdtar": "a7996d6432499b29c487beb608cb26fdae8de4a2378e87b39d7e50fe311ec6f7",
+    "usr/bin/ditto": "ed42e2d80af6b9842daa1940f67124c9db90fa333ad6bcdf003b028ec5fe8966",
+    "usr/bin/gzip": "8c5c1f98fd491888a5856e4798e3f2775248f9751665da1c7fcadeb6a9a4e44a",
+    "bin/bzip2": "6781e0165165d5e2cf4043fdfe04348137ea7092e0bdf93fcdc46fab72315cee",
+    "usr/bin/xz": "5fcd0e0a89d65b5d93ed60206330920d491acf61393f6949d04dfe7c35108e09",
+    "usr/bin/zip": "835b081dab0d495813db2bb93e5c98e3c9ad1f9f17e7aa5b2ab5df103b249ca6",
+    "usr/bin/unzip": "c835f44fb58a6a029b5c836ecb9ad7c05af6e6a7d721f5f298bb344e6e123b72",
+    "usr/bin/openssl": "c38688ffb6ed4b600c8d5fd2109c2ad1d00c6083c77b03bd00e4bc332d4d371d"
+  },
+  "variants": [
+    {
+      "variant": "original",
+      "kernel_sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f",
+      "mapping_verified": true,
+      "results": [
+        {
+          "name": "plistbuddy",
+          "pass": true,
+          "exit_code": 0
+        },
+        {
+          "name": "bsdtar",
+          "pass": false,
+          "exit_code": 139
+        },
+        {
+          "name": "ditto",
+          "pass": true,
+          "exit_code": 0
+        },
+        {
+          "name": "gzip",
+          "pass": true,
+          "exit_code": 0
+        },
+        {
+          "name": "bzip2",
+          "pass": true,
+          "exit_code": 0
+        },
+        {
+          "name": "xz",
+          "pass": true,
+          "exit_code": 0
+        },
+        {
+          "name": "zip",
+          "pass": true,
+          "exit_code": 0
+        },
+        {
+          "name": "openssl",
+          "pass": true,
+          "exit_code": 0
+        }
+      ]
+    },
+    {
+      "variant": "rust",
+      "kernel_sha256": "b2f18936961a70b028cba4d505ac94ecb870856f049a61e30ef25f332018d47f",
+      "mapping_verified": true,
+      "results": [
+        {
+          "name": "plistbuddy",
+          "pass": true,
+          "exit_code": 0
+        },
+        {
+          "name": "bsdtar",
+          "pass": false,
+          "exit_code": 139
+        },
+        {
+          "name": "ditto",
+          "pass": true,
+          "exit_code": 0
+        },
+        {
+          "name": "gzip",
+          "pass": true,
+          "exit_code": 0
+        },
+        {
+          "name": "bzip2",
+          "pass": true,
+          "exit_code": 0
+        },
+        {
+          "name": "xz",
+          "pass": true,
+          "exit_code": 0
+        },
+        {
+          "name": "zip",
+          "pass": true,
+          "exit_code": 0
+        },
+        {
+          "name": "openssl",
+          "pass": true,
+          "exit_code": 0
+        }
+      ]
+    }
+  ],
+  "remaining_failure": "bsdtar archive creation segfaults identically on original and Rust; investigation ongoing.",
+  "additional_gui": {
+    "sample": "Unchanged Cocotron CGShadingCreate",
+    "build": "tools/build_gui_apps.py",
+    "raw_report": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/outputs/new-gui-validation-corrected/comparison.json",
+    "raw_report_sha256": "95a76d362e9e77024c1fe405097c24dc25d5c4a8abe7a8c1ca6f203e0f832642",
+    "result": "No newly mapped window within 25 seconds on either variant. No GUI compatibility claim.",
+    "binary_sha256": "8e1316541d8ad24941283cdd248c24db0daa56bd2f9eb483fa16d000799a7983",
+    "cleanup": "Both prefixes shut down, launchers reaped, task-owned Xephyr stopped."
+  }
+}

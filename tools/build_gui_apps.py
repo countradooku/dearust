@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Build an unchanged Cocotron TextEditor sample and a Cocoa calculator fixture.
+"""Build unchanged Cocotron TextEditor/CGShadingCreate samples and a calculator fixture.
 
 Uses existing Darling source/build headers and installed runtime libraries. Never
 runs CMake, modifies inputs, installs applications, or launches their binaries.
@@ -39,12 +39,14 @@ def main():
         if resolved_output.is_relative_to(path) or path.is_relative_to(resolved_output):
             parser.error('--output must be separate from source, build, and SDK trees')
     sample = source / 'src/external/cocotron/examples/TextEditor'
+    gradient = source / 'src/external/cocotron/examples/CGShadingCreate'
     calculator = Path(__file__).resolve().parent / 'fixtures/gui-calculator.m'
     includes = [build / 'src/include', source / 'src/include', source / 'basic-headers',
                 source / SDK_HEADERS, build / SDK_HEADERS,
                 source / 'framework-include', source / 'framework-private-include']
     required = includes + [sample / name for name in ('main.m', 'MyDocument.m',
                                                       'Info.plist', 'Resources')]
+    required += [gradient / name for name in ('main.m', 'GradientView.m', 'GradientView.h', 'Info.plist', 'Resources')]
     required += [calculator, sdk / 'System/Library/Frameworks/AppKit.framework/AppKit',
                  sdk / 'System/Library/Frameworks/Foundation.framework/Foundation',
                  sdk / 'usr/lib/libSystem.dylib', sdk / 'usr/lib/libobjc.dylib']
@@ -66,7 +68,7 @@ def main():
     link_args = [args.linker, '-arch', 'x86_64', '-platform_version', 'macos', '11.0', '11.0',
                  '-syslibroot', str(sdk), '-L' + str(sdk / 'usr/lib'),
                  '-F' + str(sdk / 'System/Library/Frameworks'), '-framework', 'AppKit',
-                 '-framework', 'Foundation', '-lobjc', '-lSystem']
+                 '-framework', 'Foundation', '-framework', 'ApplicationServices', '-lobjc', '-lSystem']
     output.mkdir(parents=True, exist_ok=False)
     commands = []
 
@@ -76,7 +78,8 @@ def main():
             subprocess.run(command, check=True, stdout=log, stderr=subprocess.STDOUT, timeout=120)
 
     for name, sources in [('TextEditor', [sample / 'main.m', sample / 'MyDocument.m']),
-                          ('Calculator', [calculator])]:
+                          ('Calculator', [calculator]),
+                          ('CGShadingCreate', [gradient / 'main.m', gradient / 'GradientView.m'])]:
         app = output / (name + '.app')
         (app / 'Contents/MacOS').mkdir(parents=True)
         objects = []
@@ -85,9 +88,10 @@ def main():
             run(compile_args + ['-c', str(src), '-o', str(obj)])
             objects.append(str(obj))
         run(link_args + objects + ['-o', str(app / 'Contents/MacOS' / name)])
-        if name == 'TextEditor':
-            shutil.copytree(sample / 'Resources', app / 'Contents/Resources')
-            info = plistlib.loads((sample / 'Info.plist').read_bytes())
+        if name in ('TextEditor', 'CGShadingCreate'):
+            upstream = sample if name == 'TextEditor' else gradient
+            shutil.copytree(upstream / 'Resources', app / 'Contents/Resources')
+            info = plistlib.loads((upstream / 'Info.plist').read_bytes())
             info['CFBundleExecutable'] = name
             info['CFBundleName'] = name
         else:
@@ -101,11 +105,11 @@ def main():
     record = {'scope': 'Build only; GUI launch and rendering require separate execution checks.',
               'source': str(source), 'build': str(build), 'sdk': str(sdk), 'commands': commands,
               'source_sha256': {str(path): hashlib.sha256(path.read_bytes()).hexdigest()
-                                for path in (sample / 'main.m', sample / 'MyDocument.m', calculator)},
+                                for path in (sample / 'main.m', sample / 'MyDocument.m', calculator, gradient / 'main.m', gradient / 'GradientView.m')},
               'binary_sha256': {str(path.relative_to(output)): hashlib.sha256(path.read_bytes()).hexdigest()
                                 for path in sorted(output.glob('*.app/Contents/MacOS/*'))}}
     (output / 'build-commands.json').write_text(json.dumps(record, indent=2) + '\n')
-    print(f'Built TextEditor.app and Calculator.app in {output}')
+    print(f'Built TextEditor.app, Calculator.app and CGShadingCreate.app in {output}')
 
 
 if __name__ == '__main__':

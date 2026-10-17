@@ -143,7 +143,7 @@ class Display:
 
 def wait_window(display, app, excluded, timeout):
     deadline = time.monotonic() + timeout
-    title = 'Darling Rust Calculator' if app == 'Calculator' else 'TextEditor'
+    title = {'Calculator': 'Darling Rust Calculator', 'TextEditor': 'TextEditor', 'CGShadingCreate': 'Window'}[app]
     while time.monotonic() < deadline:
         for item in display.windows():
             if (item['window_id'] not in excluded and item['map_state'] == 2
@@ -195,7 +195,7 @@ def variant(args, name, kernel, display):
         record['kernel_mappings'] = mapped_kernel(staged)
         if not record['kernel_mappings']:
             raise RuntimeError('no process maps the task-owned kernel copy')
-        for app in ('Calculator', 'TextEditor'):
+        for app in args.cases:
             result = {'name': app}
             record['results'].append(result)
             excluded = {item['window_id'] for item in display.windows()}
@@ -235,10 +235,13 @@ def variant(args, name, kernel, display):
                         result['pass'] = (process.returncode == 0 and child_status == 0
                                           and 'CALCULATOR_SELFTEST PASS value=42 visible=1' in text)
                     else:
-                        result['input_and_capture_pass'] = process.poll() is None
-                        result['pass'] = result['input_and_capture_pass']
+                        result['window_and_capture_pass'] = process.poll() is None
+                        if app == 'TextEditor':
+                            result['input_and_capture_pass'] = result['window_and_capture_pass']
+                        result['pass'] = result['window_and_capture_pass']
                 except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as error:
                     result.update(error=str(error), **{'pass': False})
+                    result['observed_windows'] = display.windows()
                 result['stdout'] = stdout.read_text(errors='replace') if stdout.exists() else ''
                 result['stderr'] = stderr.read_text(errors='replace') if stderr.exists() else ''
             (output / 'results.json').write_text(json.dumps(record, indent=2) + '\n')
@@ -260,6 +263,7 @@ def variant(args, name, kernel, display):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--apps', type=Path, required=True)
+    parser.add_argument('--cases', nargs='+', choices=['Calculator', 'TextEditor', 'CGShadingCreate'], default=['Calculator', 'TextEditor'])
     parser.add_argument('--original-kernel', type=Path, required=True)
     parser.add_argument('--rust-kernel', type=Path, required=True)
     parser.add_argument('--display', required=True, help='Explicit task-owned local X display, e.g. :98; never :0')
@@ -274,7 +278,7 @@ def main():
         parser.error('--timeout must be greater than zero and at most 120 seconds')
     args.apps = args.apps.resolve(strict=True)
     for path in [args.original_kernel, args.rust_kernel] + [
-            args.apps / (app + '.app') / 'Contents/MacOS' / app for app in ('Calculator', 'TextEditor')]:
+            args.apps / (app + '.app') / 'Contents/MacOS' / app for app in args.cases]:
         if not path.is_file():
             parser.error('missing regular input file: ' + str(path))
     args.output = args.output.absolute()
@@ -286,10 +290,10 @@ def main():
     finally:
         display.close()
     (args.output / 'comparison.json').write_text(json.dumps({
-        'scope': 'Mixed installed runtime; Calculator action assertion and real TextEditor input/screenshots. '
+        'scope': 'Mixed installed runtime; selected GUI window captures, Calculator action assertion and TextEditor input. '
                  'TextEditor rendered content requires manual screenshot inspection.',
         'variants': records}, indent=2) + '\n')
-    return 0 if all(len(record['results']) == 2 and record.get('kernel_mappings')
+    return 0 if all(len(record['results']) == len(args.cases) and record.get('kernel_mappings')
                     and all(result.get('pass') for result in record['results'])
                     and 'error' not in record and 'cleanup_failure' not in record for record in records) else 1
 

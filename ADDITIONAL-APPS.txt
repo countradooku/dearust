@@ -1,0 +1,23 @@
+Additional installed Mac utility and GUI checks
+==============================================
+
+Run tools/check_mac_utilities.py through tools/run_isolated_server.py, supplying
+--original-kernel, --rust-kernel and a new --output directory. Eight independent
+workloads check PlistBuddy edit/read/delete, bsdtar, ditto -rsrc, gzip, bzip2, xz,
+zip/unzip and OpenSSL with strict statuses and predetermined output. Every case
+uses its own guest temporary directory. All namespaces/prefixes are task-owned.
+The installed ditto is a shell wrapper around cp; it is not a native utility or
+a migrated implementation. The remaining executables are installed Mac binaries.
+
+Current evidence: seven of eight workloads pass under both kernel variants;
+bsdtar crashes while creating an archive on both. Raw evidence and exact input
+hashes are referenced in additional-app-verification.json. The first exploratory
+run also exposed harness mistakes (unsupported ditto invocation and wrong grep
+path), both corrected before recording the seven passing results.
+
+build_gui_apps.py additionally builds the unchanged Cocotron CGShadingCreate
+sample with its original resources. check_gui_apps.py --cases CGShadingCreate
+attempts window capture on an explicitly supplied isolated X display. Neither
+variant produced a mapped window within 25 seconds. This is a recorded failure,
+not additional GUI compatibility. Existing default Calculator/TextEditor checks
+remain available. Shutdown/reaping succeeded and the owned hidden Xephyr stopped.
