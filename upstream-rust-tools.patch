@@ -1,0 +1,2493 @@
+diff --git a/src/bsdln/CMakeLists.txt b/src/bsdln/CMakeLists.txt
+index d2b3fc38..9a6c4e21 100644
+--- a/src/bsdln/CMakeLists.txt
++++ b/src/bsdln/CMakeLists.txt
+@@ -1,6 +1,7 @@
+-project(bsdln)
+-
+-add_executable(bsdln
+-	ln.c
+-)
+-target_link_libraries(bsdln bsd)
++# Transitional adapter for the unported upstream build graph.
++# The actual implementation is a Cargo binary in src/buildtools/rust.
++project(bsdln NONE)
++add_executable(bsdln IMPORTED GLOBAL)
++set_target_properties(bsdln PROPERTIES
++    IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/bsdln")
++# src/buildtools is processed later and adds the Cargo build dependency.
+diff --git a/src/bsdln/ln.c b/src/bsdln/ln.c
+deleted file mode 100644
+index f69afbcd..00000000
+--- a/src/bsdln/ln.c
++++ /dev/null
+@@ -1,265 +0,0 @@
+-/*-
+- * Copyright (c) 1987, 1993, 1994
+- *	The Regents of the University of California.  All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions
+- * are met:
+- * 1. Redistributions of source code must retain the above copyright
+- *    notice, this list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright
+- *    notice, this list of conditions and the following disclaimer in the
+- *    documentation and/or other materials provided with the distribution.
+- * 4. Neither the name of the University nor the names of its contributors
+- *    may be used to endorse or promote products derived from this software
+- *    without specific prior written permission.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+- * SUCH DAMAGE.
+- */
+-
+-#if 0
+-#ifndef lint
+-static char const copyright[] =
+-"@(#) Copyright (c) 1987, 1993, 1994\n\
+-	The Regents of the University of California.  All rights reserved.\n";
+-#endif /* not lint */
+-
+-#ifndef lint
+-static char sccsid[] = "@(#)ln.c	8.2 (Berkeley) 3/31/94";
+-#endif /* not lint */
+-#endif
+-#include <sys/cdefs.h>
+-//__FBSDID("$FreeBSD: src/bin/ln/ln.c,v 1.34 2006/02/14 11:08:05 glebius Exp $");
+-
+-#include <bsd/string.h>
+-
+-#include <sys/param.h>
+-#include <sys/stat.h>
+-
+-#include <err.h>
+-#include <errno.h>
+-#include <libgen.h>
+-#include <limits.h>
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <unistd.h>
+-
+-int	fflag;				/* Unlink existing files. */
+-int	Fflag;				/* Remove empty directories also. */
+-int	hflag;				/* Check new name for symlink first. */
+-int	iflag;				/* Interactive mode. */
+-int	sflag;				/* Symbolic, not hard, link. */
+-int	vflag;				/* Verbose output. */
+-					/* System link call. */
+-int (*linkf)(const char *, const char *);
+-char	linkch;
+-
+-int	linkit(const char *, const char *, int);
+-void	usage(void);
+-
+-int
+-main(int argc, char *argv[])
+-{
+-	struct stat sb;
+-	char *p, *sourcedir;
+-	int ch, exitval;
+-
+-	if (argc < 1)
+-		usage();
+-	/*
+-	 * Test for the special case where the utility is called as
+-	 * "link", for which the functionality provided is greatly
+-	 * simplified.
+-	 */
+-	if ((p = rindex(argv[0], '/')) == NULL)
+-		p = argv[0];
+-	else
+-		++p;
+-	if (strcmp(p, "link") == 0) {
+-		while (getopt(argc, argv, "") != -1)
+-			usage();
+-		argc -= optind;
+-		argv += optind;
+-		if (argc != 2)
+-			usage();
+-		linkf = link;
+-		exit(linkit(argv[0], argv[1], 0));
+-	}
+-
+-	while ((ch = getopt(argc, argv, "Ffhinsv")) != -1)
+-		switch (ch) {
+-		case 'F':
+-			Fflag = 1;
+-			break;
+-		case 'f':
+-			fflag = 1;
+-			iflag = 0;
+-			break;
+-		case 'h':
+-		case 'n':
+-			hflag = 1;
+-			break;
+-		case 'i':
+-			iflag = 1;
+-			fflag = 0;
+-			break;
+-		case 's':
+-			sflag = 1;
+-			break;
+-		case 'v':
+-			vflag = 1;
+-			break;
+-		case '?':
+-		default:
+-			usage();
+-		}
+-
+-	argv += optind;
+-	argc -= optind;
+-
+-	linkf = sflag ? symlink : link;
+-	linkch = sflag ? '-' : '=';
+-	if (sflag == 0)
+-		Fflag = 0;
+-	if (Fflag == 1 && iflag == 0)
+-		fflag = 1;
+-
+-	switch(argc) {
+-	case 0:
+-		usage();
+-		/* NOTREACHED */
+-	case 1:				/* ln target */
+-		exit(linkit(argv[0], ".", 1));
+-	case 2:				/* ln target source */
+-		exit(linkit(argv[0], argv[1], 0));
+-	default:
+-		;
+-	}
+-					/* ln target1 target2 directory */
+-	sourcedir = argv[argc - 1];
+-	if (hflag && lstat(sourcedir, &sb) == 0 && S_ISLNK(sb.st_mode)) {
+-		/*
+-		 * We were asked not to follow symlinks, but found one at
+-		 * the target--simulate "not a directory" error
+-		 */
+-		errno = ENOTDIR;
+-		err(1, "%s", sourcedir);
+-	}
+-	if (stat(sourcedir, &sb))
+-		err(1, "%s", sourcedir);
+-	if (!S_ISDIR(sb.st_mode))
+-		usage();
+-	for (exitval = 0; *argv != sourcedir; ++argv)
+-		exitval |= linkit(*argv, sourcedir, 1);
+-	exit(exitval);
+-}
+-
+-int
+-linkit(const char *target, const char *source, int isdir)
+-{
+-	struct stat sb;
+-	const char *p;
+-	int ch, exists, first;
+-	char path[PATH_MAX];
+-	char bbuf[PATH_MAX];
+-
+-	if (!sflag) {
+-		/* If target doesn't exist, quit now. */
+-		if (stat(target, &sb)) {
+-			warn("%s", target);
+-			return (1);
+-		}
+-		/* Only symbolic links to directories. */
+-		if (S_ISDIR(sb.st_mode)) {
+-			errno = EISDIR;
+-			warn("%s", target);
+-			return (1);
+-		}
+-	}
+-
+-	/*
+-	 * If the source is a directory (and not a symlink if hflag),
+-	 * append the target's name.
+-	 */
+-	if (isdir ||
+-	    (lstat(source, &sb) == 0 && S_ISDIR(sb.st_mode)) ||
+-	    (!hflag && stat(source, &sb) == 0 && S_ISDIR(sb.st_mode))) {
+-		if (strlcpy(bbuf, target, sizeof(bbuf)) >= sizeof(bbuf) ||
+-		    (p = basename(bbuf)) == NULL ||
+-		    snprintf(path, sizeof(path), "%s/%s", source, p) >=
+-		    (ssize_t)sizeof(path)) {
+-			errno = ENAMETOOLONG;
+-			warn("%s", target);
+-			return (1);
+-		}
+-		source = path;
+-	}
+-
+-	exists = !lstat(source, &sb);
+-	/*
+-	 * If the file exists, then unlink it forcibly if -f was specified
+-	 * and interactively if -i was specified.
+-	 */
+-	if (fflag && exists) {
+-		if (Fflag && S_ISDIR(sb.st_mode)) {
+-			if (rmdir(source)) {
+-				warn("%s", source);
+-				return (1);
+-			}
+-		} else if (unlink(source)) {
+-			warn("%s", source);
+-			return (1);
+-		}
+-	} else if (iflag && exists) {
+-		fflush(stdout);
+-		fprintf(stderr, "replace %s? ", source);
+-
+-		first = ch = getchar();
+-		while(ch != '\n' && ch != EOF)
+-			ch = getchar();
+-		if (first != 'y' && first != 'Y') {
+-			fprintf(stderr, "not replaced\n");
+-			return (1);
+-		}
+-
+-		if (Fflag && S_ISDIR(sb.st_mode)) {
+-			if (rmdir(source)) {
+-				warn("%s", source);
+-				return (1);
+-			}
+-		} else if (unlink(source)) {
+-			warn("%s", source);
+-			return (1);
+-		}
+-	}
+-
+-	/* Attempt the link. */
+-	if ((*linkf)(target, source)) {
+-		warn("%s", source);
+-		return (1);
+-	}
+-	if (vflag)
+-		(void)printf("%s %c> %s\n", source, linkch, target);
+-	return (0);
+-}
+-
+-void
+-usage(void)
+-{
+-	(void)fprintf(stderr, "%s\n%s\n%s\n",
+-	    "usage: ln [-Ffhinsv] source_file [target_file]",
+-	    "       ln [-Ffhinsv] source_file ... target_dir",
+-	    "       link source_file target_file");
+-	exit(1);
+-}
+diff --git a/src/buildtools/CMakeLists.txt b/src/buildtools/CMakeLists.txt
+index 5410ba97..c34d683d 100644
+--- a/src/buildtools/CMakeLists.txt
++++ b/src/buildtools/CMakeLists.txt
+@@ -1,8 +1,47 @@
+-project(buildtools)
++# Install this file at src/buildtools/CMakeLists.txt, and this Cargo package
++# at src/buildtools/rust. The resulting executable paths match dsym.cmake.
++cmake_minimum_required(VERSION 3.13)
++project(buildtools NONE)
+ 
+-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/../external/cctools-port/cctools/include)
++find_program(DARLING_CARGO_EXECUTABLE cargo)
++if(NOT DARLING_CARGO_EXECUTABLE)
++    message(FATAL_ERROR "Darling's Rust build tools require Cargo and Rust >= 1.85")
++endif()
+ 
+-add_executable(getuuid getuuid.c)
+-add_executable(elfdep elfdep.c)
++set(DARLING_RUST_TOOLS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/rust")
++set(DARLING_RUST_TOOLS_TARGET "${CMAKE_CURRENT_BINARY_DIR}/cargo-target")
++get_filename_component(DARLING_RUST_BSDLN_DIR "${CMAKE_CURRENT_BINARY_DIR}/../bsdln" ABSOLUTE)
++file(GLOB_RECURSE DARLING_RUST_TOOLS_SOURCES CONFIGURE_DEPENDS
++    "${DARLING_RUST_TOOLS_SOURCE}/src/*.rs")
++add_custom_command(
++    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rust-buildtools.stamp"
++    BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/elfdep" "${CMAKE_CURRENT_BINARY_DIR}/getuuid"
++        "${DARLING_RUST_BSDLN_DIR}/bsdln"
++    COMMAND "${DARLING_CARGO_EXECUTABLE}" build --release --locked --offline
++        --manifest-path "${DARLING_RUST_TOOLS_SOURCE}/Cargo.toml"
++        --target-dir "${DARLING_RUST_TOOLS_TARGET}"
++    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
++        "${DARLING_RUST_TOOLS_TARGET}/release/elfdep" "${CMAKE_CURRENT_BINARY_DIR}/elfdep"
++    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
++        "${DARLING_RUST_TOOLS_TARGET}/release/getuuid" "${CMAKE_CURRENT_BINARY_DIR}/getuuid"
++    COMMAND "${CMAKE_COMMAND}" -E make_directory "${DARLING_RUST_BSDLN_DIR}"
++    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
++        "${DARLING_RUST_TOOLS_TARGET}/release/bsdln" "${DARLING_RUST_BSDLN_DIR}/bsdln"
++    COMMAND "${CMAKE_COMMAND}" -E touch "${CMAKE_CURRENT_BINARY_DIR}/rust-buildtools.stamp"
++    DEPENDS ${DARLING_RUST_TOOLS_SOURCES}
++        "${DARLING_RUST_TOOLS_SOURCE}/Cargo.toml"
++        "${DARLING_RUST_TOOLS_SOURCE}/Cargo.lock"
++    VERBATIM
++)
++add_custom_target(darling_rust_buildtools ALL
++    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/rust-buildtools.stamp")
+ 
+-#add_subdirectory(Rez)
++foreach(tool elfdep getuuid)
++    add_executable(${tool} IMPORTED GLOBAL)
++    set_target_properties(${tool} PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/${tool}")
++    add_dependencies(${tool} darling_rust_buildtools)
++endforeach()
++
++if(TARGET bsdln)
++    add_dependencies(bsdln darling_rust_buildtools)
++endif()
+diff --git a/src/buildtools/elfdep.c b/src/buildtools/elfdep.c
+deleted file mode 100644
+index fcc161cf..00000000
+--- a/src/buildtools/elfdep.c
++++ /dev/null
+@@ -1,182 +0,0 @@
+-/*
+-This file is part of Darling.
+-
+-Copyright (C) 2018-2020 Lubos Dolezel
+-
+-Darling is free software: you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation, either version 3 of the License, or
+-(at your option) any later version.
+-
+-Darling is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-GNU General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with Darling.  If not, see <http://www.gnu.org/licenses/>.
+-*/
+-#include <stdio.h>
+-#include <unistd.h>
+-#include <fcntl.h>
+-#include <sys/mman.h>
+-#include <stdint.h>
+-#include <stdbool.h>
+-#include <stdlib.h>
+-#include <mach-o/loader.h>
+-#include <mach-o/fat.h>
+-#include <string.h>
+-#include <errno.h>
+-
+-bool printElfdepAny(const void* mem);
+-bool printElfdepMH(const struct mach_header* mhdr);
+-bool printElfdepMH64(const struct mach_header_64* mhdr);
+-bool printFat(const struct fat_header* fhdr);
+-bool printTaf(const struct fat_header* fhdr);
+-
+-int main(int argc, const char** argv)
+-{
+-	if (argc != 2)
+-	{
+-		fprintf(stderr, "elfdep: Prints the ELF dependency (SONAME) of a Mach-O file, if any\n");
+-		fprintf(stderr, "Usage: elfdep <macho-file>\n");
+-		return EXIT_FAILURE;
+-	}
+-
+-	int fd = open(argv[1], O_RDONLY);
+-	if (fd == -1)
+-	{
+-		fprintf(stderr, "Cannot open %s: %s", argv[1], strerror(errno));
+-		return EXIT_FAILURE;
+-	}
+-
+-	size_t length = lseek(fd, 0, SEEK_END);
+-
+-	void* mem = mmap(NULL, length, PROT_READ, MAP_SHARED, fd, 0);
+-	if (mem == MAP_FAILED)
+-	{
+-		perror("mmap");
+-		return EXIT_FAILURE;
+-	}
+-
+-	close(fd);
+-
+-	printElfdepAny(mem);
+-
+-	munmap(mem, length);
+-
+-	return EXIT_SUCCESS;
+-}
+-
+-bool printElfdepAny(const void* mem)
+-{
+-	const struct mach_header* mhdr = (struct mach_header*) mem;
+-
+-	if (mhdr->magic == MH_MAGIC)
+-		return printElfdepMH(mhdr);
+-	else if (mhdr->magic == MH_MAGIC_64)
+-		return printElfdepMH64((struct mach_header_64*) mhdr);
+-	else if (mhdr->magic == FAT_MAGIC)
+-		return printFat((struct fat_header*) mhdr);
+-	else if (mhdr->magic == FAT_CIGAM)
+-		return printTaf((struct fat_header*) mhdr);
+-	else
+-	{
+-		fprintf(stderr, "File format not recognized\n");
+-		exit(1);
+-	}
+-}
+-
+-bool printElfdep(const struct load_command* lc, const void* base)
+-{
+-	if (lc->cmd == LC_SEGMENT)
+-	{
+-		const struct segment_command* sc = (const struct segment_command*) lc;
+-
+-		if (strcmp(sc->segname, "__TEXT") == 0)
+-		{
+-			const struct section* sect = (const struct section*)(sc+1);
+-			for (int i = 0; i < sc->nsects; i++)
+-			{
+-				if (strcmp(sect->sectname, "__elfname") == 0)
+-				{
+-					printf("%s\n", ((const char*)base) + sect->offset);
+-					return true;
+-				}
+-				sect++;
+-			}
+-		}
+-	}
+-	else if (lc->cmd == LC_SEGMENT_64)
+-	{
+-		const struct segment_command_64* sc = (const struct segment_command_64*) lc;
+-
+-		if (strcmp(sc->segname, "__TEXT") == 0)
+-		{
+-			const struct section_64* sect = (const struct section_64*)(sc+1);
+-			for (int i = 0; i < sc->nsects; i++)
+-			{
+-				if (strcmp(sect->sectname, "__elfname") == 0)
+-				{
+-					printf("%s\n", ((const char*)base) + sect->offset);
+-					return true;
+-				}
+-				sect++;
+-			}
+-		}
+-	}
+-	return false;
+-}
+-
+-bool printElfdepMH(const struct mach_header* mhdr)
+-{
+-	const uint8_t* command = (const uint8_t*)(mhdr + 1);
+-	for (uint32_t i = 0; i < mhdr->ncmds; i++)
+-	{
+-		if (printElfdep((const struct load_command*) command, mhdr))
+-			return true;
+-		else
+-			command += ((const struct load_command*)command)->cmdsize;
+-	}
+-	return false;
+-}
+-
+-bool printElfdepMH64(const struct mach_header_64* mhdr)
+-{
+-	const uint8_t* command = (const uint8_t*)(mhdr + 1);
+-	for (uint32_t i = 0; i < mhdr->ncmds; i++)
+-	{
+-		if (printElfdep((const struct load_command*) command, mhdr))
+-			return true;
+-		else
+-			command += ((const struct load_command*)command)->cmdsize;
+-	}
+-	return false;
+-}
+-
+-bool printFat(const struct fat_header* fhdr)
+-{
+-	const struct fat_arch* fa = ((const struct fat_arch*) (fhdr+1));
+-
+-	for (uint32_t i = 0; i < fhdr->nfat_arch; i++)
+-	{
+-		if (printElfdepAny(((char*) fhdr) + fa[i].offset))
+-			return true;
+-	}
+-
+-	return false;
+-}
+-
+-bool printTaf(const struct fat_header* fhdr)
+-{
+-	const struct fat_arch* fa = ((const struct fat_arch*) (fhdr+1));
+-
+-	for (uint32_t i = 0; i < __builtin_bswap32(fhdr->nfat_arch); i++)
+-	{
+-		if (printElfdepAny(((char*) fhdr) + __builtin_bswap32(fa[i].offset)))
+-			return true;
+-	}
+-
+-	return false;
+-}
+-
+diff --git a/src/buildtools/getuuid.c b/src/buildtools/getuuid.c
+deleted file mode 100644
+index 28e66831..00000000
+--- a/src/buildtools/getuuid.c
++++ /dev/null
+@@ -1,174 +0,0 @@
+-/*
+-This file is part of Darling.
+-
+-Copyright (C) 2018 Lubos Dolezel
+-
+-Darling is free software: you can redistribute it and/or modify
+-it under the terms of the GNU General Public License as published by
+-the Free Software Foundation, either version 3 of the License, or
+-(at your option) any later version.
+-
+-Darling is distributed in the hope that it will be useful,
+-but WITHOUT ANY WARRANTY; without even the implied warranty of
+-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-GNU General Public License for more details.
+-
+-You should have received a copy of the GNU General Public License
+-along with Darling.  If not, see <http://www.gnu.org/licenses/>.
+-*/
+-#include <stdio.h>
+-#include <unistd.h>
+-#include <fcntl.h>
+-#include <sys/mman.h>
+-#include <stdint.h>
+-#include <stdbool.h>
+-#include <stdlib.h>
+-#include <mach-o/loader.h>
+-#include <mach-o/fat.h>
+-#include <string.h>
+-#include <errno.h>
+-
+-bool printUuidAny(const void* mem);
+-bool printUuidMH(const struct mach_header* mhdr);
+-bool printUuidMH64(const struct mach_header_64* mhdr);
+-bool printFat(const struct fat_header* fhdr);
+-bool printTaf(const struct fat_header* fhdr);
+-
+-int main(int argc, const char** argv)
+-{
+-	if (argc != 2)
+-	{
+-		fprintf(stderr, "getuuid: Prints the UUID(s) of a Mach-O file, separated by semicolons (in case of fat files)\n");
+-		fprintf(stderr, "Usage: getuuid <macho-file>\n");
+-		return EXIT_FAILURE;
+-	}
+-
+-	int fd = open(argv[1], O_RDONLY);
+-	if (fd == -1)
+-	{
+-		fprintf(stderr, "Cannot open %s: %s", argv[1], strerror(errno));
+-		return EXIT_FAILURE;
+-	}
+-
+-	size_t length = lseek(fd, 0, SEEK_END);
+-
+-	void* mem = mmap(NULL, length, PROT_READ, MAP_SHARED, fd, 0);
+-	if (mem == MAP_FAILED)
+-	{
+-		perror("mmap");
+-		return EXIT_FAILURE;
+-	}
+-
+-	close(fd);
+-
+-	int rv = EXIT_FAILURE;
+-
+-	if (printUuidAny(mem))
+-		rv = EXIT_SUCCESS;
+-
+-	munmap(mem, length);
+-
+-	return rv;
+-}
+-
+-bool printUuidAny(const void* mem)
+-{
+-	const struct mach_header* mhdr = (struct mach_header*) mem;
+-
+-	if (mhdr->magic == MH_MAGIC)
+-		return printUuidMH(mhdr);
+-	else if (mhdr->magic == MH_MAGIC_64)
+-		return printUuidMH64((struct mach_header_64*) mhdr);
+-	else if (mhdr->magic == FAT_MAGIC)
+-		return printFat((struct fat_header*) mhdr);
+-	else if (mhdr->magic == FAT_CIGAM)
+-		return printTaf((struct fat_header*) mhdr);
+-	else
+-	{
+-		fprintf(stderr, "File format not recognized\n");
+-		exit(1);
+-	}
+-}
+-
+-bool printUuid(const struct load_command* lc)
+-{
+-	static bool hadUuid = false;
+-	if (lc->cmd == LC_UUID)
+-	{
+-		const struct uuid_command* uuid = (const struct uuid_command*) lc;
+-
+-		if (hadUuid)
+-			putchar(';');
+-
+-		printf("%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+-				uuid->uuid[0],
+-				uuid->uuid[1],
+-				uuid->uuid[2],
+-				uuid->uuid[3],
+-				uuid->uuid[4],
+-				uuid->uuid[5],
+-				uuid->uuid[6],
+-				uuid->uuid[7],
+-				uuid->uuid[8],
+-				uuid->uuid[9],
+-				uuid->uuid[10],
+-				uuid->uuid[11],
+-				uuid->uuid[12],
+-				uuid->uuid[13],
+-				uuid->uuid[14],
+-				uuid->uuid[15]);
+-
+-		hadUuid = true;
+-		return true;
+-	}
+-	return false;
+-}
+-
+-bool printUuidMH(const struct mach_header* mhdr)
+-{
+-	const uint8_t* command = (const uint8_t*)(mhdr + 1);
+-	for (uint32_t i = 0; i < mhdr->ncmds; i++)
+-	{
+-		if (printUuid((const struct load_command*) command))
+-			return true;
+-		else
+-			command += ((const struct load_command*)command)->cmdsize;
+-	}
+-	return false;
+-}
+-
+-bool printUuidMH64(const struct mach_header_64* mhdr)
+-{
+-	const uint8_t* command = (const uint8_t*)(mhdr + 1);
+-	for (uint32_t i = 0; i < mhdr->ncmds; i++)
+-	{
+-		if (printUuid((const struct load_command*) command))
+-			return true;
+-		else
+-			command += ((const struct load_command*)command)->cmdsize;
+-	}
+-	return false;
+-}
+-
+-bool printFat(const struct fat_header* fhdr)
+-{
+-	const struct fat_arch* fa = ((const struct fat_arch*) (fhdr+1));
+-	bool rv = false;
+-
+-	for (uint32_t i = 0; i < fhdr->nfat_arch; i++)
+-		rv |= printUuidAny(((char*) fhdr) + fa[i].offset);
+-
+-	return rv;
+-}
+-
+-bool printTaf(const struct fat_header* fhdr)
+-{
+-	const struct fat_arch* fa = ((const struct fat_arch*) (fhdr+1));
+-	bool rv = false;
+-
+-	for (uint32_t i = 0; i < __builtin_bswap32(fhdr->nfat_arch); i++)
+-		rv |= printUuidAny(((char*) fhdr) + __builtin_bswap32(fa[i].offset));
+-
+-	return rv;
+-}
+-
+diff --git a/src/buildtools/rust/.cargo/config.toml b/src/buildtools/rust/.cargo/config.toml
+new file mode 100644
+index 00000000..0e6fc8e7
+--- /dev/null
++++ b/src/buildtools/rust/.cargo/config.toml
+@@ -0,0 +1,2 @@
++[alias]
++xtask = "run --offline --locked --package xtask --"
+diff --git a/src/buildtools/rust/.gitignore b/src/buildtools/rust/.gitignore
+new file mode 100644
+index 00000000..b83d2226
+--- /dev/null
++++ b/src/buildtools/rust/.gitignore
+@@ -0,0 +1 @@
++/target/
+diff --git a/src/buildtools/rust/BUILDING.txt b/src/buildtools/rust/BUILDING.txt
+new file mode 100644
+index 00000000..dc687f62
+--- /dev/null
++++ b/src/buildtools/rust/BUILDING.txt
+@@ -0,0 +1,109 @@
++Cargo build and migration boundaries
++===================================
++
++Requirements for this Rust workspace
++------------------------------------
++Rust 1.85 or later, Cargo, and a host linker are required. `cargo xtask check`
++also requires the rustfmt and Clippy toolchain components. There are no
++third-party Rust dependencies, build scripts, CMake calls, network downloads,
++or generated-code prerequisites in the migrated workspace.
++
++Run commands from this checkout, or a directory inside it:
++
++    cargo xtask build
++    cargo xtask check
++    cargo xtask test
++    cargo xtask bench
++    cargo xtask help
++
++`build` builds all binaries in darling-buildtools with release optimizations.
++The tools are placed in target/release (or CARGO_TARGET_DIR when configured).
++`check` stops at the first failure: rustfmt --check, Clippy for every workspace
++target with warnings denied, then workspace tests including doctests.
++`test` runs workspace tests and doctests. It leaves the two optional upstream
++differential tests ignored; tests/cli.rs and tests/bsdln.rs describe the required
++reference-tool environment variables for running them explicitly.
++`bench` runs only the metadata benchmark in release mode. Its figures measure
++the Rust parser on synthetic fixtures; they are not evidence of a speedup
++over upstream or the performance of an entire Darling installation.
++
++All xtask Cargo dependency-resolution commands use --offline --locked.
++No task installs software, changes system paths, invokes a shell, or builds
++the upstream CMake tree. An unavailable tool or failing child process makes
++the task fail; a nonzero child exit code is forwarded when representable.
++
++Ordinary Cargo commands also work without xtask:
++
++    cargo build --offline --locked --release --package darling-buildtools
++    cargo test --offline --locked --workspace
++
++This workspace currently migrates selected host utilities. It is not yet a
++complete Darling runtime and cannot launch macOS applications. Cargo is the
++primary build system for the migrated Rust code; the existence of this
++workspace does not replace the remaining upstream build graph.
++
++Migrated executables: elfdep, getuuid, bsdln (Linux host tools). No libbsd
++dependency is needed for the Rust bsdln. Mach-O metadata supports 32/64-bit thin
++and fat containers in either byte order, including FAT64. UUID text and ELF
++dependency stdout/exit semantics match the supported valid upstream fixtures.
++Malformed inputs fail before output. This intentionally rejects corrupt files
++which the C readers may accept or read out of bounds. bsdln also refuses a
++forced hard link onto the same inode, preserving a source upstream can delete.
++
++The CLI readers currently copy file contents with std::fs::read, while the old
++C tools use mmap. This avoids an unsafe mapping boundary and concurrent-file
++mapping faults, but can increase memory use and I/O for large inputs. No general
++performance improvement over upstream has been established. Parser benchmarks
++exclude file reading, command startup, and the rest of Darling.
++
++Legacy integration (optional)
++-----------------------------
++integration/CMakeLists.txt and integration/bsdln.CMakeLists.txt are transitional
++adapters for the remaining upstream graph. They invoke Cargo for these tools,
++preserve the executable paths consumed by upstream installation rules, and do
++not affect native Cargo builds. Their presence is not a CMake replacement for
++the full project. See upstream-rust-tools.patch and README.txt for application
++instructions and the pinned reference revision.
++
++What the remaining CMake graph does
++----------------------------------
++Inspection baseline: darlinghq/darling commit
++60ba801decee7a00782f74f6be4c8ffb013f79ff.
++
++The upstream root CMakeLists.txt configures Clang, C/C++, assembly, component
++selection, architecture slices, dependency discovery and installation.
++src/CMakeLists.txt first builds Linux host tools and darlingserver, then
++switches to Apple target triples, SDK headers and Darwin compiler definitions
++for the emulated system libraries. It includes external subprojects for
++dyld, the Objective-C runtime, libc, libpthread, frameworks and other tools.
++
++cmake/darling_lib.cmake selects ld64, Darwin install names and dylib versions,
++orders multi-pass linking for mutually dependent libraries, and arranges
++lipo architecture slices and debug symbols. cmake/mig.cmake generates Mach
++IPC client/server C sources and headers, including architecture-specific
++variants and xtrace output. Installation rules arrange the Darling prefix
++and symlinks; the root build also discovers Setcap.
++
++Cargo's ordinary package dependency graph does not reproduce these target
++ABI, code-generation, circular-linking and filesystem-install semantics.
++A full replacement needs explicit equivalents and compatibility tests for
++each of them, plus Rust ports or deliberate legacy adapters for the foreign
++language subprojects. A CMake invocation hidden inside build.rs would still
++depend on CMake and would not constitute that replacement.
++
++Migration path
++--------------
++1. Keep independent host tools as Cargo binary targets with behavioral and
++   malformed-input regression tests. This is the current implementation.
++2. Add typed, independently tested generators for MIG, SDK metadata and other
++   generated artifacts, with deterministic inputs and declared outputs.
++3. Define separate host and Darwin-target packages, and validate their ABI,
++   exported symbols, loader behavior and architecture coverage. Introduce
++   narrowly reviewed unsafe only at required OS/ABI boundaries.
++4. Implement the required linking, slice assembly and installation steps as
++   explicit xtask operations, testing actual artifacts against upstream.
++5. Retire each remaining CMake target only after the corresponding Rust
++   component and compatibility tests exist. The legacy CMake build remains
++   required to build unported upstream components during that process.
++
++These are remaining engineering requirements, not implemented task commands.
+diff --git a/src/buildtools/rust/Cargo.lock b/src/buildtools/rust/Cargo.lock
+new file mode 100644
+index 00000000..c01a119a
+--- /dev/null
++++ b/src/buildtools/rust/Cargo.lock
+@@ -0,0 +1,11 @@
++# This file is automatically @generated by Cargo.
++# It is not intended for manual editing.
++version = 4
++
++[[package]]
++name = "darling-buildtools"
++version = "0.1.0"
++
++[[package]]
++name = "xtask"
++version = "0.1.0"
+diff --git a/src/buildtools/rust/Cargo.toml b/src/buildtools/rust/Cargo.toml
+new file mode 100644
+index 00000000..2bb8ed69
+--- /dev/null
++++ b/src/buildtools/rust/Cargo.toml
+@@ -0,0 +1,26 @@
++[package]
++name = "darling-buildtools"
++version = "0.1.0"
++edition = "2024"
++rust-version = "1.85"
++license = "GPL-3.0-or-later"
++publish = false
++description = "Safe Rust ports of Darling host utilities"
++
++[workspace]
++members = ["xtask"]
++resolver = "3"
++
++[lints.rust]
++unsafe_code = "forbid"
++
++[lints.clippy]
++all = "warn"
++
++[profile.release]
++lto = "thin"
++codegen-units = 1
++
++[[bench]]
++name = "metadata"
++harness = false
+diff --git a/src/buildtools/rust/LICENSE b/src/buildtools/rust/LICENSE
+new file mode 100644
+index 00000000..94a9ed02
+--- /dev/null
++++ b/src/buildtools/rust/LICENSE
+@@ -0,0 +1,674 @@
++                    GNU GENERAL PUBLIC LICENSE
++                       Version 3, 29 June 2007
++
++ Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
++ Everyone is permitted to copy and distribute verbatim copies
++ of this license document, but changing it is not allowed.
++
++                            Preamble
++
++  The GNU General Public License is a free, copyleft license for
++software and other kinds of works.
++
++  The licenses for most software and other practical works are designed
++to take away your freedom to share and change the works.  By contrast,
++the GNU General Public License is intended to guarantee your freedom to
++share and change all versions of a program--to make sure it remains free
++software for all its users.  We, the Free Software Foundation, use the
++GNU General Public License for most of our software; it applies also to
++any other work released this way by its authors.  You can apply it to
++your programs, too.
++
++  When we speak of free software, we are referring to freedom, not
++price.  Our General Public Licenses are designed to make sure that you
++have the freedom to distribute copies of free software (and charge for
++them if you wish), that you receive source code or can get it if you
++want it, that you can change the software or use pieces of it in new
++free programs, and that you know you can do these things.
++
++  To protect your rights, we need to prevent others from denying you
++these rights or asking you to surrender the rights.  Therefore, you have
++certain responsibilities if you distribute copies of the software, or if
++you modify it: responsibilities to respect the freedom of others.
++
++  For example, if you distribute copies of such a program, whether
++gratis or for a fee, you must pass on to the recipients the same
++freedoms that you received.  You must make sure that they, too, receive
++or can get the source code.  And you must show them these terms so they
++know their rights.
++
++  Developers that use the GNU GPL protect your rights with two steps:
++(1) assert copyright on the software, and (2) offer you this License
++giving you legal permission to copy, distribute and/or modify it.
++
++  For the developers' and authors' protection, the GPL clearly explains
++that there is no warranty for this free software.  For both users' and
++authors' sake, the GPL requires that modified versions be marked as
++changed, so that their problems will not be attributed erroneously to
++authors of previous versions.
++
++  Some devices are designed to deny users access to install or run
++modified versions of the software inside them, although the manufacturer
++can do so.  This is fundamentally incompatible with the aim of
++protecting users' freedom to change the software.  The systematic
++pattern of such abuse occurs in the area of products for individuals to
++use, which is precisely where it is most unacceptable.  Therefore, we
++have designed this version of the GPL to prohibit the practice for those
++products.  If such problems arise substantially in other domains, we
++stand ready to extend this provision to those domains in future versions
++of the GPL, as needed to protect the freedom of users.
++
++  Finally, every program is threatened constantly by software patents.
++States should not allow patents to restrict development and use of
++software on general-purpose computers, but in those that do, we wish to
++avoid the special danger that patents applied to a free program could
++make it effectively proprietary.  To prevent this, the GPL assures that
++patents cannot be used to render the program non-free.
++
++  The precise terms and conditions for copying, distribution and
++modification follow.
++
++                       TERMS AND CONDITIONS
++
++  0. Definitions.
++
++  "This License" refers to version 3 of the GNU General Public License.
++
++  "Copyright" also means copyright-like laws that apply to other kinds of
++works, such as semiconductor masks.
++
++  "The Program" refers to any copyrightable work licensed under this
++License.  Each licensee is addressed as "you".  "Licensees" and
++"recipients" may be individuals or organizations.
++
++  To "modify" a work means to copy from or adapt all or part of the work
++in a fashion requiring copyright permission, other than the making of an
++exact copy.  The resulting work is called a "modified version" of the
++earlier work or a work "based on" the earlier work.
++
++  A "covered work" means either the unmodified Program or a work based
++on the Program.
++
++  To "propagate" a work means to do anything with it that, without
++permission, would make you directly or secondarily liable for
++infringement under applicable copyright law, except executing it on a
++computer or modifying a private copy.  Propagation includes copying,
++distribution (with or without modification), making available to the
++public, and in some countries other activities as well.
++
++  To "convey" a work means any kind of propagation that enables other
++parties to make or receive copies.  Mere interaction with a user through
++a computer network, with no transfer of a copy, is not conveying.
++
++  An interactive user interface displays "Appropriate Legal Notices"
++to the extent that it includes a convenient and prominently visible
++feature that (1) displays an appropriate copyright notice, and (2)
++tells the user that there is no warranty for the work (except to the
++extent that warranties are provided), that licensees may convey the
++work under this License, and how to view a copy of this License.  If
++the interface presents a list of user commands or options, such as a
++menu, a prominent item in the list meets this criterion.
++
++  1. Source Code.
++
++  The "source code" for a work means the preferred form of the work
++for making modifications to it.  "Object code" means any non-source
++form of a work.
++
++  A "Standard Interface" means an interface that either is an official
++standard defined by a recognized standards body, or, in the case of
++interfaces specified for a particular programming language, one that
++is widely used among developers working in that language.
++
++  The "System Libraries" of an executable work include anything, other
++than the work as a whole, that (a) is included in the normal form of
++packaging a Major Component, but which is not part of that Major
++Component, and (b) serves only to enable use of the work with that
++Major Component, or to implement a Standard Interface for which an
++implementation is available to the public in source code form.  A
++"Major Component", in this context, means a major essential component
++(kernel, window system, and so on) of the specific operating system
++(if any) on which the executable work runs, or a compiler used to
++produce the work, or an object code interpreter used to run it.
++
++  The "Corresponding Source" for a work in object code form means all
++the source code needed to generate, install, and (for an executable
++work) run the object code and to modify the work, including scripts to
++control those activities.  However, it does not include the work's
++System Libraries, or general-purpose tools or generally available free
++programs which are used unmodified in performing those activities but
++which are not part of the work.  For example, Corresponding Source
++includes interface definition files associated with source files for
++the work, and the source code for shared libraries and dynamically
++linked subprograms that the work is specifically designed to require,
++such as by intimate data communication or control flow between those
++subprograms and other parts of the work.
++
++  The Corresponding Source need not include anything that users
++can regenerate automatically from other parts of the Corresponding
++Source.
++
++  The Corresponding Source for a work in source code form is that
++same work.
++
++  2. Basic Permissions.
++
++  All rights granted under this License are granted for the term of
++copyright on the Program, and are irrevocable provided the stated
++conditions are met.  This License explicitly affirms your unlimited
++permission to run the unmodified Program.  The output from running a
++covered work is covered by this License only if the output, given its
++content, constitutes a covered work.  This License acknowledges your
++rights of fair use or other equivalent, as provided by copyright law.
++
++  You may make, run and propagate covered works that you do not
++convey, without conditions so long as your license otherwise remains
++in force.  You may convey covered works to others for the sole purpose
++of having them make modifications exclusively for you, or provide you
++with facilities for running those works, provided that you comply with
++the terms of this License in conveying all material for which you do
++not control copyright.  Those thus making or running the covered works
++for you must do so exclusively on your behalf, under your direction
++and control, on terms that prohibit them from making any copies of
++your copyrighted material outside their relationship with you.
++
++  Conveying under any other circumstances is permitted solely under
++the conditions stated below.  Sublicensing is not allowed; section 10
++makes it unnecessary.
++
++  3. Protecting Users' Legal Rights From Anti-Circumvention Law.
++
++  No covered work shall be deemed part of an effective technological
++measure under any applicable law fulfilling obligations under article
++11 of the WIPO copyright treaty adopted on 20 December 1996, or
++similar laws prohibiting or restricting circumvention of such
++measures.
++
++  When you convey a covered work, you waive any legal power to forbid
++circumvention of technological measures to the extent such circumvention
++is effected by exercising rights under this License with respect to
++the covered work, and you disclaim any intention to limit operation or
++modification of the work as a means of enforcing, against the work's
++users, your or third parties' legal rights to forbid circumvention of
++technological measures.
++
++  4. Conveying Verbatim Copies.
++
++  You may convey verbatim copies of the Program's source code as you
++receive it, in any medium, provided that you conspicuously and
++appropriately publish on each copy an appropriate copyright notice;
++keep intact all notices stating that this License and any
++non-permissive terms added in accord with section 7 apply to the code;
++keep intact all notices of the absence of any warranty; and give all
++recipients a copy of this License along with the Program.
++
++  You may charge any price or no price for each copy that you convey,
++and you may offer support or warranty protection for a fee.
++
++  5. Conveying Modified Source Versions.
++
++  You may convey a work based on the Program, or the modifications to
++produce it from the Program, in the form of source code under the
++terms of section 4, provided that you also meet all of these conditions:
++
++    a) The work must carry prominent notices stating that you modified
++    it, and giving a relevant date.
++
++    b) The work must carry prominent notices stating that it is
++    released under this License and any conditions added under section
++    7.  This requirement modifies the requirement in section 4 to
++    "keep intact all notices".
++
++    c) You must license the entire work, as a whole, under this
++    License to anyone who comes into possession of a copy.  This
++    License will therefore apply, along with any applicable section 7
++    additional terms, to the whole of the work, and all its parts,
++    regardless of how they are packaged.  This License gives no
++    permission to license the work in any other way, but it does not
++    invalidate such permission if you have separately received it.
++
++    d) If the work has interactive user interfaces, each must display
++    Appropriate Legal Notices; however, if the Program has interactive
++    interfaces that do not display Appropriate Legal Notices, your
++    work need not make them do so.
++
++  A compilation of a covered work with other separate and independent
++works, which are not by their nature extensions of the covered work,
++and which are not combined with it such as to form a larger program,
++in or on a volume of a storage or distribution medium, is called an
++"aggregate" if the compilation and its resulting copyright are not
++used to limit the access or legal rights of the compilation's users
++beyond what the individual works permit.  Inclusion of a covered work
++in an aggregate does not cause this License to apply to the other
++parts of the aggregate.
++
++  6. Conveying Non-Source Forms.
++
++  You may convey a covered work in object code form under the terms
++of sections 4 and 5, provided that you also convey the
++machine-readable Corresponding Source under the terms of this License,
++in one of these ways:
++
++    a) Convey the object code in, or embodied in, a physical product
++    (including a physical distribution medium), accompanied by the
++    Corresponding Source fixed on a durable physical medium
++    customarily used for software interchange.
++
++    b) Convey the object code in, or embodied in, a physical product
++    (including a physical distribution medium), accompanied by a
++    written offer, valid for at least three years and valid for as
++    long as you offer spare parts or customer support for that product
++    model, to give anyone who possesses the object code either (1) a
++    copy of the Corresponding Source for all the software in the
++    product that is covered by this License, on a durable physical
++    medium customarily used for software interchange, for a price no
++    more than your reasonable cost of physically performing this
++    conveying of source, or (2) access to copy the
++    Corresponding Source from a network server at no charge.
++
++    c) Convey individual copies of the object code with a copy of the
++    written offer to provide the Corresponding Source.  This
++    alternative is allowed only occasionally and noncommercially, and
++    only if you received the object code with such an offer, in accord
++    with subsection 6b.
++
++    d) Convey the object code by offering access from a designated
++    place (gratis or for a charge), and offer equivalent access to the
++    Corresponding Source in the same way through the same place at no
++    further charge.  You need not require recipients to copy the
++    Corresponding Source along with the object code.  If the place to
++    copy the object code is a network server, the Corresponding Source
++    may be on a different server (operated by you or a third party)
++    that supports equivalent copying facilities, provided you maintain
++    clear directions next to the object code saying where to find the
++    Corresponding Source.  Regardless of what server hosts the
++    Corresponding Source, you remain obligated to ensure that it is
++    available for as long as needed to satisfy these requirements.
++
++    e) Convey the object code using peer-to-peer transmission, provided
++    you inform other peers where the object code and Corresponding
++    Source of the work are being offered to the general public at no
++    charge under subsection 6d.
++
++  A separable portion of the object code, whose source code is excluded
++from the Corresponding Source as a System Library, need not be
++included in conveying the object code work.
++
++  A "User Product" is either (1) a "consumer product", which means any
++tangible personal property which is normally used for personal, family,
++or household purposes, or (2) anything designed or sold for incorporation
++into a dwelling.  In determining whether a product is a consumer product,
++doubtful cases shall be resolved in favor of coverage.  For a particular
++product received by a particular user, "normally used" refers to a
++typical or common use of that class of product, regardless of the status
++of the particular user or of the way in which the particular user
++actually uses, or expects or is expected to use, the product.  A product
++is a consumer product regardless of whether the product has substantial
++commercial, industrial or non-consumer uses, unless such uses represent
++the only significant mode of use of the product.
++
++  "Installation Information" for a User Product means any methods,
++procedures, authorization keys, or other information required to install
++and execute modified versions of a covered work in that User Product from
++a modified version of its Corresponding Source.  The information must
++suffice to ensure that the continued functioning of the modified object
++code is in no case prevented or interfered with solely because
++modification has been made.
++
++  If you convey an object code work under this section in, or with, or
++specifically for use in, a User Product, and the conveying occurs as
++part of a transaction in which the right of possession and use of the
++User Product is transferred to the recipient in perpetuity or for a
++fixed term (regardless of how the transaction is characterized), the
++Corresponding Source conveyed under this section must be accompanied
++by the Installation Information.  But this requirement does not apply
++if neither you nor any third party retains the ability to install
++modified object code on the User Product (for example, the work has
++been installed in ROM).
++
++  The requirement to provide Installation Information does not include a
++requirement to continue to provide support service, warranty, or updates
++for a work that has been modified or installed by the recipient, or for
++the User Product in which it has been modified or installed.  Access to a
++network may be denied when the modification itself materially and
++adversely affects the operation of the network or violates the rules and
++protocols for communication across the network.
++
++  Corresponding Source conveyed, and Installation Information provided,
++in accord with this section must be in a format that is publicly
++documented (and with an implementation available to the public in
++source code form), and must require no special password or key for
++unpacking, reading or copying.
++
++  7. Additional Terms.
++
++  "Additional permissions" are terms that supplement the terms of this
++License by making exceptions from one or more of its conditions.
++Additional permissions that are applicable to the entire Program shall
++be treated as though they were included in this License, to the extent
++that they are valid under applicable law.  If additional permissions
++apply only to part of the Program, that part may be used separately
++under those permissions, but the entire Program remains governed by
++this License without regard to the additional permissions.
++
++  When you convey a copy of a covered work, you may at your option
++remove any additional permissions from that copy, or from any part of
++it.  (Additional permissions may be written to require their own
++removal in certain cases when you modify the work.)  You may place
++additional permissions on material, added by you to a covered work,
++for which you have or can give appropriate copyright permission.
++
++  Notwithstanding any other provision of this License, for material you
++add to a covered work, you may (if authorized by the copyright holders of
++that material) supplement the terms of this License with terms:
++
++    a) Disclaiming warranty or limiting liability differently from the
++    terms of sections 15 and 16 of this License; or
++
++    b) Requiring preservation of specified reasonable legal notices or
++    author attributions in that material or in the Appropriate Legal
++    Notices displayed by works containing it; or
++
++    c) Prohibiting misrepresentation of the origin of that material, or
++    requiring that modified versions of such material be marked in
++    reasonable ways as different from the original version; or
++
++    d) Limiting the use for publicity purposes of names of licensors or
++    authors of the material; or
++
++    e) Declining to grant rights under trademark law for use of some
++    trade names, trademarks, or service marks; or
++
++    f) Requiring indemnification of licensors and authors of that
++    material by anyone who conveys the material (or modified versions of
++    it) with contractual assumptions of liability to the recipient, for
++    any liability that these contractual assumptions directly impose on
++    those licensors and authors.
++
++  All other non-permissive additional terms are considered "further
++restrictions" within the meaning of section 10.  If the Program as you
++received it, or any part of it, contains a notice stating that it is
++governed by this License along with a term that is a further
++restriction, you may remove that term.  If a license document contains
++a further restriction but permits relicensing or conveying under this
++License, you may add to a covered work material governed by the terms
++of that license document, provided that the further restriction does
++not survive such relicensing or conveying.
++
++  If you add terms to a covered work in accord with this section, you
++must place, in the relevant source files, a statement of the
++additional terms that apply to those files, or a notice indicating
++where to find the applicable terms.
++
++  Additional terms, permissive or non-permissive, may be stated in the
++form of a separately written license, or stated as exceptions;
++the above requirements apply either way.
++
++  8. Termination.
++
++  You may not propagate or modify a covered work except as expressly
++provided under this License.  Any attempt otherwise to propagate or
++modify it is void, and will automatically terminate your rights under
++this License (including any patent licenses granted under the third
++paragraph of section 11).
++
++  However, if you cease all violation of this License, then your
++license from a particular copyright holder is reinstated (a)
++provisionally, unless and until the copyright holder explicitly and
++finally terminates your license, and (b) permanently, if the copyright
++holder fails to notify you of the violation by some reasonable means
++prior to 60 days after the cessation.
++
++  Moreover, your license from a particular copyright holder is
++reinstated permanently if the copyright holder notifies you of the
++violation by some reasonable means, this is the first time you have
++received notice of violation of this License (for any work) from that
++copyright holder, and you cure the violation prior to 30 days after
++your receipt of the notice.
++
++  Termination of your rights under this section does not terminate the
++licenses of parties who have received copies or rights from you under
++this License.  If your rights have been terminated and not permanently
++reinstated, you do not qualify to receive new licenses for the same
++material under section 10.
++
++  9. Acceptance Not Required for Having Copies.
++
++  You are not required to accept this License in order to receive or
++run a copy of the Program.  Ancillary propagation of a covered work
++occurring solely as a consequence of using peer-to-peer transmission
++to receive a copy likewise does not require acceptance.  However,
++nothing other than this License grants you permission to propagate or
++modify any covered work.  These actions infringe copyright if you do
++not accept this License.  Therefore, by modifying or propagating a
++covered work, you indicate your acceptance of this License to do so.
++
++  10. Automatic Licensing of Downstream Recipients.
++
++  Each time you convey a covered work, the recipient automatically
++receives a license from the original licensors, to run, modify and
++propagate that work, subject to this License.  You are not responsible
++for enforcing compliance by third parties with this License.
++
++  An "entity transaction" is a transaction transferring control of an
++organization, or substantially all assets of one, or subdividing an
++organization, or merging organizations.  If propagation of a covered
++work results from an entity transaction, each party to that
++transaction who receives a copy of the work also receives whatever
++licenses to the work the party's predecessor in interest had or could
++give under the previous paragraph, plus a right to possession of the
++Corresponding Source of the work from the predecessor in interest, if
++the predecessor has it or can get it with reasonable efforts.
++
++  You may not impose any further restrictions on the exercise of the
++rights granted or affirmed under this License.  For example, you may
++not impose a license fee, royalty, or other charge for exercise of
++rights granted under this License, and you may not initiate litigation
++(including a cross-claim or counterclaim in a lawsuit) alleging that
++any patent claim is infringed by making, using, selling, offering for
++sale, or importing the Program or any portion of it.
++
++  11. Patents.
++
++  A "contributor" is a copyright holder who authorizes use under this
++License of the Program or a work on which the Program is based.  The
++work thus licensed is called the contributor's "contributor version".
++
++  A contributor's "essential patent claims" are all patent claims
++owned or controlled by the contributor, whether already acquired or
++hereafter acquired, that would be infringed by some manner, permitted
++by this License, of making, using, or selling its contributor version,
++but do not include claims that would be infringed only as a
++consequence of further modification of the contributor version.  For
++purposes of this definition, "control" includes the right to grant
++patent sublicenses in a manner consistent with the requirements of
++this License.
++
++  Each contributor grants you a non-exclusive, worldwide, royalty-free
++patent license under the contributor's essential patent claims, to
++make, use, sell, offer for sale, import and otherwise run, modify and
++propagate the contents of its contributor version.
++
++  In the following three paragraphs, a "patent license" is any express
++agreement or commitment, however denominated, not to enforce a patent
++(such as an express permission to practice a patent or covenant not to
++sue for patent infringement).  To "grant" such a patent license to a
++party means to make such an agreement or commitment not to enforce a
++patent against the party.
++
++  If you convey a covered work, knowingly relying on a patent license,
++and the Corresponding Source of the work is not available for anyone
++to copy, free of charge and under the terms of this License, through a
++publicly available network server or other readily accessible means,
++then you must either (1) cause the Corresponding Source to be so
++available, or (2) arrange to deprive yourself of the benefit of the
++patent license for this particular work, or (3) arrange, in a manner
++consistent with the requirements of this License, to extend the patent
++license to downstream recipients.  "Knowingly relying" means you have
++actual knowledge that, but for the patent license, your conveying the
++covered work in a country, or your recipient's use of the covered work
++in a country, would infringe one or more identifiable patents in that
++country that you have reason to believe are valid.
++
++  If, pursuant to or in connection with a single transaction or
++arrangement, you convey, or propagate by procuring conveyance of, a
++covered work, and grant a patent license to some of the parties
++receiving the covered work authorizing them to use, propagate, modify
++or convey a specific copy of the covered work, then the patent license
++you grant is automatically extended to all recipients of the covered
++work and works based on it.
++
++  A patent license is "discriminatory" if it does not include within
++the scope of its coverage, prohibits the exercise of, or is
++conditioned on the non-exercise of one or more of the rights that are
++specifically granted under this License.  You may not convey a covered
++work if you are a party to an arrangement with a third party that is
++in the business of distributing software, under which you make payment
++to the third party based on the extent of your activity of conveying
++the work, and under which the third party grants, to any of the
++parties who would receive the covered work from you, a discriminatory
++patent license (a) in connection with copies of the covered work
++conveyed by you (or copies made from those copies), or (b) primarily
++for and in connection with specific products or compilations that
++contain the covered work, unless you entered into that arrangement,
++or that patent license was granted, prior to 28 March 2007.
++
++  Nothing in this License shall be construed as excluding or limiting
++any implied license or other defenses to infringement that may
++otherwise be available to you under applicable patent law.
++
++  12. No Surrender of Others' Freedom.
++
++  If conditions are imposed on you (whether by court order, agreement or
++otherwise) that contradict the conditions of this License, they do not
++excuse you from the conditions of this License.  If you cannot convey a
++covered work so as to satisfy simultaneously your obligations under this
++License and any other pertinent obligations, then as a consequence you may
++not convey it at all.  For example, if you agree to terms that obligate you
++to collect a royalty for further conveying from those to whom you convey
++the Program, the only way you could satisfy both those terms and this
++License would be to refrain entirely from conveying the Program.
++
++  13. Use with the GNU Affero General Public License.
++
++  Notwithstanding any other provision of this License, you have
++permission to link or combine any covered work with a work licensed
++under version 3 of the GNU Affero General Public License into a single
++combined work, and to convey the resulting work.  The terms of this
++License will continue to apply to the part which is the covered work,
++but the special requirements of the GNU Affero General Public License,
++section 13, concerning interaction through a network will apply to the
++combination as such.
++
++  14. Revised Versions of this License.
++
++  The Free Software Foundation may publish revised and/or new versions of
++the GNU General Public License from time to time.  Such new versions will
++be similar in spirit to the present version, but may differ in detail to
++address new problems or concerns.
++
++  Each version is given a distinguishing version number.  If the
++Program specifies that a certain numbered version of the GNU General
++Public License "or any later version" applies to it, you have the
++option of following the terms and conditions either of that numbered
++version or of any later version published by the Free Software
++Foundation.  If the Program does not specify a version number of the
++GNU General Public License, you may choose any version ever published
++by the Free Software Foundation.
++
++  If the Program specifies that a proxy can decide which future
++versions of the GNU General Public License can be used, that proxy's
++public statement of acceptance of a version permanently authorizes you
++to choose that version for the Program.
++
++  Later license versions may give you additional or different
++permissions.  However, no additional obligations are imposed on any
++author or copyright holder as a result of your choosing to follow a
++later version.
++
++  15. Disclaimer of Warranty.
++
++  THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
++APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
++HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY
++OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,
++THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
++PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
++IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
++ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
++
++  16. Limitation of Liability.
++
++  IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
++WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
++THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
++GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
++USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF
++DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
++PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
++EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
++SUCH DAMAGES.
++
++  17. Interpretation of Sections 15 and 16.
++
++  If the disclaimer of warranty and limitation of liability provided
++above cannot be given local legal effect according to their terms,
++reviewing courts shall apply local law that most closely approximates
++an absolute waiver of all civil liability in connection with the
++Program, unless a warranty or assumption of liability accompanies a
++copy of the Program in return for a fee.
++
++                     END OF TERMS AND CONDITIONS
++
++            How to Apply These Terms to Your New Programs
++
++  If you develop a new program, and you want it to be of the greatest
++possible use to the public, the best way to achieve this is to make it
++free software which everyone can redistribute and change under these terms.
++
++  To do so, attach the following notices to the program.  It is safest
++to attach them to the start of each source file to most effectively
++state the exclusion of warranty; and each file should have at least
++the "copyright" line and a pointer to where the full notice is found.
++
++    <one line to give the program's name and a brief idea of what it does.>
++    Copyright (C) <year>  <name of author>
++
++    This program is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    This program is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with this program.  If not, see <http://www.gnu.org/licenses/>.
++
++Also add information on how to contact you by electronic and paper mail.
++
++  If the program does terminal interaction, make it output a short
++notice like this when it starts in an interactive mode:
++
++    <program>  Copyright (C) <year>  <name of author>
++    This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
++    This is free software, and you are welcome to redistribute it
++    under certain conditions; type `show c' for details.
++
++The hypothetical commands `show w' and `show c' should show the appropriate
++parts of the General Public License.  Of course, your program's commands
++might be different; for a GUI interface, you would use an "about box".
++
++  You should also get your employer (if you work as a programmer) or school,
++if any, to sign a "copyright disclaimer" for the program, if necessary.
++For more information on this, and how to apply and follow the GNU GPL, see
++<http://www.gnu.org/licenses/>.
++
++  The GNU General Public License does not permit incorporating your program
++into proprietary programs.  If your program is a subroutine library, you
++may consider it more useful to permit linking proprietary applications with
++the library.  If this is what you want to do, use the GNU Lesser General
++Public License instead of this License.  But first, please read
++<http://www.gnu.org/philosophy/why-not-lgpl.html>.
+diff --git a/src/buildtools/rust/LICENSE-BSDLN b/src/buildtools/rust/LICENSE-BSDLN
+new file mode 100644
+index 00000000..bd3f99e6
+--- /dev/null
++++ b/src/buildtools/rust/LICENSE-BSDLN
+@@ -0,0 +1,28 @@
++/*-
++ * Copyright (c) 1987, 1993, 1994
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
+diff --git a/src/buildtools/rust/README.txt b/src/buildtools/rust/README.txt
+new file mode 100644
+index 00000000..91b0b341
+--- /dev/null
++++ b/src/buildtools/rust/README.txt
+@@ -0,0 +1,13 @@
++Darling Rust host tools
++======================
++
++Ports elfdep, getuuid and bsdln to standard-library-only Rust.
++Rust 1.85 or later is required. All crates forbid unsafe code.
++
++From this directory: cargo xtask build; cargo xtask check.
++Native Cargo builds need no CMake. The parent CMake files are optional
++transitional adapters for the unported upstream graph. This package
++does not implement the Darling runtime or frameworks.
++
++Upstream baseline: 60ba801decee7a00782f74f6be4c8ffb013f79ff.
++See LICENSE and LICENSE-BSDLN for retained licenses.
+diff --git a/src/buildtools/rust/benches/metadata.rs b/src/buildtools/rust/benches/metadata.rs
+new file mode 100644
+index 00000000..20ded187
+--- /dev/null
++++ b/src/buildtools/rust/benches/metadata.rs
+@@ -0,0 +1,20 @@
++#[path = "../tests/common/mod.rs"]
++mod common;
++use darling_buildtools::Metadata;
++use std::{hint::black_box, time::Instant};
++
++fn main() {
++    let thin = common::thin(true, false, Some([42; 16]), Some(b"libexample.so.1\0"));
++    let fat = common::fat(&[thin.clone(), thin.clone()], true, true);
++    for (name, bytes) in [("thin64", thin), ("fat64-2", fat)] {
++        let iterations = 1_000_000;
++        let start = Instant::now();
++        for _ in 0..iterations {
++            black_box(Metadata::parse(black_box(&bytes)).unwrap());
++        }
++        println!(
++            "{name}: {:.1} ns/parse ({iterations} iterations)",
++            start.elapsed().as_nanos() as f64 / iterations as f64
++        );
++    }
++}
+diff --git a/src/buildtools/rust/src/bin/bsdln.rs b/src/buildtools/rust/src/bin/bsdln.rs
+new file mode 100644
+index 00000000..659723cb
+--- /dev/null
++++ b/src/buildtools/rust/src/bin/bsdln.rs
+@@ -0,0 +1,266 @@
++// Rust port of Darling src/bsdln/ln.c. Original copyright (c) 1987, 1993,
++// 1994 The Regents of the University of California. All rights reserved.
++// See LICENSE-BSDLN for the retained license and disclaimer.
++#![forbid(unsafe_code)]
++
++use std::{
++    ffi::OsString,
++    fs,
++    io::{self, Read, Write},
++    os::unix::{
++        ffi::OsStrExt,
++        fs::{MetadataExt, symlink},
++    },
++    path::{Path, PathBuf},
++    process::ExitCode,
++};
++
++#[derive(Clone, Copy, Default, PartialEq, Eq)]
++enum Replace {
++    #[default]
++    Never,
++    Force,
++    Interactive,
++}
++
++#[derive(Default)]
++struct Options {
++    symbolic: bool,
++    remove_directory: bool,
++    no_dereference: bool,
++    verbose: bool,
++    replace: Replace,
++}
++
++fn usage() -> &'static str {
++    "usage: ln [-Ffhinsv] source_file [target_file]\n       ln [-Ffhinsv] source_file ... target_dir\n       link source_file target_file"
++}
++
++fn parse() -> Result<(Options, Vec<PathBuf>), &'static str> {
++    let mut args = std::env::args_os();
++    let as_link = args
++        .next()
++        .as_deref()
++        .and_then(|arg| Path::new(arg).file_name())
++        .is_some_and(|arg| arg == "link");
++    let mut options = Options::default();
++    let mut operands = Vec::new();
++    let mut flags = true;
++    let posix = std::env::var_os("POSIXLY_CORRECT").is_some();
++    for arg in args {
++        let bytes = arg.as_bytes();
++        if flags && bytes == b"--" {
++            flags = false;
++        } else if flags && bytes.starts_with(b"-") && bytes.len() > 1 {
++            if as_link {
++                return Err(usage());
++            }
++            for flag in &bytes[1..] {
++                match flag {
++                    b'F' => options.remove_directory = true,
++                    b'f' => options.replace = Replace::Force,
++                    b'i' => options.replace = Replace::Interactive,
++                    b'h' | b'n' => options.no_dereference = true,
++                    b's' => options.symbolic = true,
++                    b'v' => options.verbose = true,
++                    _ => return Err(usage()),
++                }
++            }
++        } else {
++            operands.push(PathBuf::from(arg));
++            if posix {
++                flags = false;
++            }
++        }
++    }
++    if operands.is_empty() || (as_link && operands.len() != 2) {
++        return Err(usage());
++    }
++    options.remove_directory &= options.symbolic;
++    if options.remove_directory && options.replace != Replace::Interactive {
++        options.replace = Replace::Force;
++    }
++    Ok((options, operands))
++}
++
++fn diagnostic(path: &Path, error: impl std::fmt::Display) {
++    eprintln!("bsdln: {}: {error}", path.display());
++}
++
++fn confirm(path: &Path) -> io::Result<bool> {
++    let mut stderr = io::stderr().lock();
++    stderr.write_all(b"replace ")?;
++    stderr.write_all(path.as_os_str().as_bytes())?;
++    stderr.write_all(b"? ")?;
++    stderr.flush()?;
++    let mut stdin = io::stdin().lock();
++    let mut byte = [0];
++    let mut first = None;
++    while stdin.read(&mut byte)? != 0 {
++        first.get_or_insert(byte[0]);
++        if byte[0] == b'\n' {
++            break;
++        }
++    }
++    if matches!(first, Some(b'y' | b'Y')) {
++        return Ok(true);
++    }
++    stderr.write_all(b"not replaced\n")?;
++    Ok(false)
++}
++
++fn lstat(path: &Path) -> io::Result<Option<fs::Metadata>> {
++    match fs::symlink_metadata(path) {
++        Ok(metadata) => Ok(Some(metadata)),
++        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(None),
++        Err(error) => Err(error),
++    }
++}
++
++fn link_one(target: &Path, destination: &Path, directory: bool, options: &Options) -> bool {
++    if !options.symbolic {
++        match fs::metadata(target) {
++            Ok(metadata) if metadata.is_dir() => {
++                diagnostic(target, "Is a directory");
++                return false;
++            }
++            Ok(_) => {}
++            Err(error) => {
++                diagnostic(target, error);
++                return false;
++            }
++        }
++    }
++    let existing = match lstat(destination) {
++        Ok(existing) => existing,
++        Err(error) => {
++            diagnostic(destination, error);
++            return false;
++        }
++    };
++    let directory = directory
++        || existing.as_ref().is_some_and(fs::Metadata::is_dir)
++        || (!options.no_dereference && fs::metadata(destination).is_ok_and(|m| m.is_dir()));
++    let destination = if directory {
++        // Path::file_name ignores trailing separators; POSIX basename("/") is "/".
++        let name = basename(target);
++        let mut destination = destination.as_os_str().to_os_string();
++        destination.push("/");
++        destination.push(name);
++        PathBuf::from(destination)
++    } else {
++        destination.to_path_buf()
++    };
++    let result = (|| -> io::Result<bool> {
++        let existing = lstat(&destination)?;
++        if let Some(metadata) = existing {
++            let replace = match options.replace {
++                Replace::Never => false,
++                Replace::Force => true,
++                Replace::Interactive => confirm(&destination)?,
++            };
++            if options.replace == Replace::Interactive && !replace {
++                return Ok(false);
++            }
++            if replace {
++                if !options.symbolic {
++                    let source = fs::symlink_metadata(target)?;
++                    if source.dev() == metadata.dev() && source.ino() == metadata.ino() {
++                        return Err(io::Error::other("source and destination are the same file"));
++                    }
++                }
++                if options.remove_directory && metadata.is_dir() {
++                    fs::remove_dir(&destination)?;
++                } else {
++                    fs::remove_file(&destination)?;
++                }
++            }
++        }
++        if options.symbolic {
++            symlink(target, &destination)?;
++        } else {
++            fs::hard_link(target, &destination)?;
++        }
++        if options.verbose {
++            let mut stdout = io::stdout().lock();
++            stdout.write_all(destination.as_os_str().as_bytes())?;
++            stdout.write_all(if options.symbolic { b" -> " } else { b" => " })?;
++            stdout.write_all(target.as_os_str().as_bytes())?;
++            stdout.write_all(b"\n")?;
++        }
++        Ok(true)
++    })();
++    match result {
++        Ok(success) => success,
++        Err(error) => {
++            diagnostic(&destination, error);
++            false
++        }
++    }
++}
++
++fn basename(path: &Path) -> OsString {
++    let bytes = path.as_os_str().as_bytes();
++    if bytes.is_empty() {
++        return OsString::from(".");
++    }
++    let end = bytes
++        .iter()
++        .rposition(|&byte| byte != b'/')
++        .map_or(0, |i| i + 1);
++    if end == 0 {
++        return OsString::from("/");
++    }
++    let start = bytes[..end]
++        .iter()
++        .rposition(|&byte| byte == b'/')
++        .map_or(0, |i| i + 1);
++    std::ffi::OsStr::from_bytes(&bytes[start..end]).to_os_string()
++}
++
++fn run() -> bool {
++    let (options, operands) = match parse() {
++        Ok(parsed) => parsed,
++        Err(usage) => {
++            eprintln!("{usage}");
++            return false;
++        }
++    };
++    match operands.as_slice() {
++        [target] => link_one(target, Path::new("."), true, &options),
++        [target, destination] => link_one(target, destination, false, &options),
++        many => {
++            let destination = &many[many.len() - 1];
++            if options.no_dereference
++                && fs::symlink_metadata(destination).is_ok_and(|m| m.file_type().is_symlink())
++            {
++                diagnostic(destination, "Not a directory");
++                return false;
++            }
++            match fs::metadata(destination) {
++                Ok(metadata) if metadata.is_dir() => {}
++                Ok(_) => {
++                    eprintln!("{}", usage());
++                    return false;
++                }
++                Err(error) => {
++                    diagnostic(destination, error);
++                    return false;
++                }
++            }
++            let mut success = true;
++            for target in &many[..many.len() - 1] {
++                success &= link_one(target, destination, true, &options);
++            }
++            success
++        }
++    }
++}
++
++fn main() -> ExitCode {
++    if run() {
++        ExitCode::SUCCESS
++    } else {
++        ExitCode::FAILURE
++    }
++}
+diff --git a/src/buildtools/rust/src/bin/elfdep.rs b/src/buildtools/rust/src/bin/elfdep.rs
+new file mode 100644
+index 00000000..2bee6724
+--- /dev/null
++++ b/src/buildtools/rust/src/bin/elfdep.rs
+@@ -0,0 +1,11 @@
++#![forbid(unsafe_code)]
++fn main() -> std::process::ExitCode {
++    match darling_buildtools::run("elfdep") {
++        Ok(true) => std::process::ExitCode::SUCCESS,
++        Ok(false) => std::process::ExitCode::FAILURE,
++        Err(error) => {
++            eprintln!("elfdep: {error}");
++            std::process::ExitCode::FAILURE
++        }
++    }
++}
+diff --git a/src/buildtools/rust/src/bin/getuuid.rs b/src/buildtools/rust/src/bin/getuuid.rs
+new file mode 100644
+index 00000000..f2a518f7
+--- /dev/null
++++ b/src/buildtools/rust/src/bin/getuuid.rs
+@@ -0,0 +1,11 @@
++#![forbid(unsafe_code)]
++fn main() -> std::process::ExitCode {
++    match darling_buildtools::run("getuuid") {
++        Ok(true) => std::process::ExitCode::SUCCESS,
++        Ok(false) => std::process::ExitCode::FAILURE,
++        Err(error) => {
++            eprintln!("getuuid: {error}");
++            std::process::ExitCode::FAILURE
++        }
++    }
++}
+diff --git a/src/buildtools/rust/src/lib.rs b/src/buildtools/rust/src/lib.rs
+new file mode 100644
+index 00000000..45fcc8ac
+--- /dev/null
++++ b/src/buildtools/rust/src/lib.rs
+@@ -0,0 +1,341 @@
++// This file is part of Darling, GPL-3.0-or-later.
++// Rust port of src/buildtools/{elfdep,getuuid}.c, originally
++// Copyright (C) 2018-2020 Lubos Dolezel.
++
++//! Bounds-checked Mach-O metadata extraction. All returned names borrow the input.
++//! This is a metadata reader, not a validator for executing a Mach-O image.
++#![forbid(unsafe_code)]
++
++use std::fmt;
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub struct Error(pub &'static str);
++
++impl fmt::Display for Error {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.write_str(self.0)
++    }
++}
++
++impl std::error::Error for Error {}
++
++#[derive(Clone, Copy)]
++enum Endian {
++    Little,
++    Big,
++}
++
++impl Endian {
++    fn u32(self, data: &[u8], offset: usize) -> Result<u32, Error> {
++        let bytes = range(data, offset, 4)?
++            .try_into()
++            .map_err(|_| Error("invalid u32"))?;
++        Ok(match self {
++            Self::Little => u32::from_le_bytes(bytes),
++            Self::Big => u32::from_be_bytes(bytes),
++        })
++    }
++
++    fn u64(self, data: &[u8], offset: usize) -> Result<u64, Error> {
++        let bytes = range(data, offset, 8)?
++            .try_into()
++            .map_err(|_| Error("invalid u64"))?;
++        Ok(match self {
++            Self::Little => u64::from_le_bytes(bytes),
++            Self::Big => u64::from_be_bytes(bytes),
++        })
++    }
++}
++
++fn range(data: &[u8], start: usize, size: usize) -> Result<&[u8], Error> {
++    let end = start.checked_add(size).ok_or(Error("range overflow"))?;
++    data.get(start..end).ok_or(Error("range outside input"))
++}
++
++fn host_size(value: u64) -> Result<usize, Error> {
++    usize::try_from(value).map_err(|_| Error("offset or size exceeds address space"))
++}
++
++fn field_name(field: &[u8], name: &[u8]) -> bool {
++    let end = field.iter().position(|&b| b == 0).unwrap_or(field.len());
++    &field[..end] == name
++}
++
++/// UUID as stored in LC_UUID, formatted like the upstream getuuid tool.
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub struct Uuid(pub [u8; 16]);
++
++impl fmt::Display for Uuid {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        for (i, byte) in self.0.iter().enumerate() {
++            if matches!(i, 4 | 6 | 8 | 10) {
++                f.write_str("-")?;
++            }
++            write!(f, "{byte:02X}")?;
++        }
++        Ok(())
++    }
++}
++
++/// One UUID per architecture, in file order, and the first ELF dependency.
++#[derive(Debug, PartialEq, Eq)]
++pub struct Metadata<'a> {
++    pub uuids: Vec<Uuid>,
++    /// Bytes before the first NUL in __TEXT,__elfname; no UTF-8 requirement.
++    pub elf_dependency: Option<&'a [u8]>,
++}
++
++impl<'a> Metadata<'a> {
++    /// Parses thin 32/64-bit images or FAT/FAT64 containers, in either byte order.
++    /// Every architecture and command is checked before metadata is returned.
++    /// Nested fat containers are rejected. Total slice parsing is bounded by
++    /// input size, preventing overlapping slices from amplifying parsing work.
++    pub fn parse(data: &'a [u8]) -> Result<Self, Error> {
++        let mut metadata = Self {
++            uuids: Vec::new(),
++            elf_dependency: None,
++        };
++        let (endian, fat64) = match range(data, 0, 4)? {
++            [0xca, 0xfe, 0xba, 0xbe] => (Endian::Big, false),
++            [0xbe, 0xba, 0xfe, 0xca] => (Endian::Little, false),
++            [0xca, 0xfe, 0xba, 0xbf] => (Endian::Big, true),
++            [0xbf, 0xba, 0xfe, 0xca] => (Endian::Little, true),
++            _ => {
++                metadata.thin(data)?;
++                return Ok(metadata);
++            }
++        };
++        let count = host_size(endian.u32(data, 4)?.into())?;
++        if count == 0 {
++            return Err(Error("empty fat container"));
++        }
++        let stride = if fat64 { 32 } else { 20 };
++        let table_size = count
++            .checked_mul(stride)
++            .ok_or(Error("fat table overflow"))?;
++        let table = range(data, 8, table_size)?;
++        let table_end = 8 + table_size; // checked by range above
++        let mut slices = Vec::new();
++        for (index, arch) in table.chunks_exact(stride).enumerate() {
++            let (offset, size, align) = if fat64 {
++                if endian.u32(arch, 28)? != 0 {
++                    return Err(Error("nonzero fat64 reserved field"));
++                }
++                (
++                    endian.u64(arch, 8)?,
++                    endian.u64(arch, 16)?,
++                    endian.u32(arch, 24)?,
++                )
++            } else {
++                (
++                    endian.u32(arch, 8)?.into(),
++                    endian.u32(arch, 12)?.into(),
++                    endian.u32(arch, 16)?,
++                )
++            };
++            let alignment = 1u64
++                .checked_shl(align)
++                .ok_or(Error("invalid fat alignment"))?;
++            if offset % alignment != 0 {
++                return Err(Error("misaligned fat slice"));
++            }
++            let offset = host_size(offset)?;
++            let size = host_size(size)?;
++            if offset < table_end {
++                return Err(Error("fat slice overlaps architecture table"));
++            }
++            range(data, offset, size)?;
++            slices.push((offset, offset + size, index));
++        }
++        // A sum-of-sizes budget alone allows overlapping slices when a file
++        // also contains unused padding. Reject overlap before parsing a slice.
++        slices.sort_unstable_by_key(|&(start, _, _)| start);
++        for pair in slices.windows(2) {
++            if pair[0].1 > pair[1].0 {
++                return Err(Error("overlapping fat slices"));
++            }
++        }
++        slices.sort_unstable_by_key(|&(_, _, index)| index);
++        for (start, end, index) in slices {
++            let arch = &table[index * stride..(index + 1) * stride];
++            let image = &data[start..end];
++            // Cross-check architecture fields against the actual thin header.
++            let (inner_endian, _) = thin_kind(image)?;
++            if inner_endian.u32(image, 4)? != endian.u32(arch, 0)?
++                || inner_endian.u32(image, 8)? != endian.u32(arch, 4)?
++            {
++                return Err(Error("fat architecture disagrees with thin header"));
++            }
++            metadata.thin(image)?;
++        }
++        Ok(metadata)
++    }
++
++    fn thin(&mut self, data: &'a [u8]) -> Result<(), Error> {
++        let (endian, wide) = thin_kind(data)?;
++        let header_size = if wide { 32 } else { 28 };
++        range(data, 0, header_size)?;
++        let count = host_size(endian.u32(data, 16)?.into())?;
++        let commands_size = host_size(endian.u32(data, 20)?.into())?;
++        let commands = range(data, header_size, commands_size)?;
++        if count > commands_size / 8 {
++            return Err(Error("load command count exceeds command region"));
++        }
++        let mut cursor = 0;
++        let mut uuid = None;
++        let mut names = Vec::new();
++        for _ in 0..count {
++            let header = range(commands, cursor, 8)?;
++            let kind = endian.u32(header, 0)?;
++            let size = host_size(endian.u32(header, 4)?.into())?;
++            if size < 8 || size % if wide { 8 } else { 4 } != 0 {
++                return Err(Error("invalid load command size or alignment"));
++            }
++            let command = range(commands, cursor, size)?;
++            match kind {
++                0x1b => {
++                    if size != 24 {
++                        return Err(Error("invalid UUID command size"));
++                    }
++                    if uuid.is_none() {
++                        uuid = Some(Uuid(
++                            range(command, 8, 16)?
++                                .try_into()
++                                .map_err(|_| Error("invalid UUID"))?,
++                        ));
++                    }
++                }
++                1 | 0x19 => {
++                    if (kind == 0x19) != wide {
++                        return Err(Error("segment class disagrees with image"));
++                    }
++                    Self::segment(data, command, endian, wide, &mut names)?;
++                }
++                _ => {} // Unknown commands are skipped using their validated size.
++            }
++            cursor += size; // bounded by the command slice
++        }
++        if cursor != commands.len() {
++            return Err(Error("load command sizes disagree with header"));
++        }
++        // Sections may alias the same payload. Scan in offset order so each
++        // byte is examined at most once, even for hostile overlapping names.
++        // Keep the first section in command order for upstream compatibility.
++        let first_name = names.first().copied();
++        names.sort_unstable();
++        let mut next_nul = None;
++        for (start, end) in names {
++            let nul = match next_nul.filter(|&nul| nul >= start) {
++                Some(nul) if nul < end => nul,
++                Some(_) => return Err(Error("ELF name lacks a NUL inside its section")),
++                None => {
++                    start
++                        + data[start..end]
++                            .iter()
++                            .position(|&b| b == 0)
++                            .ok_or(Error("ELF name lacks a NUL inside its section"))?
++                }
++            };
++            next_nul = Some(nul);
++            if self.elf_dependency.is_none()
++                && first_name.is_some_and(|(first_start, _)| first_start == start)
++            {
++                self.elf_dependency = Some(&data[start..nul]);
++            }
++        }
++        if let Some(uuid) = uuid {
++            self.uuids.push(uuid);
++        }
++        Ok(())
++    }
++
++    fn segment(
++        image: &'a [u8],
++        command: &[u8],
++        endian: Endian,
++        wide: bool,
++        names: &mut Vec<(usize, usize)>,
++    ) -> Result<(), Error> {
++        let (header_size, section_size, count_offset) =
++            if wide { (72, 80, 64) } else { (56, 68, 48) };
++        range(command, 0, header_size)?;
++        let count = host_size(endian.u32(command, count_offset)?.into())?;
++        let size = count
++            .checked_mul(section_size)
++            .ok_or(Error("section table overflow"))?;
++        let sections = range(command, header_size, size)?;
++        if header_size + size != command.len() {
++            return Err(Error("segment section count disagrees with command size"));
++        }
++        if !field_name(range(command, 8, 16)?, b"__TEXT") {
++            return Ok(());
++        }
++        for section in sections.chunks_exact(section_size) {
++            if !field_name(range(section, 0, 16)?, b"__elfname") {
++                continue;
++            }
++            // A zero-fill section has no corresponding bytes in the file.
++            let flags = endian.u32(section, if wide { 64 } else { 56 })?;
++            if matches!(flags & 0xff, 1 | 0xc | 0x12) {
++                return Err(Error("ELF name is in a zero-fill section"));
++            }
++            let size = if wide {
++                endian.u64(section, 40)?
++            } else {
++                endian.u32(section, 36)?.into()
++            };
++            let offset = endian.u32(section, if wide { 48 } else { 40 })?;
++            let start = host_size(offset.into())?;
++            let size = host_size(size)?;
++            range(image, start, size)?;
++            names.push((start, start + size));
++        }
++        Ok(())
++    }
++}
++
++fn thin_kind(data: &[u8]) -> Result<(Endian, bool), Error> {
++    match range(data, 0, 4)? {
++        [0xce, 0xfa, 0xed, 0xfe] => Ok((Endian::Little, false)),
++        [0xfe, 0xed, 0xfa, 0xce] => Ok((Endian::Big, false)),
++        [0xcf, 0xfa, 0xed, 0xfe] => Ok((Endian::Little, true)),
++        [0xfe, 0xed, 0xfa, 0xcf] => Ok((Endian::Big, true)),
++        _ => Err(Error(
++            "unrecognized thin Mach-O magic (nested fat files are unsupported)",
++        )),
++    }
++}
++
++/// Shared command-line implementation. Returns only after parsing the complete
++/// input, so a corrupt later architecture cannot leave partial success output.
++pub fn run(tool: &str) -> Result<bool, Box<dyn std::error::Error>> {
++    use std::io::Write;
++    let mut args = std::env::args_os().skip(1);
++    let path = args
++        .next()
++        .ok_or_else(|| format!("Usage: {tool} <macho-file>"))?;
++    if args.next().is_some() {
++        return Err(format!("Usage: {tool} <macho-file>").into());
++    }
++    let data = std::fs::read(&path)
++        .map_err(|e| format!("Cannot read {}: {e}", std::path::Path::new(&path).display()))?;
++    let metadata = Metadata::parse(&data)?;
++    let mut stdout = std::io::stdout().lock();
++    if tool == "getuuid" {
++        for (i, uuid) in metadata.uuids.iter().enumerate() {
++            if i != 0 {
++                stdout.write_all(b";")?;
++            }
++            write!(stdout, "{uuid}")?;
++        }
++        stdout.flush()?;
++        Ok(!metadata.uuids.is_empty())
++    } else {
++        if let Some(name) = metadata.elf_dependency {
++            stdout.write_all(name)?;
++            stdout.write_all(b"\n")?;
++        }
++        stdout.flush()?;
++        Ok(true)
++    }
++}
+diff --git a/src/buildtools/rust/xtask/Cargo.toml b/src/buildtools/rust/xtask/Cargo.toml
+new file mode 100644
+index 00000000..5f928ab1
+--- /dev/null
++++ b/src/buildtools/rust/xtask/Cargo.toml
+@@ -0,0 +1,13 @@
++[package]
++name = "xtask"
++version = "0.1.0"
++edition = "2024"
++rust-version = "1.85"
++license = "GPL-3.0-or-later"
++publish = false
++
++[lints.rust]
++unsafe_code = "forbid"
++
++[lints.clippy]
++all = "warn"
+diff --git a/src/buildtools/rust/xtask/src/main.rs b/src/buildtools/rust/xtask/src/main.rs
+new file mode 100644
+index 00000000..7c7a698c
+--- /dev/null
++++ b/src/buildtools/rust/xtask/src/main.rs
+@@ -0,0 +1,163 @@
++use std::{
++    env,
++    ffi::OsString,
++    path::Path,
++    process::{Command, ExitCode, ExitStatus},
++};
++
++const HELP: &str = "Usage: cargo xtask <build|check|test|bench|help>
++
++  build  Build ported Rust tools in release mode
++  check  Check formatting, lint all workspace targets, then run tests and doctests
++  test   Run workspace tests and doctests
++  bench  Benchmark the ported Mach-O metadata parser
++
++All commands are offline and use Cargo.lock. Only migrated Rust components
++are built; this command does not build or invoke the legacy CMake project.";
++
++#[derive(Debug, PartialEq, Eq)]
++enum Task {
++    Build,
++    Check,
++    Test,
++    Bench,
++    Help,
++}
++
++fn parse(args: impl IntoIterator<Item = OsString>) -> Result<Task, String> {
++    let mut args = args.into_iter();
++    let first = args.next();
++    if args.next().is_some() {
++        return Err("expected exactly one task; additional arguments are not supported".into());
++    }
++    match first.as_deref().and_then(|arg| arg.to_str()) {
++        None if first.is_none() => Ok(Task::Help),
++        Some("help" | "--help" | "-h") => Ok(Task::Help),
++        Some("build") => Ok(Task::Build),
++        Some("check") => Ok(Task::Check),
++        Some("test") => Ok(Task::Test),
++        Some("bench") => Ok(Task::Bench),
++        _ => Err(format!("unknown task: {:?}", first.unwrap())),
++    }
++}
++
++fn commands(task: &Task) -> Vec<Vec<&'static str>> {
++    let test = vec!["test", "--workspace", "--offline", "--locked"];
++    match task {
++        Task::Build => vec![vec![
++            "build",
++            "--package",
++            "darling-buildtools",
++            "--release",
++            "--offline",
++            "--locked",
++        ]],
++        Task::Check => vec![
++            vec!["fmt", "--all", "--", "--check"],
++            vec![
++                "clippy",
++                "--workspace",
++                "--all-targets",
++                "--offline",
++                "--locked",
++                "--",
++                "-D",
++                "warnings",
++            ],
++            test,
++        ],
++        Task::Test => vec![test],
++        Task::Bench => vec![vec![
++            "bench",
++            "--package",
++            "darling-buildtools",
++            "--bench",
++            "metadata",
++            "--offline",
++            "--locked",
++        ]],
++        Task::Help => vec![],
++    }
++}
++
++fn run(command: &mut Command) -> Result<(), ExitCode> {
++    match command.status() {
++        Ok(status) if status.success() => Ok(()),
++        Ok(status) => {
++            eprintln!("xtask: command failed: {status}");
++            Err(exit_code(status))
++        }
++        Err(error) => {
++            eprintln!("xtask: could not start command: {error}");
++            Err(ExitCode::FAILURE)
++        }
++    }
++}
++
++fn exit_code(status: ExitStatus) -> ExitCode {
++    status
++        .code()
++        .and_then(|code| u8::try_from(code).ok())
++        .filter(|code| *code != 0)
++        .map_or(ExitCode::FAILURE, ExitCode::from)
++}
++
++fn main() -> ExitCode {
++    let task = match parse(env::args_os().skip(1)) {
++        Ok(task) => task,
++        Err(error) => {
++            eprintln!("xtask: {error}\n\n{HELP}");
++            return ExitCode::from(2);
++        }
++    };
++    if task == Task::Help {
++        println!("{HELP}");
++        return ExitCode::SUCCESS;
++    }
++    let cargo = env::var_os("CARGO").unwrap_or_else(|| "cargo".into());
++    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
++        .parent()
++        .expect("xtask is a workspace member");
++    for args in commands(&task) {
++        eprintln!("+ cargo {}", args.join(" "));
++        if let Err(code) = run(Command::new(&cargo).current_dir(root).args(args)) {
++            return code;
++        }
++    }
++    ExitCode::SUCCESS
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn rejects_unknown_or_extra_arguments() {
++        assert!(parse(["legacy".into()]).is_err());
++        assert!(parse(["test".into(), "--release".into()]).is_err());
++        assert_eq!(parse([]), Ok(Task::Help));
++        assert_eq!(parse(["check".into()]), Ok(Task::Check));
++    }
++
++    #[test]
++    fn check_tests_the_workspace_and_doctests_without_running_benchmarks() {
++        let plan = commands(&Task::Check);
++        assert_eq!(plan.len(), 3);
++        assert_eq!(plan[0], ["fmt", "--all", "--", "--check"]);
++        assert_eq!(plan[2], ["test", "--workspace", "--offline", "--locked"]);
++        assert!(!plan[2].contains(&"--all-targets"));
++    }
++
++    #[test]
++    fn spawn_errors_fail_the_task() {
++        assert!(run(&mut Command::new("/nonexistent/darling-xtask-test-command")).is_err());
++    }
++
++    #[cfg(unix)]
++    #[test]
++    fn forwards_failure_codes_and_signal_failures() {
++        use std::os::unix::process::ExitStatusExt;
++        assert_eq!(exit_code(ExitStatus::from_raw(42 << 8)), ExitCode::from(42));
++        assert_eq!(exit_code(ExitStatus::from_raw(9)), ExitCode::FAILURE);
++    }
++}

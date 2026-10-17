@@ -10,10 +10,13 @@ endif()
 
 set(DARLING_RUST_TOOLS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/rust")
 set(DARLING_RUST_TOOLS_TARGET "${CMAKE_CURRENT_BINARY_DIR}/cargo-target")
+get_filename_component(DARLING_RUST_BSDLN_DIR "${CMAKE_CURRENT_BINARY_DIR}/../bsdln" ABSOLUTE)
 file(GLOB_RECURSE DARLING_RUST_TOOLS_SOURCES CONFIGURE_DEPENDS
     "${DARLING_RUST_TOOLS_SOURCE}/src/*.rs")
 add_custom_command(
-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/elfdep" "${CMAKE_CURRENT_BINARY_DIR}/getuuid"
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rust-buildtools.stamp"
+    BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/elfdep" "${CMAKE_CURRENT_BINARY_DIR}/getuuid"
+        "${DARLING_RUST_BSDLN_DIR}/bsdln"
     COMMAND "${DARLING_CARGO_EXECUTABLE}" build --release --locked --offline
         --manifest-path "${DARLING_RUST_TOOLS_SOURCE}/Cargo.toml"
         --target-dir "${DARLING_RUST_TOOLS_TARGET}"
@@ -21,16 +24,24 @@ add_custom_command(
         "${DARLING_RUST_TOOLS_TARGET}/release/elfdep" "${CMAKE_CURRENT_BINARY_DIR}/elfdep"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
         "${DARLING_RUST_TOOLS_TARGET}/release/getuuid" "${CMAKE_CURRENT_BINARY_DIR}/getuuid"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${DARLING_RUST_BSDLN_DIR}"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+        "${DARLING_RUST_TOOLS_TARGET}/release/bsdln" "${DARLING_RUST_BSDLN_DIR}/bsdln"
+    COMMAND "${CMAKE_COMMAND}" -E touch "${CMAKE_CURRENT_BINARY_DIR}/rust-buildtools.stamp"
     DEPENDS ${DARLING_RUST_TOOLS_SOURCES}
         "${DARLING_RUST_TOOLS_SOURCE}/Cargo.toml"
         "${DARLING_RUST_TOOLS_SOURCE}/Cargo.lock"
     VERBATIM
 )
 add_custom_target(darling_rust_buildtools ALL
-    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/elfdep" "${CMAKE_CURRENT_BINARY_DIR}/getuuid")
+    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/rust-buildtools.stamp")
 
 foreach(tool elfdep getuuid)
     add_executable(${tool} IMPORTED GLOBAL)
     set_target_properties(${tool} PROPERTIES IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/${tool}")
     add_dependencies(${tool} darling_rust_buildtools)
 endforeach()
+
+if(TARGET bsdln)
+    add_dependencies(bsdln darling_rust_buildtools)
+endif()

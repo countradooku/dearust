@@ -20,9 +20,9 @@ Run commands from this checkout, or a directory inside it:
 The tools are placed in target/release (or CARGO_TARGET_DIR when configured).
 `check` stops at the first failure: rustfmt --check, Clippy for every workspace
 target with warnings denied, then workspace tests including doctests.
-`test` runs workspace tests and doctests. It leaves the optional upstream
-differential test ignored; tests/cli.rs describes the required reference-tool
-environment variables for running that test explicitly.
+`test` runs workspace tests and doctests. It leaves the two optional upstream
+differential tests ignored; tests/cli.rs and tests/bsdln.rs describe the required
+reference-tool environment variables for running them explicitly.
 `bench` runs only the metadata benchmark in release mode. Its figures measure
 the Rust parser on synthetic fixtures; they are not evidence of a speedup
 over upstream or the performance of an entire Darling installation.
@@ -41,6 +41,29 @@ This workspace currently migrates selected host utilities. It is not yet a
 complete Darling runtime and cannot launch macOS applications. Cargo is the
 primary build system for the migrated Rust code; the existence of this
 workspace does not replace the remaining upstream build graph.
+
+Migrated executables: elfdep, getuuid, bsdln (Linux host tools). No libbsd
+dependency is needed for the Rust bsdln. Mach-O metadata supports 32/64-bit thin
+and fat containers in either byte order, including FAT64. UUID text and ELF
+dependency stdout/exit semantics match the supported valid upstream fixtures.
+Malformed inputs fail before output. This intentionally rejects corrupt files
+which the C readers may accept or read out of bounds. bsdln also refuses a
+forced hard link onto the same inode, preserving a source upstream can delete.
+
+The CLI readers currently copy file contents with std::fs::read, while the old
+C tools use mmap. This avoids an unsafe mapping boundary and concurrent-file
+mapping faults, but can increase memory use and I/O for large inputs. No general
+performance improvement over upstream has been established. Parser benchmarks
+exclude file reading, command startup, and the rest of Darling.
+
+Legacy integration (optional)
+-----------------------------
+integration/CMakeLists.txt and integration/bsdln.CMakeLists.txt are transitional
+adapters for the remaining upstream graph. They invoke Cargo for these tools,
+preserve the executable paths consumed by upstream installation rules, and do
+not affect native Cargo builds. Their presence is not a CMake replacement for
+the full project. See upstream-rust-tools.patch and README.txt for application
+instructions and the pinned reference revision.
 
 What the remaining CMake graph does
 ----------------------------------

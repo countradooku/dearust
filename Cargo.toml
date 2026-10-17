@@ -5,7 +5,7 @@ edition = "2024"
 rust-version = "1.85"
 license = "GPL-3.0-or-later"
 publish = false
-description = "Safe Mach-O metadata readers for Darling's elfdep and getuuid tools"
+description = "Safe Rust ports of Darling host utilities"
 
 [workspace]
 members = ["xtask"]

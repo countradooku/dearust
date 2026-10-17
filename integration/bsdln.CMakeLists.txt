@@ -1,0 +1,7 @@
+# Transitional adapter for the unported upstream build graph.
+# The actual implementation is a Cargo binary in src/buildtools/rust.
+project(bsdln NONE)
+add_executable(bsdln IMPORTED GLOBAL)
+set_target_properties(bsdln PROPERTIES
+    IMPORTED_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/bsdln")
+# src/buildtools is processed later and adds the Cargo build dependency.

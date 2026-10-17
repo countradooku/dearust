@@ -1,0 +1,50 @@
+{
+  "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
+  "rust_toolchain": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "normal_tests_passed": 29,
+  "optional_upstream_differential_tests_explicitly_run_and_passed": 2,
+  "checks": [
+    "cargo xtask check",
+    "cargo xtask build",
+    "cargo xtask bench",
+    "upstream differential tests for all 3 tools",
+    "independently generated Clang x86_64 Mach-O object",
+    "Pinned patch apply check; isolated legacy consumer builds with Ninja and Unix Makefiles"
+  ],
+  "same_file_forced_link_regression": {
+    "upstream": {
+      "exit_code": 1,
+      "source_preserved": false
+    },
+    "rust": {
+      "exit_code": 1,
+      "source_preserved": true
+    }
+  },
+  "clang_generated_macho_checks": {
+    "elfdep": {
+      "exit_code": 0,
+      "stdout_hex": "",
+      "matches_upstream": true
+    },
+    "getuuid": {
+      "exit_code": 1,
+      "stdout_hex": "",
+      "matches_upstream": true
+    }
+  },
+  "synthetic_parser_benchmarks": {
+    "iterations_each": 1000000,
+    "thin64_ns_per_parse": 35.3,
+    "fat64_2_ns_per_parse": 79.9,
+    "limitations": "One local run. Rust parser only; excludes file reads and process startup. No upstream speedup established."
+  },
+  "not_verified": [
+    "Full Darling build or runtime",
+    "Submodule contents migration",
+    "macOS application compatibility",
+    "32-bit host build",
+    "minimum Rust 1.85 toolchain"
+  ],
+  "implementation_status": "Three Linux host utilities migrated. Full migration remains incomplete."
+}
