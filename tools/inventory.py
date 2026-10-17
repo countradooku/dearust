@@ -21,8 +21,9 @@ REPLACEMENTS = {
     "src/hosttools/src/coredump/main.cpp": "crates/darling-coredump/src/lib.rs",
     "src/libelfloader/wrapgen/print_wrapped_elf.cpp": "src/wrapped_elf.rs",
     "src/libelfloader/wrapgen/wrapgen.cpp": "src/elf_wrapper.rs",
+    "src/libsimple/src/lock.c": "crates/darling-libsimple/src/lib.rs",
 }
-PARTIAL_REPLACEMENTS = {"src/libelfloader/wrapgen/wrapgen.cpp"}
+PARTIAL_REPLACEMENTS = {"src/libelfloader/wrapgen/wrapgen.cpp", "src/libsimple/src/lock.c"}
 SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".s", ".asm", ".rs"}
 HEADER_SUFFIXES = {".h", ".hh", ".hpp", ".hxx", ".inc", ".defs"}
 
@@ -89,8 +90,11 @@ def inventory(repo):
         if path in REPLACEMENTS:
             entry["replacement"] = REPLACEMENTS[path]
             entry["scope"] = "Rust Linux host utility replacement; not a runtime or framework port; exact diagnostic wording is not guaranteed"
-            if path in PARTIAL_REPLACEMENTS:
+            if path == "src/libelfloader/wrapgen/wrapgen.cpp":
                 entry["limitation"] = "ELF64 parsing/generation ported; safe library lookup covers explicit paths, LD_LIBRARY_PATH, ldconfig cache and common Linux directories, not arbitrary caller RPATH/RUNPATH or loader audit/hardware policy"
+            if path == "src/libsimple/src/lock.c":
+                entry["scope"] = "Native Linux x86_64 synchronization C ABI with safe atomic core and documented unavoidable FFI/futex unsafe boundary"
+                entry["limitation"] = "Darling/Darwin futex backend, other architectures and no_std runtime bootstrap remain unported; native archive links Rust std"
         if kind == "submodule":
             entry["upstream_url"] = modules.get(path, "")
             entry["scope"] = "pinned gitlink only; contents and nested dependencies need separate inventory"

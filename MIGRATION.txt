@@ -4,7 +4,8 @@ Darling Rust migration: full scope, partial implementation
 Upstream: https://github.com/darlinghq/darling.git
 Pinned commit: 60ba801decee7a00782f74f6be4c8ffb013f79ff
 
-This repository currently provides Rust host build tools. It does not yet provide
+This repository currently provides Rust host tools and a native Linux
+synchronization library slice. It does not yet provide
 a complete Darling runtime, a replacement SDK, or a full Cargo build of Darling.
 The migration scope includes every upstream library, framework, executable,
 resource, SDK link and external dependency; existing stubs are not grounds for
@@ -36,8 +37,9 @@ At this pin there are 27,274 entries:
 There are 5 implemented source replacements: elfdep, getuuid, bsdln,
 print_wrapped_elf and darling-coredump. wrapgen has a functioning safe Rust
 parser/generator, but is marked partial because safe name lookup does not
-reproduce all dynamic-loader policy. There are 27,268 pending superproject
-entries. Exact diagnostic text is not guaranteed. Each source replacement has
+reproduce all dynamic-loader policy. Native libsimple is also partial: its Linux x86_64 synchronization C ABI
+and external cmpxchg helper work, while Darwin/no_std/other architectures
+remain unported. There are 27,267 pending superproject entries. Exact diagnostic text is not guaranteed. Each source replacement has
 behavioral and malformed-input regressions plus a pinned differential suite.
 These gates validate this Linux host slice, not the Darling runtime or macOS ABI.
 
@@ -51,8 +53,9 @@ states remain zero, matching upstream's TODO; no FP extraction port is claimed.
 All 149 first-level submodules and 11 nested gitlinks are now expanded at their
 exact pinned commits in dependency-inventory.json. The 160 dependency trees
 contain 265,803 committed leaves, all pending migration, and 341 filename-based
-license candidates with actual blob hashes. No trees are unavailable in this
-snapshot. Regeneration is byte-identical with the same object cache; see
+license candidates with actual blob hashes. No Git trees are unavailable in this
+snapshot. The isolated baseline still contains 44 Swift Git LFS pointers;
+their binary payloads have not been materialized or migrated. Regeneration is byte-identical with the same object cache; see
 tools/DEPENDENCY-INVENTORY.txt and tools/dependency_inventory.py.
 No dependency implementation has been ported by inventorying it. Source-category
 counts use suffix heuristics; Java, Swift and other code may fall under metadata.
@@ -62,6 +65,27 @@ The two inventories together track 293,077 entries, including parent gitlinks
 and their separately expanded contents. Headers/resources may require faithful
 preservation and explicit review rather than translation. No external tree,
 framework, resource or ABI is implicitly waived from the full migration.
+
+Observed build graph and baseline
+--------------------------------
+
+The isolated exact-pin original checkout configures successfully with default
+CMake options on the recorded host. Original native elfdep/getuuid/bsdln/wrapgen,
+darling-coredump and libsimple_darlingserver targets build successfully. The
+remaining runtime has not been built or run. Forty-four Swift LFS binary
+payloads remain missing even though their Git pointer objects are inventoried.
+
+upstream-cmake-graph.json captures 1,629 emitted default targets, 7,785 dependency
+edges, 34,478 source records (9,593 generated) and 1,238 targets with installation
+metadata. migration-targets.json maps six default targets to Cargo artifact
+slices, including partial wrapper/native library coverage. There are 1,623
+pending default targets and no claim of legacy target retirement. Optional
+print_wrapped_elf is a verified extra artifact absent from the default graph.
+Custom command bodies, optional component configurations and generator-specific
+recipes are not fully represented by the File API and require separate gates.
+The typed Cargo graph builds/stages six tools plus the native static archive;
+it is not a replacement for all 1,629 upstream targets. Reproduction scripts,
+logs and reports are listed in tools/BASELINE.txt.
 
 Migration order and executable gates
 -----------------------------------

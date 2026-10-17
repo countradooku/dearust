@@ -15,8 +15,10 @@ Six Linux host binaries now build with Cargo:
   darling-coredump    32/64-bit x86 ELF core to Mach-O core conversion
   wrapgen              ELF64 wrapper source/header generation (partial port)
 
-All implementation crates forbid unsafe code and use only Rust's standard
-library. The core converter preserves register layouts and overlay file
+The parser/converter crates and synchronization state-machine core forbid
+unsafe code. The native synchronization adapter has small documented unsafe
+C pointer, callback and Linux futex boundaries; see its SAFETY.txt. All Rust
+crates use only the standard library. The core converter preserves register layouts and overlay file
 reconstruction. Its floating-point state remains zero, matching upstream's
 unimplemented floating-state extraction. Its diagnostics differ from upstream;
 HOME-unset account lookup uses procfs and /etc/passwd, without NSS services.
@@ -30,6 +32,12 @@ RPATH/RUNPATH, audit modules and all loader hardware policy are not implemented.
 It therefore remains explicitly PARTIAL. Use explicit library paths for
 reproducible generation. Invalid source identifiers/names are rejected.
 
+A native Linux x86_64 libsimple synchronization archive also provides the
+13 documented C functions plus the externally linked cmpxchg helper, preserving
+four-byte state layouts. C-link concurrency tests compare it with upstream.
+This source is PARTIAL: Darwin futex support, other architectures and no_std
+runtime integration remain pending. The current native archive links Rust std.
+
 Build and stage with Cargo
 --------------------------
 Rust 1.85+, Cargo, a host linker, rustfmt and Clippy are required:
@@ -41,7 +49,8 @@ Rust 1.85+, Cargo, a host linker, rustfmt and Clippy are required:
 Native builds require no CMake. The release binaries are under target/release
 (or CARGO_TARGET_DIR). Staging uses an explicit host triple and target directory,
 preserves upstream build-tree paths for build-only tools and the upstream
-bin/darling-coredump installation path. Its deterministic manifest records the
+bin/darling-coredump installation path. The typed graph also stages the native
+libsimple static archive at src/libsimple-linux/liblibsimple_darlingserver.a. Its deterministic manifest records the
 host artifact graph. See BUILDING.txt and xtask/README.md for boundaries.
 
 This is a Cargo replacement for these host artifact operations. MIG generation,
@@ -69,7 +78,7 @@ Full-scope tracking
 -------------------
 migration-inventory.json covers all 27,274 superproject entries at
 60ba801decee7a00782f74f6be4c8ffb013f79ff: 5 implemented source replacements,
-1 partial source replacement, and 27,268 pending entries. Counts include
+2 partial source replacements, and 27,267 pending entries. Counts include
 headers, resources and gitlinks; they do not measure runtime completeness.
 dependency-inventory.json separately expands exact pinned dependency trees,
 including nested gitlinks and license evidence. Every dependency entry remains
@@ -79,4 +88,10 @@ framework or dependency is waived, and no placeholders count as ports.
 The optional upstream-rust-tools.patch remains the earlier THREE-tool adapter
 snapshot (elfdep/getuuid/bsdln). It applies to the pinned upstream but does not
 contain the newer converter/wrapper ports or replace the remaining CMake graph.
-Separate Git worktrees preserve parallel implementation and review history.
+The isolated original upstream configures with its default CMake options and
+all pinned dependency trees. Forty-four Swift Git LFS binary pointers remain
+unmaterialized; configuration is not a full build. The recorded File API graph
+and baseline report capture remaining migration inputs. migration-targets.json
+tracks 1,629 default targets: six have Cargo artifact slices (including partial
+ones), while 1,623 remain pending. Separate Git worktrees
+preserve parallel implementation and review history.

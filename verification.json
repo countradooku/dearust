@@ -1,7 +1,7 @@
 {
   "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
   "rust_toolchain": "rustc 1.99.0 (b940084d7 2026-09-28)",
-  "normal_tests_passed": 64,
+  "normal_tests_passed": 73,
   "optional_upstream_differential_tests_explicitly_run_and_passed": 5,
   "checks": [
     "cargo xtask check",
@@ -13,7 +13,10 @@
     "Cargo staging integration executes all six staged tools; deterministic manifest and build failure propagation",
     "Five compiled-pinned upstream differential suites, covering all six binaries",
     "Generated ELF wrapper C compiled against pinned elfcalls header and linked with ld64.lld to Mach-O, then dependency verified",
-    "All 149 first-level and 11 nested dependency pins expanded; 265803 committed entries; byte-identical regeneration"
+    "All 149 first-level and 11 nested dependency pins expanded; 265803 committed entries; byte-identical regeneration",
+    "Native libsimple 14-symbol C ABI differential/concurrency suite; independent staged staticlib C link and stress",
+    "Complete default emitted CMake File API graph captured/re-extracted byte-identically; seven Python tests pass",
+    "Regular-file input and bounded concurrent size change checks for metadata/wrapper/core readers"
   ],
   "same_file_forced_link_regression": {
     "upstream": {
@@ -39,8 +42,8 @@
   },
   "synthetic_parser_benchmarks": {
     "iterations_each": 1000000,
-    "thin64_ns_per_parse": 35.3,
-    "fat64_2_ns_per_parse": 79.9,
+    "thin64_ns_per_parse": 36.8,
+    "fat64_2_ns_per_parse": 81.3,
     "limitations": "One local run. Rust parser only; excludes file reads and process startup. No upstream speedup established."
   },
   "not_verified": [
@@ -51,14 +54,17 @@
     "Migration of the 265803 inventoried dependency entries",
     "Complete dynamic loader policy for wrapgen bare library-name lookup",
     "Coredump floating-point extraction (zero states match upstream TODO)",
-    "Full upstream CMake graph replacement and macOS target ABI"
+    "Full upstream CMake graph replacement and macOS target ABI",
+    "Darling/Darwin libsimple futex backend and no_std runtime startup",
+    "44 Swift LFS binary payloads and their runtime/packaging use",
+    "Formal concurrency-model proof, Miri/sanitizers of the new native futex adapter"
   ],
-  "implementation_status": "Five Linux host source replacements implemented; wrapgen parsing/generation functional with incomplete loader policy. Six Cargo binaries, full runtime migration incomplete.",
+  "implementation_status": "Six functioning Linux host binaries (wrapgen loader policy partial), plus native Linux x86_64 libsimple C ABI static archive (Darwin/other architectures/no_std integration partial). Full migration remains incomplete.",
   "python_dependency_inventory_tests_passed": 5,
   "host_source_status": {
     "implemented": 5,
-    "partial": 1,
-    "pending": 27268
+    "partial": 2,
+    "pending": 27267
   },
   "dependency_scope": {
     "inventoried_trees": 160,
@@ -85,5 +91,40 @@
     "before_median_ns": 854674.815,
     "after_median_ns": 3619.54,
     "scope": "Rust resolver warm LD_LIBRARY_PATH identification fixture only, excluding parsing/generation and CLI startup; no upstream comparison"
+  },
+  "python_cmake_graph_tests_passed": 2,
+  "native_libsimple": {
+    "scope": "Linux x86_64/std-linked partial port; Darwin backend, other architectures and no_std bootstrap pending",
+    "public_header_functions": 13,
+    "external_symbols_preserved": 14,
+    "state_size_bytes": 4,
+    "state_alignment_bytes": 4,
+    "safe_core_tests_passed": 7,
+    "c_differential_summary": "abi=4:4 mutex=80000 cas=80000 once=1 publication=4277009102 rw=40000 cond=640",
+    "independent_staged_c_stress": "Passed C-link once publication/completed null callback, 48000 mutex increments, 16000 writes concurrent with readers, 12 waiters through 100 notify-all generations",
+    "unsafe_ledger": "crates/darling-libsimple/SAFETY.txt"
+  },
+  "upstream_baseline": {
+    "default_cmake_configure_passed": true,
+    "exact_materialized_dependency_trees": 160,
+    "native_original_targets_built": [
+      "elfdep",
+      "getuuid",
+      "bsdln",
+      "wrapgen",
+      "darling-coredump",
+      "libsimple_darlingserver"
+    ],
+    "full_runtime_built": false,
+    "lfs_pointer_payloads_not_materialized": 44,
+    "graph_targets": 1629,
+    "graph_target_dependency_edges": 7785,
+    "graph_source_records": 34478,
+    "graph_generated_source_records": 9593,
+    "graph_targets_with_install_metadata": 1238,
+    "cargo_artifact_counterparts_in_default_graph": 6,
+    "default_graph_targets_pending": 1623,
+    "legacy_target_retirement_claimed": 0,
+    "limitations": "Default configured graph only; custom command bodies and optional configurations require further capture. Configure/native target success is not full runtime verification."
   }
 }

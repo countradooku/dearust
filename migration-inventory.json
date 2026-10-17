@@ -21,8 +21,8 @@
     },
     "by_status": {
       "implemented": 5,
-      "partial": 1,
-      "pending": 27268
+      "partial": 2,
+      "pending": 27267
     },
     "by_component": {
       ".github": 8,
@@ -198143,7 +198143,10 @@
       "object_id": "3d9bdd420e84f232c3bc5ece7b542cd6669d204e",
       "component": "src/libsimple",
       "category": "source",
-      "status": "pending"
+      "status": "partial",
+      "replacement": "crates/darling-libsimple/src/lib.rs",
+      "scope": "Native Linux x86_64 synchronization C ABI with safe atomic core and documented unavoidable FFI/futex unsafe boundary",
+      "limitation": "Darling/Darwin futex backend, other architectures and no_std runtime bootstrap remain unported; native archive links Rust std"
     },
     {
       "path": "src/libsysmon/CMakeLists.txt",

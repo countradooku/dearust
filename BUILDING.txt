@@ -18,7 +18,8 @@ Run commands from this checkout, or a directory inside it:
     cargo xtask install --destdir /path/to/stage
     cargo xtask help
 
-`build` builds darling-buildtools and darling-coredump with release optimizations.
+`build` builds all migrated workspace packages except xtask with release
+optimizations, including the native libsimple static library.
 The tools are placed in target/release (or CARGO_TARGET_DIR when configured).
 `check` stops at the first failure: rustfmt --check, Clippy for every workspace
 target with warnings denied, then workspace tests including doctests.
@@ -67,7 +68,10 @@ explicit Linux host target and stages the graph in xtask/host-artifacts.tsv.
 Build-only tools retain their original build-tree executable paths; the core
 converter uses its upstream bin/darling-coredump install rule. See
 xtask/README.md for publication semantics and filesystem regression coverage.
-The staged manifest is deterministic. This stages six host tools, not a runtime.
+The typed graph also stages libsimple at the upstream Linux static archive
+path. Its C-link integration harness checks the staged archive. The manifest
+is deterministic. This stages six tools and a native library slice, not the
+complete runtime.
 
 Legacy integration (optional)
 -----------------------------
@@ -120,3 +124,27 @@ Migration path
    required to build unported upstream components during that process.
 
 These are remaining engineering requirements, not implemented task commands.
+
+Native synchronization ABI check
+--------------------------------
+
+  crates/darling-libsimple/scripts/check-abi.sh /path/to/upstream \
+    target/release/libdarling_simple.a /path/to/reference-output
+
+Requires cc, nm, timeout and POSIX shell in addition to the Cargo build. It
+compiles committed original headers/source and the same bounded C pthread
+harness against upstream and Rust independently. All 14 external symbols,
+state layout, lock/CAS/once/RW/condvar concurrency and publication are checked.
+The state-machine core forbids unsafe; SAFETY.txt inventories the narrow
+native FFI/futex boundary. Native Linux x86_64 is supported; Darwin backend,
+other architectures and no_std integration remain pending. Native C consumers
+link with -pthread -ldl -lm. This does not replace libSystem initialization.
+
+Full upstream baseline
+----------------------
+
+tools/BASELINE.txt reproduces an isolated exact-pin reference checkout. Its
+default CMake configuration succeeds on the recorded host. Forty-four Swift
+LFS pointer files still need actual binary payloads for packaging/runtime;
+Git object scope coverage does not materialize them. This configuration and
+its captured default target graph are migration inputs, not a full Cargo port.

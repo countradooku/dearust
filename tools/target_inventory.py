@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+"""Map observed upstream CMake targets to verified Cargo artifact slices.
+
+Graph capture is not a Cargo replacement. Legacy targets remain unretired;
+optional configurations and custom command bodies need separate expansion.
+"""
+import argparse
+import json
+from pathlib import Path
+
+REPLACEMENTS = {
+    'elfdep': ('darling-buildtools', 'elfdep', 'host-artifact-verified'),
+    'getuuid': ('darling-buildtools', 'getuuid', 'host-artifact-verified'),
+    'bsdln': ('darling-buildtools', 'bsdln', 'host-artifact-verified'),
+    'darling-coredump': ('darling-coredump', 'darling-coredump', 'host-artifact-verified'),
+    'wrapgen': ('darling-buildtools', 'wrapgen', 'partial-loader-policy'),
+    'libsimple_darlingserver': ('darling-libsimple', 'darling_simple', 'partial-native-only'),
+}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--graph', type=Path, default=Path('upstream-cmake-graph.json'))
+    parser.add_argument('--output', type=Path, default=Path('migration-targets.json'))
+    args = parser.parse_args()
+    graph = json.loads(args.graph.read_text())
+    entries = []
+    found = set()
+    for reference, target in graph['objects'].items():
+        if 'type' not in target:
+            continue
+        name = target['name']
+        entry = {'name': name, 'id': target['id'], 'type': target['type'],
+                 'graph_reference': reference, 'status': 'pending',
+                 'legacy_target_retired': False}
+        if name in REPLACEMENTS:
+            package, artifact, status = REPLACEMENTS[name]
+            entry.update(cargo_package=package, cargo_artifact=artifact, status=status)
+            found.add(name)
+        entries.append(entry)
+    if found != REPLACEMENTS.keys():
+        raise ValueError(f'expected native targets missing: {sorted(REPLACEMENTS.keys()-found)}')
+    entries.sort(key=lambda entry: (entry['name'], entry['id']))
+    output = {
+        'schema_version': 1,
+        'upstream_commit': '60ba801decee7a00782f74f6be4c8ffb013f79ff',
+        'scope': 'Every emitted target in the captured default configuration. Source/install/custom commands, optional configurations and runtime ABI require additional gates; no legacy target retirement is claimed.',
+        'counts': {'observed_default_targets': len(entries), 'with_cargo_artifact_slice': len(found),
+                   'pending_targets': len(entries)-len(found), 'legacy_targets_retired': 0},
+        'additional_optional_artifacts': [{'name': 'print_wrapped_elf', 'cargo_package': 'darling-buildtools', 'status': 'host-artifact-verified', 'absent_from_default_configuration': True}],
+        'targets': entries,
+    }
+    args.output.write_text(json.dumps(output, indent=2)+'\n')
+    print(json.dumps(output['counts'], sort_keys=True))
+
+
+if __name__ == '__main__':
+    main()
