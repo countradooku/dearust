@@ -1,15 +1,19 @@
 {
   "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
   "rust_toolchain": "rustc 1.99.0 (b940084d7 2026-09-28)",
-  "normal_tests_passed": 29,
-  "optional_upstream_differential_tests_explicitly_run_and_passed": 2,
+  "normal_tests_passed": 64,
+  "optional_upstream_differential_tests_explicitly_run_and_passed": 5,
   "checks": [
     "cargo xtask check",
     "cargo xtask build",
     "cargo xtask bench",
     "upstream differential tests for all 3 tools",
     "independently generated Clang x86_64 Mach-O object",
-    "Pinned patch apply check; isolated legacy consumer builds with Ninja and Unix Makefiles"
+    "Pinned patch apply check; isolated legacy consumer builds with Ninja and Unix Makefiles",
+    "Cargo staging integration executes all six staged tools; deterministic manifest and build failure propagation",
+    "Five compiled-pinned upstream differential suites, covering all six binaries",
+    "Generated ELF wrapper C compiled against pinned elfcalls header and linked with ld64.lld to Mach-O, then dependency verified",
+    "All 149 first-level and 11 nested dependency pins expanded; 265803 committed entries; byte-identical regeneration"
   ],
   "same_file_forced_link_regression": {
     "upstream": {
@@ -41,10 +45,45 @@
   },
   "not_verified": [
     "Full Darling build or runtime",
-    "Submodule contents migration",
     "macOS application compatibility",
     "32-bit host build",
-    "minimum Rust 1.85 toolchain"
+    "minimum Rust 1.85 toolchain",
+    "Migration of the 265803 inventoried dependency entries",
+    "Complete dynamic loader policy for wrapgen bare library-name lookup",
+    "Coredump floating-point extraction (zero states match upstream TODO)",
+    "Full upstream CMake graph replacement and macOS target ABI"
   ],
-  "implementation_status": "Three Linux host utilities migrated. Full migration remains incomplete."
+  "implementation_status": "Five Linux host source replacements implemented; wrapgen parsing/generation functional with incomplete loader policy. Six Cargo binaries, full runtime migration incomplete.",
+  "python_dependency_inventory_tests_passed": 5,
+  "host_source_status": {
+    "implemented": 5,
+    "partial": 1,
+    "pending": 27268
+  },
+  "dependency_scope": {
+    "inventoried_trees": 160,
+    "unavailable_trees": 0,
+    "entries": 265803,
+    "entries_pending_migration": 265803,
+    "license_candidates": 341
+  },
+  "coredump_zero_fill_benchmark": {
+    "record": "crates/darling-coredump/zero-fill-measurement.json",
+    "workload": "synthetic 64 MiB zero-fill whole CLI, 21 alternating samples after 2 warmups",
+    "upstream_median_ms": 31.512933,
+    "rust_median_ms": 22.335951,
+    "normalized_outputs_identical": true,
+    "limitation": "Only synthetic zero-fill conversion, no general real-core or runtime speedup established; RSS separate single measurement"
+  },
+  "wrapgen_cli_benchmark": {
+    "record": "wrapgen-benchmark.json",
+    "outputs_identical": true,
+    "result": "Rust slower for whole CLI on explicit system libm path; no upstream speedup claimed"
+  },
+  "wrapgen_lookup_optimization": {
+    "record": "wrapgen-lookup-benchmark.json",
+    "before_median_ns": 854674.815,
+    "after_median_ns": 3619.54,
+    "scope": "Rust resolver warm LD_LIBRARY_PATH identification fixture only, excluding parsing/generation and CLI startup; no upstream comparison"
+  }
 }

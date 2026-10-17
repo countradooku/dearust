@@ -1,0 +1,22 @@
+{
+  "before_revision": "13dabb0598cb92c3c1b9c95a8fd340581d9916bd",
+  "iterations_per_trial": 200,
+  "trials": 3,
+  "workload": "Rust resolver only, warm LD_LIBRARY_PATH identification fixture; no ELF parse, generation or upstream comparison",
+  "before": {
+    "ns_per_lookup": [
+      857894.555,
+      845897.63,
+      854674.815
+    ],
+    "median_ns_per_lookup": 854674.815
+  },
+  "after": {
+    "ns_per_lookup": [
+      3619.54,
+      3673.995,
+      3553.815
+    ],
+    "median_ns_per_lookup": 3619.54
+  }
+}

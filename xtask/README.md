@@ -6,6 +6,9 @@ with Cargo and stages these executable paths:
 - `src/bsdln/bsdln`
 - `src/buildtools/elfdep`
 - `src/buildtools/getuuid`
+- `src/libelfloader/wrapgen/wrapgen` (partial loader-name lookup; see root README)
+- `src/libelfloader/wrapgen/print_wrapped_elf`
+- `bin/darling-coredump`
 
 `host-artifacts.tsv` declares the Cargo package, binary target, destination and
 pinned upstream CMake target definition. The same deterministic file is written
@@ -14,8 +17,10 @@ checkout-specific paths. It describes the artifact graph, not content hashes.
 
 The pinned upstream `src/bsdln/CMakeLists.txt` and
 `src/buildtools/CMakeLists.txt` have no installation rules for these targets.
-The staged paths reproduce the **build tree** layout consumed by
+The build-only tools reproduce the **build tree** layout consumed by
 `Developer/symlinks.sh`, `cmake/dsym.cmake` and `tools/rpm/darling.attr`.
+The converter has an actual upstream `install(TARGETS ... DESTINATION bin)`
+rule; its staged path follows that rule.
 This command does not install a Darling runtime or replace its remaining CMake
 graph. It invokes Cargo directly, without invoking CMake or a shell.
 
@@ -37,7 +42,7 @@ transaction. A publication error may leave a partially updated directory and
 returns failure. Concurrent hostile mutation of directory components is outside
 the safe standard-library staging API's guarantees.
 
-The integration test builds the actual declared binaries, executes all three
+The integration test builds the actual declared binaries, executes all six
 staged tools, checks repeatable manifests and verifies that a failing Cargo
 build preserves its exit status without creating the output tree. Unit tests
 cover symlink rejection, missing inputs, executable modes and hard-link

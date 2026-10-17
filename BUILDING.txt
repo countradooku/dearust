@@ -6,7 +6,8 @@ Requirements for this Rust workspace
 Rust 1.85 or later, Cargo, and a host linker are required. `cargo xtask check`
 also requires the rustfmt and Clippy toolchain components. There are no
 third-party Rust dependencies, build scripts, CMake calls, network downloads,
-or generated-code prerequisites in the migrated workspace.
+or generated-code prerequisites in the migrated workspace. Optional differential
+and linked-artifact checks require the pinned references and named native tools.
 
 Run commands from this checkout, or a directory inside it:
 
@@ -14,15 +15,16 @@ Run commands from this checkout, or a directory inside it:
     cargo xtask check
     cargo xtask test
     cargo xtask bench
+    cargo xtask install --destdir /path/to/stage
     cargo xtask help
 
-`build` builds all binaries in darling-buildtools with release optimizations.
+`build` builds darling-buildtools and darling-coredump with release optimizations.
 The tools are placed in target/release (or CARGO_TARGET_DIR when configured).
 `check` stops at the first failure: rustfmt --check, Clippy for every workspace
 target with warnings denied, then workspace tests including doctests.
-`test` runs workspace tests and doctests. It leaves the two optional upstream
-differential tests ignored; tests/cli.rs and tests/bsdln.rs describe the required
-reference-tool environment variables for running them explicitly.
+`test` runs workspace tests and doctests. It leaves optional upstream
+differential suites ignored; the tests describe the reference-tool environment
+variables for running them explicitly.
 `bench` runs only the metadata benchmark in release mode. Its figures measure
 the Rust parser on synthetic fixtures; they are not evidence of a speedup
 over upstream or the performance of an entire Darling installation.
@@ -42,7 +44,8 @@ complete Darling runtime and cannot launch macOS applications. Cargo is the
 primary build system for the migrated Rust code; the existence of this
 workspace does not replace the remaining upstream build graph.
 
-Migrated executables: elfdep, getuuid, bsdln (Linux host tools). No libbsd
+Functioning executables: elfdep, getuuid, bsdln, print_wrapped_elf,
+darling-coredump and wrapgen (partial loader-name resolution; see README.txt). No libbsd
 dependency is needed for the Rust bsdln. Mach-O metadata supports 32/64-bit thin
 and fat containers in either byte order, including FAT64. UUID text and ELF
 dependency stdout/exit semantics match the supported valid upstream fixtures.
@@ -56,10 +59,20 @@ mapping faults, but can increase memory use and I/O for large inputs. No general
 performance improvement over upstream has been established. Parser benchmarks
 exclude file reading, command startup, and the rest of Darling.
 
+Cargo host artifact staging
+---------------------------
+
+`cargo xtask install --destdir PATH` builds declared host binaries with an
+explicit Linux host target and stages the graph in xtask/host-artifacts.tsv.
+Build-only tools retain their original build-tree executable paths; the core
+converter uses its upstream bin/darling-coredump install rule. See
+xtask/README.md for publication semantics and filesystem regression coverage.
+The staged manifest is deterministic. This stages six host tools, not a runtime.
+
 Legacy integration (optional)
 -----------------------------
 integration/CMakeLists.txt and integration/bsdln.CMakeLists.txt are transitional
-adapters for the remaining upstream graph. They invoke Cargo for these tools,
+adapters for the original THREE-tool slice within the remaining upstream graph. They invoke Cargo for these tools,
 preserve the executable paths consumed by upstream installation rules, and do
 not affect native Cargo builds. Their presence is not a CMake replacement for
 the full project. See upstream-rust-tools.patch and README.txt for application

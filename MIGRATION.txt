@@ -33,29 +33,42 @@ At this pin there are 27,274 entries:
       11 scripts
      819 other resources or metadata
 
-Only the Rust replacements explicitly listed with status "implemented" are ported.
-There are 3 implemented entries (elfdep, getuuid and bsdln) and 27,271 pending.
-These are Linux host executables. Exact diagnostic wording is not guaranteed.
-bsdln has seven normal tests and a differential test against the compiled pinned
-upstream ln.c covering symbolic/hard links, directory handling and interactive
-flags. A regression guard for "-f source source" preserves the source, which
-upstream can delete. These checks validate the host tool slice, not Darling ABI
-or runtime compatibility.
-All other entries are "pending", including resources which may require faithful
-preservation instead of translation. Category classification is a planning aid,
-not a semantic language parser or proof of compatibility. A gitlink is one entry,
-not one source file: the 149 submodule trees and any nested submodules remain
-unexpanded. Their exact commits and repository URLs are recorded. Inventory each
-one at that commit before implementing it; these counts are NOT whole-dependency
-source counts. No external source tree is implicitly waived from full scope.
+There are 5 implemented source replacements: elfdep, getuuid, bsdln,
+print_wrapped_elf and darling-coredump. wrapgen has a functioning safe Rust
+parser/generator, but is marked partial because safe name lookup does not
+reproduce all dynamic-loader policy. There are 27,268 pending superproject
+entries. Exact diagnostic text is not guaranteed. Each source replacement has
+behavioral and malformed-input regressions plus a pinned differential suite.
+These gates validate this Linux host slice, not the Darling runtime or macOS ABI.
+
+The forced same-inode hard-link regression preserves an upstream-deleted source.
+New regressions cover DT_SONAME at nonzero load addresses, dropped extra core
+mappings, deterministic segment padding, short backing-file zero fill, destructive
+output aliases and adversarial parser/mapping work. Core mapping lookup is bounded
+by an ordered O((areas + mappings) log mappings) algorithm. Floating-point core
+states remain zero, matching upstream's TODO; no FP extraction port is claimed.
+
+All 149 first-level submodules and 11 nested gitlinks are now expanded at their
+exact pinned commits in dependency-inventory.json. The 160 dependency trees
+contain 265,803 committed leaves, all pending migration, and 341 filename-based
+license candidates with actual blob hashes. No trees are unavailable in this
+snapshot. Regeneration is byte-identical with the same object cache; see
+tools/DEPENDENCY-INVENTORY.txt and tools/dependency_inventory.py.
+No dependency implementation has been ported by inventorying it. Source-category
+counts use suffix heuristics; Java, Swift and other code may fall under metadata.
+Every committed leaf remains in scope regardless of its category label.
+
+The two inventories together track 293,077 entries, including parent gitlinks
+and their separately expanded contents. Headers/resources may require faithful
+preservation and explicit review rather than translation. No external tree,
+framework, resource or ABI is implicitly waived from the full migration.
 
 Migration order and executable gates
 -----------------------------------
 
 1. Reproduce upstream builds and behavior in an isolated baseline environment.
-   Expand the 149 pinned dependencies incrementally, inventory their own gitlinks,
-   record licensing and generated inputs, and extract target, install and link
-   graphs from CMake. Record supported architectures, host requirements, symbol
+   Dependency trees are now inventoried; review file-specific licensing and
+   generated inputs, and extract target, install and link graphs from CMake. Record supported architectures, host requirements, symbol
    exports and test workloads. Preserve the original checkout as reference.
 
 2. Move host-side parsing and code generation to Cargo packages. Current metadata
