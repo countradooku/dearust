@@ -22,7 +22,26 @@ def replacements(values):
     return result
 
 
+def validate_output(build, output):
+    source = None
+    for line in (build / 'CMakeCache.txt').read_text().splitlines():
+        if line.startswith('CMAKE_HOME_DIRECTORY:INTERNAL='):
+            source = Path(line.partition('=')[2]).resolve(strict=True)
+            break
+    if source is None:
+        raise ValueError('CMake cache does not identify the original source tree')
+    if output.is_relative_to(build) or output.is_relative_to(source):
+        raise ValueError('output must be outside the original source and build trees')
+
+
+def defined_symbols(path):
+    result = subprocess.run(['nm', '-g', '--defined-only', str(path)], check=True,
+                            text=True, capture_output=True)
+    return result.stdout
+
+
 def relink(build, output, replace, archives):
+    validate_output(build, output)
     server = build / 'src/external/darlingserver'
     duct = server / 'duct-tape'
     archive_command = shlex.split((duct / 'CMakeFiles/darlingserver_duct_tape.dir/link.txt').read_text().splitlines()[0])
@@ -65,11 +84,17 @@ def relink(build, output, replace, archives):
             link.append(str((server / item).resolve(strict=True)))
         else:
             link.append(item)
+    link.append('-Wl,-Map,' + str(output / 'darlingserver.map'))
     subprocess.run(link, check=True)
     report = {'build': str(build), 'replacements': sorted(used), 'inputs': provenance,
               'extra_archives': [{'path': str(p), 'sha256': digest(p)} for p in archives],
               'link_argv': link, 'archive_argv': ar,
-              'server_sha256': digest(output / 'darlingserver')}
+              'server_sha256': digest(output / 'darlingserver'),
+              'replacement_defined_symbols': {key: defined_symbols(value)
+                                               for key, value in replace.items()},
+              'archive_defined_symbols': {str(p): defined_symbols(p) for p in archives},
+              'final_defined_symbols': defined_symbols(output / 'darlingserver'),
+              'link_map': str(output / 'darlingserver.map')}
     (output / 'relink.json').write_text(json.dumps(report, indent=2) + '\n')
     print(output / 'darlingserver')
 
