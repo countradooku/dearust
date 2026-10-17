@@ -6,6 +6,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/resource.h>
+#include <sys/wait.h>
 #include <libsimple/lock.h>
 
 #define THREADS 12
@@ -78,6 +81,21 @@ static void *run(void *argument) {
 int main(void) {
     // Bound deadlocks in CI even if the external test runner has no timeout.
     alarm(30);
+    // The no_std C archive must terminate an invalid initializer without a
+    // Rust panic runtime, allocation or unwinding across the foreign boundary.
+    pid_t child = fork();
+    assert(child >= 0);
+    if (child == 0) {
+        alarm(5);
+        struct rlimit limit = {0, 0};
+        if (setrlimit(RLIMIT_CORE, &limit) != 0) _exit(90);
+        libsimple_once_t invalid = LIBSIMPLE_ONCE_INITIALIZER;
+        libsimple_once(&invalid, NULL, NULL);
+        _exit(91);
+    }
+    int status;
+    assert(waitpid(child, &status, 0) == child);
+    assert(WIFSIGNALED(status) && WTERMSIG(status) == SIGABRT);
     pthread_t threads[THREADS];
     assert(pthread_barrier_init(&start, NULL, THREADS + 1) == 0);
     for (uintptr_t i = 0; i < THREADS; ++i) assert(pthread_create(&threads[i], NULL, run, (void *)i) == 0);

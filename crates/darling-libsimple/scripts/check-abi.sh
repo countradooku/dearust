@@ -16,7 +16,7 @@ for header in base.h lock.h; do
     cmp "$output/include/libsimple/$header" "$crate/include/libsimple/$header"
 done
 "${CC:-cc}" -O2 -std=gnu11 -Wno-attributes -DLIBSIMPLE_LINUX=1 -I"$output/include" -pthread "$crate/tests/abi.c" "$output/lock.c" -o "$output/upstream-abi"
-"${CC:-cc}" -O2 -std=gnu11 -Wno-attributes -I"$output/include" -pthread "$crate/tests/abi.c" "$archive" -ldl -lm -o "$output/rust-abi"
+"${CC:-cc}" -O2 -std=gnu11 -Wno-attributes -I"$output/include" -pthread "$crate/tests/abi.c" "$archive" -o "$output/rust-abi"
 timeout 25 "$output/upstream-abi" > "$output/upstream.txt"
 timeout 25 "$output/rust-abi" > "$output/rust.txt"
 cmp "$output/upstream.txt" "$output/rust.txt"

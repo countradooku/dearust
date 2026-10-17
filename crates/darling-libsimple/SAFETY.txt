@@ -17,10 +17,15 @@ The Darling/Darwin __linux_futex_reterr backend and other native architectures
 remain unported. Unsupported target OS/architecture combinations fail to compile.
 No Darling runtime, libSystem bootstrap, or macOS application integration is
 claimed. The production state-machine module uses core atomics and forbids all
-unsafe code; it is suitable for a future no_std crate. The current native archive
-still links Rust std. A no_std final staticlib requires a separate panic/startup
-integration decision and is not delivered here. Linux C consumers link with
--pthread -ldl -lm, as exercised by scripts/check-abi.sh and its C harness.
+unsafe code; the crate now supports a no_std final native archive.
+`cargo xtask build` and staging disable the default std feature and explicitly set panic=abort. The
+no_std panic handler calls C abort without formatting, allocation or TLS. It
+belongs to this final C-linked archive; do not link it into a Rust std application
+or combine it with another Rust panic handler. Building without std and with
+unwinding enabled is explicitly rejected. Ordinary Rust builds/tests keep the
+default std feature. Linux C consumers link with -pthread only, as exercised by
+scripts/check-abi.sh and its C harness. This removes the Rust std dependency;
+it does not integrate the separate Darling/Darwin backend or libSystem startup.
 
 Unsafe inventory
 ----------------
@@ -71,8 +76,11 @@ Unsafe inventory
 4. The unsafe(no_mangle) attributes assert that this archive owns the 14 external
    libsimple/CAS symbol names with their original C signatures. Link this
    replacement or upstream lock.c, never both in the same final binary. The
-   external declarations for syscall are unsafe because Rust cannot verify
-   their ABI implementation. The remaining unsafe blocks only forward the
+   external declarations for syscall and abort are unsafe because Rust cannot
+   verify their ABI implementation. C abort is called by the no_std panic handler
+   and the invalid null-initializer path through terminate(); it has no
+   preconditions, never returns and must not unwind. The final native C consumer
+   supplies both libc symbols. The remaining unsafe blocks only forward the
    state contract above, including the externally visible CAS helper, or call
    the once callback described above. There are no other unsafe operations in this crate; clippy requires block comments and
    unsafe_op_in_unsafe_fn is denied.
@@ -115,7 +123,7 @@ cargo build -p darling-libsimple --release produces libdarling_simple.a.
 scripts/check-abi.sh UPSTREAM_CHECKOUT ARCHIVE OUTPUT_DIR compiles committed
 upstream C source and the identical C harness against that archive separately:
 cc -O2 -std=gnu11 -Wno-attributes -pthread -I<headers> tests/abi.c
-   <upstream lock.c or Rust staticlib> [-ldl -lm] -o <executable>
+   <upstream lock.c or Rust staticlib> -o <executable>
 Each process is bounded by alarm(20) and timeout25. The test verifies all four
 size/alignment layouts, header-only init functions, all 14 external ABI symbols,
 the CAS helper's success/failure/prior-value and 80,000 contended compare/exchange
@@ -125,3 +133,22 @@ with readers, and 8 waiters through 80 notify-all generations plus notify-one
 progress coordination. Rust and pinned C deterministic summaries must match.
 These tests establish the native slice's exercised behavior, not formal proof
 of all schedules or validation of the unported Darwin backend.
+
+Native no_std consumer mapping
+------------------------------
+The pinned src/CMakeLists.txt:94 adds libsimple with binary directory
+libsimple-linux; libsimple/CMakeLists.txt:10 defines libsimple_darlingserver.
+external/darlingserver/duct-tape/CMakeLists.txt:381 links that target PUBLIC into
+darlingserver_duct_tape. host.c uses once and locks.c uses the lock ABI. Cargo
+stages the replacement at the same archive path, but a complete darlingserver
+consumer build has not been validated. The second libsimple configuration at
+src/CMakeLists.txt:149 instead defines libsimple_darling; libsystem_kernel's
+consumers still require the unported __linux_futex_reterr backend.
+
+The staged artifact test inspects archive member names to reject std, alloc and
+unwinder libraries, links the C stress harness with -pthread alone, and verifies
+a forked null initializer exits through SIGABRT (core dumps disabled). Independent
+review repeated the freestanding C harness in an isolated target directory and
+observed only libc.so.6 in the executable's DT_NEEDED. Archive membership and
+link checks supplement the no_std compile configuration; they are not proof of
+arbitrary future Rust core/compiler-builtins bootstrap requirements.

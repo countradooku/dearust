@@ -27,6 +27,12 @@ build output: upstream adds `libsimple` under binary directory
 `src/libsimple-linux`, and CMake prefixes the target name with `lib`.
 Cargo builds `libdarling_simple.a` and staging gives it that upstream filename.
 The Darwin libsimple backend and its Mach-O/fat archive remain unported.
+The native staticlib is built with `--no-default-features` and an explicit
+`profile.release.panic="abort"` Cargo override. It is a final C-linked archive
+with its own panic handler, so it must not be linked into a Rust std application
+or combined with another Rust panic handler. Normal Rust builds/tests retain
+the default `std` feature. libc provides `syscall` and `abort`; no Rust allocator,
+TLS setup or unwinder is required by the synchronization implementation.
 The command invokes Cargo directly, without invoking CMake or a shell.
 
 Staging builds specify the host triple from `cargo -vV`, `--offline --locked`,
@@ -51,7 +57,9 @@ The integration test builds the actual declared artifacts, exercises staged
 executables, checks repeatable manifests and verifies that a failing Cargo
 build preserves its exit status without creating the output tree. On native
 Linux x86-64 it also compiles and links a C pthread stress harness against the
-**staged** archive using the copied upstream headers (`cc` is required). The
+**staged** archive using the copied upstream headers (`cc` and `ar` are required). The test rejects bundled std/alloc/unwinder
+archive members and links without `-ldl` or `-lm`. A pre-thread fork verifies
+that a null initializing callback terminates with SIGABRT. The
 harness checks four-byte ABI layouts, once callback publication and completed
 null callbacks, mutex/rwlock mutual exclusion, and repeated notify-all requeue
 and mutex reacquisition with 12 waiters. An alarm bounds deadlocks at 30 seconds. Unit tests

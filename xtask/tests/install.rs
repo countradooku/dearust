@@ -119,6 +119,17 @@ fn failed_cargo_build_propagates_status_without_creating_stage() {
 fn check_staged_runtime(stage: &std::path::Path, temporary: &std::path::Path) {
     let xtask = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let executable = temporary.join("libsimple-c-stress");
+    let archive = stage.join("src/libsimple-linux/liblibsimple_darlingserver.a");
+    let members = Command::new("ar").arg("t").arg(&archive).output().unwrap();
+    assert!(members.status.success());
+    for member in String::from_utf8(members.stdout).unwrap().lines() {
+        for runtime in ["std-", "alloc-", "panic_unwind-", "unwind-"] {
+            assert!(
+                !member.starts_with(runtime),
+                "freestanding archive contains {member}"
+            );
+        }
+    }
     let compiler = Command::new("cc")
         .args([
             "-std=c11", "-O2", "-Wall", "-Wextra", "-Werror", "-pthread", "-isystem",
@@ -127,8 +138,8 @@ fn check_staged_runtime(stage: &std::path::Path, temporary: &std::path::Path) {
         // trigger GCC warnings, so treat the imported headers as system headers.
         .arg(xtask.join("../crates/darling-libsimple/include"))
         .arg(xtask.join("tests/fixtures/staged-libsimple.c"))
-        .arg(stage.join("src/libsimple-linux/liblibsimple_darlingserver.a"))
-        .args(["-ldl", "-lm", "-o"])
+        .arg(&archive)
+        .arg("-o")
         .arg(&executable)
         .output()
         .expect("native C compiler is required for staged ABI verification");

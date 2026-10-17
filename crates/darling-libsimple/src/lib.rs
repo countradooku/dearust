@@ -1,12 +1,25 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! Native Linux x86_64 C ABI for Darling libsimple synchronization.
 //! See SAFETY.txt for the FFI contract. The atomic state machines forbid unsafe.
+#![cfg_attr(not(feature = "std"), no_std)]
 #![deny(unsafe_op_in_unsafe_fn)]
 #![deny(clippy::undocumented_unsafe_blocks)]
 #[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
 compile_error!(
     "Only native Linux x86_64 futex ABI is implemented; Darling/Darwin backend is unported"
 );
+#[cfg(all(not(feature = "std"), not(test), not(panic = "abort")))]
+compile_error!("the freestanding static archive requires panic=abort");
+#[cfg(all(test, not(feature = "std")))]
+extern crate std;
+
+// This handler belongs only to the final C-linked archive, never to a Rust
+// consumer that supplies its own panic runtime. No formatting, allocator or TLS.
+#[cfg(all(not(feature = "std"), not(test)))]
+#[panic_handler]
+fn panic(_: &::core::panic::PanicInfo<'_>) -> ! {
+    terminate()
+}
 mod core;
 use ::core::{
     ffi::{c_int, c_long, c_void},
@@ -17,6 +30,12 @@ use core::Futex;
 const _: () = assert!(size_of::<AtomicU32>() == 4 && align_of::<AtomicU32>() == 4);
 unsafe extern "C" {
     fn syscall(number: c_long, ...) -> c_long;
+    fn abort() -> !;
+}
+fn terminate() -> ! {
+    // SAFETY: C abort has no preconditions and does not return or unwind. The
+    // final native C consumer supplies libc, just as for the futex syscall shim.
+    unsafe { abort() }
 }
 struct Native;
 impl Native {
@@ -28,7 +47,7 @@ impl Native {
         target: Option<&AtomicU32>,
         mask: u32,
     ) -> i64 {
-        let target = target.map_or(std::ptr::null_mut(), AtomicU32::as_ptr);
+        let target = target.map_or(::core::ptr::null_mut(), AtomicU32::as_ptr);
         // SAFETY: x86_64 Linux SYS_futex=202. AtomicU32 is four-byte aligned and
         // remains alive throughout this synchronous kernel call. The kernel only
         // accesses atomic state through its futex protocol. REQUEUE can leave
@@ -143,7 +162,7 @@ pub unsafe extern "C" fn libsimple_once(
             } else {
                 // A null callback is valid for an already-completed once. It
                 // cannot initialize a new once; abort rather than invoke null.
-                std::process::abort();
+                terminate();
             }
         },
         &Native,

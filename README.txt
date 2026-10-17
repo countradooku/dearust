@@ -17,8 +17,7 @@ Six Linux host binaries now build with Cargo:
 
 The parser/converter crates and synchronization state-machine core forbid
 unsafe code. The native synchronization adapter has small documented unsafe
-C pointer, callback and Linux futex boundaries; see its SAFETY.txt. All Rust
-crates use only the standard library. The core converter preserves register layouts and overlay file
+C pointer, callback and Linux futex boundaries; see its SAFETY.txt. The workspace has no third-party Rust dependencies. The core converter preserves register layouts and overlay file
 reconstruction. Its floating-point state remains zero, matching upstream's
 unimplemented floating-state extraction. Its diagnostics differ from upstream;
 HOME-unset account lookup uses procfs and /etc/passwd, without NSS services.
@@ -35,8 +34,9 @@ reproducible generation. Invalid source identifiers/names are rejected.
 A native Linux x86_64 libsimple synchronization archive also provides the
 13 documented C functions plus the externally linked cmpxchg helper, preserving
 four-byte state layouts. C-link concurrency tests compare it with upstream.
-This source is PARTIAL: Darwin futex support, other architectures and no_std
-runtime integration remain pending. The current native archive links Rust std.
+This source is PARTIAL: Darwin futex support, other architectures and runtime startup integration remain
+pending. Cargo build/staging now emits a no_std panic-abort archive; libc supplies
+syscall and abort. Normal Rust development/tests retain the default std feature.
 
 Build and stage with Cargo
 --------------------------

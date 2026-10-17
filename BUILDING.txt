@@ -19,7 +19,9 @@ Run commands from this checkout, or a directory inside it:
     cargo xtask help
 
 `build` builds all migrated workspace packages except xtask with release
-optimizations, including the native libsimple static library.
+optimizations, then rebuilds the native libsimple static library without std
+and with panic=abort. This final C-linked archive does not contain a Rust
+allocator or unwinder; libc supplies syscall and abort.
 The tools are placed in target/release (or CARGO_TARGET_DIR when configured).
 `check` stops at the first failure: rustfmt --check, Clippy for every workspace
 target with warnings denied, then workspace tests including doctests.
@@ -137,8 +139,9 @@ harness against upstream and Rust independently. All 14 external symbols,
 state layout, lock/CAS/once/RW/condvar concurrency and publication are checked.
 The state-machine core forbids unsafe; SAFETY.txt inventories the narrow
 native FFI/futex boundary. Native Linux x86_64 is supported; Darwin backend,
-other architectures and no_std integration remain pending. Native C consumers
-link with -pthread -ldl -lm. This does not replace libSystem initialization.
+other architectures and runtime startup integration remain pending. Native C
+consumers of the staged no_std archive link with -pthread only. This does not
+replace libSystem initialization.
 
 Full upstream baseline
 ----------------------

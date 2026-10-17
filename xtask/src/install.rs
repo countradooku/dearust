@@ -184,7 +184,12 @@ pub fn build_and_stage(cargo: &OsStr, root: &Path, destination: &Path) -> Result
                     command.args(["--bin", artifact.target]);
                 }
                 Kind::Staticlib => {
-                    command.arg("--lib");
+                    command.args([
+                        "--lib",
+                        "--no-default-features",
+                        "--config",
+                        "profile.release.panic=\"abort\"",
+                    ]);
                 }
             }
         }

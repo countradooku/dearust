@@ -94,7 +94,7 @@ def inventory(repo):
                 entry["limitation"] = "ELF64 parsing/generation ported; safe library lookup covers explicit paths, LD_LIBRARY_PATH, ldconfig cache and common Linux directories, not arbitrary caller RPATH/RUNPATH or loader audit/hardware policy"
             if path == "src/libsimple/src/lock.c":
                 entry["scope"] = "Native Linux x86_64 synchronization C ABI with safe atomic core and documented unavoidable FFI/futex unsafe boundary"
-                entry["limitation"] = "Darling/Darwin futex backend, other architectures and no_std runtime bootstrap remain unported; native archive links Rust std"
+                entry["limitation"] = "Darling/Darwin futex backend, other architectures and runtime startup integration remain unported; Cargo stages a native no_std panic-abort C-linked archive relying on libc syscall and abort"
         if kind == "submodule":
             entry["upstream_url"] = modules.get(path, "")
             entry["scope"] = "pinned gitlink only; contents and nested dependencies need separate inventory"

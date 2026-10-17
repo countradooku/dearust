@@ -180,7 +180,11 @@ pub fn notify_all(state: &AtomicU32, lock: &AtomicU32, futex: &impl Futex) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::cell::{Cell, RefCell};
+    use std::{
+        cell::{Cell, RefCell},
+        vec,
+        vec::Vec,
+    };
     #[derive(Debug, PartialEq)]
     enum Event {
         Wait(u32, Option<u32>),

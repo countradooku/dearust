@@ -16,7 +16,8 @@
     "All 149 first-level and 11 nested dependency pins expanded; 265803 committed entries; byte-identical regeneration",
     "Native libsimple 14-symbol C ABI differential/concurrency suite; independent staged staticlib C link and stress",
     "Complete default emitted CMake File API graph captured/re-extracted byte-identically; seven Python tests pass",
-    "Regular-file input and bounded concurrent size change checks for metadata/wrapper/core readers"
+    "Regular-file input and bounded concurrent size change checks for metadata/wrapper/core readers",
+    "Native no_std panic-abort libsimple build/staging, C ABI concurrency without dl/m, isolated independent review, staged archive membership and SIGABRT regression"
   ],
   "same_file_forced_link_regression": {
     "upstream": {
@@ -55,11 +56,11 @@
     "Complete dynamic loader policy for wrapgen bare library-name lookup",
     "Coredump floating-point extraction (zero states match upstream TODO)",
     "Full upstream CMake graph replacement and macOS target ABI",
-    "Darling/Darwin libsimple futex backend and no_std runtime startup",
+    "Darling/Darwin libsimple futex backend and actual runtime startup integration",
     "44 Swift LFS binary payloads and their runtime/packaging use",
     "Formal concurrency-model proof, Miri/sanitizers of the new native futex adapter"
   ],
-  "implementation_status": "Six functioning Linux host binaries (wrapgen loader policy partial), plus native Linux x86_64 libsimple C ABI static archive (Darwin/other architectures/no_std integration partial). Full migration remains incomplete.",
+  "implementation_status": "Six functioning Linux host binaries (wrapgen loader policy partial), plus native Linux x86_64 libsimple C ABI static archive (native no_std C archive verified; Darwin/other architectures/runtime startup integration partial). Full migration remains incomplete.",
   "python_dependency_inventory_tests_passed": 5,
   "host_source_status": {
     "implemented": 5,
@@ -94,7 +95,7 @@
   },
   "python_cmake_graph_tests_passed": 2,
   "native_libsimple": {
-    "scope": "Linux x86_64/std-linked partial port; Darwin backend, other architectures and no_std bootstrap pending",
+    "scope": "Linux x86_64 partial port with no_std panic-abort C-linked archive; Darwin backend, other architectures and actual runtime startup integration pending",
     "public_header_functions": 13,
     "external_symbols_preserved": 14,
     "state_size_bytes": 4,
@@ -102,7 +103,25 @@
     "safe_core_tests_passed": 7,
     "c_differential_summary": "abi=4:4 mutex=80000 cas=80000 once=1 publication=4277009102 rw=40000 cond=640",
     "independent_staged_c_stress": "Passed C-link once publication/completed null callback, 48000 mutex increments, 16000 writes concurrent with readers, 12 waiters through 100 notify-all generations",
-    "unsafe_ledger": "crates/darling-libsimple/SAFETY.txt"
+    "unsafe_ledger": "crates/darling-libsimple/SAFETY.txt",
+    "freestanding": {
+      "build": "cargo build --package darling-libsimple --lib --release --no-default-features --config profile.release.panic=\"abort\" --offline --locked",
+      "cargo_build_and_staging_use_this_configuration": true,
+      "c_link_flags": "-pthread; libc provides syscall and abort; no -ldl or -lm",
+      "differential_concurrency_passed": true,
+      "independent_review": "Separate isolated-target-directory build, C link and concurrency run passed; readelf DT_NEEDED only libc.so.6; no allocator/unwinder imports",
+      "staging_regressions": "Reject std/alloc/unwinder archive members; actual C stress link without dl/m; forked invalid null initializer SIGABRT with core dumps disabled",
+      "clippy_no_std_release_passed": true,
+      "artifact_sizes_bytes": {
+        "std_archive": 23348248,
+        "no_std_archive": 7745114,
+        "std_linked_c_harness": 23568,
+        "no_std_linked_c_harness": 23648
+      },
+      "size_measurement_limits": "Same local release toolchain and ABI C harness; archive size includes unused core/compiler-builtins members. Linked executable size essentially unchanged. No runtime speedup or memory improvement claimed.",
+      "consumer": "Native libsimple_darlingserver -> darlingserver_duct_tape, mapped by pinned CMake source; full consumer build not validated",
+      "c_only_panic_handler": "This final archive owns the panic handler; must not be combined with std Rust consumers or another panic runtime"
+    }
   },
   "upstream_baseline": {
     "default_cmake_configure_passed": true,

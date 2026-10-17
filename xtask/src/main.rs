@@ -61,15 +61,29 @@ fn parse(args: impl IntoIterator<Item = OsString>) -> Result<Task, String> {
 fn commands(task: &Task) -> Vec<Vec<&'static str>> {
     let test = vec!["test", "--workspace", "--offline", "--locked"];
     match task {
-        Task::Build => vec![vec![
-            "build",
-            "--workspace",
-            "--exclude",
-            "xtask",
-            "--release",
-            "--offline",
-            "--locked",
-        ]],
+        Task::Build => vec![
+            vec![
+                "build",
+                "--workspace",
+                "--exclude",
+                "xtask",
+                "--release",
+                "--offline",
+                "--locked",
+            ],
+            vec![
+                "build",
+                "--package",
+                "darling-libsimple",
+                "--lib",
+                "--release",
+                "--no-default-features",
+                "--config",
+                "profile.release.panic=\"abort\"",
+                "--offline",
+                "--locked",
+            ],
+        ],
         Task::Install(_) => vec![],
         Task::Check => vec![
             vec!["fmt", "--all", "--", "--check"],

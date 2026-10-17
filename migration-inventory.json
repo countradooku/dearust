@@ -198146,7 +198146,7 @@
       "status": "partial",
       "replacement": "crates/darling-libsimple/src/lib.rs",
       "scope": "Native Linux x86_64 synchronization C ABI with safe atomic core and documented unavoidable FFI/futex unsafe boundary",
-      "limitation": "Darling/Darwin futex backend, other architectures and no_std runtime bootstrap remain unported; native archive links Rust std"
+      "limitation": "Darling/Darwin futex backend, other architectures and runtime startup integration remain unported; Cargo stages a native no_std panic-abort C-linked archive relying on libc syscall and abort"
     },
     {
       "path": "src/libsysmon/CMakeLists.txt",

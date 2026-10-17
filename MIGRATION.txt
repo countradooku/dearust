@@ -38,8 +38,8 @@ There are 5 implemented source replacements: elfdep, getuuid, bsdln,
 print_wrapped_elf and darling-coredump. wrapgen has a functioning safe Rust
 parser/generator, but is marked partial because safe name lookup does not
 reproduce all dynamic-loader policy. Native libsimple is also partial: its Linux x86_64 synchronization C ABI
-and external cmpxchg helper work, while Darwin/no_std/other architectures
-remain unported. There are 27,267 pending superproject entries. Exact diagnostic text is not guaranteed. Each source replacement has
+and external cmpxchg helper work, including a native no_std C-linked archive.
+Darwin, other architectures and actual runtime startup integration remain unported. There are 27,267 pending superproject entries. Exact diagnostic text is not guaranteed. Each source replacement has
 behavioral and malformed-input regressions plus a pinned differential suite.
 These gates validate this Linux host slice, not the Darling runtime or macOS ABI.
 

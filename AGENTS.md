@@ -83,8 +83,10 @@ unsafe; C state conversion, callback calls and libc futex syscall are narrowly
 unsafe and documented. REQUEUE storage must remain alive/stable through ALL
 requeued waiters, beyond the notifying syscall. Nullable completed-once callback
 is supported. This source is PARTIAL: Darling/Darwin futex backend, other
-architectures and no_std runtime/bootstrap integration remain unported. Current
-native archive links Rust std; C consumers use -pthread -ldl -lm.
+architectures and runtime/bootstrap integration remain unported. Cargo
+build/staging emits a no_std panic-abort native archive; C consumers use -pthread.
+Normal Rust development/tests retain default std; see SAFETY.txt for C-only panic
+handler ownership. Darwin startup integration remains pending.
 
 Cargo xtask builds migrated packages and stages six tools plus the native archive
 using the typed graph xtask/host-artifacts.tsv. Real staged tools are executed;
@@ -164,3 +166,13 @@ behavior. Preserve all exported symbols, including helpers with external linkage
 Do not fake missing runtime subsystems, hide CMake inside build.rs, or describe
 source inventory/graph capture as completed migration. Full completion requires
 all remaining implementation, ABI/application compatibility and packaging gates.
+
+Continuation 2026-10-18: native no_std archive
+-------------------------------------------
+Cargo build and staging now explicitly disable libsimple's default std feature
+and use panic=abort. C syscall/abort are documented boundaries; no Darwin backend
+or full darlingserver consumer build is claimed. C ABI differential/concurrency,
+73 ordinary workspace tests, seven Python tests, strict normal/no_std Clippy,
+staged no-std archive member checks and SIGABRT invalid-callback test pass.
+Independent review rebuilt/linked/reran the C harness in an isolated target dir.
+See verification.json for exact record. Source/target status counts are unchanged.
