@@ -36,7 +36,13 @@
 #include <ipc/ipc_port.h>
 
 uintptr_t darling_lockset_current_thread(void) { return (uintptr_t)current_thread(); }
-int darling_lockset_priority(void) { return current_thread()->sched_pri; }
+int darling_lockset_priority(void) {
+    thread_t thread = current_thread();
+    thread_lock(thread);
+    int priority = thread->sched_pri;
+    thread_unlock(thread);
+    return priority;
+}
 bool darling_lockset_task_lock_active(uintptr_t value) {
     task_t task = (task_t)value;
     task_lock(task);
@@ -48,8 +54,11 @@ int darling_lockset_prepare_wait(uintptr_t event) { return assert_wait((event_t)
 int darling_lockset_block(void) { return thread_block(THREAD_CONTINUE_NULL); }
 void darling_lockset_wake(uintptr_t event) { thread_wakeup((event_t)event); }
 bool darling_lockset_make_port(uintptr_t id, uintptr_t *port) {
-    return ipc_kobject_make_send_lazy_alloc_port((ipc_port_t *)port,
+    ipc_port_t native_port = (ipc_port_t)*port;
+    bool donated = ipc_kobject_make_send_lazy_alloc_port(&native_port,
         (ipc_kobject_t)id, IKOT_LOCK_SET, IPC_KOBJECT_ALLOC_NONE, false, 0);
+    *port = (uintptr_t)native_port;
+    return donated;
 }
 void darling_lockset_drop_port(uintptr_t port) { ipc_port_dealloc_kernel((ipc_port_t)port); }
 lock_set_t convert_port_to_lock_set(ipc_port_t port) {
