@@ -1,0 +1,94 @@
+-- The C compiler identification is Clang 22.1.8
+-- The CXX compiler identification is Clang 22.1.8
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/clang - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/clang++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- The ASM compiler identification is Clang with GNU-like command-line
+-- Found assembler: /usr/bin/clang
+-- The ASM-ATT compiler identification is GNU
+-- Found assembler: /usr/bin/as
+Including component: stock
+Including component: cli
+Including component: python
+Including component: ruby
+Including component: perl
+Including component: dev_gui_common
+Including component: dev_gui_frameworks_common
+Including component: dev_gui_stubs_common
+Including component: gui_frameworks
+Including component: gui_stubs
+Including component: system
+Including component: core
+Including component: gui
+Including component: iokitd
+Python 2 not available; bytecode compilation is disabled
+-- Found Vulkan: /usr/lib64/libvulkan.so (found version "1.4.341")  missing components: glslc glslangValidator
+Found required libraries; building with Metal support
+-- Found dsymutil: /usr/bin/dsymutil
+-- Found Setcap: /usr/bin/setcap
+-- Compiler include path detected as /usr/bin/../lib/clang/22/include/
+-- Found BISON: /usr/bin/bison (found version "3.8.2")
+-- Found FLEX: /usr/bin/flex (found version "2.6.4")
+-- Found PkgConfig: /usr/bin/pkg-config (found version "2.5.1")
+-- Checking for one of the modules 'openssl'
+-- Checking for module 'fuse'
+--   Found fuse, version 2.9.9
+-- Performing Test CFLAG_Wall
+-- Performing Test CFLAG_Wall - Success
+-- Performing Test CFLAG_Wno_unknown_pragmas
+-- Performing Test CFLAG_Wno_unknown_pragmas - Success
+-- Performing Test CFLAG_Wno_unused_variable
+-- Performing Test CFLAG_Wno_unused_variable - Success
+-- Found X11: /usr/include
+-- Looking for XOpenDisplay in /usr/lib64/libX11.so;/usr/lib64/libXext.so
+-- Looking for XOpenDisplay in /usr/lib64/libX11.so;/usr/lib64/libXext.so - found
+-- Looking for gethostbyname
+-- Looking for gethostbyname - found
+-- Looking for connect
+-- Looking for connect - found
+-- Looking for remove
+-- Looking for remove - found
+-- Looking for shmat
+-- Looking for shmat - found
+-- Checking for module 'cairo'
+--   Found cairo, version 1.18.4
+-- Found Freetype: /usr/lib64/libfreetype.so (found version "2.14.3")
+-- Found ZLIB: /usr/lib64/libz.so (found version "1.3.1")
+-- Found PNG: /usr/lib64/libpng.so (found version "1.6.58")
+-- Found TIFF: /usr/lib64/libtiff.so (found version "4.7.2")
+-- Found JPEG: /usr/lib64/libjpeg.so (found version "62")
+-- Found GIF: /usr/lib64/libgif.so (found version "6.1.3")
+-- Checking for module 'fontconfig'
+--   Found fontconfig, version 2.17.0
+-- Found OpenGL: /usr/lib64/libOpenGL.so
+-- Checking for module 'libavcodec'
+--   Found libavcodec, version 62.28.103
+-- Checking for module 'libavformat'
+--   Found libavformat, version 62.12.103
+-- Checking for module 'libavutil'
+--   Found libavutil, version 60.26.103
+-- Found FFMPEG or Libav: /usr/lib64/libavcodec.so;/usr/lib64/libavformat.so;/usr/lib64/libavutil.so, /usr/include/ffmpeg
+-- Found FFmpeg: /usr/lib64/libavcodec.so;/usr/lib64/libavformat.so;/usr/lib64/libavutil.so
+-- Found PulseAudio: /usr/lib64/libpulse.so
+-- Checking for module 'dbus-1'
+--   Found dbus-1, version 1.16.2
+-- Checking for module 'egl'
+--   Found egl, version 1.5
+-- Performing Test HAVE_FFI_CALL
+-- Performing Test HAVE_FFI_CALL - Success
+-- Found FFI: /usr/lib64/libffi.so
+-- Looking for histedit.h
+-- Looking for histedit.h - found
+-- Found LibEdit: /usr/include (found version "2.11")
+-- Found zstd: /usr/lib64/libzstd.so
+-- Found LibXml2: /usr/lib64/libxml2.so (found version "2.12.10")
+-- Configuring done (8.7s)
+-- Generating done (5.5s)
+-- Build files have been written to: $BASELINE-build

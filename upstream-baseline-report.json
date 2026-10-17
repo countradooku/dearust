@@ -1,0 +1,1208 @@
+{
+  "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
+  "documentation_url": "https://docs.darlinghq.org/build-instructions.html",
+  "setup_command": "python3 tools/prepare_baseline.py UPSTREAM OBJECT_CACHE BASELINE --inventory dependency-inventory.json",
+  "setup": {
+    "materialized_dependency_trees": 160,
+    "independent_git_directories": true,
+    "network_used": false,
+    "git_lfs_smudging": false,
+    "tracked_root_status_after_configure": "",
+    "pointer_check": "Scanned all 100..1024-byte regular dependency files for the Git LFS pointer version prefix; root has no committed .gitattributes",
+    "remaining_git_lfs_pointers": [
+      {
+        "path": "src/external/swift/libswiftAVFoundation.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:06aa9a4164514f7f0339c086089861320b980bc3c1a727d7395fcf8447fb5fe7\nsize 130160\n"
+      },
+      {
+        "path": "src/external/swift/libswiftAccelerate.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:842012cdba008af77e0e5073c438fd6a3460baf6eeb50e219e4f6092077a5171\nsize 788096\n"
+      },
+      {
+        "path": "src/external/swift/libswiftAppKit.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:d1c2d78ddb7413ccd197ca3a533e98514747db7df0f0ee4ecb7fafb40c51dcf6\nsize 205632\n"
+      },
+      {
+        "path": "src/external/swift/libswiftCloudKit.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:29df41e4c95598a54361065649fef7f03aefd76c676b708da45b7ef11f068444\nsize 192096\n"
+      },
+      {
+        "path": "src/external/swift/libswiftCompression.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:f69916ac31c1a08bdc27a1626a8551a2d64b19b5643c3dfc817cc66eee3795e1\nsize 104272\n"
+      },
+      {
+        "path": "src/external/swift/libswiftContacts.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:b3bae6d95970b8a9cb91f3fbbf19948141f9807472edfc08453be6b5d07f1bcf\nsize 73152\n"
+      },
+      {
+        "path": "src/external/swift/libswiftCore.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:018c53767605d9daa7cbb3bd49bba3ec04e7ecc942e4d7389640a0a9e87fb327\nsize 6718752\n"
+      },
+      {
+        "path": "src/external/swift/libswiftCoreAudio.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:175d2c9b95347196aee733c5710ac19aff3537ac7b9ab0536778bc7a7e0f1704\nsize 80400\n"
+      },
+      {
+        "path": "src/external/swift/libswiftCoreData.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:fe27d0596905336bc222de5b1750154cdb0da9c5c950b97ebffe649ba7c1d415\nsize 104832\n"
+      },
+      {
+        "path": "src/external/swift/libswiftCoreFoundation.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:a88b169cc1e6886749d196ea8bb7253afcb1d8a17ec27e0a7cc7b7244f164fa4\nsize 46128\n"
+      },
+      {
+        "path": "src/external/swift/libswiftCoreGraphics.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:2971d1d472c0833cbb64cd91ddde767d1eaa34c7dd6ac98749a9a7a9c8f86cb7\nsize 189888\n"
+      },
+      {
+        "path": "src/external/swift/libswiftCoreImage.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:f5d6e38cffaa114d2eed488b3a4c2d492fb1b943df6a94be7a6c5e0382792352\nsize 54160\n"
+      },
+      {
+        "path": "src/external/swift/libswiftCoreLocation.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:ba6745a9d39b0e7653e2c779813ece6b1b3884f7c3d36b22808f3a06846ee8b1\nsize 63376\n"
+      },
+      {
+        "path": "src/external/swift/libswiftCoreMedia.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:269bf0c8e11c8773bc3aa81d738d8d1fe7f8b76f4aa3569da60d83edfd11e819\nsize 83072\n"
+      },
+      {
+        "path": "src/external/swift/libswiftCryptoTokenKit.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:a936c86ade56c0075a545cc0fe3dcbb5c9bee3360c2a61ee9f9c803df02bca67\nsize 62576\n"
+      },
+      {
+        "path": "src/external/swift/libswiftDarwin.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:0f0f1fdaf93052fcf5672a38b4058c20f0157ed70adf65303bee65269181d089\nsize 98624\n"
+      },
+      {
+        "path": "src/external/swift/libswiftDispatch.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:639b2c5d9a5a5d8781e8faddd186b0ce62bdcb3038c36b3fc1b6c98993cb8b45\nsize 356496\n"
+      },
+      {
+        "path": "src/external/swift/libswiftFoundation.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:96edf08ca2a9aa238b08ffa22b8abaa5d5d060486f9b501ab346f62e272506d3\nsize 3258048\n"
+      },
+      {
+        "path": "src/external/swift/libswiftGLKit.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:4a4fcbd55b0e93ae39e906cdd58c6796ecf11fd64441f6c88bf2038e6c77f378\nsize 68848\n"
+      },
+      {
+        "path": "src/external/swift/libswiftGameplayKit.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:150842bda6c4a706dccc3deda2c321e33f184784d4c28245db1148a49be80886\nsize 84400\n"
+      },
+      {
+        "path": "src/external/swift/libswiftIOKit.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:91279d2fc3944bfe1f8fe699f493f0663d085776391a22d817bf34f513888ce2\nsize 49664\n"
+      },
+      {
+        "path": "src/external/swift/libswiftIntents.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:45d1bd48b5181c94450c7d1d8fa8ee9d62eb6e544dea7b9819176cb864f5fa94\nsize 60688\n"
+      },
+      {
+        "path": "src/external/swift/libswiftMapKit.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:402e060d275a1399f1a99e8bf7670c12544c406ffec50dcd89d0adac282f8c3f\nsize 75008\n"
+      },
+      {
+        "path": "src/external/swift/libswiftMetal.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:f43db78ef5434887bf42971cf99183e2fbe645a8efac31bc188c81aff867bdc7\nsize 92624\n"
+      },
+      {
+        "path": "src/external/swift/libswiftMetalKit.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:8de307b9368607dd93f66fdbf06327481de2af799836c05c1d41ed5ccfe39afc\nsize 74000\n"
+      },
+      {
+        "path": "src/external/swift/libswiftModelIO.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:9b037731b16e343ec060afc4d06ee1488874b82d672387b0954d2944bf9d776a\nsize 77728\n"
+      },
+      {
+        "path": "src/external/swift/libswiftNaturalLanguage.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:f667e7caf88430a78c13d55ee072d9d2d7954885763f60c1a65dbdd0b1ba3b92\nsize 94672\n"
+      },
+      {
+        "path": "src/external/swift/libswiftNetwork.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:82e3e72260d54bc16d77748386213611b675363cb427155b894d5ffb5eee982b\nsize 435952\n"
+      },
+      {
+        "path": "src/external/swift/libswiftObjectiveC.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:92982133b534c1bc1f3c5f99340ec60301b014fdbb28ea1b1a467a852d449e30\nsize 63216\n"
+      },
+      {
+        "path": "src/external/swift/libswiftOpenCL.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:e929e136767ea64fda83034ba041cddcf6baa830c111c6a13b7277cd727f6cd4\nsize 46528\n"
+      },
+      {
+        "path": "src/external/swift/libswiftPhotos.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:8e7e2c8415037d6a9819ed3a133f810ed39d88e5f108f49fa06734be17dd1ce3\nsize 73040\n"
+      },
+      {
+        "path": "src/external/swift/libswiftQuartzCore.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:7f8c838b807551d6df51fb6034f8a880aa1a1d0e6e1858a8de45d16816f8b5e3\nsize 66992\n"
+      },
+      {
+        "path": "src/external/swift/libswiftRemoteMirror.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:6e3fe8fe5849a510b3f55829d791e90a0356fc7c4bbb7112d367c083ece59d25\nsize 566272\n"
+      },
+      {
+        "path": "src/external/swift/libswiftSafariServices.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:0806f7b1dd12f002246c1f04c8f61ac47a90166d3169545a84c9a7d42b553ffd\nsize 63520\n"
+      },
+      {
+        "path": "src/external/swift/libswiftSceneKit.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:8aaf5114930f22a4b81014cd9fadf62ed91c3036b3dd11df0a56c60be125ae51\nsize 99648\n"
+      },
+      {
+        "path": "src/external/swift/libswiftSpriteKit.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:ee151e81e01e4b8137326fc56a848e4e2a409ce96e02569eecabff26cd159624\nsize 82560\n"
+      },
+      {
+        "path": "src/external/swift/libswiftSwiftLang.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:dc2e2d338d5572c575824b0f44cbe9e17a83fd9351b612f0b7d4912d541d29be\nsize 288688\n"
+      },
+      {
+        "path": "src/external/swift/libswiftSwiftOnoneSupport.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:c42a9d326c8fe2d36bf51c46b3f40c2456e5708722941db57f3056be0aa16283\nsize 404128\n"
+      },
+      {
+        "path": "src/external/swift/libswiftVision.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:434d0a58aac0d1e7426ad698d22ad754ba395ea812136000c854728e96c3090f\nsize 64816\n"
+      },
+      {
+        "path": "src/external/swift/libswiftXCTest.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:ab4d9ed79d65bea29083c58f5b8996e1db6630f274eb77d8b62c291388402d2b\nsize 116080\n"
+      },
+      {
+        "path": "src/external/swift/libswiftXPC.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:ce0a73c5c9ed4f1383e207e2188dabc8f0233f9e7f67ae33d4909fb0d45efa50\nsize 49696\n"
+      },
+      {
+        "path": "src/external/swift/libswift_Differentiation.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:49ba65e350cae2834e05a84eb5ae2fdb302b2cbf46a1aff3319518941071852f\nsize 36576\n"
+      },
+      {
+        "path": "src/external/swift/libswiftos.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:17ed3145a72f7904d8d44962cf32afc5947c84c8efdd2e4975289e861439e075\nsize 70624\n"
+      },
+      {
+        "path": "src/external/swift/libswiftsimd.dylib",
+        "contents": "version https://git-lfs.github.com/spec/v1\noid sha256:feefb3b130f0fc6c57707ef3afdecbcd8c05e786999183296a357762d74907a4\nsize 312720\n"
+      }
+    ]
+  },
+  "host": {
+    "os_release": "NAME=\"Nobara Linux\"\nVERSION=\"44 (KDE Plasma Desktop Edition)\"\nID=nobara\nID_LIKE=\"rhel centos fedora\"\nVERSION_ID=44\nVERSION_CODENAME=\"\"\nPLATFORM_ID=\"platform:f44\"\nPRETTY_NAME=\"Nobara Linux 44 (KDE Plasma Desktop Edition)\"\nANSI_COLOR=\"0;38;2;60;110;180\"\nLOGO=nobara-logo-icon\nCPE_NAME=\"cpe:/o:nobaraproject:nobara:44\"\nDEFAULT_HOSTNAME=\"nobara\"\nHOME_URL=\"https://nobaraproject.org/\"\nDOCUMENTATION_URL=\"https://wiki.nobaraproject.org/\"\nSUPPORT_URL=\"https://www.nobaraproject.org/\"\nBUG_REPORT_URL=\"https://github.com/nobara-project/rpm-baseos\"\nREDHAT_BUGZILLA_PRODUCT=\"Nobara\"\nREDHAT_BUGZILLA_PRODUCT_VERSION=44\nREDHAT_SUPPORT_PRODUCT=\"Nobara\"\nREDHAT_SUPPORT_PRODUCT_VERSION=44\nSUPPORT_END=2026-12-02\nVARIANT=\"KDE Plasma Desktop Edition\"\nVARIANT_ID=kde\n",
+    "architecture": "x86_64",
+    "tools": {
+      "git": {
+        "path": "/usr/bin/git",
+        "version": [
+          "git version 2.55.0"
+        ]
+      },
+      "git-lfs": {
+        "path": "/usr/bin/git-lfs",
+        "version": [
+          "git-lfs/3.7.1 (GitHub; linux amd64; go 1.26.5-X:nodwarf5)"
+        ]
+      },
+      "cmake": {
+        "path": "/usr/bin/cmake",
+        "version": [
+          "cmake version 4.3.0"
+        ]
+      },
+      "clang": {
+        "path": "/usr/bin/clang",
+        "version": [
+          "clang version 22.1.8 (Fedora 22.1.8-4.fc44)"
+        ]
+      },
+      "clang++": {
+        "path": "/usr/bin/clang++",
+        "version": [
+          "clang version 22.1.8 (Fedora 22.1.8-4.fc44)"
+        ]
+      },
+      "make": {
+        "path": "/usr/bin/make",
+        "version": [
+          "GNU Make 4.4.1"
+        ]
+      },
+      "ninja": {
+        "path": "/usr/bin/ninja",
+        "version": [
+          "1.13.2"
+        ]
+      },
+      "bison": {
+        "path": "/usr/bin/bison",
+        "version": [
+          "bison (GNU Bison) 3.8.2"
+        ]
+      },
+      "flex": {
+        "path": "/usr/bin/flex",
+        "version": [
+          "flex 2.6.4"
+        ]
+      },
+      "llvm-config": {
+        "path": "/usr/bin/llvm-config",
+        "version": [
+          "22.1.8"
+        ]
+      },
+      "setcap": {
+        "path": "/usr/bin/setcap",
+        "version": []
+      },
+      "python2": {
+        "path": null,
+        "version": []
+      },
+      "python3": {
+        "path": "/usr/bin/python3",
+        "version": [
+          "Python 3.14.7"
+        ]
+      },
+      "pkg-config": {
+        "path": "/usr/bin/pkg-config",
+        "version": [
+          "2.5.1"
+        ]
+      }
+    },
+    "pkg_config": {
+      "fuse": {
+        "available": true,
+        "version": "2.9.9"
+      },
+      "libudev": {
+        "available": true,
+        "version": "259"
+      },
+      "libelf": {
+        "available": true,
+        "version": "0.196"
+      },
+      "cairo": {
+        "available": true,
+        "version": "1.18.4"
+      },
+      "glu": {
+        "available": true,
+        "version": "9.0.3"
+      },
+      "gl": {
+        "available": true,
+        "version": "1.2"
+      },
+      "libtiff-4": {
+        "available": true,
+        "version": "4.7.2"
+      },
+      "freetype2": {
+        "available": true,
+        "version": "26.6.20"
+      },
+      "libxml-2.0": {
+        "available": true,
+        "version": "2.12.10"
+      },
+      "egl": {
+        "available": true,
+        "version": "1.5"
+      },
+      "fontconfig": {
+        "available": true,
+        "version": "2.17.0"
+      },
+      "libbsd": {
+        "available": true,
+        "version": "0.12.2"
+      },
+      "xrandr": {
+        "available": true,
+        "version": "1.5.4"
+      },
+      "xcursor": {
+        "available": true,
+        "version": "1.2.3"
+      },
+      "libgif": {
+        "available": false,
+        "version": null
+      },
+      "libpulse": {
+        "available": true,
+        "version": "17.0"
+      },
+      "libavformat": {
+        "available": true,
+        "version": "62.12.103"
+      },
+      "libavcodec": {
+        "available": true,
+        "version": "62.28.103"
+      },
+      "libswresample": {
+        "available": true,
+        "version": "6.3.103"
+      },
+      "dbus-1": {
+        "available": true,
+        "version": "1.16.2"
+      },
+      "xkbfile": {
+        "available": true,
+        "version": "1.1.3"
+      },
+      "openssl": {
+        "available": true,
+        "version": "3.5.9"
+      },
+      "vulkan": {
+        "available": true,
+        "version": "1.4.341"
+      },
+      "libcurl": {
+        "available": true,
+        "version": "8.18.0"
+      },
+      "libedit": {
+        "available": true,
+        "version": "3.1"
+      }
+    }
+  },
+  "configure": {
+    "command": "cmake -S BASELINE -B BUILD",
+    "exit_code": 0,
+    "source_modifications": [],
+    "option_overrides": [],
+    "generated_graph": true,
+    "cache_selection": {
+      "CMAKE_BUILD_TYPE": "",
+      "CMAKE_CXX_COMPILER": "/usr/bin/clang++",
+      "CMAKE_C_COMPILER": "/usr/bin/clang",
+      "CMAKE_INSTALL_PREFIX": "/usr/local",
+      "CMAKE_MAKE_PROGRAM": "/usr/bin/gmake",
+      "COMPILE_PY2_BYTECODE": "AUTO",
+      "COMPONENTS": "stock",
+      "ENABLE_METAL": "AUTO",
+      "TARGET_i386": "ON",
+      "TARGET_x86_64": "ON",
+      "CMAKE_GENERATOR": "Unix Makefiles"
+    },
+    "log_file": "upstream-baseline-configure.log",
+    "observed_optional_limitation": "Python 2 unavailable; optional Python bytecode precompilation automatically disabled",
+    "prerequisite_failures": []
+  },
+  "runtime_build": {
+    "attempted": false,
+    "reason": "This gate reproduces upstream configuration only; compiling the complete runtime and executing ABI/application tests remain pending"
+  },
+  "dependency_pins": [
+    {
+      "path": "src/external/AvailabilityVersions",
+      "commit": "e28c029a8fa46fa933cbf6d6d9a1c00978c5fad1",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/BerkeleyDB",
+      "commit": "1411173f0eb71f96ab6134de4e052d16acb8c673",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/DSTools",
+      "commit": "e015256b16965ac032412f2277c608c7213c03b3",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/DirectoryService",
+      "commit": "feb9742f574ab812a210634fd3997f19b645095f",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/Heimdal",
+      "commit": "3dfb09751063d6c144143edfb2ef13aa3e8c57de",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/IOKitTools",
+      "commit": "df58be2f134f7adbdd3c760a165ad3501ee82fb5",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/IOKitUser",
+      "commit": "534684e6748dffbd875c6cd1942477a52b66a077",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/IOKitUser/darling/submodules/IOGraphics",
+      "commit": "905186151d713259296f3ae9458195a7097ea323",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/IOKitUser/darling/submodules/IOHIDFamily",
+      "commit": "189e98e32092d5f5a2c365cc85fd36ac7da2d371",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/IONetworkingFamily",
+      "commit": "28afb431947b8e8dbbb120db7632ba6de229bf23",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/IOStorageFamily",
+      "commit": "33178aef923d9c99f1819db2ada253054f4dd812",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/JavaScriptCore",
+      "commit": "93410cc0dbc7a961d58d048c151117acdb18a566",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/Libinfo",
+      "commit": "93d242ce3f86d1de67522279edb3a2dcb23f30c7",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/MITKerberosShim",
+      "commit": "39c014d0c54f9ae922be0d697aa6cc1b19c117b6",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/OpenAL",
+      "commit": "7c60cf7109b7a3a8f5d41ed8b84d340a8d768525",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/OpenDirectory",
+      "commit": "67a8ad2ed0b06775bf53839446e2df7d49ab1c96",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/OpenLDAP",
+      "commit": "3b15390bbcad8234aabb3246b0552105b17118d0",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/SecurityTokend",
+      "commit": "c826860db4061667af6f0c3aa55282aab0924e1a",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/SmartCardServices",
+      "commit": "ec53ce56972565047a716ab166176f203f520393",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/TextEdit",
+      "commit": "99ec72a94dab166eefa264e9802ebd0d80aca845",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/WTF",
+      "commit": "88a36e496a6f285a9e15140c2c431b817bae353b",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/WebCore",
+      "commit": "47fac4c8130ea9afc9b9df68c81ade56ca7ea57e",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/adv_cmds",
+      "commit": "56dcf5ebeb822650d7929f666be58544b2391f6e",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/apr",
+      "commit": "5aa6eba89e497a67f1b9db7842371141a8616674",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/architecture",
+      "commit": "63162c4744e9bd07673d4c29f8825f105f670e44",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/awk",
+      "commit": "5d46e527461bce5fa10b89320a1c6ce5f1ae38b6",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/bash",
+      "commit": "2ebbba45039182784202b17069e122367ee63946",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/basic_cmds",
+      "commit": "b1ed4f0f6a981590542071d8b36535cf3e441be0",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/bc",
+      "commit": "666e93c8223f509ae9c3c69e3c20af45d49a749c",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/bind9",
+      "commit": "7542d50b3087edb4a46a2bdb11ba75034aa2bffa",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/bmalloc",
+      "commit": "66c88bc0b977ef843a9eaa706d586d9cec2608da",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/bootstrap_cmds",
+      "commit": "0f300a7a04bb1174a3b7db58b57d738aadc14e13",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/bsm",
+      "commit": "bec0dd61bb07469d1fcb3985822d350abc9934f7",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/bzip2",
+      "commit": "dc8c6839093afed1f288715260d32314ad362084",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/cctools",
+      "commit": "8777b6dc7c4de87087c028e17db075795b3684d3",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/cctools-port",
+      "commit": "d9456c221e1f462e17c0b3297748bc089d5a861e",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/cfnetwork",
+      "commit": "e7e3db881008d883f82914765a72ce842bcba735",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/cocotron",
+      "commit": "c8d38d16a9f613d300157bebbab2b9501bc0c274",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/commoncrypto",
+      "commit": "2434540f41a5f94f149cfddd67da244961b716e5",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/compiler-rt",
+      "commit": "5fd9bc0effa307b99b35da59ce579e8e031c22da",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/configd",
+      "commit": "98e52de19c52f7938e581ed20385f38abd7fa197",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/copyfile",
+      "commit": "ed6094c9a2f8ba19aa55b7b504c3665797078e8f",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/corecrypto",
+      "commit": "875f1cd9e75b0029d872b88ce8a77da276c00c84",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/corecrypto/tests/ctest",
+      "commit": "4c49efda86692f5cad36bb32b53be63efcea6664",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/corefoundation",
+      "commit": "a3640a77410cf1825f7855172b1551ae7917c461",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/corefoundation/submodules/swift-corelibs-foundation",
+      "commit": "ea1ea0bb416025a8cc5a282df03c2e8f12788e2d",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/coretls",
+      "commit": "b61a4f075726e7d5ef4652033f8d7b829c008d06",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/crontabs",
+      "commit": "b5bc00d2a75f6c622976e2ebbe244fb2d7d602ea",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/csu",
+      "commit": "93b25cf0930a727b44fa50893bffd71056ad032f",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/cups",
+      "commit": "51b7c251ef5ff81adc20284544394de8cc2e1315",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/curl",
+      "commit": "92f54fd7eceabed2c2382a4acc0f7293dedd92ff",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/darling-dmg",
+      "commit": "1a6de10c5886c40a414090701b2520bd0417ce29",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/darlingserver",
+      "commit": "89751e64bc6c2082f7725061824ee0e33395b0de",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/dbuskit",
+      "commit": "890e51fda949e4dd2c46765e39074f790c10ca18",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/doc_cmds",
+      "commit": "60c6a2b858abe1f27b441f479aad2b0a9d0f9ba2",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/dtrace",
+      "commit": "fd2a404c772e8ce1d29f210032e9831fa845f688",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/dyld",
+      "commit": "63f667cf06d7ed59553adebb0c8d70a117135ac9",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/energytrace",
+      "commit": "e277fcfd430ddab2d8b52187cf480f2857629104",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/expat",
+      "commit": "70006a0c32d7c8653c11e53fc0c905f1bb498218",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/file",
+      "commit": "c6ee65265d253d24b1a496f8ca54b5e449fe108c",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/file_cmds",
+      "commit": "c0d72b5c98888a9d8e0b73cf8aac0df908e615f2",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/files",
+      "commit": "1c45a50ae0d6ca5bbb8b01d2b588f52bc0e39263",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/fmdb",
+      "commit": "ad2fdd660d02c24b262d64d7d23d3d4645768f44",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/foundation",
+      "commit": "55a4341b470c2a56fea667c1d2167fb074226f04",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/glut",
+      "commit": "b53a2d8f0c6dc0c2052aef410a120d14ee553056",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/gnudiff",
+      "commit": "ae0ab716658296164a032be7406f082cdc31c954",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/gnutar",
+      "commit": "1414bc8a8bd2e9dae701831e749febe2e2e84d68",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/gpatch",
+      "commit": "49acc897e8cb832a26b7ac4d2f7db51d3c6ba037",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/grep",
+      "commit": "62d70fada3a01de87aff927a86b8df0f7f2a837a",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/groff",
+      "commit": "10dd5a6be4915a99065bc15dfc6b6b1e9e1a2714",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/icu",
+      "commit": "6b609b2b0ce9a620543f357de4e549f09afec4ea",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/installer",
+      "commit": "88764e6149f92f1747442c27ab00231f40de278c",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/iokitd",
+      "commit": "5549ac4cd2db923c256f016a1381b3bfb716730a",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/keymgr",
+      "commit": "43b4230aec2e9018b0ffd3069b8b23a34ba257fb",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/less",
+      "commit": "a6bc77c8e72aaa35da92b903172a70eaa4ef78fa",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libarchive",
+      "commit": "998d739c602a1b35e2377ec9161e9c13d1d8604d",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libauto",
+      "commit": "2be7312b25736a8e9fc12058d63cbb79eb5f4e25",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libc",
+      "commit": "5a38c8dabf9e76b39407c24bc13134e33e5594e6",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libclosure",
+      "commit": "b4122f19c89512d9e930259a85c5f2674eff2b2b",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libcxx",
+      "commit": "c47677d3ba33bdabbfb07e75f531831579355a2d",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libcxxabi",
+      "commit": "c9c851718eb304a9aefa097aeaaf8c3bd1dff1bc",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libdispatch",
+      "commit": "380f03c180b80d940134fb35783ddc714784a53a",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libedit",
+      "commit": "f9b44b8541614e33b09451fc2847f7e30bfb9b70",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libffi",
+      "commit": "c796ec121cfd950aa5cc901ea47854a8431948ac",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libiconv",
+      "commit": "0d6f47d33a7cc97e468e864099fff74875b41937",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libkqueue",
+      "commit": "b0795a2e1dab5331116770139bfea8d832478f5f",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/liblzma",
+      "commit": "855ebc93f8208ae4b6e77a018d4ba4a4be4d2ab7",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libmalloc",
+      "commit": "a57991e2651226a675654bd96e5d9ab6bec288c5",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libnetwork",
+      "commit": "56c5fad43f24a40d8ca7f8a1d0badedfeaf7e64e",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libnotify",
+      "commit": "98156d3f847a3ced6c5f52c12a889047bc4f9b20",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libplatform",
+      "commit": "5a3e5b529d25c70257dcfa97e94f1826e71e9f40",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libpthread",
+      "commit": "f07f265bfbcf071c1adfc808de971e053ea5edc5",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libresolv",
+      "commit": "cf955392e5449efb269b8b3510c755085fd36a2d",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libressl-2.2.9",
+      "commit": "c5e9edb9d82ccf5fde5d8ae32b162fec8fe11318",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libressl-2.5.5",
+      "commit": "1f663b5bdc9082178717c080e4728fe3e7084de4",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libressl-2.6.5",
+      "commit": "30826df38d7c0f416158a94e0112c928188e0327",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libressl-2.8.3",
+      "commit": "2a56b36b77a00573c53ccd8e6932eb136172c950",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/librpcsvc",
+      "commit": "0cc1d42e53c61446616719597e96b29aeda51eb3",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libstdcxx",
+      "commit": "73eb757fe23170c372bef17d6de41787c1271c80",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libsystem",
+      "commit": "08df454b6eb0df9400aa4c39839a7efd6efd2c3c",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libtelnet",
+      "commit": "1ebd4eef48d06e6411ed2a0f60ba5d3fce5ab455",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libtrace",
+      "commit": "8cf07f02b15f7dca6436882a03678fff0392eaf6",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libunwind",
+      "commit": "a91da1a0e262e04eb601152a84228ff733e48422",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libutil",
+      "commit": "e3782a467c248c8d181aba1200ee0642abb65baf",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libxml2",
+      "commit": "d4f2967c8ca84a23a886978098c0520fe2963b92",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libxpc",
+      "commit": "394e033333d3c253a12f08a99090c113b0917d00",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libxpc/test/ctest",
+      "commit": "cd46041baf3f131fe74032967566c7321adcaa01",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/libxslt",
+      "commit": "50d22bd5b761a1885009b690e48d858ff73e768b",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/lzfse",
+      "commit": "451f291743bb919cb1b78ced4110402fca52cf97",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/mDNSResponder",
+      "commit": "7e38ef562b4f3d41bffabb3e30d844d8042d3bbd",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/mail_cmds",
+      "commit": "4afbcf4b9b8a6c33acaf7e9025e51ce72b3725a7",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/man",
+      "commit": "9af6690f3c7c3c713bb0a20ba1163d3c4278257d",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/metal",
+      "commit": "ae20248dc144beab899e38752f5a530f28a0ea56",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/metal/deps/indium",
+      "commit": "8423a7d2f053167030d2bc4a227f96243c740667",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/misc_cmds",
+      "commit": "85b24ec0e2625d75e7ee75b597b9134a49d18b1f",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/nano",
+      "commit": "7514f5f1115fffedd8fc2095107ca86ff82c54d6",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/ncurses",
+      "commit": "4cc72a9a1bce214593c10811b0154a8d51db0239",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/netcat",
+      "commit": "fd29177d56d84f88406e33784c327ebabfe7be58",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/network_cmds",
+      "commit": "9a0a90e2021ecdde91986b91f65a236eda158023",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/nghttp2",
+      "commit": "1a1853837b4350d4393bd25e1e4cb6018ab2d918",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/nghttp2/third-party/mruby",
+      "commit": "7c91efc1ffda769a5f1a872c646c82b00698f1b8",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/nghttp2/third-party/neverbleed",
+      "commit": "b967ca054f48a36f82d8fcdd32e54ec5144f2751",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/objc4",
+      "commit": "1a12df76d12bfc9fdfffadb290f7742763568765",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/openjdk",
+      "commit": "5a541c1844a9508e48b3addaf2d38775683abb38",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/openpam",
+      "commit": "8362545bac04032fcf59287cd66e6f4662a3692b",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/openpam/darling/submodules/pam_modules",
+      "commit": "241bbee0da845d1dfebc747b16a62aaed22f165b",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/openssh",
+      "commit": "9137305e5793d31124bcf2fdf0c6fa28c2e3e812",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/openssl",
+      "commit": "dc7bf84efa5a0befa0d970d4d5177853ac448d6f",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/openssl_certificates",
+      "commit": "cca4f47e3ca18b58961157ef0ec6a6fc135b8cd2",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/passwordserver_sasl",
+      "commit": "45019fa25adf5ad5713d9e39df3b72e420dccc96",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/patch_cmds",
+      "commit": "0670c7fbadfd715ac78d5476552788416cad0020",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/pcre",
+      "commit": "6f67e33869a2b08da9465034c41e64e16fc7faf9",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/perl",
+      "commit": "a65d68be2146d85928e511aabc8f3a2b05e564ba",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/pyobjc",
+      "commit": "d1a7440efe1c1090b256273ae91831186f7afde4",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/python",
+      "commit": "4856509729cc320006a1235291e47408cd7b13ce",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/python_modules",
+      "commit": "24d01b41cb38fafc810cdd27562224c4014a4761",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/remote_cmds",
+      "commit": "3bb9f88724726d0d3073c04dfdc4785564113341",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/removefile",
+      "commit": "3cd493871f27130f9cf64c31daab9cca2ee17726",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/rsync",
+      "commit": "316c5b6b2780a28179f692f3fc0d63ebc2985705",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/ruby",
+      "commit": "423f2439478d2e24d7c19b2e0ea4a67ee3e80c3d",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/screen",
+      "commit": "4bed52587563ede850bf9ff834567478ac1e616b",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/security",
+      "commit": "3cfffcf2c5b5900169c964facdf42cc05c23005c",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/shell_cmds",
+      "commit": "5191dabbeff0aec230fc1275bae1653281ba52b2",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/sqlite",
+      "commit": "3472e2568cb7fcc25fe91af80da8d2fe884d9ac0",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/swift",
+      "commit": "471514f4b4985a604b192e1facac9bbc53dedad3",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/syslog",
+      "commit": "36ab27964cac4affe3907a598047bd21b8958919",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/system_cmds",
+      "commit": "b01129f3dc0ecab524dbd0fd08e29ec9f0e18196",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/tcsh",
+      "commit": "7737644ec31303be19c533aab093209f3458e060",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/text_cmds",
+      "commit": "3edd740c82b8b87c17ec9cfaae7606f6176626df",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/top",
+      "commit": "4e27f81b5cfeef9d31d8fe5d938a80d26cca9ab5",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/usertemplate",
+      "commit": "5f8cca97aa03ff9290d6ccc0a4d185aa1a913875",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/vim",
+      "commit": "7f8da1dd66fc8f0654ebfa597b6013c8cf15185a",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/xar",
+      "commit": "887bd4f42eb4ac9139a7f621b5811065aa86f3e3",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/xcbuild",
+      "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/xcbuild/ThirdParty/googletest",
+      "commit": "a2b8a8e07628e5fd60644b6dd99c1b5e7d7f1f47",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/xcbuild/ThirdParty/linenoise",
+      "commit": "c894b9e59f02203dbe4e2be657572cf88c4230c3",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/xnu",
+      "commit": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/zip",
+      "commit": "caf41ebbc3ebab0250e4d13aa42221ef91a9802c",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/zlib",
+      "commit": "677de9b1c2bea1e428f56d8fc63300aa471eaf99",
+      "independent_git_directory": true
+    },
+    {
+      "path": "src/external/zsh",
+      "commit": "4a7a6ebf6216395c7db698a4993db16e484aa54d",
+      "independent_git_directory": true
+    }
+  ]
+}

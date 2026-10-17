@@ -1,0 +1,23 @@
+Reproduce the pinned upstream configuration gate
+===============================================
+
+  python3 tools/prepare_baseline.py UPSTREAM OBJECT_CACHE BASELINE \
+    --inventory dependency-inventory.json
+  cmake -S BASELINE -B BUILD
+
+Choose absent or empty BASELINE/BUILD directories. UPSTREAM is any local clone
+containing the pinned Darling commit. OBJECT_CACHE is the bare object cache used
+by dependency_inventory.py; an initialized original cctools-port store can supply
+that dependency when it is not cached. All 160 dependency commits must already be
+available. This preparation does not fetch from the network or modify UPSTREAM.
+Every created repository has its own .git and copied objects; no Git alternates,
+worktree shared config, or object hardlinks are used. Checkout uses detached exact
+commits. Hooks and global/system Git configuration are disabled during setup.
+LFS smudging is disabled, so pointer presence is a separate prerequisite check.
+
+The recorded upstream-baseline-report.json and upstream-baseline-configure.log
+capture the observed default configuration with the actual installed host tools.
+The log normalizes the source and build absolute directories to $BASELINE/$BUILD.
+The report records exact pins, tools, defaults, and prerequisite observations.
+Configuration success alone does not prove the runtime builds or applications run.
+No system package installation or source changes are part of this gate.
