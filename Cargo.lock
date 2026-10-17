@@ -34,6 +34,13 @@ name = "dearust-lockset"
 version = "0.1.0"
 
 [[package]]
+name = "dearust-lstat"
+version = "0.1.0"
+dependencies = [
+ "dearust-errno",
+]
+
+[[package]]
 name = "dearust-process"
 version = "0.1.0"
 

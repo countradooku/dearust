@@ -7,3 +7,4 @@ object	dearust_errno	dearust-errno	-	private	objects/errno.o	src/external/xnu/da
 staticlib	simple_darling	dearust-libsimple	-	default	lib/liblibsimple_darling.a	src/libsimple/CMakeLists.txt
 object	dearust_process	dearust-process	-	private	objects/process.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_guarded	dearust-guarded	-	private	objects/guarded.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+object	dearust_lstat	dearust-lstat	-	private	objects/lstat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt

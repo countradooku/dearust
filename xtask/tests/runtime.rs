@@ -36,7 +36,7 @@ fn check(triple: &str, label: &str) {
     };
     install();
     assert!(!temp.0.join("wrong-target-dir").exists());
-    let names = ["libsimple", "futex", "errno", "guarded"];
+    let names = ["libsimple", "futex", "errno", "guarded", "lstat"];
     let initial: Vec<_> = names
         .iter()
         .map(|name| fs::read(stage.join(format!("objects/{name}.o"))).unwrap())
@@ -73,6 +73,10 @@ fn check(triple: &str, label: &str) {
             .iter()
             .map(|s| format!("{prefix}{s}"))
             .collect(),
+            "lstat" => ["sys_lstat", "sys_lstat64"]
+                .iter()
+                .map(|s| format!("{prefix}{s}"))
+                .collect(),
             "guarded" => [
                 "guard_table_add",
                 "guard_table_modify",
@@ -100,6 +104,26 @@ fn check(triple: &str, label: &str) {
                 format!("{prefix}__linux_futex_reterr"),
                 format!("{prefix}__simple_abort"),
             ],
+            "lstat" => {
+                let mut imports = vec![
+                    "dearust_get_perthread_wd",
+                    "linux_syscall",
+                    "memcpy",
+                    "stat_linux_to_bsd",
+                    "stat_linux_to_bsd64",
+                    "vchroot_expand",
+                    if triple.contains("apple") {
+                        "__bzero"
+                    } else {
+                        "memset"
+                    },
+                ]
+                .into_iter()
+                .map(|s| format!("{prefix}{s}"))
+                .collect::<Vec<_>>();
+                imports.sort();
+                imports
+            }
             "guarded" => vec![
                 format!("{prefix}close_internal"),
                 format!("{prefix}libsimple_lock_lock"),
@@ -121,7 +145,7 @@ fn check(triple: &str, label: &str) {
     let manifest = fs::read(stage.join("darling-runtime-artifacts.tsv")).unwrap();
     assert!(String::from_utf8_lossy(&manifest).starts_with(&format!("# target {triple}\n")));
     if triple.contains("apple") {
-        for (name, count) in [("errno", 2), ("guarded", 5)] {
+        for (name, count) in [("errno", 2), ("guarded", 5), ("lstat", 2)] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
                 .arg(stage.join(format!("objects/{name}.o")))
@@ -136,6 +160,33 @@ fn check(triple: &str, label: &str) {
                 count
             );
         }
+    }
+    if !triple.contains("apple") {
+        let driver = Path::new(env!("CARGO_MANIFEST_DIR")).join("../tools/fixtures/lstat-native.c");
+        let executable = temp.0.join("lstat-native");
+        let compile = Command::new("clang")
+            .args(["-O2", "-Wall", "-Wextra", "-Werror"])
+            .arg(driver)
+            .arg(stage.join("objects/lstat.o"))
+            .arg("-o")
+            .arg(&executable)
+            .output()
+            .unwrap();
+        assert!(
+            compile.status.success(),
+            "{}",
+            String::from_utf8_lossy(&compile.stderr)
+        );
+        let result = Command::new(executable).output().unwrap();
+        assert!(
+            result.status.success(),
+            "{}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+        assert!(
+            String::from_utf8_lossy(&result.stdout)
+                .contains("raw syscall regular/symlink metadata")
+        );
     }
     install();
     for (name, bytes) in names.iter().zip(initial) {
