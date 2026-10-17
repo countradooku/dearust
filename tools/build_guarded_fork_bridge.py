@@ -8,16 +8,18 @@ import subprocess
 from relink_system_kernel import KERNEL, digest
 
 
+RAW_FORK = '#ifdef SYS_fork\n\tret = LINUX_SYSCALL(__NR_fork);\n#else\n\tret = LINUX_SYSCALL(__NR_clone, LINUX_SIGCHLD, 0);\n#endif'
+NATIVE_FORK = '\tret = elfcalls()->fork();'
+
+
 def patch(text):
-    anchor = '\tret = elfcalls()->fork();'
-    if text.count(anchor) != 1:
-        raise ValueError('requires the matching native ELF fork implementation')
-    return text.replace(anchor, '''\textern void guard_table_prefork(void);
-\textern void guard_table_postfork_parent(void);
-\tguard_table_prefork();
-\tret = elfcalls()->fork();
-\t/* Release on success AND failure; child resets its inherited lock below. */
-\tif (ret != 0) guard_table_postfork_parent();''')
+    matches = [(anchor, text.count(anchor)) for anchor in (NATIVE_FORK, RAW_FORK)]
+    if sum(count for _, count in matches) != 1:
+        raise ValueError('requires exactly one supported native or pinned raw fork block')
+    anchor = next(anchor for anchor, count in matches if count == 1)
+    prepare = '\textern void guard_table_prefork(void);\n\textern void guard_table_postfork_parent(void);\n\tguard_table_prefork();\n'
+    complete = '\n\t/* Release on success AND failure; child resets its inherited lock below. */\n\tif (ret != 0) guard_table_postfork_parent();'
+    return text.replace(anchor, prepare + anchor + complete)
 
 
 def main():
