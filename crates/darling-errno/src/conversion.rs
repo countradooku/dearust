@@ -8,6 +8,7 @@ pub const TRANSLATION_ARRAY_LENGTH: usize = 512;
 ///
 /// `i32::MIN` is unknown and passes through without signed-negation overflow.
 #[must_use]
+#[inline]
 pub const fn linux_to_bsd(err: i32) -> i32 {
     let translated = match err.unsigned_abs() {
         1 => 1,    // LINUX_EPERM -> EPERM
