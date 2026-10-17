@@ -41,7 +41,10 @@ def run_process(argv, env, timeout):
             process.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
             timed_out = True
-            os.killpg(process.pid, signal.SIGKILL)
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass  # The launcher can exit between timeout and killpg.
             process.wait(timeout=5)
         out.seek(0)
         err.seek(0)

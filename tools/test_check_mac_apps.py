@@ -24,6 +24,12 @@ class CaptureTests(unittest.TestCase):
         finally:
             os.kill(child, signal.SIGKILL)
 
+    def test_timeout_kills_and_reaps_exact_launcher_group(self):
+        record = apps.run_process([sys.executable, '-c', 'import time; time.sleep(30)'], os.environ.copy(), 0.05)
+        self.assertTrue(record['timed_out'])
+        self.assertLess(record['exit_code'], 0)
+        self.assertLess(record['seconds'], 2)
+
     def test_timeout_cannot_pass_from_stale_child_completion(self):
         result = apps.classify({'exit_code': 0, 'timed_out': True}, 'ok\n', 0, 'ok\n', 'test')
         self.assertFalse(result['strict_pass'])
