@@ -1,0 +1,89 @@
+Dearust runtime expansion: guarded descriptors, process info and lstat
+===================================================================
+
+Project owner: @countradooku. Implemented and reviewed using OpenAI Codex AI
+assistance. See runtime-expansion-verification.json for exact artifact hashes,
+original comparisons, native sanitizer evidence and raw test record locations.
+
+New runtime work
+----------------
+The allocation-free dearust-guarded crate replaces the fixed descriptor table.
+It rejects negative descriptors, fixing original sentinel aliasing and a
+reproducible ASan global-buffer-overflow after capacity is reached. Fork cleanup
+removes an entry before invoking its callback, preserving callback reinsertion.
+Private prepare/parent hooks serialize the table snapshot around fork and release
+the parent lock on both success and failure. The small copied fork.c bridge
+preserves each original backend and child RPC lifecycle. Native tests include
+100 forks during active table mutation and a real forced fork failure.
+
+dearust-process now handles SHORTBSDINFO, TBSDINFO, TASKINFO and TASKALLINFO in
+Rust. Fixes include target-process credentials, the public LP64 bit, short-info
+return length, RSS bytes, CPU nanoseconds and names containing ')'. Output is
+transactional and buffer bounds are tested. Remaining accounting limitations
+and original fallback flavors are documented in the crate's SAFETY.txt. Target
+lookup retains Darling's existing access model, not macOS authorization parity.
+
+dearust-lstat replaces both lstat wrappers. The original lstat64 dereferences a
+null pathname during an actual bsdtar archive operation; Rust returns EFAULT.
+Both wrappers reject null outputs and limit pathname copying to 4096 bytes,
+returning ENAMETOOLONG rather than overflowing. Existing vchroot and stat
+conversion routines remain C. A tiny C bridge preserves the original thread
+working-directory TLS accessor. Invalid non-null pointers are outside the
+existing caller safety contract; this is not a general guest memory validator.
+
+The upstream CGShadingCreate sample had malformed binary nib object references.
+build_gui_apps.py --repair-shading-nib repairs copied resources explicitly and
+records before/after hashes. The source executable and upstream tree are intact.
+A Calculator screenshot race is fixed by waiting for painting before capture.
+
+Recorded verification
+---------------------
+- 107 ordinary Rust tests, formatting and strict Clippy pass.
+- 29 Python tests and the explicit Darwin object ABI/staging test pass.
+- Actual unchanged close.c executes through the Rust guarded/lock/futex chain;
+  120000 threaded table cycles, real close/fork, errno TLS and EINTR checks pass.
+- Matching local kernel has the same 1370 public definitions and 40 imports.
+- Pinned final kernel link preserves 1362 definitions, 18 imports, and its exact
+  original i386 slice. It uses separately compiled pinned bridges, not local
+  protocol-specific objects. This is link validation, not pinned runtime boot.
+- Existing 29 checks: Rust 28 exact plus one explicit cfbridge timestamp
+  normalization; original 27 exact plus that normalization and libproc mismatch.
+- Eight utilities pass under Rust: PlistBuddy, bsdtar, ditto's supported shell
+  mode, gzip, bzip2, xz, zip/unzip and OpenSSL. Original bsdtar still crashes.
+- Real guest process-info, lstat and concurrent fork/RPC churn probes all pass
+  under Rust. Original reproduces the process-info assertion and lstat crash.
+- TextEditor, Calculator and repaired CGShadingCreate run under both kernels;
+  final screenshots were visually inspected. These are samples/fixtures, not a
+  claim that arbitrary commercial macOS apps work.
+
+All execution used isolated owned prefixes and the rebuilt Rust-lockset server.
+Installed kernel/server hashes are unchanged. The user's existing application
+prefix was not modified. All test prefixes and hidden Xephyr were shut down.
+
+Reproduction
+------------
+From the repository, set MATCH_SOURCE and MATCH_BUILD to the matching Darling
+source/build, SERVER to the rebuilt Rust-lockset server, and WORK to a new owned
+output directory outside those reference trees. See LOCKSET-PROCESS.txt for
+server build instructions. Every build helper refuses reference-tree output.
+
+    cargo xtask check
+    python3 -m unittest discover -s tools -p 'test_*.py'
+    cargo test -p dearust-xtask --test runtime --offline --locked -- --ignored
+    cargo xtask runtime --target x86_64-apple-darwin --destdir "$WORK/runtime"
+    python3 tools/build_lstat_bridge.py --build "$MATCH_BUILD" --output "$WORK/lstat-bridge"
+    python3 tools/build_guarded_fork_bridge.py --source "$MATCH_SOURCE" --build "$MATCH_BUILD" --output "$WORK/fork-bridge"
+    python3 tools/relink_matching_kernel.py --build "$MATCH_BUILD" --runtime "$WORK/runtime" --process-object "$WORK/runtime/objects/process.o" --guarded-object "$WORK/runtime/objects/guarded.o" --fork-object "$WORK/fork-bridge/fork.c.o" --lstat-object "$WORK/runtime/objects/lstat.o" --lstat-bridge "$WORK/lstat-bridge/lstat-bridge.o" --output "$WORK/kernel"
+    python3 tools/run_isolated_server.py --server "$SERVER" -- python3 tools/check_mac_utilities.py --original-kernel "$WORK/kernel/libsystem_kernel-original.dylib" --rust-kernel "$WORK/kernel/libsystem_kernel-rust.dylib" --output "$WORK/utilities"
+
+Use build_runtime_probes.py to compile tools/fixtures/{process-info,lstat-regression,
+guarded-fork}.c with matching headers and installed SDK; check_mac_apps.py runs
+those binaries with explicit expected outputs. GUI build/run commands are in
+ADDITIONAL-APPS.txt and GUI-VERIFICATION.txt. Only an explicitly owned hidden X
+display is used. Original expected failures make comparison runners exit nonzero;
+inspect each variant instead of treating the overall exit as a Rust failure.
+
+Scope remains partial: six dependency source slices, 265797 pending dependency
+entries; seven Cargo target slices, 1622 pending targets, zero retired targets.
+Most runtime, framework and build-graph work remains. Historical reports retain
+their original counts and test boundaries.

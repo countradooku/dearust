@@ -335,3 +335,18 @@ identity remains limited. Full Rust migration and arbitrary app compatibility
 are not established. Matching final artifacts are continuation work/
 server-lockset-release/darlingserver and process-kernel-final/
 libsystem_kernel-rust.dylib. Reproduction commands are in LOCKSET-PROCESS.txt.
+
+
+Continuation: guarded table, process accounting and lstat
+--------------------------------------------------------
+See RUNTIME-EXPANSION.txt and runtime-expansion-verification.json. The combined
+Rust runtime passes 28 exact app checks plus one explicit log normalization,
+eight utility workloads, three GUI samples and three new runtime probes.
+107 Rust tests and 29 Python tests pass, including explicit Darwin ABI checks.
+Six dependency slices remain partial; 265797 dependency entries remain pending.
+Matching and pinned links preserve original symbol sets; no target is retired.
+Use copied fork/TLS bridges from the corresponding source/build, never mix
+local-protocol bridges with the pinned baseline. Latest artifacts are in
+continuation work/runtime-expansion-{stage,kernel}; server-lockset-release remains
+the tested server. Preserve installed binaries and the existing user prefix.
+README.md includes the project owner @countradooku and OpenAI Codex AI assistance.

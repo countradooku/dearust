@@ -147,7 +147,7 @@ fn check(triple: &str, label: &str) {
     let manifest = fs::read(stage.join("darling-runtime-artifacts.tsv")).unwrap();
     assert!(String::from_utf8_lossy(&manifest).starts_with(&format!("# target {triple}\n")));
     if triple.contains("apple") {
-        for (name, count) in [("errno", 2), ("guarded", 5), ("lstat", 2)] {
+        for (name, count) in [("errno", 2), ("guarded", 7), ("lstat", 2)] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
                 .arg(stage.join(format!("objects/{name}.o")))

@@ -111,3 +111,8 @@ null/negative/short/nonexistent-PID/tail canaries. The matching C baseline fails
 its short-BSD return-size assertion; the Rust mixed kernel passes the full probe.
 The three pure encoding tests additionally exercise overflow, signed fields,
 explicit non-1000-Hz conversion and multiple target credential values.
+
+Process task-name lookup retains the matching Darling server capability model.
+It does not add full macOS UID authorization checks; host procfs access still
+applies. Unregistered host PIDs are rejected as ESRCH. This is not a claim of
+macOS process-query security-policy parity.
