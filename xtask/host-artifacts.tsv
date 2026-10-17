@@ -1,11 +1,13 @@
-# Darling host artifact graph v1
+# Darling host artifact graph v2
 # Baseline: 60ba801decee7a00782f74f6be4c8ffb013f79ff
-# Scope: migrated host build tools only; remaining upstream graph is unported.
+# Scope: migrated host tools and native Linux synchronization archive; remaining upstream graph is unported.
 # Build-only targets preserve build-tree consumers; darling-coredump preserves its bin install rule.
 # binary	package	build-tree destination	upstream target definition
-bsdln	darling-buildtools	src/bsdln/bsdln	src/bsdln/CMakeLists.txt
-elfdep	darling-buildtools	src/buildtools/elfdep	src/buildtools/CMakeLists.txt
-getuuid	darling-buildtools	src/buildtools/getuuid	src/buildtools/CMakeLists.txt
-wrapgen	darling-buildtools	src/libelfloader/wrapgen/wrapgen	src/libelfloader/wrapgen/CMakeLists.txt
-print_wrapped_elf	darling-buildtools	src/libelfloader/wrapgen/print_wrapped_elf	src/libelfloader/wrapgen/CMakeLists.txt
-darling-coredump	darling-coredump	bin/darling-coredump	src/hosttools/CMakeLists.txt
+bin	bsdln	darling-buildtools	src/bsdln/bsdln	src/bsdln/CMakeLists.txt
+bin	elfdep	darling-buildtools	src/buildtools/elfdep	src/buildtools/CMakeLists.txt
+bin	getuuid	darling-buildtools	src/buildtools/getuuid	src/buildtools/CMakeLists.txt
+bin	wrapgen	darling-buildtools	src/libelfloader/wrapgen/wrapgen	src/libelfloader/wrapgen/CMakeLists.txt
+bin	print_wrapped_elf	darling-buildtools	src/libelfloader/wrapgen/print_wrapped_elf	src/libelfloader/wrapgen/CMakeLists.txt
+bin	darling-coredump	darling-coredump	bin/darling-coredump	src/hosttools/CMakeLists.txt
+# Native Linux only; the Darwin libsimple backend remains unported.
+staticlib	darling_simple	darling-libsimple	src/libsimple-linux/liblibsimple_darlingserver.a	src/libsimple/CMakeLists.txt

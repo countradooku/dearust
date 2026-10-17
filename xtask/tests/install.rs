@@ -81,6 +81,9 @@ fn cargo_graph_stages_runnable_tools_and_a_repeatable_manifest() {
         assert!(String::from_utf8_lossy(&result.stderr).contains("Usage:"));
     }
 
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    check_staged_runtime(&stage, &temp.0);
+
     assert!(install().status.success());
     assert_eq!(
         fs::read(stage.join("darling-host-artifacts.tsv")).unwrap(),
@@ -110,4 +113,31 @@ fn failed_cargo_build_propagates_status_without_creating_stage() {
         .unwrap();
     assert_eq!(output.status.code(), Some(42));
     assert!(!stage.exists());
+}
+
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+fn check_staged_runtime(stage: &std::path::Path, temporary: &std::path::Path) {
+    let xtask = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let executable = temporary.join("libsimple-c-stress");
+    let compiler = Command::new("cc")
+        .args([
+            "-std=c11", "-O2", "-Wall", "-Wextra", "-Werror", "-pthread", "-isystem",
+        ])
+        // Preserve the upstream header verbatim. Its always_inline declarations
+        // trigger GCC warnings, so treat the imported headers as system headers.
+        .arg(xtask.join("../crates/darling-libsimple/include"))
+        .arg(xtask.join("tests/fixtures/staged-libsimple.c"))
+        .arg(stage.join("src/libsimple-linux/liblibsimple_darlingserver.a"))
+        .args(["-ldl", "-lm", "-o"])
+        .arg(&executable)
+        .output()
+        .expect("native C compiler is required for staged ABI verification");
+    assert!(
+        compiler.status.success(),
+        "{}",
+        String::from_utf8_lossy(&compiler.stderr)
+    );
+    let output = Command::new(executable).output().unwrap();
+    assert!(output.status.success(), "staged C ABI harness: {output:?}");
+    assert_eq!(output.stdout, b"staged libsimple C ABI stress passed\n");
 }

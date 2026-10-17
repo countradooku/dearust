@@ -12,10 +12,26 @@ use std::{
 const GRAPH: &str = include_str!("../host-artifacts.tsv");
 const MANIFEST: &str = "darling-host-artifacts.tsv";
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Kind {
+    Bin,
+    Staticlib,
+}
+
 struct Artifact<'a> {
-    binary: &'a str,
+    kind: Kind,
+    target: &'a str,
     package: &'a str,
     destination: &'a str,
+}
+
+impl Artifact<'_> {
+    fn source_name(&self) -> String {
+        match self.kind {
+            Kind::Bin => format!("{}{}", self.target, std::env::consts::EXE_SUFFIX),
+            Kind::Staticlib => format!("lib{}.a", self.target.replace('-', "_")),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -50,16 +66,20 @@ fn invalid(message: impl Into<String>) -> io::Error {
 }
 
 fn graph() -> io::Result<Vec<Artifact<'static>>> {
+    parse_graph(GRAPH)
+}
+
+fn parse_graph(text: &str) -> io::Result<Vec<Artifact<'_>>> {
     let mut destinations = BTreeSet::new();
-    GRAPH
-        .lines()
+    let mut sources = BTreeSet::new();
+    text.lines()
         .filter(|line| !line.starts_with('#') && !line.is_empty())
         .map(|line| {
             let fields: Vec<_> = line.split('\t').collect();
-            if fields.len() != 4 || fields.iter().any(|value| value.is_empty()) {
+            if fields.len() != 5 || fields.iter().any(|value| value.is_empty()) {
                 return Err(invalid("invalid host artifact graph record"));
             }
-            for name in &fields[..2] {
+            for name in &fields[1..3] {
                 if !name
                     .bytes()
                     .all(|byte| byte.is_ascii_alphanumeric() || b"-_".contains(&byte))
@@ -67,7 +87,7 @@ fn graph() -> io::Result<Vec<Artifact<'static>>> {
                     return Err(invalid("invalid Cargo target or package name"));
                 }
             }
-            for path in &fields[2..] {
+            for path in &fields[3..] {
                 if !Path::new(path)
                     .components()
                     .all(|part| matches!(part, Component::Normal(_)))
@@ -77,14 +97,24 @@ fn graph() -> io::Result<Vec<Artifact<'static>>> {
                     ));
                 }
             }
-            if !destinations.insert(fields[2]) {
+            if !destinations.insert(fields[3]) {
                 return Err(invalid("duplicate host artifact destination"));
             }
-            Ok(Artifact {
-                binary: fields[0],
-                package: fields[1],
-                destination: fields[2],
-            })
+            let kind = match fields[0] {
+                "bin" => Kind::Bin,
+                "staticlib" => Kind::Staticlib,
+                _ => return Err(invalid("unsupported host artifact kind")),
+            };
+            let artifact = Artifact {
+                kind,
+                target: fields[1],
+                package: fields[2],
+                destination: fields[3],
+            };
+            if !sources.insert(artifact.source_name()) {
+                return Err(invalid("duplicate host artifact source filename"));
+            }
+            Ok(artifact)
         })
         .collect()
 }
@@ -144,12 +174,19 @@ pub fn build_and_stage(cargo: &OsStr, root: &Path, destination: &Path) -> Result
                 "--target-dir",
             ])
             .arg(&target_dir);
-        // Declare every executable rather than discovering arbitrary target files.
+        // Declare every executable/library rather than discovering target files.
         for artifact in artifacts
             .iter()
             .filter(|artifact| artifact.package == package)
         {
-            command.args(["--bin", artifact.binary]);
+            match artifact.kind {
+                Kind::Bin => {
+                    command.args(["--bin", artifact.target]);
+                }
+                Kind::Staticlib => {
+                    command.arg("--lib");
+                }
+            }
         }
         eprintln!("+ {command:?}");
         let status = command.status()?;
@@ -163,7 +200,7 @@ pub fn build_and_stage(cargo: &OsStr, root: &Path, destination: &Path) -> Result
     let release = target_dir.join(&triple).join("release");
     stage(&release, destination, &artifacts)?;
     eprintln!(
-        "Staged {} host tools at {} (remaining Darling graph is unported)",
+        "Staged {} host artifacts at {} (remaining Darling graph is unported)",
         artifacts.len(),
         destination.display()
     );
@@ -228,11 +265,7 @@ fn stage(release: &Path, destination: &Path, artifacts: &[Artifact<'_>]) -> io::
     validate_destination(&destination)?;
     // Check every source and destination before touching the destination tree.
     for artifact in artifacts {
-        let source = release.join(format!(
-            "{}{}",
-            artifact.binary,
-            std::env::consts::EXE_SUFFIX
-        ));
+        let source = release.join(artifact.source_name());
         let metadata = fs::symlink_metadata(&source)?;
         if !metadata.is_file() || metadata.is_symlink() {
             return Err(invalid(format!(
@@ -252,12 +285,8 @@ fn stage(release: &Path, destination: &Path, artifacts: &[Artifact<'_>]) -> io::
     let result = (|| {
         for artifact in artifacts {
             fs::copy(
-                release.join(format!(
-                    "{}{}",
-                    artifact.binary,
-                    std::env::consts::EXE_SUFFIX
-                )),
-                temporary.join(artifact.binary),
+                release.join(artifact.source_name()),
+                temporary.join(artifact.source_name()),
             )?;
         }
         let mut manifest = OpenOptions::new()
@@ -269,7 +298,7 @@ fn stage(release: &Path, destination: &Path, artifacts: &[Artifact<'_>]) -> io::
         for artifact in artifacts {
             let output = destination.join(artifact.destination);
             fs::create_dir_all(output.parent().expect("artifact has parent"))?;
-            fs::rename(temporary.join(artifact.binary), output)?;
+            fs::rename(temporary.join(artifact.source_name()), output)?;
         }
         fs::rename(temporary.join(MANIFEST), destination.join(MANIFEST))?;
         Ok(())
@@ -304,7 +333,7 @@ mod tests {
         let source = temp.0.join("release");
         fs::create_dir(&source).unwrap();
         for artifact in graph().unwrap() {
-            fs::write(source.join(artifact.binary), artifact.binary).unwrap();
+            fs::write(source.join(artifact.source_name()), artifact.target).unwrap();
         }
         source
     }
@@ -320,7 +349,7 @@ mod tests {
             for artifact in graph().unwrap() {
                 assert_eq!(
                     fs::read_to_string(dest.join(artifact.destination)).unwrap(),
-                    artifact.binary
+                    artifact.target
                 );
             }
             let top_directories: BTreeSet<_> = graph()
