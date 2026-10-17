@@ -1,0 +1,50 @@
+Pinned runtime-consumer execution check
+=======================================
+
+check_darwin_runtime.py executes actual upstream guard_table.c and close.c with
+both the original C synchronization/futex/errno implementations and the new Rust
+runtime objects. Every production input comes from exact-pin Git blobs; their
+SHA-256 values are recorded. No reference worktree files are modified or read.
+The test uses the real original Linux syscall assembly: only Mach-O symbol and
+visibility directives are translated to ELF spelling, plus a GNU-stack marker.
+The C files are unchanged. Function-section GC removes unrelated close.c entry
+points that would need cancellation/logging/server initialization.
+
+Generate native Darling-backend objects using the runtime Cargo build command,
+then run from the repository:
+
+  python3 tools/check_darwin_runtime.py \
+    --upstream /path/to/darling-git \
+    --xnu /path/to/pinned-xnu-git \
+    --libsimple-object /path/to/native-runtime/objects/libsimple.o \
+    --futex-object /path/to/native-runtime/objects/futex.o \
+    --errno-object /path/to/native-runtime/objects/errno.o \
+    --report /path/to/report.json
+
+Requires Python 3, clang, an x86-64 Linux host, POSIX threads/fork, and the pinned
+Darling/XNU objects. Imports the existing pinned extraction helpers from
+check_errno.py. Each subprocess has a 60-second timeout; fork child has a
+10-second alarm. Object paths must refer to native ELF Darling-backend objects,
+not the Mach-O objects and not the ordinary libc-syscall libsimple archive.
+
+The fixture exercises 120,000 multithreaded add/check/modify/remove table cycles,
+collisions/tombstones, all 1,024 capacity slots, actual fork-child cleanup and
+custom close callbacks, and original close_internal on real pipe descriptors.
+It asserts that the child closes its pipe descriptor while parent descriptors
+and guards survive. Twenty-two direct futex calls check EAGAIN, ETIMEDOUT,
+EFAULT, EINVAL, successful wake, signed Darwin return errors, and cerror behavior
+across thread-local errno slots. Additional locking futex calls vary with
+scheduling and are not counted. The existing complete C ABI synchronization
+harness also executes both implementations through this same raw-syscall backend,
+including condition-variable requeue, once publication, and reader/writer locks.
+
+Boundary adapters are explicitly confined to the test driver: cerror stores a
+Darwin error in a host _Thread_local int, and __simple_abort calls host abort.
+They do not implement Darling TLS initialization, server RPC, thread cancellation
+or Mach calls. The ABI-only stress harness aborts if cerror is unexpectedly used.
+This test verifies executed native Linux ABI integration of real consumers. It
+does not claim to start a Darwin process or validate macOS application behavior.
+The parent integration command separately relinks the actual system_kernel.
+
+Recorded successful execution: runtime-consumer-verification.json. The original
+C and Rust outputs matched for both the real consumer and ABI stress harness.

@@ -1,0 +1,52 @@
+{
+  "scope": "Actual pinned guard_table.c and full close.c linked with section GC, native Linux x86_64 execution through Darling futex ABI; not macOS application startup",
+  "darling_pin": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
+  "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+  "input_sha256": {
+    "darling/src/libsystem_kernel/emulation/include/common/base.h": "129194fc0eead08ab0815e2d971c96b053c32da7539f3a4ced08a783e53d74dc",
+    "darling/src/libsystem_kernel/emulation/include/common/guarded/table.h": "19cfb39a5a199c7f5b15fdec991ed263f92cfd71cc5e0f1094bab4a3be867bfc",
+    "darling/src/libsystem_kernel/emulation/include/common/simple.h": "0a3571433bbfd771bae812ec64f24e290bd3f7e663a97980735cd63e052815e3",
+    "darling/src/libsystem_kernel/emulation/include/conversion/errno.h": "6aa8322e7afce8772e67e5d1730ecca17df5afd708dc15d1e822e6179f4585eb",
+    "darling/src/libsystem_kernel/emulation/include/conversion/duct_errno.h": "eb3c3891198cbe014ee2375450e78b8652abb00b4a810407a76034b74eabb459",
+    "darling/src/libsystem_kernel/emulation/include/linux_premigration/ext/futex.h": "23d1b03b68724038ce4dca028f6a4e79930d69402ff187ddb9556d45f739082b",
+    "darling/src/libsystem_kernel/emulation/include/linux_premigration/linux-syscalls/linux.h": "a1beba5aee43f56fcdb3770fac6296c5ce04a41a8791d74dfe55b28cb6d75802",
+    "darling/src/libsystem_kernel/emulation/include/linux_premigration/linux-syscalls/linux-x86_64.h": "62570dac745bbb4c2c723f78bee1e76453c6a41bdfc8e1fbff40c589aab92790",
+    "darling/src/libsystem_kernel/emulation/include/xnu_syscall/bsd/impl/unistd/close.h": "463d662a1e1eabd53b01c7bfac2937d1f3f2c84b12ed3db6d57fde58e8fa082a",
+    "darling/src/libsystem_kernel/emulation/include/xnu_syscall/bsd/helper/bsdthread/cancelable.h": "d1ef257d955fb82732bffcb9c233f5fc9fb4043f3ab6b08f22c671a85b366650",
+    "darling/src/libsystem_kernel/emulation/include/xnu_syscall/bsd/impl/bsdthread/pthread_canceled.h": "da33b88c37e597b90451972f0d68d6a074e99d611df9e3866efb65c9e610949f",
+    "darling/src/libsystem_kernel/emulation/include/other/mach/lkm.h": "46663c942cfb0566bf45a94d688677ede3acd2c352f1945adee808716c8cfb82",
+    "libsyscall/os/tsd.h": "2e9a96b38e88dadc61cfd256f37e543b17d835c4a8fd69505306f8ef01ea74fa",
+    "src/libsimple/include/libsimple/base.h": "1363f24a46fc1efee0f4c8291d4a658f203f87fdf992dfdc8c7b72e805d6a791",
+    "src/libsimple/include/libsimple/lock.h": "5128674d118ced78b8a04a538272d6bd54722d3f74eb07ff71e0e12d9b3594e3",
+    "src/libsimple/src/lock.c": "d78d10efc25541449500ee51aca6076a9f44b71f3ae09b4107481f3222c54ac4",
+    "darling/src/libsystem_kernel/emulation/src/common/guarded/table.c": "49529770dfb40a9ec0a4a44826b7089b72aee22bd38d0997db6443935cf8f349",
+    "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/close.c": "fc21ad4bc2a6b88d3a7fd06ff8890dd63a70548734a2e00b473876f440d1e03d",
+    "darling/src/libsystem_kernel/emulation/src/linux_premigration/ext/futex.c": "4fb59d26ffbe769aad35f38ec045be46917b5904eee54fae975ee67d3f6b77f4",
+    "darling/src/libsystem_kernel/emulation/src/conversion/errno.c": "18899636de568ae5b5ff487e7f0912f9ef8b999e1262496cf3f65372ea276eca",
+    "darling/src/libsystem_kernel/emulation/src/linux_premigration/linux-syscall.S": "ec993c06f9edf440aac865f203ab7fd9850de4fb5226e534ddcee4e304d6089b",
+    "bsd/sys/errno.h": "c8a527ee020cee45bf69cd150b0c5743c148863d54bfa29e1193caa6af274f36",
+    "bsd/sys/cdefs.h": "5da8400624468e678cf69ec5231aba7e4bd5f89e04a05395e08994b02601cd0b",
+    "bsd/sys/_types/_errno_t.h": "ca230b22b22becab1bb191bfe5a8dd4595ea0566f5c8cc9b299eca308ee5a271",
+    "Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/_symbol_aliasing.h": "ead22f184d3505851bda8ea7eed81091caeff0bd4875ff4cbbd5885c5068b53b",
+    "Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/_posix_availability.h": "452bff9ae32655a49b65802e29b21c67a546be1446553f908ef9850a694746bd"
+  },
+  "source_changes": "Only linux-syscall.S Mach-O symbol/directive spelling adapted to ELF; C files unmodified",
+  "test_adapters": "Host _Thread_local Darwin errno cerror and abort-backed __simple_abort; no emulation subsystem stubs",
+  "counts": {
+    "direct_futex_calls": 22,
+    "guard_table_thread_cycles": 120000,
+    "fork_children": 1,
+    "capacity_slots": 1024,
+    "note": "Additional lock/condvar futex syscall counts vary with scheduling and are not measured"
+  },
+  "consumer": "guard_table: collisions, tombstones, capacity, 120000 concurrent cycles, postfork callback/raw close; futex: EAGAIN/ETIMEDOUT/EFAULT/EINVAL and cerror TLS",
+  "abi": "abi=4:4 mutex=80000 cas=80000 once=1 publication=4277009102 rw=40000 cond=640",
+  "differential": "identical pinned C and Rust output",
+  "objects": {
+    "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/work/native-runtime/objects/libsimple.o": "2e455b91d4a4325a80bdb2bf8e2ee536edeed383937f2738a4bb205bafa50986",
+    "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/work/native-runtime/objects/futex.o": "8a153aaecd15f87dd707f88c645e749eaa3633ff430f2dee5b9c1270a9ec842b",
+    "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/work/native-runtime/objects/errno.o": "5eecf441cd8b76daf2afd7ee04cbe59c3a1eac5388d06cc84df237a922e2e303"
+  },
+  "compiler": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)",
+  "platform": "Linux-7.2.9-200.nobara.fc44.x86_64-x86_64-with-glibc2.43"
+}
