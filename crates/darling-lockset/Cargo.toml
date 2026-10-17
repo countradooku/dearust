@@ -1,0 +1,13 @@
+[package]
+name = "darling-lockset"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+description = "Mach lock sets for the Darling server"
+
+[lib]
+crate-type = ["rlib", "staticlib"]
+
+[lints.clippy]
+undocumented_unsafe_blocks = "deny"

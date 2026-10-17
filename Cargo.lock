@@ -26,5 +26,9 @@ name = "darling-libsimple"
 version = "0.1.0"
 
 [[package]]
+name = "darling-lockset"
+version = "0.1.0"
+
+[[package]]
 name = "xtask"
 version = "0.1.0"

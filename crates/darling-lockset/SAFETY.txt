@@ -1,0 +1,56 @@
+Darling server lockset boundary
+==============================
+
+core.rs forbids unsafe and implements exclusive ownership, FIFO or fixed-priority
+queues (equal priority FIFO), try, unstable-owner recovery, paired handoff and
+interrupted-wait cleanup. The documented lock_set_create API in the pinned XNU
+osfmk/man/lock_set_create.html admits FIFO and FIXED_PRIORITY only. General waitq
+LIFO/prepost flags are deliberately rejected. Fixed priority uses the thread's
+scheduled priority at enqueue time; live reprioritization while blocked is not
+implemented. A per-set limit of 1,048,576 locks returns KERN_RESOURCE_SHORTAGE.
+
+lib.rs stores each set in a Mutex-protected registry. A one-byte Box gives the
+opaque set handle and scheduler event a stable unique live address. C never
+interprets that byte as an XNU struct. The registry owns the Box until all MIG
+and port references are released, retaining it through kernel port teardown.
+The real IKOT_LOCK_SET port is constructed through the existing XNU port allocator.
+The create reference is donated to the first send right; subsequent conversions
+consume their reference, just as the existing semaphore converter does. The
+no-senders notification consumes the donated reference. All generated MIG calls
+acquire/release their set reference via converters/destructors, including destroy.
+No client-visible synthetic integer or process-local substitute for Mach ports
+is used. Handles are only interpreted in this trusted internal server ABI.
+
+Registry locks are held for short state transitions; never across thread_block.
+assert_wait registers the wait while the registry is still locked. The lock is
+then released before thread_block, preserving XNU's wake-before-suspend protocol.
+Wakers update state and wake while holding the same registry lock. A concurrent
+handoff transfer takes precedence over interruption so callers do not receive an
+error while silently owning the lock. Cancelling a queue head wakes successors.
+The ABI test adapter uses native threads/condition variables solely for tests;
+production blocks and resumes the existing Darling stackful microthreads.
+
+The C bridge is necessary for private XNU structure access, task locking, thread
+identity/priority, macro-based wait primitives, and real kernel-port lifecycle.
+The only raw output writes in Rust are lock_set_create's caller-owned pointer
+and the C bridge's exclusive port slot. Existing generated MIG supplies valid
+referenced task arguments and writable output. None of these functions may be
+called with invented pointers or allowed to unwind through the C ABI. Rust's
+extern-C boundary aborts on a panic; allocation failure also aborts as with native
+server allocation failures. Primary vector allocation uses try_reserve first.
+
+Task create checks activity while holding the task lock before registry insertion.
+Task dying marks inactive under that same lock before invalidating its sets.
+Thread dying releases held locks as unstable and removes pending waits, before
+Mach references can delay final deallocation. Final destroy hooks are idempotent
+fallbacks. The process exec bridge also retires the replaced old task and thread
+before releasing their references. No registry guard is held while taking a task lock or freeing a port.
+Port conversion follows XNU semaphore's referenced-send-right convention and
+holds no port lock while taking the registry lock. The no-senders callback runs
+through the existing kernel notification dispatch.
+
+This is a Linux host server static library using Rust std, not a no_std Mach-O
+client library. Existing server, scheduler, Mach IPC, and frameworks remain in
+C/C++. A passing lockset suite does not establish arbitrary application or full
+Darling compatibility. Interruption, priority, lifecycle and handoff state tests
+supplement actual Mach guest execution; they do not prove all scheduling races.
