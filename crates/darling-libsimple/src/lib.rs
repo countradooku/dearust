@@ -81,6 +81,16 @@ unsafe fn atomic<'a>(state: *mut u32) -> &'a AtomicU32 {
     // SAFETY: the exported C entry point forwards the caller's state contract.
     unsafe { AtomicU32::from_ptr(state) }
 }
+/// Atomic compare/exchange helper with external linkage in the original C source.
+/// Returns the observed prior value on success and failure, using AcqRel/Acquire.
+/// # Safety
+/// The pointer must meet the live aligned atomic-state contract in SAFETY.txt.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn cmpxchg_wrapper_u32(state: *mut u32, expected: u32, desired: u32) -> u32 {
+    // SAFETY: the caller guarantees a live, aligned atomic state word.
+    core::cmpxchg(unsafe { atomic(state) }, expected, desired)
+}
+
 macro_rules! unary {
     ($name:ident,$function:ident) => {
         /// # Safety

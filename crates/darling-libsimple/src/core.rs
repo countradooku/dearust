@@ -15,7 +15,7 @@ pub trait Futex {
     fn wake(&self, state: &AtomicU32, count: u32, mask: Option<u32>) -> i64;
     fn requeue(&self, state: &AtomicU32, target: &AtomicU32);
 }
-fn cmpxchg(state: &AtomicU32, expected: u32, desired: u32) -> u32 {
+pub fn cmpxchg(state: &AtomicU32, expected: u32, desired: u32) -> u32 {
     state
         .compare_exchange(expected, desired, AcqRel, Acquire)
         .unwrap_or_else(|value| value)

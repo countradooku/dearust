@@ -21,8 +21,8 @@ timeout 25 "$output/upstream-abi" > "$output/upstream.txt"
 timeout 25 "$output/rust-abi" > "$output/rust.txt"
 cmp "$output/upstream.txt" "$output/rust.txt"
 cat "$output/rust.txt"
-# Every function declared in the installed public header must be exported by both.
-for symbol in libsimple_lock_lock libsimple_lock_unlock libsimple_lock_try_lock libsimple_once libsimple_rwlock_lock_read libsimple_rwlock_try_lock_read libsimple_rwlock_unlock_read libsimple_rwlock_lock_write libsimple_rwlock_try_lock_write libsimple_rwlock_unlock_write libsimple_condvar_wait libsimple_condvar_notify_one libsimple_condvar_notify_all; do
+# Every public header function and original external CAS helper must be exported by both.
+for symbol in cmpxchg_wrapper_u32 libsimple_lock_lock libsimple_lock_unlock libsimple_lock_try_lock libsimple_once libsimple_rwlock_lock_read libsimple_rwlock_try_lock_read libsimple_rwlock_unlock_read libsimple_rwlock_lock_write libsimple_rwlock_try_lock_write libsimple_rwlock_unlock_write libsimple_condvar_wait libsimple_condvar_notify_one libsimple_condvar_notify_all; do
     nm --defined-only "$output/rust-abi" | awk '{print $3}' | grep -x "$symbol" > /dev/null
     nm --defined-only "$output/upstream-abi" | awk '{print $3}' | grep -x "$symbol" > /dev/null
 done

@@ -9,6 +9,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <libsimple/lock.h>
+extern uint32_t cmpxchg_wrapper_u32(_Atomic uint32_t*,uint32_t,uint32_t);
 #define THREADS 8
 #define LOOPS 10000
 #define ROUNDS 80
@@ -25,6 +26,7 @@ static libsimple_condvar_t progress=LIBSIMPLE_CONDVAR_INITIALIZER;
 static pthread_barrier_t start;
 static uint64_t counter, rw_count, rw_check=0x12345678, published;
 static atomic_uint calls, readers, writers;
+static _Atomic uint32_t cas_count;
 static unsigned generation, ready, completed;
 static void spawn_join(void* (*entry)(void*)) {
     pthread_t threads[THREADS];
@@ -45,6 +47,8 @@ static void* test_mutex_once(void* ignored) {
     libsimple_once(&once,initialize,&published);
     assert(published==0xfeedface);
     for(unsigned i=0;i<LOOPS;i++) {
+        uint32_t expected=atomic_load_explicit(&cas_count,memory_order_relaxed), observed;
+        while((observed=cmpxchg_wrapper_u32(&cas_count,expected,expected+1))!=expected) expected=observed;
         libsimple_lock_lock(&mutex);
         counter++;
         libsimple_lock_unlock(&mutex);
@@ -88,6 +92,10 @@ static void* test_cond(void* ignored) {
 }
 int main(void) {
     alarm(20); // Fail boundedly if a lost wakeup or deadlock occurs.
+    _Atomic uint32_t raw=7;
+    assert(cmpxchg_wrapper_u32(&raw,6,9)==7 && atomic_load(&raw)==7);
+    assert(cmpxchg_wrapper_u32(&raw,7,9)==7 && atomic_load(&raw)==9);
+    assert(cmpxchg_wrapper_u32(&raw,9,9)==9 && atomic_load(&raw)==9);
     libsimple_lock_init(&mutex);
     libsimple_once_init(&once);
     libsimple_rwlock_init(&rw);
@@ -100,6 +108,7 @@ int main(void) {
     spawn_join(test_mutex_once);
     assert(pthread_barrier_destroy(&start)==0);
     assert(counter==THREADS*LOOPS && atomic_load(&calls)==1);
+    assert(atomic_load(&cas_count)==THREADS*LOOPS);
     libsimple_once(&once,initialize,&published);
     assert(atomic_load(&calls)==1);
     libsimple_once(&once,NULL,NULL); // Completed once must not inspect callback/context.
@@ -126,7 +135,7 @@ int main(void) {
     }
     for(unsigned i=0;i<THREADS;i++) assert(pthread_join(waiters[i],NULL)==0);
     assert(completed==THREADS*ROUNDS);
-    printf("abi=4:4 mutex=%lu once=%u publication=%lu rw=%lu cond=%u\n",
-        (unsigned long)counter,atomic_load(&calls),(unsigned long)published,(unsigned long)rw_count,completed);
+    printf("abi=4:4 mutex=%lu cas=%u once=%u publication=%lu rw=%lu cond=%u\n",
+        (unsigned long)counter,atomic_load(&cas_count),atomic_load(&calls),(unsigned long)published,(unsigned long)rw_count,completed);
     return 0;
 }

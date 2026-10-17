@@ -6,8 +6,11 @@ Source: Darling src/libsimple/src/lock.c and public lock.h/base.h at
 All 13 synchronization functions declared in lock.h are provided. Header-only
 initializers remain verbatim C. Each public state struct remains one uint32_t:
 size 4, alignment 4, initially zero. No heap object, pointer, Rust Mutex, or hidden
-per-lock storage replaces that word. The internal, non-header C helper
-cmpxchg_wrapper_u32 is not a public ABI export in this port.
+per-lock storage replaces that word. The original C source also gives
+cmpxchg_wrapper_u32 external linkage; it is exported here as the 14th ABI symbol despite not appearing in lock.h. It accepts
+an aligned atomic uint32_t pointer and expected/desired uint32_t values, returning
+the prior observed value for both success and failure (AcqRel success, Acquire
+failure). The full pinned native baseline archive confirms its global T symbol.
 
 Scope is PARTIAL for the original source: only native Linux x86_64 is supported.
 The Darling/Darwin __linux_futex_reterr backend and other native architectures
@@ -65,13 +68,13 @@ Unsafe inventory
    every normal waiter return observes state3 with Acquire. State2 completion
    wakes all waiters. The native ABI has no Rust panic path on valid inputs.
 
-4. The unsafe(no_mangle) attributes assert that this archive owns the 13 public
-   libsimple symbol names with precisely the C header's signatures. Link this
+4. The unsafe(no_mangle) attributes assert that this archive owns the 14 external
+   libsimple/CAS symbol names with their original C signatures. Link this
    replacement or upstream lock.c, never both in the same final binary. The
    external declarations for syscall are unsafe because Rust cannot verify
    their ABI implementation. The remaining unsafe blocks only forward the
-   state contract above, or call the once callback described above. There are
-   no other unsafe operations in this crate; clippy requires block comments and
+   state contract above, including the externally visible CAS helper, or call
+   the once callback described above. There are no other unsafe operations in this crate; clippy requires block comments and
    unsafe_op_in_unsafe_fn is denied.
 
 Synchronization invariants
@@ -114,8 +117,9 @@ upstream C source and the identical C harness against that archive separately:
 cc -O2 -std=gnu11 -Wno-attributes -pthread -I<headers> tests/abi.c
    <upstream lock.c or Rust staticlib> [-ldl -lm] -o <executable>
 Each process is bounded by alarm(20) and timeout25. The test verifies all four
-size/alignment layouts, header-only init functions, all 13 public ABI symbols,
-try-lock results, 8-thread 80,000 protected increments, callback-once publication
+size/alignment layouts, header-only init functions, all 14 external ABI symbols,
+the CAS helper's success/failure/prior-value and 80,000 contended compare/exchange
+increments, try-lock results, 8-thread 80,000 protected increments, callback-once publication
 including completed NULL callback, 40,000 exclusive writer updates concurrent
 with readers, and 8 waiters through 80 notify-all generations plus notify-one
 progress coordination. Rust and pinned C deterministic summaries must match.
