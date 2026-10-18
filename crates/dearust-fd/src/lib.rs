@@ -9,3 +9,7 @@ pub use abi::{
     sys_fchmod, sys_fdatasync, sys_flock, sys_fsync, sys_fsync_nocancel, sys_ftruncate,
     sys_getdtablesize, sys_lseek, sys_umask,
 };
+
+#[allow(unsafe_code)]
+mod stream;
+pub use stream::{__write_for_xtrace, sys_read, sys_read_nocancel, sys_write, sys_write_nocancel};

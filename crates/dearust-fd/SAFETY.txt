@@ -59,3 +59,33 @@ guest soft-limit changes occur only in a forked owned child and are restored
 before child exit. Tests cover status narrowing, no double conversion and clamp
 boundaries. The full fixed local limit buffer costs 176 bytes; native optimized assembly uses
 a 184-byte local frame including call alignment. No heap is used.
+
+Stream I/O continuation (current)
+---------------------------------
+Four additional hidden entries sys_read/sys_read_nocancel/sys_write/
+sys_write_nocancel and public __write_for_xtrace are implemented in stream.rs.
+The fd.o symbol policy is mixed:14 globals,13 hidden, xtrace public. Additional
+strong imports are original sys_pthread_canceled(int)->long and
+__real_ioctl(int,int,void*)->long. Neither foreign helper may unwind or retain
+local pointers. Original exact-pin source SHA256:
+ read.c  2d843f0fd31b0a53e02e6e197dad0dcef4db62aea7da48b7a8654b71129c92c0
+ write.c 9713d946c999161e192b09eb7c00d7485d69ad7fe0f0d4ee760c0d9e4c397ad2
+
+Arguments use the actual Darwin LP64 ABI: signed32 fd, raw pointer and unsigned64
+user_size_t count. Rust never dereferences guest buffers; raw Linux read0/write1
+validate actual accesses. Counts>INT_MAX take an exceptional fcntl72/F_GETFL3
+branch that never uses guest memory or performs I/O. Descriptor/access/O_PATH
+errors precede EINVAL. Kernel results retain signed64 success; Linux valid I/O
+counts are bounded by the acceptedINT_MAX. Negative errors convert once.
+Cancellation action0 occurs once before all I/O/validation in cancellable entries;
+result0 means DarwinEINTR. Nocancel and xtrace do not check. No EINTR retry.
+
+On readEIO only, cold TIOCGPTN0x80045430 probes a local initializedu32, replacing
+the original shared18B TCGETA buffer and excluding slave/background EIO. Failed
+probes use cold fstat5 into local initialized/aligned144B Linux stat storage;
+modeoffset24, rdevoffset40 identify character-device major2 legacy masters only.
+Linux device-major extraction includes the high major bits, avoiding false
+classification. Failures and other devices preserveEIO. Cold helpers keep this
+storage off the ordinary I/O path. No signal hooks, copies, allocation, shared
+scratch, new locks or persistent caches. Native original adapters and shim
+headers are exclusively test/benchmark inputs, never production replacements.

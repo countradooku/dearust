@@ -23,6 +23,8 @@ FCHMODAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/f
 FCHMOD = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fchmod.c.o'
 FTRUNCATE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/ftruncate.c.o'
 FSYNC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fsync.c.o'
+READ = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/read.c.o'
+WRITE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/write.c.o'
 FDATASYNC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fdatasync.c.o'
 LSEEK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/lseek.c.o'
 FLOCK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/flock.c.o'
@@ -170,7 +172,7 @@ def integrate(args):
             raise ValueError('grouped fd object conflicts with individual descriptor objects')
         if not args.fd_object.is_file():
             raise ValueError('missing grouped descriptor object')
-        for name in (FCHMOD, FTRUNCATE, FSYNC, FDATASYNC, LSEEK, FLOCK, UMASK, GETDTABLESIZE):
+        for name in (FCHMOD, FTRUNCATE, FSYNC, FDATASYNC, LSEEK, FLOCK, UMASK, GETDTABLESIZE, READ, WRITE):
             if inputs.count(name) != 1:
                 raise ValueError('missing unique grouped descriptor input: ' + name)
             replacements[name] = args.fd_object.resolve(strict=True)
@@ -349,6 +351,11 @@ def integrate(args):
                 wanted['_sys_fsync_nocancel'] = args.fd_object.name
                 wanted['_sys_umask'] = args.fd_object.name
                 wanted['_sys_getdtablesize'] = args.fd_object.name
+                wanted['_sys_read'] = args.fd_object.name
+                wanted['_sys_read_nocancel'] = args.fd_object.name
+                wanted['_sys_write'] = args.fd_object.name
+                wanted['_sys_write_nocancel'] = args.fd_object.name
+                wanted['___write_for_xtrace'] = args.fd_object.name
             if args.fchmod_object:
                 wanted['_sys_fchmod'] = args.fchmod_object.name
             if args.ftruncate_object:

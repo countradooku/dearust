@@ -449,3 +449,16 @@ Native boundary adapters are test-only and must not enter a production link.
 
 The summary verifies kernel/binary equivalence, actual mappings, strict outputs
 and shutdown. Keep the raw comparisons and Linux KiB memory units with it.
+
+Stream I/O continuation
+----------------------
+See RUNTIME-STREAMS.txt. fd.o now replaces read.c/write.c too, retaining the same
+--fd-object integration switch. Its mixed visibility preserves public xtrace and
+13 private globals. The existing strong signal/RPC/vchroot bridges remain needed
+for the full combined runtime; native stubs/benchmark adapters are test-only.
+The matching local read.c contains an unrelated trace hook: use the exact pinned
+C reference compilation/link recorded in runtime-streams-verification.json for
+performance claims. Do not present the instrumented comparison as pristine C.
+Tools benchmark_stream.py and summarize_stream.py retain exact commands and
+validate input equivalence; build_runtime_probes.py builds the three stream guest
+fixtures. Supply independent expected stdout files before executing any fixture.

@@ -16,6 +16,11 @@
 extern long sys_fchmod(int,int), sys_ftruncate(int,long long), sys_fsync(int), sys_fsync_nocancel(int), sys_fdatasync(int), sys_flock(int,int);
 extern long long sys_lseek(int,long long,int);
 extern long sys_umask(unsigned int), sys_getdtablesize(void);
+/* Test-only imports for unrelated stream entries in the grouped object. */
+long sys_pthread_canceled(void) { return -22; }
+long __real_ioctl(int fd, unsigned long request, void *arg) {
+    (void)fd; (void)request; (void)arg; assert(!"unexpected stream ioctl"); return -1;
+}
 struct xnu_rlimit { uint64_t current, maximum; long reserved[20]; };
 _Static_assert(sizeof(struct xnu_rlimit)==176, "xnu_rlimit size");
 _Static_assert(_Alignof(struct xnu_rlimit)==8, "xnu_rlimit alignment");

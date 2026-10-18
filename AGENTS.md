@@ -643,3 +643,43 @@ dependencies37 partial/265766 pending, target slices7/1622 pending/0 retired.
 Regenerate dependency inventory from re/work/upstream with dependency-objects;
 full-baseline alone lacks one nested object store and gives an incomplete count.
 Full migration remains unfinished. Continue from verified subsystem dependencies.
+
+
+Continuation: stream I/O and original-C baseline repair
+------------------------------------------------------
+Latest commit implements read/write ONLY in existing dearust-fd (stream.rs).
+Read RUNTIME-STREAMS.txt/runtime-streams-verification.json. fd.o14 globals,
+13 private +public __write_for_xtrace; both relinkers replace read.c/write.c
+through existing --fd-object. Strong imports sys_pthread_canceled and __real_ioctl
+remain C runtime boundaries. Native stubs are test-only. Preserve full64-bit
+Darwin count, INT_MAX rejection after fd/access/O_PATH validation, cancellation
+once before work, no retry, raw kernel guest-buffer validation, and cold local
+PTY probes. TIOCGPTN excludes slave/background EIO; legacy master fallback checks
+fstat char-major2 including high bits. No heap/shared scratch/cache/new locks.
+
+Exact original C reproduces count2^32 returning0 and background slaveEIO returning
+falseEOF; Rust fixes both. The matching read.c has LOCAL rclol_trace_io code, so
+final performance reference compiles exact pinned read.c/write.c with matching
+flags and relinks them into owned original-stream kernel. Initial5.36% result
+superseded. Final original-C guest workload -5.73% CPU, native-0.27% overlapping
+quartiles, p99 2->2us; private dirty3512->3516KiB, no whole-process RSS claim.
+Same unchangedRustserver/localmatching context; not whole-Darling performance.
+
+Artifacts: dearust-continuation/work/stream-next/{native-final,darwin-final,
+matching-final,pinned-final,original-stream}; exact benchmark/resource reports
+have exact- prefixes. 112 Rust/35 Python checks, explicitDarwinABI, native plain+
+ASan/UBSan C fixture and original-bug reproducer, newgueststream regression,
+30existing +3signal/RPC probes,29apps(one timestamp normalized),16utilities,
+3GUI samples pass. Baseline failures retained. Installed/runtime references and
+existing appprefix untouched. Inventories39partial/265764pending,11packages,
+7targetslices/1622pending/0retired. Fullmigration unfinished.
+
+Candidate next dependency work includes positioned I/O (must address Darwin
+pwrite ignoring O_APPEND, unlike Linux pwrite) or resource subsystem. A read-only
+resource audit found originalgetrlimit NULL/failure writes, infinity-domain
+mismatch, getrusage maxrssKiB/bytes and timevalpadding/who mismatches. These are
+PENDING defects in unported resources, not fixes accomplished by this batch.
+NOFILE-1 originated disabledold driver relocation; establish deliberate descriptor
+accounting before changing policy. Do not mechanically copy these defects or
+broaden scoped completion claims. All current strong memory/signal/RPC contracts
+and rustix authorization remain in effect. Continue substantive porting batches.

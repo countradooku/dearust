@@ -66,6 +66,8 @@ def main():
                     ('xnu_syscall/bsd/impl/unistd/fchmod.c', 'dearust-fd', 'fd.o'),
                     ('xnu_syscall/bsd/impl/unistd/ftruncate.c', 'dearust-fd', 'fd.o'),
                     ('xnu_syscall/bsd/impl/unistd/fsync.c', 'dearust-fd', 'fd.o'),
+                    ('xnu_syscall/bsd/impl/unistd/read.c', 'dearust-fd', 'fd.o'),
+                    ('xnu_syscall/bsd/impl/unistd/write.c', 'dearust-fd', 'fd.o'),
                     ('xnu_syscall/bsd/impl/unistd/fdatasync.c', 'dearust-fd', 'fd.o'),
                     ('xnu_syscall/bsd/impl/unistd/lseek.c', 'dearust-fd', 'fd.o'),
                     ('xnu_syscall/bsd/impl/unistd/flock.c', 'dearust-fd', 'fd.o'),

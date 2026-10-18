@@ -11,6 +11,16 @@ The migration scope includes every upstream library, framework, executable,
 resource, SDK link and external dependency; existing stubs are not grounds for
 silently deleting an ABI. Performance improvements must be measured per workload.
 
+Latest stream I/O continuation (2026-10-18)
+------------------------------------------
+RUNTIME-STREAMS.txt and runtime-streams-verification.json record read/write in
+existing dearust-fd:14 exports,13 hidden plus public xtrace, no new package.
+Darwin64-bit counts, descriptor error precedence, cancellation and PTY EOF/EIO
+behavior are tested. Original-C guest CPU median improves5.73% on the identical
+four-call workload; native difference is within overlapping quartiles. Two new
+partial dependency sources:39 partial/265764 pending,11 packages,7 target slices,
+1622 pending targets,0 retired. Full migration remains incomplete.
+
 Latest guest-copy continuation (2026-10-18)
 ------------------------------------------
 RUNTIME-COPY-PERFORMANCE.txt and runtime-copy-performance-verification.json record

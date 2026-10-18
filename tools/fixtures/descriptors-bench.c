@@ -30,3 +30,8 @@ int main(int argc,char **argv){
     assert(lseek(fd,0,SEEK_CUR)==64);
     assert(close(fd)==0);printf("%u %llu %llu\n",n,(unsigned long long)c,(unsigned long long)w);return 0;
 }
+
+/* Unused stream imports from consolidated fd.o: native test boundaries only. */
+long sys_pthread_canceled(int action) {(void)action; return -22;}
+long __real_ioctl(int fd,int req,void *arg) {(void)fd;(void)req;(void)arg; return -25;}
+long sys_getrlimit(unsigned which,void *limit) {(void)which;(void)limit; abort();}

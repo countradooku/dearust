@@ -48,3 +48,7 @@ int main(int argc,char **argv){
     assert(waitpid(child,&status,0)==child && WIFEXITED(status) && WEXITSTATUS(status)==0);
     assert(original==after && getpid()==parent && getpgrp()==group && getsid(0)==session);return 0;
 }
+
+/* Unused stream imports from consolidated fd.o: native test boundaries only. */
+long sys_pthread_canceled(int action) {(void)action; return -22;}
+long __real_ioctl(int fd,int req,void *arg) {(void)fd;(void)req;(void)arg; return -25;}

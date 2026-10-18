@@ -1,0 +1,134 @@
+Stream read/write continuation
+==============================
+Project owner: @countradooku. AI assistance: OpenAI Codex.
+
+Scope and behavior
+------------------
+The existing dearust-fd subsystem now implements read.c and write.c from pinned
+XNU fa29287aa2f0115271e091f1031f53c9e024005d. Four hidden syscall entries and the
+original public __write_for_xtrace helper join the previous nine entries: fourteen
+globals, thirteen private externs. Both production relinkers replace the two
+original units once through --fd-object. No new crate or runtime dependency.
+
+Darwin's actual x86_64 syscall count is user_size_t (64 bits), despite Darling's
+incorrect int declarations. Counts above INT_MAX now return EINVAL without I/O;
+invalid descriptors, O_PATH and wrong access modes retain EBADF precedence.
+Only this exceptional branch performs F_GETFL. Ordinary I/O keeps one raw Linux
+read/write call, no guest-memory references in Rust, copies, allocation or locks.
+Kernel access checks, short transfers, EOF, EAGAIN and EINTR are preserved, with
+no retry. Cancellable calls run the original pthread cancellation check exactly
+once before any other work. Nocancel entries and xtrace skip it.
+
+The original read EIO workaround used TCGETA and a shared18-byte scratch buffer.
+That races across concurrent kernel writers and mistakes terminal-slave/background
+EIO for EOF. A cold TIOCGPTN probe with local4-byte storage identifies Unix98 PTY
+masters only. Legacy BSD PTY masters use character-device major2: a second cold
+fstat fallback identifies them; slave/regular devices and probe failures retain
+EIO. There is no mutable shared scratch storage or device/PID cache.
+
+Confirmed upstream defects are reproduced against unchanged original C:
+  count2^32: original returns0; corrected returns-22 (EINVAL), unchanged offset.
+  actual background PTY slave EIO: original returns0; corrected retains-5 (EIO).
+The guest count regression also fails in the previous Dearust kernel and passes
+in the new one. Original C is not used as the golden for these known defects.
+
+Darwin primary contracts are in pinned bsd/kern/syscalls.master, sys_generic.c
+and tty.c. Full migration, i386 Rust, positioned I/O and resource-limit wrappers
+are separate pending work; the original i386 kernel slice is preserved unchanged.
+The undertaking here is the complete x86_64 stream-wrapper batch, retaining the
+existing runtime cancellation/thread and raw Linux descriptor boundaries.
+
+Performance and memory
+----------------------
+Original C and corrected Rust execute the SAME Darwin binary: read_nocancel,
+write_nocancel, read and write,128 bytes each through /dev/zero and /dev/null.
+42 samples per variant,5000 four-call rounds/sample, in C/Rust/Rust/C order.
+The same unchanged Rust darlingserver serves both; the surrounding matching
+runtime has local modifications. This is a scoped original-wrapper comparison,
+not a pristine whole-Darling or general application speedup claim.
+
+The matching read.c originally contained an unrelated rclol_trace_io hook. The
+initial5.36% result is superseded: exact pinned read.c AND write.c were compiled
+unchanged using the original matching C flags, substituted into the reference
+link, and measured again. Public/import sets stay identical. The exact C baseline
+is SHA256 a213dcf48912383d290f3f9844037c19b84c571d371c3906a45dbc79bb179cd5.
+The surrounding local runtime is still not pristine original Darling.
+
+Final CPU medians per four-call round: C1.2625us -> Rust1.1902us (-5.73%).
+Wall medians:1.266us ->1.1941us. The native exact-C wrapper comparison with shared
+native syscall/cancellation adapters measures1160.139->1156.959ns (-0.27%), with
+overlapping quartiles; effectively unchanged. Native adapters omit real guest
+TLS/RPC behavior. Neither comparison establishes application throughput gains.
+
+Separate affinity-controlled resource cohorts use20 processes per variant,
+512 individually timed rounds per process, clock resolution1us. Reported
+quantiles are medians of process quantiles, not pooled: first round3->3us,
+p50 1->1us, p95 2->2us, p99 2->2us. Raw maxima and outliers are retained.
+
+Linux /proc/self/smaps_rollup medians, C->Rust in KiB:
+  private dirty3512->3516, PSS4160.5->4175, RSS11822->11904.
+Linux peakRSS medians11528->11468. Whole-process variability and fixed code
+footprint remain visible; no whole-process resident memory reduction is claimed.
+The unchanged Darling getrusage wrapper passes Linux peakRSS units through, so
+these probes explicitly label Linux KiB. Its Darwin unit conversion is still
+outside this batch. The new Rust wrappers use no heap/cache, the original18-byte
+shared BSS buffer is removed, and the matching mixed dylib is808 bytes smaller
+than the prior Dearust kernel. File/BSS size does not substitute for process RSS.
+The144-byte legacy-PTY stat buffer is isolated in a cold noninlined helper.
+
+Verification
+------------
+112 ordinary Rust tests,35 Python tests, formatting and strict Clippy pass.
+Explicit Darwin artifact/ABI staging verifies14 fd globals,13 private externs
+and public xtrace; both actual links retain original public/import symbol sets.
+Native stream tests pass plain and with ASan/UBSan C adapters (Rust itself is
+not instrumented). They cover cancellation order, all five entries, raw argument
+widths/errors/no retry, full-width counts, descriptor access/O_PATH, real partial
+I/O, EINTR/EAGAIN/EFAULT, real background-slave EIO, modern master hangup EOF,
+concurrent independent probe buffers and synthetic legacy device classifications.
+Legacy device classification is tested synthetically; live legacy device nodes
+are not required for modern host validation. Exact-original bug repro runs both
+implementations on the same owned Linux files and controlling terminal.
+
+Actual guest execution: new stream regression,30 existing probes,3 signal/fork/RPC
+probes,29 applications (28 exact plus known cfbridge timestamp normalization),
+16 utilities,3 GUI samples. GUI screenshots are visually checked; Calculator's
+later selftest confirms42, TextEditor accepts input, and CGShadingCreate renders.
+Baseline C libproc/utility failures remain in the raw records. Original labels
+for existing/guard probes denote historical Dearust kernels, not the C benchmark.
+New stream regression deliberately fails on the prior kernel; no false pass.
+
+Migration inventories regenerate identically:11 packages;39 partial dependency
+leaves/265764 pending of265803;7 target slices/1622 pending/0 retired. Both new
+source leaves are partial because this is the supported x86_64 slice, not a claim
+that the entire upstream dependency or all architectures are finished.
+
+Reproduction
+------------
+BUILDING.txt retains complete production signal/RPC/vchroot integration commands;
+stage the latest fd.o with the same --fd-object option. There are no new bridge
+options. Original installed runtime, source/build reference trees and existing
+application prefixes remain untouched; execution uses task-owned prefixes.
+
+  python3 tools/benchmark_stream.py --source /absolute/pinned-source \
+    --runtime /absolute/native-stage --output /absolute/owned-native-benchmark
+  python3 tools/build_runtime_probes.py --source /absolute/matching-source \
+    --build /absolute/matching-build --sdk /absolute/installed-sdk \
+    --output /absolute/owned-probes --input tools/fixtures/stream-regression.c \
+    --input tools/fixtures/stream-guest-bench.c \
+    --input tools/fixtures/stream-resource-guest.c
+
+Provide independent stdout goldens before execution. Use the isolated server
+runner and check_mac_apps.py with explicit kernels/cases as in the saved commands.
+Resource repetitions are byte-identical copies of one binary and golden.
+
+  python3 tools/summarize_stream.py --forward /absolute/forward/comparison.json \
+    --reverse /absolute/reverse/comparison.json \
+    --resource-forward /absolute/resource-forward/comparison.json \
+    --resource-reverse /absolute/resource-reverse/comparison.json \
+    --output /absolute/owned-performance.json
+
+The analyzer verifies reversed kernel hashes, identical workloads/goldens, actual
+mappings, strict outputs, shutdown, iteration counts and complete distributions.
+See runtime-streams-verification.json for hashes, commands, baseline repair,
+raw measurements, application records, installation checks and evidence paths.

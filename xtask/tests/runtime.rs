@@ -92,6 +92,11 @@ fn check(triple: &str, label: &str) {
                 "sys_fsync_nocancel",
                 "sys_umask",
                 "sys_getdtablesize",
+                "sys_read",
+                "sys_read_nocancel",
+                "sys_write",
+                "sys_write_nocancel",
+                "__write_for_xtrace",
             ]
             .iter()
             .map(|s| format!("{prefix}{s}"))
@@ -234,8 +239,10 @@ fn check(triple: &str, label: &str) {
                 format!("{prefix}libsimple_lock_unlock"),
             ],
             "fd" => vec![
+                format!("{prefix}__real_ioctl"),
                 format!("{prefix}linux_syscall"),
                 format!("{prefix}sys_getrlimit"),
+                format!("{prefix}sys_pthread_canceled"),
             ],
             "process-ids" => vec![format!("{prefix}linux_syscall")],
             "futex" => vec![format!("{prefix}cerror"), format!("{prefix}linux_syscall")],
@@ -259,7 +266,7 @@ fn check(triple: &str, label: &str) {
             ("guarded", 7),
             ("process", 1),
             ("process-ids", 7),
-            ("fd", 9),
+            ("fd", 13),
             ("paths", 29),
         ] {
             let private = Command::new("llvm-nm")
@@ -276,6 +283,19 @@ fn check(triple: &str, label: &str) {
                 count
             );
         }
+        let fd_symbols = Command::new("llvm-nm")
+            .arg("-m")
+            .arg(stage.join("objects/fd.o"))
+            .output()
+            .unwrap();
+        assert!(fd_symbols.status.success());
+        let fd_symbols = String::from_utf8_lossy(&fd_symbols.stdout);
+        let xtrace = fd_symbols
+            .lines()
+            .find(|line| line.ends_with(" ___write_for_xtrace"))
+            .expect("public xtrace helper");
+        assert!(xtrace.contains("external"));
+        assert!(!xtrace.contains("private external"));
     }
     if !triple.contains("apple") {
         for name in [
@@ -297,6 +317,7 @@ fn check(triple: &str, label: &str) {
             "rmdir",
             "truncate",
             "fd",
+            "stream",
             "process-ids",
         ] {
             let driver = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -324,6 +345,8 @@ fn check(triple: &str, label: &str) {
             .contains(&name)
             {
                 "paths"
+            } else if name == "stream" {
+                "fd"
             } else {
                 name
             };

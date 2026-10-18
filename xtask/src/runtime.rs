@@ -114,6 +114,10 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                                 "sys_fsync_nocancel",
                                 "sys_umask",
                                 "sys_getdtablesize",
+                                "sys_read",
+                                "sys_read_nocancel",
+                                "sys_write",
+                                "sys_write_nocancel",
                             ],
                             "dearust-process" if f[3] == "identifiers" => vec![
                                 "sys_getpid",
