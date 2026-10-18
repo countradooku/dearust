@@ -1,0 +1,190 @@
+// Ordinary injected-allocation ownership check; no guest or RPC execution.
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <cerrno>
+#include <cstdlib>
+#include <cstdint>
+#include <dirent.h>
+#include <fcntl.h>
+#include <iostream>
+#include <memory>
+#include <new>
+#include <string>
+#include <system_error>
+#include <vector>
+#include <sys/syscall.h>
+#include <unistd.h>
+#include <darlingserver/utility.hpp>
+
+static thread_local long failAfter = -1;
+void* operator new(std::size_t size) {
+    if (failAfter == 0) throw std::bad_alloc();
+    if (failAfter > 0) --failAfter;
+    if (void* value = std::malloc(size ? size : 1)) return value;
+    throw std::bad_alloc();
+}
+void operator delete(void* value) noexcept { std::free(value); }
+void operator delete(void* value, std::size_t) noexcept { std::free(value); }
+void* operator new[](std::size_t size) { return ::operator new(size); }
+void operator delete[](void* value) noexcept { ::operator delete(value); }
+void operator delete[](void* value, std::size_t) noexcept { ::operator delete(value); }
+extern "C" int __real_close(int);
+static bool trackCloses = false;
+static std::array<unsigned, 4096> closes{};
+extern "C" int __wrap_close(int descriptor) {
+    if (trackCloses && descriptor >= 0) {
+        assert(static_cast<size_t>(descriptor) < closes.size());
+        ++closes[descriptor];
+    }
+    return __real_close(descriptor);
+}
+namespace DarlingServer {
+struct Process {
+    using ID = int;
+    using NSID = int;
+    enum class Architecture { Test };
+    ID _pid;
+    NSID _nspid;
+    Architecture _architecture;
+    std::shared_ptr<FD> _resourceLifetimePipe, _pidfd, _resourceProcDirectory;
+    @PROCESS_DECLARATION@
+    void resourceValidateNamespacePid() {
+        // Narrow nonallocating adapter: the fixture only constructs self.
+        assert(_pid == getpid() && _nspid == getpid());
+        assert(_resourceProcDirectory && _resourceProcDirectory->fd() >= 0);
+    }
+};
+}
+@PROCESS_PREFIX@
+static int candidatePath(pid_t candidate, std::shared_ptr<DarlingServer::FD>& retained) {
+    using namespace DarlingServer;
+    const auto resourceErrno = [](int error) { return error; };
+    for (int attempt = 0; attempt < 1; ++attempt) {
+        @STATE_FRAGMENT@
+        retained = std::move(candidateFd);
+        return 0;
+    }
+    return -3;
+}
+
+static std::vector<int> inventory() {
+    DIR* list = opendir("/proc/self/fd");
+    assert(list);
+    std::vector<int> result;
+    for (dirent* item; (item = readdir(list));) {
+        if (item->d_name[0] == '.') continue;
+        const int descriptor = std::atoi(item->d_name);
+        if (descriptor != dirfd(list)) result.push_back(descriptor);
+    }
+    assert(closedir(list) == 0);
+    std::sort(result.begin(), result.end());
+    return result;
+}
+int main() {
+    using namespace DarlingServer;
+    FD sentinelRead(open("/dev/null", O_RDONLY | O_CLOEXEC));
+    FD sentinelWrite(open("/dev/null", O_WRONLY | O_CLOEXEC));
+    assert(sentinelRead.fd() >= 0 && sentinelWrite.fd() >= 0);
+    unsigned failures = 0, successes = 0;
+    for (bool withPipe : {false, true}) {
+        bool completed = false;
+        for (long offset = 0; offset < 32; ++offset) {
+            const auto before = inventory();
+            closes.fill(0);
+            int reader = -1, writer = -1, pidfd = -1, procfd = -1;
+            if (withPipe) {
+                int descriptors[2]; assert(pipe2(descriptors, O_CLOEXEC) == 0);
+                reader = descriptors[0]; writer = descriptors[1];
+            }
+            bool failed = false;
+            {
+                FD lifetimePipe;
+                if (withPipe) lifetimePipe = FD(reader);
+                trackCloses = true;
+                failAfter = offset;
+                try {
+                    auto process = std::make_shared<Process>(getpid(), getpid(),
+                        Process::Architecture::Test, std::move(lifetimePipe));
+                    failAfter = -1;
+                    assert(lifetimePipe.fd() == -1);
+                    assert(static_cast<bool>(process->_resourceLifetimePipe) == withPipe);
+                    pidfd = process->_pidfd->fd(); procfd = process->_resourceProcDirectory->fd();
+                    assert(fcntl(pidfd, F_GETFD) >= 0 && fcntl(procfd, F_GETFD) >= 0);
+                    if (withPipe) assert(process->_resourceLifetimePipe->fd() == reader);
+                    ++successes;
+                } catch (const std::bad_alloc&) {
+                    failAfter = -1;
+                    failed = true; ++failures;
+                    // make_shared allocation precedes argument forwarding.
+                    if (offset == 0 && withPipe) {
+                        assert(lifetimePipe.fd() == reader && fcntl(reader, F_GETFD) >= 0);
+                    }
+                }
+                failAfter = -1;
+            }
+            trackCloses = false;
+            assert(fcntl(sentinelRead.fd(), F_GETFD) >= 0 && closes[sentinelRead.fd()] == 0);
+            assert(fcntl(sentinelWrite.fd(), F_GETFD) >= 0 && closes[sentinelWrite.fd()] == 0);
+            if (withPipe) {
+                assert(closes[reader] == 1);
+                assert(fcntl(reader, F_GETFD) == -1 && errno == EBADF);
+                assert(close(writer) == 0);
+            }
+            for (auto count : closes) assert(count <= 1);
+            if (!failed) {
+                assert(closes[pidfd] == 1 && closes[procfd] == 1);
+                assert(fcntl(pidfd, F_GETFD) == -1 && errno == EBADF);
+                assert(fcntl(procfd, F_GETFD) == -1 && errno == EBADF);
+            }
+            assert(inventory() == before);
+            if (!failed) { completed = true; break; }
+        }
+        assert(completed);
+    }
+    unsigned candidateFailures = 0;
+    for (long offset = 0; offset < 4; ++offset) {
+        const auto before = inventory();
+        closes.fill(0); trackCloses = true;
+        bool failed = false;
+        int descriptor = -1;
+        {
+            std::shared_ptr<FD> retained;
+            failAfter = offset;
+            try {
+                assert(candidatePath(getpid(), retained) == 0);
+                failAfter = -1;
+                descriptor = retained->fd();
+                assert(fcntl(descriptor, F_GETFD) >= 0);
+            } catch (const std::bad_alloc&) {
+                failAfter = -1; failed = true; ++candidateFailures;
+            }
+        }
+        trackCloses = false;
+        for (auto count : closes) assert(count <= 1);
+        if (!failed) assert(closes[descriptor] == 1);
+        assert(inventory() == before);
+        if (!failed) break;
+    }
+    assert(candidateFailures == 1);
+    const auto beforeMissing = inventory();
+    bool missingRejected = false;
+    try {
+        auto missing = std::make_shared<Process>(INT32_MAX, INT32_MAX, Process::Architecture::Test);
+        (void)missing;
+    } catch (const std::system_error& error) {
+        assert(error.code().value() == ESRCH);
+        missingRejected = true;
+    }
+    assert(missingRejected && inventory() == beforeMissing);
+    // A failed pidfd syscall follows its existing ESRCH skip before any shared
+    // allocation can disturb errno. This is an ordinary nonexistent PID input.
+    std::shared_ptr<FD> absent;
+    failAfter = 0;
+    assert(candidatePath(INT32_MAX, absent) == -3 && !absent);
+    failAfter = -1;
+    assert(fcntl(sentinelRead.fd(), F_GETFD) >= 0 && fcntl(sentinelWrite.fd(), F_GETFD) >= 0);
+    std::cout << "candidate pidfd allocation failures=" << candidateFailures << "; ";
+    std::cout << "allocation failures=" << failures << " successes=" << successes
+              << "; fd inventories restored, unrelated sentinels retained, owned descriptors closed once\n";
+}

@@ -59,3 +59,26 @@ bootstrap-diagnostic1/2, candidate-ordinary3/4 and churn-diagnostic1/2/churn-ret
 Earlier failed reports remain failures. Candidate server/loader work is still
 uncommitted while lifecycle, credential, old-kernel, physical-effect and CPU gates
 remain open. No blocked adversarial RPC validation was retried.
+
+Owned Process descriptor acquisition
+-------------------------------------
+patch_resource_process_fds.py consumes already-owned resource candidate source
+strings. It moves the lifetime listener into a local FD before Process shared
+allocation, and takes that move-only owner by value into the constructor. Pidfd,
+proc-directory and fork-candidate descriptor acquisitions also receive immediate
+local ownership before shared allocation. Syscall failure is checked before
+allocation can disturb errno. No new descriptor or allocation is added.
+
+    python3 tools/check_resource_process_fds.py --candidate /owned/server-stage \
+      --source /exact/darlingserver/source --state /owned/resource-server-state.inc \
+      --output /fresh/process-fds --sanitizers
+
+The native fixture extracts the transformed constructor prefix and fork candidate
+acquisition, links the exact original FD utility and injects allocation failure.
+Native and ASan/UBSan each cover seven Process allocation failures, pipe-present
+and pipe-absent successes, one fork-candidate allocation failure and missing-PID
+errors. They verify exact inventories, unrelated sentinels and exactly-once close.
+The namespace-validation adapter is nonallocating; the dtape constructor tail,
+process/thread publication, external monitor ownership and kernel cleanup do not
+run in this fixture. Those OOM/lifecycle and eternal-ID initialization gates remain
+open. Local proof3 preserves commands, hashes and earlier failed compile evidence.
