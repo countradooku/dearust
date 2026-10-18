@@ -721,3 +721,38 @@ andrawx64pwritev2 takesFULL64offsetinarg4,arg5=0 (not32/32split). Needcorrectdev
 olderhoststrategy beforeclaimingcomplete; no unsafeF_SETFL toggle/reopenfallback.
 Resource/NOFILE-policy pendingdefects frompriorhandoff remainunimplemented.
 Continue by dependencyorder with concretecorrectness/performancegates.
+
+
+Continuation: process entropy and thread identity
+-------------------------------------------------
+Read RUNTIME-PROCESS-SERVICES.txt/runtime-process-services-verification.json.
+getentropy/thread_selfid now in existing dearust-process/services.rs, identifiers
+feature, existing process-ids.o.9globals:8private plus PUBLICthread_selfid forxtrace.
+Both --process-ids-object relinkers replace7oldIDs+2misc originals once.Queries
+process.o matching-only, all strong bridges and otherobjects unchanged.
+
+PinnedXNU executable randomdev/copyio contracts supersede conflictingmanpage:
+>256EINVAL beforepointer;0success noaccess; rawboundedgetrandom318flags0; noRust
+references/outputbuffer/cache/heap; negativeerrorsconvert once; smallpartialfault
+EFAULT withoutretry; startupEINTRretry; impossibleoverreturnEIO. threadselfid186
+uncached withoriginalintnarrowing. NeverrestoreC signed/unsigned false-success.
+
+Native+actualguest regressions reproduceolddefects/fixnew, concurrentthreads/fork,
+plain+ClangASanUBSanCboundaries.112Rust/35Python, strictfmtClippy, bothABItests,
+30existing/3signalRPC/29apps(one timestampnormalized)/16utilities/3GUIpass.
+ActualoriginalC benchmark must use build_original_process_services.py: matching
+base.h routesoldCthroughlocaltracewrapper; ownedpinnedbaseheaderoverlayremovesthat
+confound. Same unchangedRustserver/localruntime; nopristinewholeDarlingclaim.
+CPUguest+0.26%,native-0.20%, bothoverlappingquartiles, nomaterialchangeestablished;
+p99median2->2us, private dirtywithinonepage, noRSSreductionclaim. No hiddenoutliers.
+Firstmeasuredround follows pthread_threadid_np, notuntouchedcoldprocess.
+Artifacts: dearust-continuation/work/process-services-next/{native-stage,darwin-final,
+matching-final,pinned-final,original-services};47partial/265756pending,11packages,
+7targetslices/1622pending/0retired. Installedreference/userprefixunchanged.
+Fullmigrationunfinished; resource/positionedI/O auditsremainpending asabove.
+
+RawbufferRustAPIrepair: getentropy and5existingstream exports are now unsafeextern
+withcallerownership/alias/concurrency/inputinit contracts. Kerneladdressvalidation
+isnotRustborrowvalidation. Threecompilefailchecks (115Rustchecks total) enforce
+unsafe calls; CABI andallnative/Darwin objectbytesunchanged. Privateentropyhelpers
+propagateunsafecontractexplicitly. Do not expose these as safe rawpointerRustAPIs.

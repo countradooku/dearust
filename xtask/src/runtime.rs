@@ -133,6 +133,7 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                                 "sys_getsid",
                                 "sys_setpgid",
                                 "sys_setsid",
+                                "sys_getentropy",
                             ],
                             "dearust-process" => vec!["sys_proc_info"],
                             "dearust-guarded" => vec![

@@ -11,6 +11,16 @@ The migration scope includes every upstream library, framework, executable,
 resource, SDK link and external dependency; existing stubs are not grounds for
 silently deleting an ABI. Performance improvements must be measured per workload.
 
+Latest process services continuation (2026-10-18)
+-----------------------------------------------
+RUNTIME-PROCESS-SERVICES.txt/runtime-process-services-verification.json record
+getentropy and thread_selfid in existing dearust-process/process-ids.o, nine
+entries (eight private, thread_selfid public). No new package/object;47 partial
+dependency leaves/265756 pending,11 packages,7 target slices/1622 pending/0 retired.
+Oversize requests, negative-error false success, partial-copy errors and startup
+EINTR handling are corrected. Actual guest and original-C measurement evidence
+remain scoped to the matching x86_64 runtime. Full migration remains incomplete.
+
 Latest traditional pathname continuation (2026-10-18)
 ----------------------------------------------------
 RUNTIME-PATH-FRONTENDS.txt/runtime-path-frontends-verification.json record six

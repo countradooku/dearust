@@ -46,7 +46,9 @@ VCHROOT = 'emulation/CMakeFiles/emulation.dir/src/linux_premigration/vchroot_use
 SIGACTION = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/signal/sigaction.c.o'
 UMASK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/umask.c.o'
 GETDTABLESIZE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/getdtablesize.c.o'
-PROCESS_IDS = tuple('emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/'+name+'.c.o' for name in ('getpid','getppid','getpgrp','getpgid','getsid','setpgid','setsid'))
+PROCESS_IDS = tuple('emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/'+name+'.c.o' for name in ('getpid','getppid','getpgrp','getpgid','getsid','setpgid','setsid')) + tuple(
+    'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/misc/' + name + '.c.o'
+    for name in ('getentropy', 'thread_selfid'))
 READLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/readlinkat.c.o'
 SYMLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/symlinkat.c.o'
 FSTATAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstatat.c.o'
@@ -353,6 +355,8 @@ def integrate(args):
                 wanted['_sys_getsid'] = args.process_ids_object.name
                 wanted['_sys_setpgid'] = args.process_ids_object.name
                 wanted['_sys_setsid'] = args.process_ids_object.name
+                wanted['_sys_getentropy'] = args.process_ids_object.name
+                wanted['_sys_thread_selfid'] = args.process_ids_object.name
             if args.fd_object:
                 wanted['_sys_fchmod'] = args.fd_object.name
                 wanted['_sys_ftruncate'] = args.fd_object.name

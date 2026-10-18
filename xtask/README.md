@@ -105,3 +105,11 @@ Runtime publication reuses the same destination validation, temporary copy and
 rename/manifest-last rules as host staging. This is an x86_64 artifact graph,
 not an i386/fat target or a complete runtime install. Actual system_kernel consumer
 integration using the original link graph is described in tools/DARWIN-RUNTIME.txt.
+
+
+The grouped `dearust-process` identifiers feature now also provides entropy and
+thread identity through the existing `process-ids.o` graph entry. Runtime tests
+assert nine definitions, eight private symbols, public `sys_thread_selfid`, and
+only the `linux_syscall` import; native staging executes `services-native.c`.
+The separate queries-only `process.o` and production integration boundaries stay
+as documented in BUILDING.txt/RUNTIME-PROCESS-SERVICES.txt.

@@ -96,7 +96,14 @@ def main():
                 entry['verified_source_slices'].append({
                     'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/' + source + '.c',
                     'cargo_package': 'dearust-process', 'cargo_artifact': 'process-ids.o',
-                    'scope': 'x86_64 identifier-only Rust artifact; matching runtime checks in runtime-control-verification.json and runtime-identifiers-verification.json. Query-only process.o integration remains matching-only. Other architectures and original target retirement remain pending.',
+                    'scope': 'Grouped x86_64 process artifact; matching runtime checks in runtime-control-verification.json and runtime-identifiers-verification.json. Query-only process.o integration remains matching-only. Other architectures and original target retirement remain pending.',
+                })
+        if name == 'emulation':
+            for source in ('getentropy', 'thread_selfid'):
+                entry['verified_source_slices'].append({
+                    'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/misc/' + source + '.c',
+                    'cargo_package': 'dearust-process', 'cargo_artifact': 'process-ids.o',
+                    'scope': 'Grouped x86_64 process services through the identifiers-feature artifact; public thread_selfid ABI retained. Other architectures and original target retirement remain pending.',
                 })
         if name == 'darlingserver':
             entry['verified_source_slices'] = [{

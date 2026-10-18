@@ -33,8 +33,19 @@ fn oversized(fd: i32, writing: bool) -> i64 {
 }
 
 /// Read at most INT_MAX bytes. Linux checks the raw guest address at access.
+///
+/// # Safety
+/// Guest output must permit writes without conflicting Rust references,
+/// ownership restrictions or concurrent access. Kernel address checks do not
+/// enforce Rust ownership.
+/// Inaccessible mappings are permitted and diagnosed by the kernel. Foreign
+/// helpers must obey their ABI and not unwind into Rust.
+///
+/// ```compile_fail,E0133
+/// dearust_fd::sys_read_nocancel(0, core::ptr::null_mut(), 1);
+/// ```
 #[unsafe(no_mangle)]
-pub extern "C" fn sys_read_nocancel(fd: i32, buffer: *mut c_void, count: usize) -> i64 {
+pub unsafe extern "C" fn sys_read_nocancel(fd: i32, buffer: *mut c_void, count: usize) -> i64 {
     if count > i32::MAX as usize {
         return oversized(fd, false);
     }
@@ -77,19 +88,34 @@ fn legacy_pty_master(fd: i32) -> bool {
 }
 
 /// Perform the original cancellation check once, before descriptor or memory use.
+///
+/// # Safety
+/// The caller must uphold sys_read_nocancel's output ownership and foreign ABI
+/// contracts, and initialize the guest cancellation helper's thread state.
 #[unsafe(no_mangle)]
-pub extern "C" fn sys_read(fd: i32, buffer: *mut c_void, count: usize) -> i64 {
+pub unsafe extern "C" fn sys_read(fd: i32, buffer: *mut c_void, count: usize) -> i64 {
     // SAFETY: original thread cancellation helper accepts action0, preserves
     // guest TLS/server policy and must obey its ABI without unwinding into Rust.
     if unsafe { sys_pthread_canceled(0) } == 0 {
         return -4;
     }
-    sys_read_nocancel(fd, buffer, count)
+    // SAFETY: the caller supplies the same raw output ownership/ABI contract.
+    unsafe { sys_read_nocancel(fd, buffer, count) }
 }
 
 /// Write at most INT_MAX bytes without retries or a cancellation check.
+///
+/// # Safety
+/// Guest input must permit reads without violating live Rust ownership or
+/// racing writes, and must not disclose uninitialized Rust storage. Inaccessible
+/// mappings are diagnosed by the kernel. Foreign helpers must obey their ABI
+/// and not unwind into Rust.
+///
+/// ```compile_fail,E0133
+/// dearust_fd::sys_write_nocancel(1, core::ptr::null(), 1);
+/// ```
 #[unsafe(no_mangle)]
-pub extern "C" fn sys_write_nocancel(fd: i32, buffer: *const c_void, count: usize) -> i64 {
+pub unsafe extern "C" fn sys_write_nocancel(fd: i32, buffer: *const c_void, count: usize) -> i64 {
     if count > i32::MAX as usize {
         return oversized(fd, true);
     }
@@ -99,17 +125,27 @@ pub extern "C" fn sys_write_nocancel(fd: i32, buffer: *const c_void, count: usiz
 }
 
 /// Perform the original cancellation check once, before descriptor or memory use.
+///
+/// # Safety
+/// The caller must uphold sys_write_nocancel's input ownership and foreign ABI
+/// contracts, and initialize the guest cancellation helper's thread state.
 #[unsafe(no_mangle)]
-pub extern "C" fn sys_write(fd: i32, buffer: *const c_void, count: usize) -> i64 {
+pub unsafe extern "C" fn sys_write(fd: i32, buffer: *const c_void, count: usize) -> i64 {
     // SAFETY: same original cancellation-helper contract as sys_read.
     if unsafe { sys_pthread_canceled(0) } == 0 {
         return -4;
     }
-    sys_write_nocancel(fd, buffer, count)
+    // SAFETY: the caller supplies the same raw input ownership/ABI contract.
+    unsafe { sys_write_nocancel(fd, buffer, count) }
 }
 
 /// Preserve the public tracing boundary, which deliberately skips cancellation.
+///
+/// # Safety
+/// The caller must uphold sys_write_nocancel's input ownership and foreign ABI
+/// contracts. This raw-buffer boundary does not validate Rust aliasing rules.
 #[unsafe(no_mangle)]
-pub extern "C" fn __write_for_xtrace(fd: i32, buffer: *const c_void, count: usize) -> i64 {
-    sys_write_nocancel(fd, buffer, count)
+pub unsafe extern "C" fn __write_for_xtrace(fd: i32, buffer: *const c_void, count: usize) -> i64 {
+    // SAFETY: the tracing caller supplies the same raw input contract.
+    unsafe { sys_write_nocancel(fd, buffer, count) }
 }

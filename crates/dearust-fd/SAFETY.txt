@@ -80,6 +80,18 @@ counts are bounded by the acceptedINT_MAX. Negative errors convert once.
 Cancellation action0 occurs once before all I/O/validation in cancellable entries;
 result0 means DarwinEINTR. Nocancel and xtrace do not check. No EINTR retry.
 
+The Rust-facing read/write/nocancel/xtrace exports are unsafe extern "C" with
+explicit #Safety contracts. Kernel pointer checks do not enforce Rust ownership
+or aliasing: read output must permit writes without conflicting live references
+or racing accesses, and write input must permit reads without ownership
+violations, racing writes, or disclosure of uninitialized Rust storage. Suitably
+exclusive writable Rust buffers and initialized readable Rust buffers remain
+permitted. Cancellable entry callers must also initialize the original guest
+thread cancellation state. The foreign helpers must preserve their ABI and not
+unwind. Inaccessible guest addresses are still legitimate kernel-diagnosed error
+inputs. Making these raw-pointer APIs unsafe repairs the Rust public API
+contract without changing the C ABI or machine code.
+
 On readEIO only, cold TIOCGPTN0x80045430 probes a local initializedu32, replacing
 the original shared18B TCGETA buffer and excluding slave/background EIO. Failed
 probes use cold fstat5 into local initialized/aligned144B Linux stat storage;

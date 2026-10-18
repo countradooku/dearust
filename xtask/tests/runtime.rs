@@ -149,6 +149,8 @@ fn check(triple: &str, label: &str) {
                 "sys_getsid",
                 "sys_setpgid",
                 "sys_setsid",
+                "sys_getentropy",
+                "sys_thread_selfid",
             ]
             .iter()
             .map(|s| format!("{prefix}{s}"))
@@ -271,7 +273,7 @@ fn check(triple: &str, label: &str) {
             ("errno", 2),
             ("guarded", 7),
             ("process", 1),
-            ("process-ids", 7),
+            ("process-ids", 8),
             ("fd", 13),
             ("paths", 35),
         ] {
@@ -302,6 +304,19 @@ fn check(triple: &str, label: &str) {
             .expect("public xtrace helper");
         assert!(xtrace.contains("external"));
         assert!(!xtrace.contains("private external"));
+        let process_symbols = Command::new("llvm-nm")
+            .arg("-m")
+            .arg(stage.join("objects/process-ids.o"))
+            .output()
+            .unwrap();
+        assert!(process_symbols.status.success());
+        let process_symbols = String::from_utf8_lossy(&process_symbols.stdout);
+        let thread_selfid = process_symbols
+            .lines()
+            .find(|line| line.ends_with(" _sys_thread_selfid"))
+            .expect("public thread identifier helper");
+        assert!(thread_selfid.contains("external"));
+        assert!(!thread_selfid.contains("private external"));
     }
     if !triple.contains("apple") {
         for name in [
@@ -326,6 +341,7 @@ fn check(triple: &str, label: &str) {
             "fd",
             "stream",
             "process-ids",
+            "services",
         ] {
             let driver = Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join(format!("../tools/fixtures/{name}-native.c"));
@@ -355,6 +371,8 @@ fn check(triple: &str, label: &str) {
                 "paths"
             } else if name == "stream" {
                 "fd"
+            } else if name == "services" {
+                "process-ids"
             } else {
                 name
             };

@@ -10,8 +10,8 @@
     },
     "inventoried_entries": 265803,
     "entries_by_status": {
-      "partial": 45,
-      "pending": 265758
+      "partial": 47,
+      "pending": 265756
     },
     "license_candidates": 341
   },
@@ -2326253,7 +2326253,10 @@
           "object_id": "c8ef6ff128d7682cd2c09b8ffdd249bfb4a202b8",
           "size": 524,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-process/src/services.rs",
+          "scope": "Grouped no_std x86_64 process services in existing process-ids.o; native and actual matching guest verification in runtime-process-services-verification.json; public thread_selfid ABI retained.",
+          "limitation": "i386 Rust replacement pending. Selected matching runtime checks do not establish arbitrary application compatibility or full migration completion; no target retirement."
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/misc/gethostuuid.c",
@@ -2326382,7 +2326385,10 @@
           "object_id": "074c0b00851f68d8666e56b06124ced84193d409",
           "size": 410,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-process/src/services.rs",
+          "scope": "Grouped no_std x86_64 process services in existing process-ids.o; native and actual matching guest verification in runtime-process-services-verification.json; public thread_selfid ABI retained.",
+          "limitation": "i386 Rust replacement pending. Selected matching runtime checks do not establish arbitrary application compatibility or full migration completion; no target retirement."
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/mman/madvise.c",

@@ -474,3 +474,44 @@ benchmark_fileops.py --family frontends compares Cfrontends+sharedRustat versus
 Rustfrontends+sameat natively; actualguest full-C comparison is distinct.
 summarize_stream.py --workload frontends validates the paired guest measurements;
 its default stream mode remains compatible with prior recorded statistics.
+
+
+Process services continuation
+-----------------------------
+RUNTIME-PROCESS-SERVICES.txt adds getentropy/thread_selfid to existing process-ids.o
+through its identifiers feature. Both relinkers retain --process-ids-object and
+replace the seven original identifiers plus misc/getentropy.c.o/thread_selfid.c.o
+once. The object has nine globals: eight private, public sys_thread_selfid for
+xtrace. process.o remains queries-only/matching-only. All strong bridges remain.
+
+Native ABI staging executes fixtures/services-native.c with kernel and injected
+boundaries; entropy-upstream-regression.c separately reproduces exact C defects.
+For fair native timing:
+    python3 tools/benchmark_process_services.py --source "$reference_source" \
+      --runtime /path/native-stage --output /path/owned-native-benchmark
+
+Matching source common/base.h redirects C through a local trace wrapper. Build
+unchanged pinned entry sources using matching flags and a pinned base.h overlay
+before guest timing; this changes only owned outputs:
+    python3 tools/build_original_process_services.py --source "$reference_source" \
+      --build "$matching_build" --linked /path/matching-final \
+      --output /path/owned-original-services
+
+build_runtime_probes.py accepts fixtures/services-regression.c,
+services-guest-bench.c and services-resource-guest.c. Supply independent stdout
+goldens, then check_mac_apps.py under run_isolated_server.py using owned kernels
+and the unchanged owned server. Benchmark C/Rust then Rust/C; resource cohorts
+use ten identical executable aliases/order and CPU-pinned guest launcher.
+    python3 tools/summarize_stream.py --workload services \
+      --forward /path/benchmark-forward/comparison.json \
+      --reverse /path/benchmark-reverse/comparison.json \
+      --resource-forward /path/resource-forward/comparison.json \
+      --resource-reverse /path/resource-reverse/comparison.json \
+      --output /path/services-performance.json
+Retain raw reports, baseline provenance and Linux KiB memory units. Default
+stream and explicit frontends analysis reproduce prior statistics unchanged.
+
+The entropy and stream raw-buffer Rust exports require unsafe callers to uphold
+ownership/aliasing/concurrency and input initialization contracts. This does not
+change C ABI or runtime object bytes. Three compile-fail doc checks enforce the
+Rust-facing boundary; invalid guest mappings still receive kernel fault errors.

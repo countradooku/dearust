@@ -1,0 +1,127 @@
+Process services: x86_64 entropy and thread identity
+===================================================
+Original Darling/upstream GPL-3.0-or-later attribution and licenses apply.
+The two new entries live in services.rs in the existing dearust-process crate,
+under its identifiers feature. This feature also enables dearust-errno; query
+parsing and procfs operations are not required by the identifier-only artifact.
+The existing seven identifier operations retain their own safety ledger.
+
+Compatibility authority and repaired defects
+---------------------------------------------
+The exact XNU dependency pin is fa29287aa2f0115271e091f1031f53c9e024005d.
+Its bsd/dev/random/randomdev.c:getentropy first rejects size >256 with EINVAL,
+generates the requested bytes, then returns copyout's status. Its
+osfmk/x86_64/copyio.c returns success for a zero-byte copy before checking the
+user address. A bad or partly inaccessible nonzero output returns EFAULT;
+copyout does not promise rollback of an already-written prefix.
+
+The pin's bsd/man/man2/getentropy.2 disagrees with its implementation: the manual
+describes oversize EIO and invalid-address EINVAL. The implemented kernel path
+is the syscall compatibility authority here. Do not replace it with the
+OpenBSD/glibc
+getentropy convention solely because those interfaces share a name.
+
+Original Darling's misc/getentropy.c misses the 256-byte limit. Its signed int
+result is compared with unsigned long size, so a converted negative failure
+can become apparent success. It reports EIO for a positive partial copy, even
+when the cause is an inaccessible output suffix. The Rust entry repairs these
+three behaviors while preserving the long return and full size_t argument ABI.
+
+Darling misc/thread_selfid.c intentionally exports its symbol for xtrace and
+returns Linux gettid through a signed C int. The Rust entry preserves this
+namespace-local identity policy, narrowing and sign extension, and error
+conversion. Native XNU's libpthread _thread_selfid returns thread_tid into a
+uint64_t result; this slice preserves Darling's existing Linux-backed namespace
+integration. It does not introduce a new thread-ID allocator or global mapping.
+
+Raw syscall and memory boundary
+-------------------------------
+Unsafe is limited to the export attributes and the declared linux_syscall FFI
+calls in services.rs. The seven-argument foreign function must implement the
+existing x86_64 ABI and must not unwind into Rust. Linux syscall 318 getrandom
+receives the guest address, bounded count, flags zero, and zero unused slots.
+Linux syscall 186 gettid has no arguments and zero unused slots.
+
+The Rust-facing sys_getentropy function is unsafe extern "C". Its caller must
+permit all kernel writes without violating Rust ownership, aliasing or
+concurrency rules: the output must not overlap conflicting live references or
+race other accesses. A pointer derived from suitably exclusive writable Rust
+storage is permitted. Kernel address validation alone cannot prove these
+conditions; a safe public raw-pointer function would allow safe Rust to mutate
+shared immutable storage. This API finding was corrected by requiring an unsafe
+call with an explicit #Safety contract. The C ABI and generated code are
+unchanged. Deliberately inaccessible guest mappings remain valid error inputs;
+the contract does not claim that every supplied address must be mapped. The
+pointer-free sys_thread_selfid remains safe to call from Rust.
+
+sys_getentropy rejects counts >256 before any syscall or output access, and
+returns zero for count zero without inspecting the pointer. Nonzero requests
+send the raw guest pointer directly to the Linux kernel. Rust creates no slice
+or reference to guest output, reads no output bytes, and holds no initialized
+Rust object over the output region. Kernel user-access checks handle NULL,
+unmapped, protected, read-only, noncanonical and partly accessible addresses.
+The wrapper does not preflight mappings or create a mapping-validation race.
+It does not provide atomic output or erase a prefix after a later fault.
+
+A complete copy returns zero. Linux EINTR is retried with the same bounded
+request: it can occur while waiting for initial CRNG readiness, whereas XNU's
+internal generation does not expose EINTR here. There is no arbitrary retry
+limit, entropy fallback, nonblocking mode, or insecure randomness source. Other
+negative Linux errors are converted once to the Darwin domain. Linux raw syscall
+errors fit its normal negative errno range and therefore the i32 converter ABI.
+
+For an initialized Linux CRNG, urandom getrandom requests <=256 are not split
+for signal delivery. Linux random.c:get_random_bytes_user can nevertheless
+return a positive short count after copy_to_iter faults; its signal checks occur
+only at page-size intervals. Zero/positive short results therefore return EFAULT
+without retrying the already-written prefix. An impossible oversized positive
+result fails closed with Darwin EIO. No successful result is synthesized after
+an incomplete write.
+
+Ownership, concurrency and performance contract
+-----------------------------------------------
+The wrapper owns no descriptor, entropy buffer, heap allocation, mutex, TLS
+state, static mutable storage, signal disposition, or signal-mask mutation.
+Kernel RNG synchronization and fork safety remain the kernel's responsibility.
+Concurrent and reentrant calls have no wrapper-owned shared scratch or output
+storage. The caller supplies the guest address; its normal mapping races remain
+kernel-validated operations.
+sys_thread_selfid always queries the kernel, so threads and fork children never
+reuse a cached parent's identity. No cancellation hook or extra cancellation
+point is added to either entry.
+
+The normal nonzero entropy path uses one syscall and no user-space data copy;
+zero and oversize requests use none. Only the exceptional EINTR path loops.
+The cold error helper keeps retry/error handling outside the normal success
+path. Static frame observations describe local machine-code storage, not RSS,
+the syscall callee's storage, or a universal latency bound. Runtime performance
+claims require the corresponding measured workload and original-C provenance.
+
+Visibility, target/backend and scope
+------------------------------------
+The identifier-only process-ids.o has eight private ABI globals (the seven
+existing identifiers plus sys_getentropy), and public sys_thread_selfid. Its
+sole foreign import is linux_syscall. Relinkers replace each original C entry
+once and retain the complete kernel public/import sets. Test-only native
+adapters must not enter the production runtime.
+
+The crate rejects targets outside x86_64/64-bit Linux or macOS. Its macOS target
+emits Mach-O code for Darling but must still invoke Linux kernel syscalls through
+the runtime boundary. The owner's full rustix authorization applies; ordinary
+rustix target selection on macOS uses Darwin semantics and cannot replace this
+Linux-in-Mach-O boundary without a separately verified backend integration.
+The two direct calls need no descriptor ownership abstraction or unsafe guest
+slice construction. This implementation adds no rustix dependency merely to
+route these existing raw calls.
+
+This ledger covers the undertaken x86_64 process-service entries and their
+integration. It does not declare other XNU services, architectures, the full
+runtime migration, or arbitrary application compatibility complete. Original
+i386 behavior remains in the retained original kernel slice.
+
+Primary source references
+-------------------------
+https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/bsd/dev/random/randomdev.c
+https://raw.githubusercontent.com/torvalds/linux/v6.12/drivers/char/random.c
+https://man7.org/linux/man-pages/man2/getrandom.2.html
+Use the exact local XNU pin above for compatibility/provenance checks.

@@ -1,0 +1,115 @@
+Process entropy and thread identity continuation
+================================================
+Project owner: @countradooku. AI assistance: OpenAI Codex.
+
+Implementation and compatibility
+--------------------------------
+getentropy and thread_selfid join the existing dearust-process subsystem and its
+identifiers feature. The existing process-ids.o filename/relink switch remains:
+nine globals, eight private plus intentionally public sys_thread_selfid for
+xtrace. No new crate or object. The seven earlier identifier operations and the
+separate queries-only process.o remain unchanged in scope.
+
+Entropy follows executable XNU at exact dependency pin
+fa29287aa2f0115271e091f1031f53c9e024005d, bsd/dev/random/randomdev.c and
+osfmk/x86_64/copyio.c. Reject >256 bytes with EINVAL before pointer access; zero
+succeeds without touching output. The pinned manual disagrees with kernel error
+codes; the kernel implementation is authoritative. Nonzero requests pass the raw
+guest pointer to Linux getrandom(flags=0), without Rust references, heap, local
+entropy buffer, copies, descriptor, mapping preflight, lock, cache or added
+cancellation point. Normal success uses one syscall; empty/rejected sizes use none.
+
+Original C can convert a negative error then compare signed int against unsigned
+size and falsely return success. It also accepts oversized requests and reports
+EIO for a partial output fault. Rust propagates converted negative errors and
+returns EFAULT after a short small copy, without retrying an already-written
+prefix. EINTR while waiting for initial CRNG readiness retries the same bounded
+request; XNU internal generation does not expose that interruption. An impossible
+positive overreturn fails closed with EIO. There is no insecure entropy fallback.
+
+Final review repaired a Rust-facing API contract in entropy and the earlier five
+stream raw-buffer exports: they now require unsafe Rust callers with explicit
+ownership, aliasing, concurrency and input initialization obligations. Kernel
+pointer checks cannot enforce Rust borrow rules. Invalid guest mappings remain
+permitted for fault reporting. Three compile-fail checks reject safe calls to
+these raw-buffer APIs. C ABI and every staged object are byte-identical before
+and after this contract repair, so prior native/guest measurements still apply.
+
+thread_selfid issues a fresh Linux gettid on every call, retaining original C int
+narrowing/sign extension and errno conversion. There is no fork-stale cache or
+new identity allocator. Native/guest tests check concurrent live-thread uniqueness,
+stable per-thread identity and changed identity after fork against kernel or
+pthread_threadid_np, respectively. Safety details: crates/dearust-process/
+SAFETY-SERVICES.txt. The target guard remains x86_64/64-bit Linux or Darling.
+
+Performance and memory
+----------------------
+One identical guest workload requests32 and256 entropy bytes and a thread ID per
+round. Exact pinned unchanged C entries are compiled with matching C flags and
+pinned common/base.h in an owned include overlay. This bypasses the local matching
+__lolsys_syscall trace wrapper, so both timed entries use linux_syscall directly.
+No reference files are changed. Surrounding locally modified runtime and the
+unchanged Rust server remain shared; this is not pristine whole-Darling timing.
+
+42 CPU samples/variant in C/Rust/Rust/C order,10000 rounds/sample:
+  CPU median1.3816 ->1.3852us perthree calls (+0.26%), overlapping quartiles.
+  Wall median1.3854 ->1.39105us.
+Native21 alternating pairs,100000 rounds/sample, CPU-affinity controlled:
+  CPU median1359.61718 ->1356.93374ns (-0.20%), overlapping quartiles.
+These establish no material performance change, rather than a speedup claim.
+
+Resource cohorts use20 processes/variant,512 individually timed rounds after100
+warmups, same CPU-pinned guest launcher,1us clock resolution. Medians of process
+quantiles, not pooled quantiles:
+  First measured round3 ->3us; p50 1 ->1us; p95/p99 2 ->2us.
+  Median process maximum5 ->5us; all-process maximum35 ->76us.
+All raw maxima/outliers are retained; these samples do not bound scheduling tails.
+First round follows prepare()/pthread_threadid_np and runtime startup, and does
+not measure an untouched process-cold kernel RNG or syscall path.
+
+Linux smaps_rollup medians, KiB: private dirty3516 ->3512, PSS4163.5 ->4189.5,
+RSS11826 ->11918. Linux peakRSS11510 ->11494. Small resident variation has overlapping
+quartiles; no whole-process memory improvement is claimed. Unported getrusage
+unit conversion remains outside these entries, so counters are explicitly Linux
+KiB. New wrappers allocate no heap or output scratch. Mach-O entropy has16B local
+bookkeeping/40B including pushes, versus original24B including pushes; the cold
+helper tail-enters another40B frame rather than nesting. Thread identity stays24B
+including pushes. These local frame counts exclude the imported syscall callee.
+The matching mixed dylib shrinks584B from the prior Dearust batch, to901504B.
+
+Verification and integration
+----------------------------
+112 ordinary Rust tests plus3 compile-fail ownership checks,35 Python tests,
+strict Clippy/fmt, native ABI staging and explicit
+Darwin ABI staging pass. Native production object plus C boundary fixtures pass
+plain and Clang ASan/UBSan; C is instrumented, Rust/assembly is not. Injected
+checks cover exact syscall arguments, errno mapping, full/zero/short/overreturns,
+multiple EINTRs, zero/oversize no-call precedence, original int narrowing; real
+Linux checks cover NULL/protected/read-only/cross-page faults, guards, eight
+synchronized threads and fork. An unchanged pinned C fixture separately
+reproduces negative-error success, oversize/partial/retry/empty defects.
+
+Actual guest tests cover guards, full-width oversize, NULL/zero/protected/partial
+faults, four concurrent threads and fork. The non-aborting guest fault probe
+records original NULL success, oversize success with changed output, partialEIO;
+new returns EFAULT/EINVAL/EFAULT and preserves rejection guards. The full strict
+regression fails original and passes new.30 existing guest probes,3 signal/fork/RPC
+probes,29 apps (28 exact plus one known timestamp normalization),16 utilities and
+3 GUI samples pass. Original baseline failures remain visible in raw reports.
+
+Both full production links preserve public/import symbol sets, matching and
+pinned provenance, mandatory strong signal/RPC/vchroot/fork bridges, no added
+stubs/dynamic lookup. Pinned universal link retains original i386 byte-for-byte;
+new Rust entries are x86_64. Other staged objects reproduce the previous batch
+byte-for-byte. Installed runtime/server, reference trees and existing app prefixes
+are untouched. Generated inventories repeat identically:160 dependency trees,
+47 partial leaves/265756 pending of265803,11 packages,7 target slices/1622 pending,
+0 retired. Full migration remains unfinished; resource and positioned-I/O work
+identified in prior continuation notes is still pending, not implemented here.
+
+Reproduce using BUILDING.txt, benchmark_process_services.py,
+build_original_process_services.py, summarize_stream.py --workload services,
+and the existing owned isolated-server workflow. Verification JSON contains raw
+reports, source pins/hashes, compiler/link commands, actual mapping checks,
+sanitizer evidence and baseline failure output. Prior stream/frontends analyzers
+reproduce recorded statistics and raw samples identically.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate reversed matching-kernel experiments and summarize stream or pathname CPU/resources.
+"""Validate reversed matching-kernel experiments and summarize stream, pathname or process-service CPU/resources.
 
 Original C versus Rust inside the locally modified matching runtime, with the
 same server and byte-identical guest binaries. Resource quantiles are medians
@@ -17,10 +17,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('forward','reverse','resource-forward','resource-reverse','output'):
         parser.add_argument('--'+name,type=Path,required=True)
-    parser.add_argument('--workload',choices=['stream','frontends'],default='stream')
+    parser.add_argument('--workload',choices=['stream','frontends','services'],default='stream')
     args = parser.parse_args()
     family=args.workload
-    expected_rounds=5000 if family=='stream' else 200
+    expected_rounds={'stream':5000,'frontends':200,'services':10000}[family]
     if kernel_pair(args.forward,args.reverse) != kernel_pair(args.resource_forward,args.resource_reverse):
         raise ValueError('CPU and resource cohorts use different kernels')
     cpu = []

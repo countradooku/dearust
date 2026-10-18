@@ -23,3 +23,8 @@ mod identifiers;
 pub use identifiers::{
     sys_getpgid, sys_getpgrp, sys_getpid, sys_getppid, sys_getsid, sys_setpgid, sys_setsid,
 };
+#[cfg(feature = "identifiers")]
+#[allow(unsafe_code)]
+mod services;
+#[cfg(feature = "identifiers")]
+pub use services::{sys_getentropy, sys_thread_selfid};
