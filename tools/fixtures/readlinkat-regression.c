@@ -28,7 +28,8 @@ int main(void) {
     assert(pthread_fchdir_np(dfd) == 0);
     assert(readlinkat(AT_FDCWD, "link", bytes, sizeof(bytes)) == (ssize_t)strlen(target));
     assert(pthread_fchdir_np(-1) == 0);
-    errno = 0; assert(readlinkat(dfd, "link", bytes, 0) == -1 && errno == EINVAL);
+    assert(readlinkat(dfd, "link", bytes, 0) == 0);
+    assert(readlinkat(dfd, "link", NULL, 0) == 0);
     errno = 0; assert(readlinkat(dfd, "link", bytes, (size_t)-1) == -1 && errno == EINVAL);
     errno = 0; assert(readlinkat(dfd, "link", NULL, sizeof(bytes)) == -1 && errno == EFAULT);
     errno = 0; assert(readlinkat(dfd, "missing", NULL, sizeof(bytes)) == -1 && errno == ENOENT);

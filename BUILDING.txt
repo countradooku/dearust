@@ -462,3 +462,15 @@ performance claims. Do not present the instrumented comparison as pristine C.
 Tools benchmark_stream.py and summarize_stream.py retain exact commands and
 validate input equivalence; build_runtime_probes.py builds the three stream guest
 fixtures. Supply independent expected stdout files before executing any fixture.
+
+Traditional pathname continuation
+---------------------------------
+RUNTIME-PATH-FRONTENDS.txt adds six traditional entries through existing paths.o
+and --paths-object; all35 globals are private externs, imports unchanged. Keep
+the existing strong cwd/fork/signal/RPC/vchroot bridges. readlinkat now uses the
+actual size_t ABI and zero-length Darwin result. Rebuild only that old regression
+fixture with corrected pinned-XNU assertions; retain the other29 probe binaries.
+benchmark_fileops.py --family frontends compares Cfrontends+sharedRustat versus
+Rustfrontends+sameat natively; actualguest full-C comparison is distinct.
+summarize_stream.py --workload frontends validates the paired guest measurements;
+its default stream mode remains compatible with prior recorded statistics.

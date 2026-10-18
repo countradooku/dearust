@@ -79,7 +79,13 @@ def main():
                     ('xnu_syscall/bsd/impl/stat/fstat.c', 'dearust-path', 'paths.o'),
                     ('conversion/stat/common.c', 'dearust-path', 'paths.o'),
                     ('xnu_syscall/bsd/impl/unistd/access.c', 'dearust-path', 'paths.o'),
-                    ('xnu_syscall/bsd/impl/unistd/chmod.c', 'dearust-path', 'paths.o')):
+                    ('xnu_syscall/bsd/impl/unistd/chmod.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/unistd/readlink.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/unistd/symlink.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/unistd/link.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/unistd/unlink.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/unistd/rename.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/stat/mkdir.c', 'dearust-path', 'paths.o')):
                 entry['verified_source_slices'].append({
                     'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/' + source,
                     'cargo_package': package, 'cargo_artifact': artifact,

@@ -16,7 +16,16 @@ unsafe extern "C" {
 /// Guest addresses use the shared fault-contained copy boundary. Kernel output must not alias live
 /// wrapper storage.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn sys_readlinkat(fd: i32, path: *const u8, buf: *mut u8, count: i32) -> i64 {
+pub unsafe extern "C" fn sys_readlinkat(
+    fd: i32,
+    path: *const u8,
+    buf: *mut u8,
+    count: usize,
+) -> i64 {
+    // XNU checks its size_t bound before pathname/descriptor lookup.
+    if count > i32::MAX as usize {
+        return -22;
+    }
     if path.is_null() {
         return -14;
     }
@@ -35,15 +44,21 @@ pub unsafe extern "C" fn sys_readlinkat(fd: i32, path: *const u8, buf: *mut u8, 
     if result < 0 {
         return i64::from(dearust_errno::linux_to_bsd(result));
     }
-    // SAFETY: raw Linux x86_64 readlinkat 267 validates caller output/count.
-    // Path storage is live and terminated. Signed count is extended exactly as
-    // the original int argument, with no Rust output reference or NUL write.
+    // XNU permits a zero-byte request on a symlink, including NULL output.
+    // Linux rejects zero before lookup. Probe one local byte to preserve lookup,
+    // type and permission errors, while never accessing the guest output.
+    let mut probe = 0_u8;
+    let output = if count == 0 { &mut probe } else { buf };
+    let transfer_count = if count == 0 { 1 } else { count };
+    // SAFETY: Linux readlinkat267 validates actual output access. Path storage
+    // is live and terminated; the zero-size path uses one initialized local byte.
+    // No Rust reference is formed over guest memory; no NUL byte is appended.
     let result = unsafe {
         linux_syscall(
             i64::from(expanded.dfd),
             expanded.path.as_ptr() as i64,
-            buf as i64,
-            i64::from(count),
+            output as i64,
+            transfer_count as i64,
             0,
             0,
             267,
@@ -51,6 +66,8 @@ pub unsafe extern "C" fn sys_readlinkat(fd: i32, path: *const u8, buf: *mut u8, 
     } as i32;
     if result < 0 {
         i64::from(dearust_errno::linux_to_bsd(result))
+    } else if count == 0 {
+        0
     } else {
         i64::from(result)
     }

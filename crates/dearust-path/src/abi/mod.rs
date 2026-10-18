@@ -36,3 +36,6 @@ pub use fstat::{sys_fstat, sys_fstat64};
 
 mod permissions;
 pub use permissions::{sys_access, sys_chmod};
+
+mod frontends;
+pub use frontends::{sys_link, sys_mkdir, sys_readlink, sys_rename, sys_symlink, sys_unlink};

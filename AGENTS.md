@@ -683,3 +683,41 @@ NOFILE-1 originated disabledold driver relocation; establish deliberate descript
 accounting before changing policy. Do not mechanically copy these defects or
 broaden scoped completion claims. All current strong memory/signal/RPC contracts
 and rustix authorization remain in effect. Continue substantive porting batches.
+
+
+Continuation: traditional pathname frontends and readlinkat correctness
+-----------------------------------------------------------------------
+Read RUNTIME-PATH-FRONTENDS.txt/runtime-path-frontends-verification.json. Six
+traditional entries readlink/symlink/link/unlink/rename/mkdir now in existing
+path subsystem abi/frontends.rs. Capture originalTLS once, share fd across both
+link/rename arguments, preserveflags0/mode/target. paths.o35 private globals,
+27ABIentries +8copyhelpers; imports and all strong bridges unchanged. No new
+crate, heap, extra pathbuffer, lock/cache/cancellation or addedsyscall by glues.
+
+Fix canonicalreadlinkat to usize count; >INTMAX rejects before anypath/fd/output
+lookup, matching pinnedXNUvfs_syscalls.c6711. Traditionalreadlink remainsint32,
+negativeconvertstousize correctlyfails. Size0 uses1LOCALinitializedbyte Linuxprobe
+andreturns0, retainingpath/type/permissionerrors withouttouchingguestoutput.
+The previous zeroEINVAL test was wrong againstXNU. Retainall30existingprobes,
+refreshONLYreadlinkat-regression binary; all29othersbyteidentical/goldenssame.
+Newindependentwidthguest reproduces4294967297 truncatingto1 andwritingbyte before
+fix; newkernelreturnsEINVAL untouched. Do not reinstateintwidth or zeroEINVAL.
+
+Artifacts dearust-continuation/work/path-frontends-next/{native-final,darwin-final,
+matching-final,pinned-final}. NativeCfrontends+sameRustcanonicalbackend comparison
+is NOT all-C; +0.86%median withoverlap. GuestfullCchain73.6425->70.6675us/8calls,
+-4.04%CPU; p99median204->142.5us, private dirtyunchanged3512KiB. All13entryunits
+matchexactpin; retainedhelpers/surroundinglocalruntime/sameRustserver NOT pristinewholeDarling.
+Allrawoutliers/maximumvariation/RSSrecorded, no universalperformanceclaim.
+112Rust/35Python, strictfmtClippy, explicitDarwinABI, nativeplain+ASan/UBSan and
+independentrepeat, actualnewregressions/30old/3signalRPC/29apps(one timestampnormalized)/
+16utilities/3GUI pass. Installed/reference/app prefixes untouched. Inventories
+45partial/265758pending,11packages,7targetslices/1622pending/0retired. Fullportunfinished.
+
+PositionedI/O was audited before implementation and deferred as a separate
+undertaking: Darwin permits some negativechar-device offsets, pwriteignoresappend,
+-1mustneverreachLinuxpwritev2 (streampositionsemantics), OFF_T_MAXhas specialbehavior,
+andrawx64pwritev2 takesFULL64offsetinarg4,arg5=0 (not32/32split). Needcorrectdevice/
+olderhoststrategy beforeclaimingcomplete; no unsafeF_SETFL toggle/reopenfallback.
+Resource/NOFILE-policy pendingdefects frompriorhandoff remainunimplemented.
+Continue by dependencyorder with concretecorrectness/performancegates.

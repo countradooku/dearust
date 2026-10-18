@@ -34,6 +34,12 @@ STAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/stat.c.
 FSTAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstat.c.o'
 ACCESS = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/access.c.o'
 CHMOD = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/chmod.c.o'
+READLINK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/readlink.c.o'
+SYMLINK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/symlink.c.o'
+LINK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/link.c.o'
+UNLINK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/unlink.c.o'
+RENAME = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/rename.c.o'
+MKDIR = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/mkdir.c.o'
 SIGEXC = 'emulation/CMakeFiles/emulation.dir/src/linux_premigration/signal/sigexc.c.o'
 RPC = 'emulation/CMakeFiles/emulation.dir/__/__/__/__/__/darlingserver/src/rpc.c.o'
 VCHROOT = 'emulation/CMakeFiles/emulation.dir/src/linux_premigration/vchroot_userspace.c.o'
@@ -156,7 +162,7 @@ def integrate(args):
             raise ValueError('grouped paths object conflicts with individual pathname objects')
         if not args.paths_object.is_file() or not args.lstat_bridge:
             raise ValueError('grouped paths object requires its object and original thread-cwd bridge')
-        for name in (SYMLINKAT, READLINKAT, UNLINKAT, LINKAT, RENAMEAT, MKDIRAT, FACCESSAT, FCHMODAT, RMDIR, TRUNCATE, LSTAT, FSTATAT, STAT, FSTAT, ACCESS, CHMOD):
+        for name in (SYMLINKAT, READLINKAT, UNLINKAT, LINKAT, RENAMEAT, MKDIRAT, FACCESSAT, FCHMODAT, RMDIR, TRUNCATE, LSTAT, FSTATAT, STAT, FSTAT, ACCESS, CHMOD, READLINK, SYMLINK, LINK, UNLINK, RENAME, MKDIR):
             if inputs.count(name) != 1:
                 raise ValueError('missing unique grouped pathname input: ' + name)
             replacements[name] = args.paths_object.resolve(strict=True)
@@ -322,6 +328,12 @@ def integrate(args):
                 wanted['_sys_fstat64'] = args.paths_object.name
                 wanted['_sys_access'] = args.paths_object.name
                 wanted['_sys_chmod'] = args.paths_object.name
+                wanted['_sys_readlink'] = args.paths_object.name
+                wanted['_sys_symlink'] = args.paths_object.name
+                wanted['_sys_link'] = args.paths_object.name
+                wanted['_sys_unlink'] = args.paths_object.name
+                wanted['_sys_rename'] = args.paths_object.name
+                wanted['_sys_mkdir'] = args.paths_object.name
                 if args.copy_sigexc_object:
                     wanted['_sigexc_handler'] = args.copy_sigexc_object.name
                     wanted['_sigrt_handler'] = args.copy_sigexc_object.name

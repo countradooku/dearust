@@ -11,6 +11,15 @@ The migration scope includes every upstream library, framework, executable,
 resource, SDK link and external dependency; existing stubs are not grounds for
 silently deleting an ABI. Performance improvements must be measured per workload.
 
+Latest traditional pathname continuation (2026-10-18)
+----------------------------------------------------
+RUNTIME-PATH-FRONTENDS.txt/runtime-path-frontends-verification.json record six
+traditional entries in dearust-path and corrected readlinkat count/zero semantics.
+35 private paths.o globals, no new crate;45 partial dependency leaves/265758
+pending,11 packages,7 target slices/1622 pending/0 retired. Actual original-C
+workload CPU median-4.04%; native frontend-only difference has overlapping
+quartiles. Full migration remains incomplete.
+
 Latest stream I/O continuation (2026-10-18)
 ------------------------------------------
 RUNTIME-STREAMS.txt and runtime-streams-verification.json record read/write in

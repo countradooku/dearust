@@ -123,6 +123,12 @@ fn check(triple: &str, label: &str) {
                 "sys_fstat64",
                 "sys_access",
                 "sys_chmod",
+                "sys_readlink",
+                "sys_symlink",
+                "sys_link",
+                "sys_unlink",
+                "sys_rename",
+                "sys_mkdir",
                 "dearust_copy_guarded",
                 "dearust_copy_signal_fixup",
                 "dearust_copy_region_begin",
@@ -267,7 +273,7 @@ fn check(triple: &str, label: &str) {
             ("process", 1),
             ("process-ids", 7),
             ("fd", 13),
-            ("paths", 29),
+            ("paths", 35),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
@@ -316,6 +322,7 @@ fn check(triple: &str, label: &str) {
             "fchmodat",
             "rmdir",
             "truncate",
+            "frontends",
             "fd",
             "stream",
             "process-ids",
@@ -341,6 +348,7 @@ fn check(triple: &str, label: &str) {
                 "fchmodat",
                 "rmdir",
                 "truncate",
+                "frontends",
             ]
             .contains(&name)
             {

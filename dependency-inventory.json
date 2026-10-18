@@ -10,8 +10,8 @@
     },
     "inventoried_entries": 265803,
     "entries_by_status": {
-      "partial": 39,
-      "pending": 265764
+      "partial": 45,
+      "pending": 265758
     },
     "license_candidates": 341
   },
@@ -2326904,7 +2326904,10 @@
           "object_id": "660f3bfe133504d77d4bee189d7650a3fc429176",
           "size": 517,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-path/src/abi/frontends.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/mkdirat.c",
@@ -2327444,7 +2327447,10 @@
           "object_id": "25786a20bd260d6202540a43a4b451dbba8eca3c",
           "size": 483,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-path/src/abi/frontends.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/linkat.c",
@@ -2327525,7 +2327531,10 @@
           "object_id": "56165ebeee6d4785633b25ef16f519a3456376e7",
           "size": 535,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-path/src/abi/frontends.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/readlinkat.c",
@@ -2327555,7 +2327564,10 @@
           "object_id": "5335f31777fa9c6389bdbc71d7cb6ff3e635e209",
           "size": 500,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-path/src/abi/frontends.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/renameat.c",
@@ -2327654,7 +2327666,10 @@
           "object_id": "b2bfba230207cc391796da14393826ce92547334",
           "size": 474,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-path/src/abi/frontends.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/symlinkat.c",
@@ -2327708,7 +2327723,10 @@
           "object_id": "60fc8c601542d7070af45816ce05eb21f1fe74d4",
           "size": 449,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-path/src/abi/frontends.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/unlinkat.c",

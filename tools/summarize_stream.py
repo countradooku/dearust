@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate reversed matching-kernel experiments and summarize stream CPU/resources.
+"""Validate reversed matching-kernel experiments and summarize stream or pathname CPU/resources.
 
 Original C versus Rust inside the locally modified matching runtime, with the
 same server and byte-identical guest binaries. Resource quantiles are medians
@@ -17,26 +17,29 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('forward','reverse','resource-forward','resource-reverse','output'):
         parser.add_argument('--'+name,type=Path,required=True)
+    parser.add_argument('--workload',choices=['stream','frontends'],default='stream')
     args = parser.parse_args()
+    family=args.workload
+    expected_rounds=5000 if family=='stream' else 200
     if kernel_pair(args.forward,args.reverse) != kernel_pair(args.resource_forward,args.resource_reverse):
         raise ValueError('CPU and resource cohorts use different kernels')
     cpu = []
     for order,variant,case in reports(args.forward,args.reverse):
-        if case['name'] != 'stream-guest-bench.c':
+        if case['name'] != family+'-guest-bench.c':
             raise ValueError('unexpected CPU workload')
-        samples = re.findall(r'STREAM_BENCH sample=(\d+) roundtrips=(\d+) cpu_us=(\d+) wall_us=(\d+)',case['stderr'])
+        samples = re.findall(family.upper()+r'_BENCH sample=(\d+) roundtrips=(\d+) cpu_us=(\d+) wall_us=(\d+)',case['stderr'])
         if len(samples)!=21 or {int(x[0]) for x in samples}!=set(range(21)):
             raise ValueError('expected21 complete CPU samples')
         for sample,rounds,c,wall in samples:
-            if int(rounds)!=5000:
+            if int(rounds)!=expected_rounds:
                 raise ValueError('unexpected iteration count')
             cpu.append(dict(order=order,variant=variant,sample=int(sample),roundtrips=int(rounds),cpu_us=int(c),wall_us=int(wall)))
     resource = []
     fields={'rounds','cpu_us','first_round_us','p50_us','p95_us','p99_us','max_us','maxrss_linux_kib','initial_maxrss_linux_kib','rss_linux_kib','pss_linux_kib','private_dirty_linux_kib'}
     for order,variant,case in reports(args.resource_forward,args.resource_reverse):
-        if not re.fullmatch(r'stream-resource-\d\d.c',case['name']):
+        if not re.fullmatch(family+r'-resource-\d\d\.c',case['name']):
             raise ValueError('unexpected resource workload')
-        lines=[line for line in case['stderr'].splitlines() if line.startswith('STREAM_RESOURCE ')]
+        lines=[line for line in case['stderr'].splitlines() if line.startswith(family.upper()+'_RESOURCE ')]
         if len(lines)!=1:
             raise ValueError('require exactly one resource record')
         values={k:int(v) for k,v in re.findall(r'(\w+)=(\d+)',lines[0])}

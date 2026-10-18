@@ -1,6 +1,7 @@
 Current memory and permission contracts
 =======================================
-See SAFETY-MEMORY.txt and SAFETY-PERMISSIONS.txt for current behavior. Their
+See SAFETY-MEMORY.txt, SAFETY-PERMISSIONS.txt and the current frontend/readlink
+continuation below for current behavior. Their
 fault-contained guest copies and atomic permission operations supersede the
 historical direct-pointer/check-use/ignored-flag descriptions retained below.
 
@@ -459,3 +460,31 @@ original guest TLS-before-path-validation ordering, follows final symlinks, and
 introduces no additional path buffer, heap storage, cache or raw syscall policy.
 Guest TLS must therefore be initialized even on NULL input. Caller path/output
 contracts are exactly the sibling metadata contracts. No caller output is read.
+
+
+Current traditional frontends and readlinkat ABI correction
+----------------------------------------------------------
+Read RUNTIME-PATH-FRONTENDS.txt. Existing subsystem now has27 ABI entries plus8
+private copy/recovery globals. New frontends readlink/symlink/link/unlink/rename/
+mkdir each capture initialized guest TLS once before delegating to the canonical
+at wrapper. Link/rename share the captured fd for both arguments. Modes preserve
+all32bits; symlink targets stay raw kernel-validated pointers. No extra path
+buffers, allocation, locks, caches or cancellation hooks. All original foreign
+boundaries must preserve their ABI, not retain pointers, and not unwind.
+
+The canonical readlinkat count is now usize, correcting the original int against
+XNU syscalls.master entry473. Reject >INT32_MAX before pathname/descriptor/output
+access. Traditional readlink retains int32 count (entry58), sign-converted to
+usize; negative values fail that same gate after the frontend's originalTLSfirst
+capture. This supersedes earlier claims that the C readlinkat width was correct.
+Only source caller of C sys_readlinkat was traditional readlink, now ported too.
+
+For size0, XNU still validates pathname/type/permissions but never output. Linux
+rejects0 before lookup: call Linuxreadlinkat267 with a live initialized LOCALu8
+and size1, then return0 on success. No guest output reference/dereference occurs,
+including NULL/PROT_NONE. Kernel errors pass through the existing errno mapping.
+For positive sizes<=INT32MAX, raw guest output passes directly to kernel validation;
+return is bounded by that count, and no NUL is appended. Thus previous native/
+guest assertions expecting EINVAL for valid size0 were incorrect and are replaced
+with pinned XNU assertions, not dropped. Existing memory/MaybeUninit guard and
+signal/RPC/vchroot contracts remain unchanged.

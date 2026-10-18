@@ -20,7 +20,7 @@ extern int do_linux_fchmodat(int,const char *,int,int);
 extern long sys_access(const char *,int),sys_chmod(const char *,int);
 extern long sys_linkat(int,const char *,int,const char *,int),sys_renameat(int,const char *,int,const char *);
 extern long sys_unlinkat(int,const char *,int),sys_mkdirat(int,const char *,int),sys_rmdir(const char *),sys_truncate(const char *,long);
-extern long sys_readlinkat(int,const char *,char *,int),sys_symlinkat(const char *,int,const char *);
+extern long sys_readlinkat(int,const char *,char *,size_t),sys_symlinkat(const char *,int,const char *);
 extern long sys_lstat(const char *,void *),sys_lstat64(const char *,void *),sys_stat(const char *,void *),sys_stat64(const char *,void *);
 extern long sys_fstatat(int,const char *,void *,int),sys_fstatat64(int,const char *,void *,int),sys_fstat(int,void *),sys_fstat64(int,void *);
 static int conversions;

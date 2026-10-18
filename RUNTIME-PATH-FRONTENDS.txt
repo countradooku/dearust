@@ -1,0 +1,148 @@
+Traditional pathname frontend continuation
+==========================================
+Project owner: @countradooku. AI assistance: OpenAI Codex.
+
+Implementation and correctness
+------------------------------
+Six traditional pathname operations join existing dearust-path: readlink,
+symlink, link, unlink, rename and mkdir. They capture the original per-thread cwd
+once, then delegate to the existing canonical at implementation. Both arguments
+of link/rename receive the SAME captured descriptor; flags, raw symlink target,
+unsigned mode and original TLS-first order are preserved. No extra path buffer,
+allocation, cache, lock, cancellation check or syscall is introduced by these
+frontends. This is actual implementation/staging/link integration, not a source
+inventory-only annotation. paths.o now has27 syscall/helper ABI entries plus8
+copy/recovery globals:35 private externs. Existing strong bridges remain required.
+
+The audit fixed two existing readlinkat defects alongside the new frontends:
+
+- Darwin readlinkat takes size_t, not Darling's int. It now receives all64 bits
+  and rejects values above INT32_MAX BEFORE pathname/descriptor lookup. The
+  traditional readlink entry correctly retains its signed32 count; negative
+  values convert to size_t and fail the same bound. Invalid huge requests perform
+  no pathname/output access or descriptor resolution in the canonical backend.
+- XNU allows a zero-length read of a symlink, including NULL/protected output,
+  while Linux readlinkat rejects zero. A one-byte INITIALIZED LOCAL probe preserves
+  kernel lookup/type/permission errors and then returns0 without touching guest
+  output. Missing paths still return ENOENT; nonsymlinks still return EINVAL.
+  Normal positive counts retain raw byte output, truncation and no appendedNUL.
+
+Primary contracts: pinned xnu bsd/kern/syscalls.master entries58 and473, and
+bsd/vfs/vfs_syscalls.c readlinkat_internal/readlink/readlinkat. XNU's explicit
+INT32_MAX check precedes nameiat lookup, and the shared uio path permits zero.
+Traditional wrapper source pin: fa29287aa2f0115271e091f1031f53c9e024005d.
+
+The new actual guest regression runs two threads with distinct pthread_fchdir_np
+working directories while process cwd stays unchanged. Both execute the six
+operations repeatedly, checking inode identity/link counts, raw link bytes and
+cleanup. A separate size-width probe demonstrates original count4294967297
+truncating to1 and writing a byte; the corrected kernel returns EINVAL and leaves
+output unchanged. Previous-kernel failures are preserved as original-bug proof.
+
+The old readlinkat fixture asserted Linux's incorrect zero-length EINVAL. It has
+been corrected to the pinned XNU result, with additional NULL/huge-count checks.
+The30-probe integration suite refreshes ONLY that binary; all other29 binaries
+are byte-identical and its stdout golden remains unchanged. This replaces a wrong
+assertion; it does not remove coverage or suppress a failing correctness gate.
+
+Performance and memory
+----------------------
+Actual original-C and corrected combined Rust kernels execute one identical
+Darwin binary: mkdir -> symlink -> readlink -> link -> rename -> unlink -> unlink
+-> rmdir, relative to an owned thread-specific cwd and seeded regular file.
+The13 original C syscall-entry source units used by these operations match the
+exact pinned originals. Retained shared helpers and the surrounding matching
+runtime have local modifications, and both
+variants use the SAME unchanged Rust server. This is not a pristine whole-Darling
+comparison, nor an incremental claim that six small frontends alone cause gains.
+The unrelated local read.c tracing hook is outside these timed operations.
+
+42 samples/variant in C/Rust/Rust/C order,200 eight-call rounds/sample:
+  CPU median73.6425us ->70.6675us (-4.04%).
+  Wall median75.7275us ->72.3825us.
+The native comparison isolates original C frontends+current Rust canonical at
+backend versus Rust frontends+the SAME backend with native TLS/vchroot adapters.
+It is NOT an all-C native chain. Native CPU median26.127->26.353us (+0.86%) with
+overlapping quartiles; no material difference is established in that comparison.
+
+Separate CPU-affinity-controlled resource cohorts use20 processes/variant and
+512 individually timed rounds/process, one-microsecond clock resolution. These
+are medians of per-process quantiles, NOT pooled quantiles; first round follows
+fixture/TLS setup, not cold executable launch:
+  First round97.5->96us; p50 74->72us; p95 79->77us; p99 204->142.5us.
+All raw maxima/outliers are retained. Median per-process maximum453.5->534us
+illustrates filesystem/scheduling variability; no universal worst-case improvement
+is claimed from these finite samples.
+
+Linux smaps_rollup medians in KiB: private dirty3512->3512, PSS4161->4170.5,
+RSS11938->11990. Linux peakRSS medians11628->11554. No whole-process resident
+memory reduction is claimed. Linux getrusage units are explicitly labeled KiB;
+its unported Darwin conversion remains outside this batch. The matching mixed
+kernel file shrinks1920 bytes versus previous Dearust; that is file-size evidence,
+not a substitute for RSS. Frontends tail-call canonical backends with bounded
+fixed bookkeeping; there is no second pathname array. readlinkat's local probe
+is one byte. Shared4096-byte initialized-prefix and guard contracts are retained.
+
+Verification and integration
+----------------------------
+112 ordinary Rust tests,35 Python tests, strict Clippy/formatting, native runtime
+staging and explicit ignored Darwin ABI staging pass. Both production links
+retain original public/import symbol sets; exact-pin universal link retains its
+i386 slice byte-for-byte. All35 paths.o globals are private externs; fd.o's public
+xtrace visibility is preserved. No original target is retired.
+
+Native frontend fixture passes plain and ASan/UBSan, including LeakSanitizer;
+only C fixtures/adapters are sanitizer-instrumented, not Rust/assembly. It checks
+all six entries, single TLS snapshots, canonical AT_FDCWD mapping independent of
+process cwd, two real threads x100 loops, callback/error order, pointer faults,
+mode width/umask, inode identity, symlink target bytes, readlink truncation/zero
+and negative counts, protected output and no output access on rejected sizes.
+An independent reviewer repeated both native binaries successfully.
+
+Actual guest checks: frontend concurrency regression, corrected readlinkat
+regression and independent size-width reproduction;30 refreshed existing probes;
+3 signal/fork/RPC probes;29 apps (28 exact plus known cfbridge timestamp
+normalization),16 utilities and3 GUI samples. Original-reference failures and
+historical-kernel labels remain in raw records, never counted as new passes.
+The installed runtime, original reference sources/builds and existing user/app
+prefixes remain unchanged; all execution uses owned isolated prefixes.
+
+Inventory: still11 workspace packages,45 partial dependency leaves/265758 pending
+of265803 across160 exact-pin trees;7 target slices/1622 pending/0 retired. These
+are x86_64 source slices, not completed dependency/architecture migrations.
+Full Dearust migration remains unfinished.
+
+Reproduction
+------------
+Stage with cargo xtask runtime for native and Darwin targets as in BUILDING.txt.
+Pass the latest --paths-object plus existing cwd/fork/signal/RPC/vchroot bridges
+to both kernel relinkers. No new bridge, dependency or option is required.
+
+  python3 tools/benchmark_fileops.py --family frontends \
+    --source /absolute/pinned-source --runtime /absolute/native-stage \
+    --output /absolute/owned-native-benchmark
+  python3 tools/build_runtime_probes.py --source /absolute/matching-source \
+    --build /absolute/matching-build --sdk /absolute/installed-sdk \
+    --output /absolute/owned-probes --input tools/fixtures/frontends-regression.c \
+    --input tools/fixtures/readlinkat-regression.c \
+    --input tools/fixtures/readlink-size-regression.c \
+    --input tools/fixtures/frontends-guest-bench.c \
+    --input tools/fixtures/frontends-resource-guest.c
+
+Provide independent stdout goldens before executing. Run the isolated server
+runner/check_mac_apps.py with explicit owned kernels/cases as in saved commands.
+Resource repetitions copy the same binary byte-for-byte under10 alias names.
+
+  python3 tools/summarize_stream.py --workload frontends \
+    --forward /absolute/forward/comparison.json \
+    --reverse /absolute/reverse/comparison.json \
+    --resource-forward /absolute/resource-forward/comparison.json \
+    --resource-reverse /absolute/resource-reverse/comparison.json \
+    --output /absolute/owned-performance.json
+
+The shared analyzer checks reversed kernel hashes, byte-identical binaries/goldens,
+strict correctness, actual mappings, clean shutdown and complete sample counts.
+Its existing stream mode reproduces the previous batch's full statistics exactly.
+See runtime-path-frontends-verification.json for input/source/output hashes,
+commands, native/full-chain baseline distinctions, raw evidence and installation
+checks. Production integration never uses native weak adapters.

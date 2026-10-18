@@ -34,7 +34,7 @@ def main():
         parser.add_argument('--'+name,type=Path,required=True)
     parser.add_argument('--samples',type=int,default=21)
     parser.add_argument('--iterations',type=int,default=2000)
-    parser.add_argument('--family', choices=['mutation','permissions','fdops','descriptors','identifiers','control','paths','metadata'], default='mutation')
+    parser.add_argument('--family', choices=['mutation','permissions','fdops','descriptors','identifiers','control','paths','metadata','frontends'], default='mutation')
     args=parser.parse_args()
     if args.samples<3 or args.iterations<1:
         parser.error('at least three samples and positive iterations required')
@@ -59,6 +59,9 @@ def main():
         paths={'mkdirat':'stat/mkdirat.c','rmdir':'stat/rmdir.c','truncate':'unistd/truncate.c'}
     if args.family=='metadata':
         paths={'stat':'stat/stat.c','fstat':'stat/fstat.c'}
+    if args.family=='frontends':
+        paths={n:'unistd/'+n+'.c' for n in ('link','unlink','rename','symlink','readlink')}
+        paths['mkdir']='stat/mkdir.c'
     names=tuple(paths)
     sources=[base/'src/xnu_syscall/bsd/impl'/path for path in paths.values()]
     inputs=pinned_hashes(source,[*sources,base/'include/conversion/common_at.h'])
@@ -110,6 +113,12 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
             header('xnu_syscall/bsd/impl/'+relative.replace('.c','.h'),original_header.read_text())
         # Original rmdir/truncate rely on the full build's string declaration.
         header('common/base.h',(headers/'darling/emulation/common/base.h').read_text()+'\n#include <string.h>\n')
+    if args.family=='frontends':
+        header('common/bsdthread/per_thread_wd.h','extern int dearust_get_perthread_wd(void);\n#define get_perthread_wd dearust_get_perthread_wd\n')
+        for relative in ('unistd/linkat.h','unistd/unlinkat.h','unistd/renameat.h','unistd/symlinkat.h','unistd/readlinkat.h','stat/mkdirat.h'):
+            original_header=base/'include/xnu_syscall/bsd/impl'/relative
+            inputs.update(pinned_hashes(source,[original_header]))
+            header('xnu_syscall/bsd/impl/'+relative,original_header.read_text())
     if args.family=='metadata':
         header('common/bsdthread/per_thread_wd.h','extern int get_perthread_wd(void);\n')
         for relative in ('stat/stat.h','stat/fstat.h','stat/fstatat.h'):
@@ -140,6 +149,8 @@ void stat_linux_to_bsd64(const struct linux_stat *,struct stat64 *);
         driver=Path(__file__).parent/'fixtures/paths-bench.c'
     if args.family=='metadata':
         driver=Path(__file__).parent/'fixtures/metadata-bench.c'
+    if args.family=='frontends':
+        driver=Path(__file__).parent/'fixtures/frontends-bench.c'
     rust_objects=[runtime/'objects'/(n+'.o') for n in names]
     if args.family=='descriptors':
         rust_objects=[runtime/'objects/fd.o']
@@ -147,12 +158,13 @@ void stat_linux_to_bsd64(const struct linux_stat *,struct stat64 *);
         rust_objects=[runtime/'objects/process-ids.o']
     if args.family=='control':
         rust_objects=[runtime/'objects/fd.o',runtime/'objects/process-ids.o',runtime/'objects/errno.o']
-    if args.family in ('paths','metadata'):
+    if args.family in ('paths','metadata','frontends'):
         rust_objects=[runtime/'objects/paths.o']
     shared_backend=None
-    if args.family=='metadata':
-        shared_backend=args.output/'shared-rust-metadata-backend.o'
-        command=['llvm-objcopy',*[f'--strip-symbol={name}' for name in ('sys_stat','sys_stat64','sys_fstat','sys_fstat64')],str(runtime/'objects/paths.o'),str(shared_backend)]
+    if args.family in ('metadata','frontends'):
+        shared_backend=args.output/'shared-rust-canonical-backend.o'
+        strip=('sys_stat','sys_stat64','sys_fstat','sys_fstat64') if args.family=='metadata' else ('sys_link','sys_unlink','sys_rename','sys_symlink','sys_readlink','sys_mkdir')
+        command=['llvm-objcopy',*[f'--strip-symbol={name}' for name in strip],str(runtime/'objects/paths.o'),str(shared_backend)]
         subprocess.run(command,check=True);commands.append(command)
     binaries={}
     for variant in ('original','rust'):
@@ -160,7 +172,8 @@ void stat_linux_to_bsd64(const struct linux_stat *,struct stat64 *);
         if variant=='original':
             objects.append(runtime/'objects/errno.o')
             if shared_backend is not None:objects.append(shared_backend)
-        command=['clang','-O2','-Wall','-Wextra','-Werror','-I'+str(headers),str(driver),*[str(p) for p in objects],'-o',str(args.output/variant)]
+        adapters=[str(Path(__file__).parent/'fixtures/path-unused-boundaries-native.c')] if args.family=='frontends' else []
+        command=['clang','-O2','-Wall','-Wextra','-Werror','-I'+str(headers),str(driver),*adapters,*[str(p) for p in objects],'-o',str(args.output/variant)]
         subprocess.run(command,check=True);commands.append(command);binaries[variant]=args.output/variant
     cpu=min(os.sched_getaffinity(0));os.sched_setaffinity(0,{cpu});records=[]
     for sample in range(args.samples):
@@ -185,6 +198,8 @@ void stat_linux_to_bsd64(const struct linux_stat *,struct stat64 *);
         roundtrip='mkdirat -> rmdir -> truncate(128); owned absolute directory/file paths; no-op native virtual-root/TLS adapters; retained initialized in-place path buffers'
     elif args.family=='metadata':
         roundtrip='fstat -> fstat64 -> stat -> stat64; owned absolute file path, raw Linux metadata prefix copied120/144 bytes into opaque256-byte guarded adapters; original variant uses original C entry wrappers plus shared Rust fstatat backend, not an all-C chain; Rust variant uses all-Rust entry wrappers; no native Darwin layout claim'
+    elif args.family=='frontends':
+        roundtrip='mkdir -> symlink -> readlink -> link -> rename -> unlink -> unlink -> rmdir, relative to owned directory; original C frontends and current Rust canonical at backend versus Rust frontends and SAME backend, native TLS/vchroot adapters; not an all-C native chain'
     else:
         roundtrip+='; actual temporary native files'
     report={'scope':__doc__,'roundtrip':roundtrip,'samples':args.samples,'iterations':args.iterations,'cpu':cpu,'commands':commands,
