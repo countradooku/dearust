@@ -22,13 +22,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dearust-fstatat"
-version = "0.1.0"
-dependencies = [
- "dearust-errno",
-]
-
-[[package]]
 name = "dearust-futex"
 version = "0.1.0"
 dependencies = [
@@ -46,13 +39,6 @@ version = "0.1.0"
 [[package]]
 name = "dearust-lockset"
 version = "0.1.0"
-
-[[package]]
-name = "dearust-lstat"
-version = "0.1.0"
-dependencies = [
- "dearust-errno",
-]
 
 [[package]]
 name = "dearust-path"

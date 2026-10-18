@@ -1,0 +1,42 @@
+fstat/fstat64: descriptor metadata ABI and retained C conversion
+===============================================================
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/fstat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later.
+Original Darling authorship, upstream attribution and licensing remain intact.
+Pinned/matching source is byte-identical, SHA256:
+4816c91777cf9a494fda86ea2e1183c51db9bfaf566d6a9908a34fc53cc86817.
+Only x86_64 LP64 is supported; this does not implement i386 fstat64 splitting.
+
+Both original symbols sys_fstat(int,stat*) and sys_fstat64(int,stat64*) remain.
+A fixed initialized LinuxStat([u64;18]), repr(C,align8), supplies144 bytes to the
+original seven-argument raw Linux syscall5. Signed C int fd is sign-extended;
+remaining unused raw slots are zero. The raw long result narrows to C int BEFORE
+sign checking, preserving the original source even for synthetic high-bit values.
+Negative results are converted exactly once with the existing errno map. Every
+nonnegative C int result invokes the appropriate original C converter and returns0.
+No TLS, path storage, allocation, cache, standard library or panic runtime is used.
+
+Confirmed defect fixed: original converters dereference NULL output after a
+successful kernel query. Rust returns Darwin EFAULT in that case. The check
+intentionally occurs AFTER the kernel and its error conversion: fstat(-1,NULL)
+remains EBADF. Errors never invoke conversion or touch caller output. Non-NULL
+output must be aligned writable storage for the exact Darwin stat/stat64 variant,
+with no conflicting access. Arbitrary non-NULL invalid addresses are not made
+fault-safe; that remains an existing syscall-emulation boundary limitation.
+
+Linux owns writes only within the live initialized144-byte stat input buffer.
+The retained stat_linux_to_bsd/64 converters read that Linux layout and write
+only their corresponding Darwin output structure. Their existing layout, UID/GID
+policy and field conversions remain C; this is a partial source migration.
+Foreign functions must obey their ABI, not retain temporary pointers and never
+unwind into Rust. The buffer stays live through both raw syscall and conversion.
+
+The native fixture records syscall number, signed fd, zero unused arguments,
+initialization/alignment, full144-byte writes and distinct converter dispatch.
+Injected results cover narrowing, positive results, INT64_MIN, negative errors
+and one-call EINTR. Guarded output and NULL tests cover conversion bounds/error
+precedence; actual Linux regular-file and duplicate metadata is also exercised.
+Actual guest probes separately verify Darwin stat/stat64 fields and guard bytes,
+shared descriptors, unlinked files, sparse>4GiB size/content/offset preservation,
+NULL output EFAULT, invalid-fd NULL EBADF and unchanged output on errors.
+These targeted checks do not establish arbitrary application compatibility.

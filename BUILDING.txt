@@ -361,3 +361,18 @@ fixtures still run. Native CPU+2.11%; guest median-2.23% with overlapping ranges
 no broad speedup/RSS claim. Native readonly errno data 1008 -> 126 bytes and dylib
 file-4768B are scoped object/file evidence. Thirty-two partial sources/265771
 pending; target counts seven/1622/zero retired.
+
+Metadata subsystem continuation: RUNTIME-METADATA.txt adds stat/fstat including
+64-bit variants to dearust-path and folds in prior lstat/fstatat crates. Stage
+paths.o (19 exports) and keep the original --lstat-bridge, removing separate
+--lstat-object/--fstatat-object switches. Both relinkers replace14 C inputs once;
+individual metadata/pathname options conflict with grouping. Workspace11packages,
+111 Rust tests after six duplicate copier tests removed;29 Python tests. Native
+staging executes14 metadata/pathname fixtures plus fd/process identifiers. The
+weak abort boundary adapters are test-only, never runtime inputs. Native metadata
+benchmark uses a shared Rust fstatat backend for both variants; original C stat/
+fstat entries versus Rust entries, not an all-C chain. Guest benchmark explicitly
+selects the legacy120-byte structstat for rawstat/fstat and144-byte stat64 for
+wide entries. See runtime-metadata-verification.json for execution/performance.
+Latest artifacts: dearust-continuation/work/metadata-next/
+{final-stage,matching-final,pinned-final}; process query object stays matching-only.

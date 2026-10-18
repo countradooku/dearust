@@ -41,8 +41,6 @@ fn check(triple: &str, label: &str) {
         "futex",
         "errno",
         "guarded",
-        "lstat",
-        "fstatat",
         "process",
         "process-ids",
         "fd",
@@ -110,6 +108,14 @@ fn check(triple: &str, label: &str) {
                 "sys_rmdir",
                 "sys_truncate",
                 "do_linux_fchmodat",
+                "sys_lstat",
+                "sys_lstat64",
+                "sys_fstatat",
+                "sys_fstatat64",
+                "sys_stat",
+                "sys_stat64",
+                "sys_fstat",
+                "sys_fstat64",
             ]
             .iter()
             .map(|s| format!("{prefix}{s}"))
@@ -127,14 +133,6 @@ fn check(triple: &str, label: &str) {
             .map(|s| format!("{prefix}{s}"))
             .collect(),
             "process" => vec![format!("{prefix}sys_proc_info")],
-            "fstatat" => ["sys_fstatat", "sys_fstatat64"]
-                .iter()
-                .map(|s| format!("{prefix}{s}"))
-                .collect(),
-            "lstat" => ["sys_lstat", "sys_lstat64"]
-                .iter()
-                .map(|s| format!("{prefix}{s}"))
-                .collect(),
             "guarded" => [
                 "guard_table_add",
                 "guard_table_modify",
@@ -164,38 +162,14 @@ fn check(triple: &str, label: &str) {
                 format!("{prefix}__linux_futex_reterr"),
                 format!("{prefix}__simple_abort"),
             ],
-            "lstat" | "fstatat" => {
-                let mut imports = vec![
-                    "linux_syscall",
-                    "stat_linux_to_bsd",
-                    "stat_linux_to_bsd64",
-                    "vchroot_expand",
-                    if triple.contains("apple") {
-                        "__bzero"
-                    } else {
-                        "memset"
-                    },
-                ]
-                .into_iter()
-                .map(|s| format!("{prefix}{s}"))
-                .collect::<Vec<_>>();
-                if *name == "fstatat" {
-                    imports.extend([
-                        format!("{prefix}atfd"),
-                        format!("{prefix}atflags_bsd_to_linux"),
-                    ]);
-                } else {
-                    imports.push(format!("{prefix}dearust_get_perthread_wd"));
-                }
-                imports.sort();
-                imports
-            }
             "paths" => {
                 let mut imports = [
                     "atfd",
                     "atflags_bsd_to_linux",
                     "dearust_get_perthread_wd",
                     "linux_syscall",
+                    "stat_linux_to_bsd",
+                    "stat_linux_to_bsd64",
                     "vchroot_expand",
                     if triple.contains("apple") {
                         "__bzero"
@@ -273,12 +247,10 @@ fn check(triple: &str, label: &str) {
         for (name, count) in [
             ("errno", 2),
             ("guarded", 7),
-            ("lstat", 2),
-            ("fstatat", 2),
             ("process", 1),
             ("process-ids", 7),
             ("fd", 9),
-            ("paths", 11),
+            ("paths", 19),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
@@ -299,6 +271,8 @@ fn check(triple: &str, label: &str) {
         for name in [
             "lstat",
             "fstatat",
+            "stat",
+            "fstat",
             "symlinkat",
             "readlinkat",
             "unlinkat",
@@ -316,6 +290,10 @@ fn check(triple: &str, label: &str) {
                 .join(format!("../tools/fixtures/{name}-native.c"));
             let executable = temp.0.join(format!("{name}-native"));
             let object_name = if [
+                "lstat",
+                "fstatat",
+                "stat",
+                "fstat",
                 "symlinkat",
                 "readlinkat",
                 "unlinkat",

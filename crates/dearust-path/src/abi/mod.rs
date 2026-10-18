@@ -20,3 +20,13 @@ pub use rmdir::sys_rmdir;
 pub use symlinkat::sys_symlinkat;
 pub use truncate::sys_truncate;
 pub use unlinkat::sys_unlinkat;
+
+mod fstatat;
+mod lstat;
+mod stat;
+pub use fstatat::{sys_fstatat, sys_fstatat64};
+pub use lstat::{sys_lstat, sys_lstat64};
+pub use stat::{sys_stat, sys_stat64};
+
+mod fstat;
+pub use fstat::{sys_fstat, sys_fstat64};

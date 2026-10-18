@@ -10,8 +10,8 @@
     },
     "inventoried_entries": 265803,
     "entries_by_status": {
-      "partial": 32,
-      "pending": 265771
+      "partial": 34,
+      "pending": 265769
     },
     "license_candidates": 341
   },
@@ -2326829,7 +2326829,10 @@
           "object_id": "132f7c2221aeee96d01fc27722ec5de607e373ac",
           "size": 900,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-path/src/lib.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/fstat64_extended.c",
@@ -2326848,7 +2326851,7 @@
           "size": 2063,
           "category": "source",
           "status": "partial",
-          "replacement": "crates/dearust-fstatat/src/lib.rs",
+          "replacement": "crates/dearust-path/src/lib.rs",
           "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
           "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
@@ -2326878,7 +2326881,7 @@
           "size": 2132,
           "category": "source",
           "status": "partial",
-          "replacement": "crates/dearust-lstat/src/lib.rs",
+          "replacement": "crates/dearust-path/src/lib.rs",
           "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
           "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
@@ -2326940,7 +2326943,10 @@
           "object_id": "dfc64573aa7a70687d384d53870ccc04cc70e758",
           "size": 636,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-path/src/lib.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/stat64_extended.c",

@@ -54,8 +54,6 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                     "dearust-errno"
                         | "dearust-process"
                         | "dearust-guarded"
-                        | "dearust-lstat"
-                        | "dearust-fstatat"
                         | "dearust-fd"
                         | "dearust-path"
                 )
@@ -87,6 +85,14 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                                 "sys_rmdir",
                                 "sys_truncate",
                                 "do_linux_fchmodat",
+                                "sys_lstat",
+                                "sys_lstat64",
+                                "sys_fstatat",
+                                "sys_fstatat64",
+                                "sys_stat",
+                                "sys_stat64",
+                                "sys_fstat",
+                                "sys_fstat64",
                             ],
                             "dearust-fd" => vec![
                                 "sys_fchmod",
@@ -109,8 +115,6 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                                 "sys_setsid",
                             ],
                             "dearust-process" => vec!["sys_proc_info"],
-                            "dearust-fstatat" => vec!["sys_fstatat", "sys_fstatat64"],
-                            "dearust-lstat" => vec!["sys_lstat", "sys_lstat64"],
                             "dearust-guarded" => vec![
                                 "guard_table_add",
                                 "guard_table_modify",

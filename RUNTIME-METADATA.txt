@@ -1,0 +1,113 @@
+Dearust continuation: metadata in the pathname subsystem
+=======================================================
+
+Project owner: @countradooku. AI assistance: OpenAI Codex. Full migration remains
+INCOMPLETE. Exact evidence is in runtime-metadata-verification.json.
+
+Subsystem and behavior
+-----------------------
+Existing dearust-path now owns fourteen original C source slices/nineteen exported
+entries. This batch adds stat/stat64 and fstat/fstat64, and consolidates the prior
+lstat/fstatat crates. Workspace packages decrease13 ->11. The two moved metadata
+ABI modules are byte-identical to commit5c44951; their duplicate copier tests are
+replaced by the existing shared three tests. Logical ABI modules and original C
+export names remain. No heap storage, cache or process-global state is introduced.
+
+stat/stat64 read the original thread-cwd bridge BEFORE delegating to sibling
+fstatat/fstatat64 with flags0, retaining guest TLS ordering even for NULL inputs.
+They follow final symlinks and reuse the existing initialized in-place4096-byte
+path and144-byte Linux metadata buffers, with no additional path copy/buffer.
+fstat/fstat64 sign-extend the C int descriptor to raw Linux syscall5, initialize
+144 bytes aligned to8, narrow the raw result to C int before its sign check, and
+convert errors once. Successful calls use the original C stat_linux_to_bsd/64
+converters. Darwin layouts, UID/GID policy and conversion remain original C.
+
+Confirmed defect fixed: valid-fd NULL-output fstat previously crashes in the
+converter; it now returns EFAULT. Kernel errors retain precedence, so an invalid
+fd with NULL output still returns EBADF. Both errors leave caller output untouched.
+The new fstat guest probe exits139 on the previous kernel and passes with Rust.
+Non-NULL pointers retain the existing readable/writable/aligned caller contract;
+arbitrary invalid addresses are not newly fault-safe. Previous bounded-path and
+flag/virtual-root policies remain. See both safety ledgers in crates/dearust-path.
+
+paths.o now replaces14 unique original link inputs and appears once in each
+response. Use --paths-object and the corresponding original --lstat-bridge;
+remove --lstat-object and --fstatat-object. Mixing grouped and individual pathname
+or metadata switches is rejected. Historical individual switches remain usable
+with historical artifacts. Preserve matching/pinned TLS/fork bridge separation,
+--fd-object and --process-ids-object; process queries stay matching-only.
+
+CPU and memory evidence
+-----------------------
+New fstat exports retain original native local160-byte stack subtraction plus
+8 saved-register bytes. stat exports retain no local subtraction and24 saved-
+register bytes, delegating to the existing shared fstatat backend. Callee stack
+is additional: metadata path helpers use4272 local bytes plus saved registers.
+No uninitialized storage is used. Existing two-path operations still use8216
+local bytes. Assembly and per-function frames are recorded separately.
+
+Previous twelve Rust source slices plus two original C entry objects total378
+bytes of readonly errno data versus126 in the grouped14-source Rust object.
+Their aggregate relocatable objects are16392 versus15656 bytes. Complete matching
+dylib file shrinks752 bytes:866272 ->865520. These are frame/object/file figures,
+not process resident-memory measurements. Grouping and two ports jointly change
+code; no general application memory reduction is established.
+
+Native four-call fstat -> fstat64 -> stat -> stat64 CPU median2025.379 ->
+2022.845 ns/roundtrip (0.13% lower), with overlapping quartiles2023.050..2029.973
+versus2016.723..2029.193. Twenty-one alternating samples,2000 rounds each, one
+eligible CPU. This compares unchanged original C stat/fstat entries plus the same
+Rust fstatat backend with Rust entries, using no-op virtual-root/TLS and opaque
+native conversion adapters; it is not an all-C pipeline or Darwin-layout test.
+
+Actual guest previous/new/new/previous order,42 samples per variant,2000 rounds
+each: CPU median8.38075 ->8.48975 us/roundtrip (1.30% higher), with overlapping
+quartiles8.350875..8.448375 versus8.437375..8.513000. Wall medians8.4175 ->8.5230us.
+All four raw metadata entries use their actual Darwin legacy/wide layouts and
+real converters. Owned warm file workload only; no general app or RSS claim.
+No CPU improvement is established; initialized-buffer safety remains explicit.
+
+Verification
+------------
+111 Rust tests,29 Python tests, formatting, strict Clippy and explicit Darwin
+ABI/staging checks pass. Six duplicate metadata copier cases are removed; the
+shared three copier tests remain. All14 pathname/metadata native C fixtures plus
+fd/process identifier fixtures execute against staged objects. Independent
+ASan/UBSan adapters pass all14; Rust object code itself is not instrumented.
+Test-only weak abort adapters satisfy unused consolidated imports; strong fixture
+callbacks override them. These adapters never enter production artifacts.
+
+All28 guest regression probes pass, including thread cwd, symlink following,
+missing paths, NULL/long paths, transactional errors, sparse>4GiB metadata,
+contents/file offsets, duplicate descriptors and unlinked-file metadata. Native
+injection checks additionally cover raw result narrowing, initialized buffers,
+alignment, distinct converters, positive statuses and one-call EINTR.
+
+Existing29 app checks (28 exact plus explicit cfbridge log normalization),16
+utility workloads and3 GUI samples pass within documented limits. Captures are
+compared with previously visually reviewed evidence as recorded. Original C
+utility/app failures remain visible in raw results; they are not Rust passes.
+Matching link preserves1370 public definitions/40 imports; pinned1362/18 and the
+original i386 bytes. Clean pinned boot, i386 Rust and arbitrary apps are unverified.
+Installed binaries and existing user prefix stay untouched. Owned prefixes and
+hidden X shut down; repaired copied CGShadingCreate nib/sample-only scope remains.
+
+Reproduction and scope
+----------------------
+Build/stage with cargo xtask check and cargo xtask runtime for the native and
+Darwin targets. Follow RUNTIME-PATHS.txt, dropping the separate metadata objects:
+
+    --paths-object "$WORK/runtime/objects/paths.o" --lstat-bridge ORIGINAL_TLS_BRIDGE
+
+Build stat-regression.c, fstat-regression.c and metadata-guest-bench.c using
+build_runtime_probes.py; provide stdout goldens independently. Native benchmark:
+
+    python3 tools/benchmark_fileops.py --family metadata --source EXACT_PIN_SOURCE --runtime NATIVE_STAGE --output NEW_DIRECTORY
+
+Native adapters use opaque256-byte outputs around a Linux144-byte copy; they
+prove guards/arguments and entry overhead, not Darwin layouts. Guest tests use
+the actual legacy/wide Darwin layouts and retained C converters. Latest artifacts:
+dearust-continuation/work/metadata-next/{final-stage,matching-final,pinned-final}.
+Thirty-four dependency slices partial,265769 entries pending; seven Cargo target
+slices,1622 pending targets, zero retired. Most runtime/framework/build code remains
+C/C++/assembly. No full migration or broad performance/compatibility claim is made.

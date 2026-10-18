@@ -28,6 +28,8 @@ LSEEK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/lsee
 FLOCK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/flock.c.o'
 RMDIR = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/rmdir.c.o'
 TRUNCATE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/truncate.c.o'
+STAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/stat.c.o'
+FSTAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstat.c.o'
 UMASK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/umask.c.o'
 GETDTABLESIZE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/getdtablesize.c.o'
 PROCESS_IDS = tuple('emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/'+name+'.c.o' for name in ('getpid','getppid','getpgrp','getpgid','getsid','setpgid','setsid'))
@@ -87,8 +89,10 @@ def integrate(args):
         if not args.guarded_object or inputs.count(FORK) != 1 or not args.fork_object.is_file():
             raise ValueError('fork bridge requires a guarded object and unique original fork input')
         replacements[FORK] = args.fork_object.resolve(strict=True)
-    if bool(args.lstat_object) != bool(args.lstat_bridge):
-        raise ValueError('lstat object and TLS bridge must be supplied together')
+    if args.lstat_object and not args.lstat_bridge:
+        raise ValueError('lstat object requires its TLS bridge')
+    if args.lstat_bridge and not (args.lstat_object or args.paths_object):
+        raise ValueError('TLS bridge requires lstat or grouped paths object')
     if args.lstat_bridge and not args.lstat_bridge.is_file():
         raise ValueError('missing lstat TLS bridge')
     if args.lstat_object:
@@ -120,11 +124,11 @@ def integrate(args):
             raise ValueError('missing unique fchmodat input')
         replacements[FCHMODAT] = args.fchmodat_object.resolve(strict=True)
     if args.paths_object:
-        if any([args.symlinkat_object, args.readlinkat_object, args.unlinkat_object, args.linkat_object, args.renameat_object, args.mkdirat_object, args.faccessat_object, args.fchmodat_object]):
+        if any([args.symlinkat_object, args.readlinkat_object, args.unlinkat_object, args.linkat_object, args.renameat_object, args.mkdirat_object, args.faccessat_object, args.fchmodat_object, args.lstat_object, args.fstatat_object]):
             raise ValueError('grouped paths object conflicts with individual pathname objects')
         if not args.paths_object.is_file() or not args.lstat_bridge:
             raise ValueError('grouped paths object requires its object and original thread-cwd bridge')
-        for name in (SYMLINKAT, READLINKAT, UNLINKAT, LINKAT, RENAMEAT, MKDIRAT, FACCESSAT, FCHMODAT, RMDIR, TRUNCATE):
+        for name in (SYMLINKAT, READLINKAT, UNLINKAT, LINKAT, RENAMEAT, MKDIRAT, FACCESSAT, FCHMODAT, RMDIR, TRUNCATE, LSTAT, FSTATAT, STAT, FSTAT):
             if inputs.count(name) != 1:
                 raise ValueError('missing unique grouped pathname input: ' + name)
             replacements[name] = args.paths_object.resolve(strict=True)
@@ -273,6 +277,15 @@ def integrate(args):
                 wanted['_sys_faccessat'] = args.paths_object.name
                 wanted['_sys_fchmodat'] = args.paths_object.name
                 wanted['_sys_rmdir'] = args.paths_object.name
+                wanted['_dearust_get_perthread_wd'] = args.lstat_bridge.name
+                wanted['_sys_lstat'] = args.paths_object.name
+                wanted['_sys_lstat64'] = args.paths_object.name
+                wanted['_sys_fstatat'] = args.paths_object.name
+                wanted['_sys_fstatat64'] = args.paths_object.name
+                wanted['_sys_stat'] = args.paths_object.name
+                wanted['_sys_stat64'] = args.paths_object.name
+                wanted['_sys_fstat'] = args.paths_object.name
+                wanted['_sys_fstat64'] = args.paths_object.name
                 wanted['_sys_truncate'] = args.paths_object.name
                 wanted['_do_linux_fchmodat'] = args.paths_object.name
             if args.process_ids_object:

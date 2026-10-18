@@ -496,3 +496,24 @@ never include them in production. All ten native fixtures still execute.
 Artifacts: dearust-continuation/work/paths-next/{final-stage,matching-final,
 pinned-final}. Thirty-two partial sources/265771 pending; target counts 7/1622/0.
 Installed binaries and existing user prefix intact; full migration incomplete.
+
+Continuation: consolidated metadata in pathname subsystem
+--------------------------------------------------------
+Latest evidence RUNTIME-METADATA.txt/runtime-metadata-verification.json.
+Existing dearust-path adds stat/stat64/fstat/fstat64 and absorbs dearust-lstat/
+dearust-fstatat; moved ABI modules byte-identical to5c44951. Packages13 ->11,
+111 Rust tests after six duplicate copier tests removed,29 Python tests,28guest
+probes plus existing app/utility/GUI gates pass. paths.o has19exports from14source
+slices; --paths-object requires original --lstat-bridge without --lstat-object or
+--fstatat-object. Conflicting individual switches are rejected. Matching/pinned
+bridges stay separate, process queries matching-only. Retain original C metadata
+converters. stat reads guest TLS before sibling delegation; fstat initializes144B
+aligned8, preserves int status narrowing and kernel-error-before-NULL precedence.
+Validfd+NULL now EFAULT rather than crash; invalidfd+NULL stays EBADF. fstat native
+local160B frame+8push matchesC, no heap/cache. Shared errno readonly378 ->126B,
+matching dylib-752B, no RSS/general app claim. Native metadata comparison uses C
+entries plus sharedRustfstatat versusRustentries, not an all-Cchain; actual guest
+uses raw legacy120Bstat and wide144Bstat64 layouts. Artifacts:
+dearust-continuation/work/metadata-next/{final-stage,matching-final,pinned-final}.
+Thirty-fourpartial sources/265769pending; target slices7/1622/0. Installed binaries
+and existing user prefix intact; full migration remains incomplete.

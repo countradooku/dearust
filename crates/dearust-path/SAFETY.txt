@@ -321,3 +321,135 @@ rmdir, symlink-target truncate, sparse>4GiB file size/zero fill, unchanged offse
 small-buffer content guards, negative lengths and missing paths. Guest fixtures
 exercise actual thread cwd with unrelated process-cwd targets preserved. They
 are focused regressions, not arbitrary-application compatibility evidence.
+
+Metadata consolidation and stat/stat64 delegation
+------------------------------------------------
+Existing lstat/lstat64 and fstatat/fstatat64 ABI source modules are copied
+byte-identically from dearust-lstat/dearust-fstatat. Their copier bodies match
+the shared bounded path copier. Existing metadata conversions remain C foreign
+boundaries; initialized LinuxStat([u64;18]) is 144 bytes aligned to eight.
+Output conversion only follows successful raw Linux stat and preserves failure
+output transactionality. Native conversion adapters are not Darwin layout proof.
+
+lstat and lstat64: narrow x86_64 runtime migration
+================================================
+
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/lstat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later.
+Replaces both exported wrappers, preserving vchroot expansion with flags=0,
+per-thread cwd lookup, Linux x86_64 raw lstat syscall 6, negative Darwin errno,
+and the existing stat_linux_to_bsd/stat_linux_to_bsd64 conversion routines.
+These converters retain the existing uid/gid policy and Darwin structure layouts.
+No allocator, host OS mutex, Rust standard library, or panic runtime is linked.
+
+Confirmed upstream defects fixed:
+- sys_lstat64 previously copied a NULL path without checking it, crashing bsdtar
+  during archive_read_disk_entry_from_file. Both wrappers now return -EFAULT.
+- Both original wrappers used unbounded strcpy into a 4096-byte stack path.
+  Both now return Darwin -ENAMETOOLONG if no NUL occurs within those 4096 bytes.
+- NULL output pointers now return -EFAULT instead of crashing in conversion.
+
+The safe path module initializes and copies at most 4096 bytes, stops immediately
+at NUL, accepts a terminator in the last slot, and preserves arbitrary byte paths.
+Unsafe operations are isolated in abi.rs. A non-NULL path must be readable through
+its terminator or 4096 bytes, whichever is shorter. Non-NULL output pointers must
+be writable, aligned Darwin stat/stat64 structures, with no conflicting access.
+Arbitrary non-NULL invalid addresses are not newly made fault-safe by this port;
+that remains a broader syscall-emulation boundary limitation.
+
+Expanded is repr(C), matching char[4096], uint32 flags, int32 dfd. LinuxStat is
+144 bytes aligned to eight, matching the kernel and original conversion header.
+The raw syscall owns writes into this initialized buffer. Converters run only
+after success, so errors leave caller output untouched. Foreign callees must not
+unwind into Rust. vchroot_expand must preserve a NUL-terminated path on success.
+
+get_perthread_wd is an inline C accessor over guest pthread TLS, not a linkable
+symbol. The sole bridge in tools/fixtures/lstat-bridge.c exports it as hidden
+int dearust_get_perthread_wd(void), compiled against the original headers using
+exact original emulation flags by tools/build_lstat_bridge.py. Production calls
+require initialized Darling thread/TLS state; the bridge avoids copying hardcoded
+TLS keys into Rust. This is a partial source migration due to retained conversion,
+virtual-root and TLS boundaries. Only x86_64 has been validated.
+
+Verification: three safe-path tests; exact ELF/Mach-O exports/imports and private
+visibility in xtask runtime tests. The native C fixture lstat-native.c exercises
+both wrappers against real Linux lstat for files/symlinks, null pointers, long
+paths, missing paths, expansion errors, and output preservation. It explicitly
+adapts TLS/vchroot and records Linux metadata instead of pretending to implement
+guest conversion. Guest app probes and bsdtar tests validate actual Darwin structs
+and expansion separately. Build the bridge with --build ORIGINAL_BUILD --output
+NEW_DIRECTORY, and pass both objects to the matching runtime relinker.
+
+Performance continuation: the safe copier fills initialized Expanded.path in place,
+rather than returning a 4096-byte array through Result and copying that array into
+Expanded. NULL validation still precedes copying; bounded copying still precedes
+all descriptor/TLS, virtual-root and syscall boundaries. Copying stops at NUL and
+leaves the initialized suffix untouched. No uninitialized storage or new unsafe
+operation is introduced. Native release assembly removes the full-array memcpy
+and reduces local stack allocation by about 8 KiB per wrapper invocation. The
+4096-byte zero initialization is deliberately retained for the foreign boundary.
+Tests also verify untouched destination suffix and exact capacity bounds.
+
+
+fstatat and fstatat64: narrow x86_64 runtime migration
+====================================================
+
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/fstatat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later. The pinned
+and locally matching source files were compared byte-for-byte and are identical.
+Original Darling/upstream attribution and licensing continue to apply. The safe
+path module is copied from dearust-lstat in this project, under the same license.
+
+Both ABI exports use original atfd, atflags_bsd_to_linux, vchroot_expand and
+stat_linux_to_bsd/stat_linux_to_bsd64. BSD_AT_SYMLINK_NOFOLLOW (0x20) selects
+no-follow expansion; otherwise VCHROOT_FOLLOW (1) is preserved. Flag conversion
+occurs AFTER expansion exactly as in C, including errors and the existing policy
+accepting/ignoring some flags. No claim of new Darwin flag-policy support is made.
+The expanded dfd and path feed Linux x86_64 newfstatat syscall 262, preserving
+negative Darwin errno conversion, descriptor-relative paths and thread cwd via
+the original atfd helper. No TLS bridge or hardcoded guest TLS key is introduced.
+
+Confirmed source hazards addressed: unbounded strcpy into char[4096] is replaced
+by copying at most 4096 bytes, rejecting unterminated input with -ENAMETOOLONG.
+NULL output now returns -EFAULT before expansion or conversion, rather than
+crashing when converting a successful stat. NULL path still returns -EFAULT.
+Non-NULL invalid addresses are not made fault-safe by this migration. Such paths
+must be readable through NUL or 4096 bytes (whichever is shorter). Non-NULL output
+must be a properly aligned, writable Darwin stat/stat64 of the matching ABI,
+with no conflicting accesses. Errors leave caller output unmodified.
+
+Unsafe is confined to abi.rs: raw pointer byte reads, foreign calls and exported
+ABI contracts. Expanded is repr(C) char[4096], uint32 flags, int32 dfd. LinuxStat
+is 144 bytes aligned to eight; raw kernel output is initialized before the call.
+Foreign code must not unwind into Rust; vchroot must preserve NUL termination on
+success. Production atfd calls require initialized Darling thread TLS. The crate
+is no_std with no allocator, OS mutex or panic handler/runtime.
+
+Scope remains a partial source migration: converters, virtual-root expansion,
+descriptor/TLS conversion and common flag policy remain original C. Only x86_64
+is supported. tools/fixtures/fstatat-native.c explicitly adapts vchroot/TLS and
+conversion to test raw Linux boundary behavior; it does not validate Darwin
+layouts. fstatat-regression.c exercises real guest wrappers/layouts separately.
+
+Performance continuation: the safe copier fills initialized Expanded.path in place,
+rather than returning a 4096-byte array through Result and copying that array into
+Expanded. NULL validation still precedes copying; bounded copying still precedes
+all descriptor/TLS, virtual-root and syscall boundaries. Copying stops at NUL and
+leaves the initialized suffix untouched. No uninitialized storage or new unsafe
+operation is introduced. Native release assembly removes the full-array memcpy
+and reduces local stack allocation by about 8 KiB per wrapper invocation. The
+4096-byte zero initialization is deliberately retained for the foreign boundary.
+Tests also verify untouched destination suffix and exact capacity bounds.
+
+
+New stat/stat64 wrappers retain original stat.c at xnu pin
+fa29287aa2f0115271e091f1031f53c9e024005d under
+ darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/.
+Pinned/matching source is byte-identical; SHA256 e2c8011c1376bee4e49bfcde5ab8a7a46964cd375e14793634aefe6888d2ae84.
+Original header declares const char* path and struct stat*/struct stat64* output.
+Both wrappers call original dearust_get_perthread_wd()->int bridge before
+delegating to the sibling fstatat/fstatat64 with flags zero. This retains the
+original guest TLS-before-path-validation ordering, follows final symlinks, and
+introduces no additional path buffer, heap storage, cache or raw syscall policy.
+Guest TLS must therefore be initialized even on NULL input. Caller path/output
+contracts are exactly the sibling metadata contracts. No caller output is read.
