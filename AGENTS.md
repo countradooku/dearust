@@ -3,6 +3,65 @@
 Public repository: https://github.com/countradooku/dearust
 Project branding is Dearust; use Dearust Cargo package/crate names; preserve exported runtime ABI names.
 
+## Standing owner directive: quality and completion gates
+
+The owner requires Dearust to become the best macOS-to-Linux compatibility
+project, not merely a rewrite of Darling in Rust. This is the engineering
+objective, not a claim that the current repository has achieved it. These
+requirements apply to every future implementation and supersede conflicting
+historical continuation notes below.
+
+- Correctness, ultra-high performance, safety, and idiomatic Rust are mandatory
+  priorities together. Performance includes CPU efficiency, throughput, latency
+  (including tail latency), memory use, allocations, stack consumption, startup
+  cost, and behavior under contention and sustained load. Do not assume Rust is
+  faster, or silently sacrifice one priority to satisfy another.
+- Known unresolved limitations, correctness defects, safety risks, and material
+  performance regressions are strictly forbidden in work declared complete.
+  Merely documenting a limitation or risk does not satisfy this requirement.
+  Resolve it, validate the resolution, and add regression coverage. If it cannot
+  yet be resolved, keep the affected work explicitly unfinished with its failing
+  completion gate visible; never conceal uncertainty or claim risk-free behavior
+  without evidence. Historical partial ports are unfinished work to remediate,
+  not exceptions authorizing future incomplete implementations.
+- Implement everything undertaken fully: required Darwin/macOS semantics,
+  supported ABI and architecture coverage, flags, error behavior, lifecycle,
+  concurrency, cancellation, resource ownership, build/runtime integration, and
+  applicable application behavior. Establish the required scope before coding;
+  do not shrink it afterward to make an incomplete implementation appear done.
+  No placeholders, success-returning stubs, ignored flags, unsafe fallbacks, or
+  unimplemented branches disguised as compatibility. Host-kernel constraints
+  require a correct, safe compatibility strategy or remain an unmet gate.
+- Hunt for upstream and existing Dearust bugs while porting. Fix confirmed bugs
+  rather than copying them, with tests that reproduce the defect and verify the
+  corrected behavior. Revisit previously recorded limitations and risks as part
+  of the ongoing implementation backlog; do not grandfather them in.
+- Measure against the previous implementation and relevant original baselines
+  using reproducible, representative native and actual guest workloads. Include
+  cold/warm behavior, latency distributions, CPU, memory and concurrency where
+  relevant. Microbenchmarks alone do not establish application performance.
+  Investigate and eliminate material regressions before declaring completion;
+  a safety fix accompanied by an unresolved performance regression is still
+  unfinished against these joint requirements. In particular, revisit the
+  guest-memory-copy overhead recorded in RUNTIME-HARDENING.txt rather than
+  treating its measured cost as an accepted permanent tradeoff.
+- Prefer safe, idiomatic Rust and clear ownership. Keep unavoidable OS/FFI/ABI
+  unsafe boundaries minimal, auditable, hardened, and tested; documentation by
+  itself is not proof of safety. Avoid unnecessary allocations, copies, syscalls,
+  locks and caches; any optimization must preserve semantics and lifetime safety.
+- Keep related operations in cohesive subsystem crates, not one crate per
+  syscall. Improve the architecture and compatibility rather than translating
+  C mechanically or preserving poor design for its own sake.
+- Study and borrow useful architectural and performance ideas from Wine/Proton
+  and other compatibility systems when relevant. Adapt them to actual Darwin
+  semantics and validate them here; their success elsewhere is not proof of
+  correctness in Dearust. Respect source licenses, attribution, and provenance.
+
+Report evidence candidly. Distinguish implemented, verified, and still-unfinished
+work. The prohibition on limitations and risks is a completion standard, never
+permission to suppress findings, remove architecture guards, weaken tests, or
+promise universal compatibility that has not been established.
+
 # Darling full Rust migration: continuation instructions
 
 ## Objective and authorization
