@@ -36,3 +36,8 @@ mod resource_abi;
 mod resources;
 #[cfg(feature = "resources")]
 pub use resource_abi::{rlimit_bsd_to_linux, sys_getrlimit, sys_getrusage, sys_setrlimit};
+
+#[cfg(feature = "resources")]
+pub mod resource_policy;
+#[cfg(feature = "resources")]
+pub mod resource_view;

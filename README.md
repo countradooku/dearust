@@ -148,3 +148,7 @@ Individual ported components, bridge files, and headers retain their original up
 * `bsdln`: Distributed under the BSD 3-Clause License ([`LICENSE-BSDLN`](LICENSE-BSDLN)).
 * Lockset bridge sources (`crates/dearust-lockset/bridge`): Retain original Apple Public Source License (APSL) notices.
 * Upstream Darling contributors and third-party dependency authors retain all respective copyrights.
+
+Resource follow-up evidence is in `RUNTIME-RESOURCE-COPIES.txt`. The fixed-copy
+optimization is validated in the default runtime; full unsigned-limit ownership,
+XNU enforcement and generic-buffer CPU gates remain unfinished.

@@ -363,3 +363,10 @@ measurements use the same new paired server and scoped matching runtime.
 
 Inventories:49 partial dependency leaves, 265754 pending; 7 Cargo target slices,
 1622 pending targets, 0 retired. Original i386 retained; full migration unfinished.
+
+Resource continuation: fixed16/144-byte copies gain a live-local same-page SSE2
+path; process resource exports remain unchanged. resource_policy/resource_view
+are safe ownership foundations, not activated enforcement. Fresh guest CPU is
++1.813% versus exact C, while native heap/cross-page regressions remain material.
+See RUNTIME-RESOURCE-COPIES.txt; unsigned ownership and XNU policy integration
+still block subsystem completion. Source/target retirement counts do not change.

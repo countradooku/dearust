@@ -964,3 +964,25 @@ remain mandatory. Installed/reference runtime unchanged. Inventories52partial/
 and prior timestamp/wiring/positioned-vector-I/O/credential/fd audits unfinished.
 Continue substantive work against the resource domain and CPU gates; do not
 count these three partial sources as complete or silently skip the findings.
+
+
+Continuation: anchored fixed resource copies; owner integration unfinished
+-------------------------------------------------------------------------
+Read RUNTIME-RESOURCE-COPIES.txt/runtime-resource-copies-verification.json. Default
+paths.o now45 private globals; genuine live &mut local anchor permits checked
+same-page exact16/144 SSE2 copies with5 exact guest fault PCs. Preserve readiness,
+AC, negative-path current-mask query and all strong signal/fork/PID contracts. A
+reference does not pin VMA; no guest refs or narrowed guest-only mapping contract.
+process-ids.o remains byte-identical13 C globals. Safe resource_policy/resource_view
+are tested foundations only, not activated logical ownership/enforcement.
+
+202 ordinary/11 compilefail/35 Python/alloptional, repeatnative/Darwin, bothlinks
+public/import+i386, nativeplain/sanitized, actualresource/3guard/30old/filesystem/
+29apps(28strict+1historicnormalization)/16utils/3GUI pass. GuestCPU1.059->1.0782us
+(+1.813%, quartilesoverlap), p99median2->2us; onepageprivate-dirtyvariation. Native
+stack+1.00%, changingCORE+2.00% withslowerprocesstails, heap+68.65%, crosspage+66.87%.
+GenericCPUgate remainsOPEN, not solvedbybenchmarkselection. CurrentABIstill
+EOVERFLOWcontainment; exactunsignedandXNUenforcement remainUNFINISHED. No source
+count/targetretirementorinstalledchange;52partial/265751pending,11packages.
+Ownercandidatebuildersmustnotbeactivatedbefore their distinct lifecycle/physical
+effect/credential/ABI/guest/performance gates pass. Do not move past resources.

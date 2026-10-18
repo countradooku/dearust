@@ -9,11 +9,17 @@
 #include <signal.h>
 #include <stdatomic.h>
 #include <ucontext.h>
+#include <stddef.h>
+#include <linux/filter.h>
+#include <linux/seccomp.h>
+#include <sys/prctl.h>
 
 extern long dearust_copy_guarded(void *,const void *,size_t,size_t);
+extern long dearust_copy_guarded_stack(void *,const void *,size_t,size_t,unsigned char *);
 extern unsigned long dearust_copy_signal_fixup(unsigned long,int,int);
 extern char dearust_copy_region_begin,dearust_copy_region_end;
 extern char dearust_copy_guest_read,dearust_copy_guest_write,dearust_copy_guest_binary_read;
+extern char dearust_copy_guest_simd_read,dearust_copy_guest_simd_write;
 extern long dearust_copyin(void *,const void *,size_t);
 extern long dearust_copyout(const void *,void *,size_t);
 extern char dearust_copy_error,dearust_copy_fallback;
@@ -33,6 +39,7 @@ long linux_syscall(long a,long b,long c,long d,long e,long f,int nr){
  * original flags before returning to compiler-generated code. */
 struct alignment_result { long status; unsigned long flags; };
 extern struct alignment_result copy_with_alignment_check(void *,const void *,size_t,size_t);
+extern struct alignment_result copy_stack_with_alignment_check(void *,const void *,size_t,size_t,unsigned char *);
 __asm__(".text\n"
         ".type copy_with_alignment_check,@function\n"
         "copy_with_alignment_check:\n"
@@ -45,7 +52,19 @@ __asm__(".text\n"
         "pop %rdx\n"
         "popfq\n"
         "ret\n"
-        ".size copy_with_alignment_check,.-copy_with_alignment_check\n");
+        ".size copy_with_alignment_check,.-copy_with_alignment_check\n"
+        ".type copy_stack_with_alignment_check,@function\n"
+        "copy_stack_with_alignment_check:\n"
+        "pushfq\n"
+        "pushfq\n"
+        "orq $0x40000,(%rsp)\n"
+        "popfq\n"
+        "call dearust_copy_guarded_stack\n"
+        "pushfq\n"
+        "pop %rdx\n"
+        "popfq\n"
+        "ret\n"
+        ".size copy_stack_with_alignment_check,.-copy_stack_with_alignment_check\n");
 static void alignment_check_fallback(void){
     unsigned char input[160],output[160];memset(input,0,sizeof(input));memset(output,0xa5,sizeof(output));
     struct alignment_result result=copy_with_alignment_check(output+1,input+1,144,0);
@@ -55,6 +74,12 @@ static void alignment_check_fallback(void){
     result=copy_with_alignment_check(output+1,input+1,16,2);
     assert(result.status==-4096 && (result.flags&0x40000));
     for(size_t i=0;i<sizeof(output);i++)assert(output[i]==0xa5);
+    _Alignas(4096) unsigned char page[4096];memset(page,0xa5,sizeof(page));
+    result=copy_stack_with_alignment_check(page+129,input+1,144,0,page+32);
+    assert(result.status==-4096 && (result.flags&0x40000));
+    result=copy_stack_with_alignment_check(output+1,page+129,16,2,page+32);
+    assert(result.status==-4096 && (result.flags&0x40000));
+    for(size_t i=0;i<sizeof(page);i++)assert(page[i]==0xa5);
     unsigned long restored;__asm__ volatile("pushfq; pop %0":"=r"(restored));
     assert(!(restored&0x40000));
 }
@@ -70,7 +95,7 @@ static unsigned long mask(void){unsigned long value=0;assert(syscall(SYS_rt_sigp
 static void exact_fixups(void){
     unsigned long begin=address(&dearust_copy_region_begin),end=address(&dearust_copy_region_end);
     for(unsigned long pc=begin;pc<end;pc++){
-        int access=pc==address(&dearust_copy_guest_read)||pc==address(&dearust_copy_guest_write)||pc==address(&dearust_copy_guest_binary_read);
+        int access=pc==address(&dearust_copy_guest_read)||pc==address(&dearust_copy_guest_write)||pc==address(&dearust_copy_guest_binary_read)||pc==address(&dearust_copy_guest_simd_read)||pc==address(&dearust_copy_guest_simd_write);
         assert(dearust_copy_signal_fixup(pc,SIGSEGV,SEGV_MAPERR)==(access?address(&dearust_copy_error):0));
         assert(dearust_copy_signal_fixup(pc,SIGBUS,BUS_ADRERR)==(access?address(&dearust_copy_error):0));
         assert(dearust_copy_signal_fixup(pc,SIGUSR1,SI_USER)==address(&dearust_copy_fallback));
@@ -153,8 +178,58 @@ static void binary_copy_boundaries(void){
     assert(dearust_copyout(input,pages,16)==-14);
     assert(munmap(pages,8192)==0);assert(mask()==before);
 }
+/* Positive proof uses actual writable local storage, not the return-address
+ * page. Only the child denies mask queries; no process-wide parent policy or
+ * mask is changed. Direct leaf calls also test NULL/unanchored entry behavior. */
+static void stack_anchor_proof(void){
+    pid_t child=fork();assert(child>=0);
+    if(child==0){
+        _Alignas(4096) unsigned char pages[8192];
+        memset(pages,0xa5,sizeof(pages));
+        unsigned char *anchor=pages+32,*guest=pages+129,*local=pages+4096+129;
+        for(size_t i=0;i<160;i++)local[i]=(unsigned char)(i*37);
+        unsigned char *bad=mmap(NULL,8192,PROT_READ|PROT_WRITE,MAP_ANONYMOUS|MAP_PRIVATE,-1,0);
+        assert(bad!=MAP_FAILED);assert(mprotect(bad+4096,4096,PROT_NONE)==0);
+        assert(mprotect(bad,4096,PROT_READ)==0);
+        unsigned long blocked=(1UL<<(SIGSEGV-1))|(1UL<<(SIGBUS-1));
+        assert(syscall(SYS_rt_sigprocmask,SIG_BLOCK,&blocked,NULL,8)==0);
+        struct sock_filter filter[]={
+            BPF_STMT(BPF_LD|BPF_W|BPF_ABS,offsetof(struct seccomp_data,nr)),
+            BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K,SYS_rt_sigprocmask,0,1),
+            BPF_STMT(BPF_RET|BPF_K,SECCOMP_RET_ERRNO|EPERM),
+            BPF_STMT(BPF_RET|BPF_K,SECCOMP_RET_ALLOW)
+        };
+        struct sock_fprog program={sizeof(filter)/sizeof(filter[0]),filter};
+        assert(prctl(PR_SET_NO_NEW_PRIVS,1,0,0,0)==0);
+        assert(prctl(PR_SET_SECCOMP,SECCOMP_MODE_FILTER,&program)==0);
+        for(size_t length=16;length<=144;length+=128){
+            memset(guest,0xa5,160);
+            assert(dearust_copy_guarded_stack(guest,local,length,0,anchor)==0);
+            assert(!memcmp(guest,local,length) && guest[-1]==0xa5 && guest[length]==0xa5);
+            memset(local+512,0xa5,160);
+            assert(dearust_copy_guarded_stack(local+512,guest,length,2,anchor)==0);
+            assert(!memcmp(local+512,guest,length) && local[512+length]==0xa5);
+        }
+        /* Mask query denial proves that no guessed range is treated as proven:
+         * these must return fallback before touching any guest byte. */
+        assert(dearust_copy_guarded(guest,local,16,0)==-4096);
+        assert(dearust_copy_guarded_stack(guest,local,16,0,NULL)==-4096);
+        assert(dearust_copy_guarded_stack(bad,local,144,0,anchor)==-4096);
+        assert(dearust_copy_guarded_stack(bad+4096,local,144,0,anchor)==-4096);
+        assert(dearust_copy_guarded_stack(local,bad+4096,16,2,anchor)==-4096);
+        assert(dearust_copy_guarded_stack(pages+4090,local,16,0,anchor)==-4096);
+        assert(dearust_copy_guarded_stack((void *)(UINTPTR_MAX-7),local,16,0,anchor)==-4096);
+        assert(dearust_copy_guarded_stack(guest,local,15,0,anchor)==-4096);
+        assert(dearust_copy_guarded_stack(guest,local,0,0,anchor)==-4096);
+        assert(dearust_copy_guarded_stack(guest,local,16,1,anchor)==-4096);
+        assert(dearust_copy_guarded_stack(anchor,local,16,0,anchor)==-4096);
+        _exit(0);
+    }
+    int status;assert(waitpid(child,&status,0)==child && WIFEXITED(status) && WEXITSTATUS(status)==0);
+}
+
 int main(void){
-    alarm(30);assert(pointer_boundary_main()==0);exact_fixups();alignment_check_fallback();binary_copy_boundaries();
+    alarm(30);assert(pointer_boundary_main()==0);exact_fixups();alignment_check_fallback();binary_copy_boundaries();stack_anchor_proof();
 #ifdef DEARUST_TEST_WRAP_READY
     force_kernel_copy=1;conversions=0;assert(pointer_boundary_main()==0);binary_copy_boundaries();force_kernel_copy=0;
 #endif

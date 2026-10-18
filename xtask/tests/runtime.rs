@@ -134,11 +134,14 @@ fn check(triple: &str, label: &str) {
                 "sys_rename",
                 "sys_mkdir",
                 "dearust_copy_guarded",
+                "dearust_copy_guarded_stack",
                 "dearust_copy_signal_fixup",
                 "dearust_copy_region_begin",
                 "dearust_copy_region_end",
                 "dearust_copy_guest_read",
                 "dearust_copy_guest_binary_read",
+                "dearust_copy_guest_simd_read",
+                "dearust_copy_guest_simd_write",
                 "dearust_copyin",
                 "dearust_copyout",
                 "dearust_copy_guest_write",
@@ -295,7 +298,7 @@ fn check(triple: &str, label: &str) {
             ("process", 1),
             ("process-ids", 12),
             ("fd", 13),
-            ("paths", 42),
+            ("paths", 45),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")

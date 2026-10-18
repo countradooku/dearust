@@ -560,3 +560,8 @@ getdtablesize now uses the actual16-byte Darwin rlimit ABI and actual NOFILE
 accounting.187 Rust/8 compile-fail/35 Python checks pass, but full unsigned-limit
 compatibility and CPU regression completion gates are open. This is partial
 resource migration, not permission to skip those gates or claim full completion.
+
+Resource copy follow-up: RUNTIME-RESOURCE-COPIES.txt records the default runtime
+anchor/SSE2 path, negative-case contracts and fresh all-layout measurements.
+Resource owner/server/loader candidates are not selected by the default runtime
+artifact graph; full unsigned/XNU enforcement and generic CPU gates remain open.

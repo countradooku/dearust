@@ -23,6 +23,8 @@ def main():
         parser.add_argument('--'+name, type=Path, required=True)
     parser.add_argument('--samples', type=int, default=21)
     parser.add_argument('--iterations', type=int, default=100000)
+    parser.add_argument('--buffer-layout', choices=('stack', 'heap', 'crosspage'), default='stack')
+    parser.add_argument('--change-core', action='store_true', help='alternate owned child CORE soft limits0/1')
     args = parser.parse_args()
     if args.samples < 3 or args.iterations < 256:
         parser.error('require at least three samples and 256 iterations')
@@ -77,11 +79,12 @@ long linux_syscall(long,long,long,long,long,long,int);
     fixture = output/'resources-bench.c'
     fixture.write_bytes((Path(__file__).parent/'fixtures/resources-bench.c').read_bytes())
     objects = runtime/'objects'
+    extra = ['-DRESOURCE_BENCH_CHANGING'] if args.change_core else []
     run(['clang', '-O2', '-Wall', '-Wextra', '-Werror', '-Wl,--gc-sections',
-         '-DRESOURCE_BENCH_ORIGINAL', str(fixture),
+         '-DRESOURCE_BENCH_ORIGINAL', *extra, str(fixture),
          *map(str, [output/'getrlimit.o', output/'setrlimit.o', output/'getrusage.o',
                     objects/'errno.o']), '-o', str(output/'original')])
-    run(['clang', '-O2', '-Wall', '-Wextra', '-Werror', '-Wl,--gc-sections', str(fixture),
+    run(['clang', '-O2', '-Wall', '-Wextra', '-Werror', '-Wl,--gc-sections', *extra, str(fixture),
          *map(str, [objects/'process-ids.o', objects/'paths.o', objects/'errno.o']),
          '-o', str(output/'rust')])
     allowed = sorted(os.sched_getaffinity(0))
@@ -95,7 +98,7 @@ long linux_syscall(long,long,long,long,long,long,int);
                 binary = 'original' if variant == 'original' else 'rust'
                 started = time.perf_counter_ns()
                 result = subprocess.check_output(
-                    [str(output/binary), str(args.iterations), variant], text=True)
+                    [str(output/binary), str(args.iterations), variant, args.buffer_layout], text=True)
                 process_wall = time.perf_counter_ns()-started
                 values = list(map(int, result.split()))
                 keys = ('roundtrips', 'cpu_ns', 'wall_ns', 'cold_round_ns',
@@ -127,7 +130,7 @@ long linux_syscall(long,long,long,long,long,long,int);
     for variant in ('guarded', 'fallback'):
         summary[variant]['cpu_change_percent'] = 100*(
             summary[variant]['median_cpu_ns_per_round']/summary['original']['median_cpu_ns_per_round']-1)
-    report = dict(scope=__doc__, allowed_affinity=allowed, pinned_cpu=allowed[0],
+    report = dict(scope=__doc__, change_core=args.change_core, buffer_layout=args.buffer_layout, allowed_affinity=allowed, pinned_cpu=allowed[0],
                   caveats=['Original output retains its known Linux-layout rusage and infinity defects; Rust performs the actual Darwin conversion.',
                            'Forced fallback is an explicit policy cohort, not the ordinary production path.',
                            'ru_maxrss is the raw Linux process high-water mark and can include inherited pre-exec history; do not infer runtime memory regression from it alone.',

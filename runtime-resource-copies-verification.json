@@ -1,0 +1,897 @@
+{
+  "scope": "Default runtime fixed-copy optimization; resource subsystem remains unfinished",
+  "migration_completion": false,
+  "resource_completion": false,
+  "open_gates": [
+    "Production unsigned-limit ABI still uses EOVERFLOW containment; exact owned-state integration not activated",
+    "XNU physical enforcement needs coherent mapping/wiring, credentials, host-envelope and fork/exec ownership integration",
+    "Native heap and cross-page CPU remain materially slower; changing-CORE process tails remain visible"
+  ],
+  "implemented": [
+    "Genuine live mutable local anchor, checked exact same-page16/144-byte proof",
+    "Mandatory x86_64 SSE2 exact chunks with distinct guest fault PCs",
+    "Negative paths retain fresh current-mask query and existing signal/fork-safe kernel fallback",
+    "Safe separately tested XNU policy and coupled atomic view; not production resource enforcement"
+  ],
+  "validation": {
+    "ordinary_rust_tests": 202,
+    "compile_fail_doctests": 11,
+    "python_tests": 35,
+    "guest_checks": {
+      "guard-probes": {
+        "returncode": 0,
+        "rust_cases": 3,
+        "rust_passed": true,
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/guard-probes-default-final/comparison.json"
+      },
+      "existing-probes": {
+        "returncode": 0,
+        "rust_cases": 30,
+        "rust_passed": true,
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/existing-probes-default-final/comparison.json"
+      },
+      "filesystem-probes": {
+        "returncode": 0,
+        "rust_cases": 1,
+        "rust_passed": true,
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/filesystem-probes-default-final/comparison.json"
+      },
+      "resources": {
+        "returncode": 1,
+        "rust_cases": 1,
+        "rust_passed": true,
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/resources-default-final/comparison.json"
+      },
+      "resource-faults": {
+        "returncode": 1,
+        "rust_cases": 1,
+        "rust_passed": true,
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/resource-faults-default-final/comparison.json"
+      },
+      "apps": {
+        "returncode": 1,
+        "rust_cases": 29,
+        "rust_passed": true,
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/apps-default-final/comparison.json"
+      },
+      "utilities": {
+        "returncode": 1,
+        "rust_cases": 16,
+        "rust_passed": true,
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/utilities-default-final/comparison.json"
+      }
+    },
+    "gui_report": "work/resources-complete/gui-default-final/comparison.json",
+    "gui_cleanup": {
+      "runner_exit": 0,
+      "helper_reaped": true,
+      "exit_code": -15
+    }
+  },
+  "guest_performance": {
+    "baseline": {
+      "cpu_us_per_roundtrip": {
+        "samples": 42,
+        "minimum": 1.0497,
+        "q1": 1.055425,
+        "median": 1.059,
+        "q3": 1.07105,
+        "maximum": 1.0967
+      },
+      "wall_us_per_roundtrip": {
+        "samples": 42,
+        "minimum": 1.0535,
+        "q1": 1.05865,
+        "median": 1.06575,
+        "q3": 1.0783500000000001,
+        "maximum": 1.1096
+      },
+      "resources": {
+        "cpu_us": {
+          "samples": 20,
+          "minimum": 569,
+          "q1": 571.0,
+          "median": 573.0,
+          "q3": 581.75,
+          "maximum": 592
+        },
+        "first_round_us": {
+          "samples": 20,
+          "minimum": 3,
+          "q1": 3.0,
+          "median": 3.0,
+          "q3": 4.0,
+          "maximum": 4
+        },
+        "initial_maxrss_linux_kib": {
+          "samples": 20,
+          "minimum": 11232,
+          "q1": 11387.0,
+          "median": 11474.0,
+          "q3": 11555.0,
+          "maximum": 11660
+        },
+        "max_us": {
+          "samples": 20,
+          "minimum": 2,
+          "q1": 2.0,
+          "median": 3.0,
+          "q3": 6.0,
+          "maximum": 15
+        },
+        "maxrss_linux_kib": {
+          "samples": 20,
+          "minimum": 11268,
+          "q1": 11399.0,
+          "median": 11486.0,
+          "q3": 11555.0,
+          "maximum": 11660
+        },
+        "p50_us": {
+          "samples": 20,
+          "minimum": 1,
+          "q1": 1.0,
+          "median": 1.0,
+          "q3": 1.0,
+          "maximum": 1
+        },
+        "p95_us": {
+          "samples": 20,
+          "minimum": 2,
+          "q1": 2.0,
+          "median": 2.0,
+          "q3": 2.0,
+          "maximum": 2
+        },
+        "p99_us": {
+          "samples": 20,
+          "minimum": 2,
+          "q1": 2.0,
+          "median": 2.0,
+          "q3": 2.0,
+          "maximum": 2
+        },
+        "private_dirty_linux_kib": {
+          "samples": 20,
+          "minimum": 3508,
+          "q1": 3508.0,
+          "median": 3512.0,
+          "q3": 3512.0,
+          "maximum": 3536
+        },
+        "pss_linux_kib": {
+          "samples": 20,
+          "minimum": 4145,
+          "q1": 4152.0,
+          "median": 4158.5,
+          "q3": 4167.75,
+          "maximum": 4212
+        },
+        "rss_linux_kib": {
+          "samples": 20,
+          "minimum": 11700,
+          "q1": 11799.0,
+          "median": 11846.0,
+          "q3": 11948.0,
+          "maximum": 12020
+        }
+      }
+    },
+    "rust": {
+      "cpu_us_per_roundtrip": {
+        "samples": 42,
+        "minimum": 1.0606,
+        "q1": 1.068325,
+        "median": 1.0782,
+        "q3": 1.088625,
+        "maximum": 1.1142
+      },
+      "wall_us_per_roundtrip": {
+        "samples": 42,
+        "minimum": 1.0631,
+        "q1": 1.075375,
+        "median": 1.08495,
+        "q3": 1.1006,
+        "maximum": 1.121
+      },
+      "resources": {
+        "cpu_us": {
+          "samples": 20,
+          "minimum": 569,
+          "q1": 575.25,
+          "median": 580.0,
+          "q3": 581.0,
+          "maximum": 592
+        },
+        "first_round_us": {
+          "samples": 20,
+          "minimum": 3,
+          "q1": 3.0,
+          "median": 3.0,
+          "q3": 4.0,
+          "maximum": 4
+        },
+        "initial_maxrss_linux_kib": {
+          "samples": 20,
+          "minimum": 11320,
+          "q1": 11384.0,
+          "median": 11412.0,
+          "q3": 11531.0,
+          "maximum": 11652
+        },
+        "max_us": {
+          "samples": 20,
+          "minimum": 2,
+          "q1": 2.0,
+          "median": 4.0,
+          "q3": 6.0,
+          "maximum": 7
+        },
+        "maxrss_linux_kib": {
+          "samples": 20,
+          "minimum": 11340,
+          "q1": 11397.0,
+          "median": 11504.0,
+          "q3": 11571.0,
+          "maximum": 11676
+        },
+        "p50_us": {
+          "samples": 20,
+          "minimum": 1,
+          "q1": 1.0,
+          "median": 1.0,
+          "q3": 1.0,
+          "maximum": 1
+        },
+        "p95_us": {
+          "samples": 20,
+          "minimum": 2,
+          "q1": 2.0,
+          "median": 2.0,
+          "q3": 2.0,
+          "maximum": 2
+        },
+        "p99_us": {
+          "samples": 20,
+          "minimum": 2,
+          "q1": 2.0,
+          "median": 2.0,
+          "q3": 2.0,
+          "maximum": 2
+        },
+        "private_dirty_linux_kib": {
+          "samples": 20,
+          "minimum": 3504,
+          "q1": 3508.0,
+          "median": 3508.0,
+          "q3": 3508.0,
+          "maximum": 3512
+        },
+        "pss_linux_kib": {
+          "samples": 20,
+          "minimum": 4145,
+          "q1": 4153.5,
+          "median": 4162.5,
+          "q3": 4184.25,
+          "maximum": 4197
+        },
+        "rss_linux_kib": {
+          "samples": 20,
+          "minimum": 11852,
+          "q1": 11904.0,
+          "median": 11944.0,
+          "q3": 11970.0,
+          "maximum": 12060
+        }
+      }
+    },
+    "cpu_change_percent": 1.8130311614730887
+  },
+  "native_performance": {
+    "stack": {
+      "report": "work/resources-complete/native-final-stack/benchmark.json",
+      "summary": {
+        "original": {
+          "median_cpu_ns_per_round": 1029.6309,
+          "cpu_q1_ns": 1026.5288,
+          "cpu_q3_ns": 1032.26741,
+          "median_wall_ns_per_round": 1032.25731,
+          "median_cold_round_ns": 2124,
+          "median_sampled_p99_ns": 1082,
+          "median_process_wall_ns": 104146711,
+          "median_minor_faults": 63,
+          "median_raw_ru_maxrss_kib": 21388,
+          "median_current_rss_kib": 1732,
+          "median_private_dirty_kib": 116
+        },
+        "guarded": {
+          "median_cpu_ns_per_round": 1039.89591,
+          "cpu_q1_ns": 1037.18986,
+          "cpu_q3_ns": 1045.10702,
+          "median_wall_ns_per_round": 1042.64614,
+          "median_cold_round_ns": 2424,
+          "median_sampled_p99_ns": 1082,
+          "median_process_wall_ns": 105183621,
+          "median_minor_faults": 63,
+          "median_raw_ru_maxrss_kib": 21388,
+          "median_current_rss_kib": 1676,
+          "median_private_dirty_kib": 116,
+          "cpu_change_percent": 0.9969601728153199
+        },
+        "fallback": {
+          "median_cpu_ns_per_round": 5104.08386,
+          "cpu_q1_ns": 5089.78502,
+          "cpu_q3_ns": 5109.42268,
+          "median_wall_ns_per_round": 5117.60687,
+          "median_cold_round_ns": 8466,
+          "median_sampled_p99_ns": 5621,
+          "median_process_wall_ns": 513502408,
+          "median_minor_faults": 64,
+          "median_raw_ru_maxrss_kib": 21388,
+          "median_current_rss_kib": 1676,
+          "median_private_dirty_kib": 120,
+          "cpu_change_percent": 395.719763266623
+        }
+      },
+      "process_cpu_distribution": {
+        "original": {
+          "median_ns": 1029.6309,
+          "min_ns": 1022.17799,
+          "max_ns": 1037.731,
+          "process_p95_ns": 1036.93819,
+          "process_cpu_ns_per_round": [
+            1022.17799,
+            1022.2559,
+            1023.16637,
+            1023.2631,
+            1024.17474,
+            1026.5288,
+            1026.97097,
+            1027.07598,
+            1027.60956,
+            1028.09637,
+            1029.6309,
+            1029.67754,
+            1030.73908,
+            1031.85172,
+            1032.076,
+            1032.26741,
+            1032.54731,
+            1033.64418,
+            1034.56076,
+            1036.93819,
+            1037.731
+          ]
+        },
+        "guarded": {
+          "median_ns": 1039.89591,
+          "min_ns": 1033.71518,
+          "max_ns": 1738.69752,
+          "process_p95_ns": 1726.33945,
+          "process_cpu_ns_per_round": [
+            1033.71518,
+            1034.22519,
+            1034.75086,
+            1035.3171,
+            1035.87943,
+            1037.18986,
+            1037.19228,
+            1038.35374,
+            1039.75969,
+            1039.8254,
+            1039.89591,
+            1039.93075,
+            1039.97529,
+            1041.93639,
+            1044.27053,
+            1045.10702,
+            1045.25275,
+            1045.28675,
+            1724.58113,
+            1726.33945,
+            1738.69752
+          ]
+        },
+        "fallback": {
+          "median_ns": 5104.08386,
+          "min_ns": 5083.34737,
+          "max_ns": 5126.66851,
+          "process_p95_ns": 5119.17883,
+          "process_cpu_ns_per_round": [
+            5083.34737,
+            5085.1508,
+            5087.28074,
+            5087.64273,
+            5088.04106,
+            5089.78502,
+            5091.62313,
+            5095.43676,
+            5100.74676,
+            5103.67754,
+            5104.08386,
+            5104.28586,
+            5105.5147,
+            5108.30791,
+            5108.8112,
+            5109.42268,
+            5113.4425,
+            5115.03508,
+            5116.56006,
+            5119.17883,
+            5126.66851
+          ]
+        }
+      },
+      "actual_anchor_eligibility_observed": false,
+      "note": "CPU spread includes ASLR/layout effects but is not an observed eligibility percentage."
+    },
+    "heap": {
+      "report": "work/resources-complete/native-final-heap/benchmark.json",
+      "summary": {
+        "original": {
+          "median_cpu_ns_per_round": 1031.27445,
+          "cpu_q1_ns": 1026.08613,
+          "cpu_q3_ns": 1037.69244,
+          "median_wall_ns_per_round": 1033.65063,
+          "median_cold_round_ns": 2284,
+          "median_sampled_p99_ns": 1102,
+          "median_process_wall_ns": 104340026,
+          "median_minor_faults": 65,
+          "median_raw_ru_maxrss_kib": 20472,
+          "median_current_rss_kib": 1744,
+          "median_private_dirty_kib": 124
+        },
+        "guarded": {
+          "median_cpu_ns_per_round": 1739.23012,
+          "cpu_q1_ns": 1731.81447,
+          "cpu_q3_ns": 1756.65072,
+          "median_wall_ns_per_round": 1743.63293,
+          "median_cold_round_ns": 3227,
+          "median_sampled_p99_ns": 1894,
+          "median_process_wall_ns": 175397147,
+          "median_minor_faults": 66,
+          "median_raw_ru_maxrss_kib": 20472,
+          "median_current_rss_kib": 1792,
+          "median_private_dirty_kib": 124,
+          "cpu_change_percent": 68.64861919152561
+        },
+        "fallback": {
+          "median_cpu_ns_per_round": 5127.7811,
+          "cpu_q1_ns": 5107.38171,
+          "cpu_q3_ns": 5163.8685,
+          "median_wall_ns_per_round": 5141.32008,
+          "median_cold_round_ns": 8676,
+          "median_sampled_p99_ns": 5751,
+          "median_process_wall_ns": 515806554,
+          "median_minor_faults": 65,
+          "median_raw_ru_maxrss_kib": 20472,
+          "median_current_rss_kib": 1744,
+          "median_private_dirty_kib": 124,
+          "cpu_change_percent": 397.2275905797919
+        }
+      },
+      "process_cpu_distribution": {
+        "original": {
+          "median_ns": 1031.27445,
+          "min_ns": 1007.13789,
+          "max_ns": 1050.91978,
+          "process_p95_ns": 1049.86898,
+          "process_cpu_ns_per_round": [
+            1007.13789,
+            1015.28003,
+            1019.1315,
+            1025.19483,
+            1025.79261,
+            1026.08613,
+            1029.26877,
+            1029.99292,
+            1030.34263,
+            1030.57201,
+            1031.27445,
+            1031.86945,
+            1034.90154,
+            1036.08897,
+            1037.38375,
+            1037.69244,
+            1041.91809,
+            1042.6762,
+            1046.79288,
+            1049.86898,
+            1050.91978
+          ]
+        },
+        "guarded": {
+          "median_ns": 1739.23012,
+          "min_ns": 1726.04038,
+          "max_ns": 1790.14448,
+          "process_p95_ns": 1776.74936,
+          "process_cpu_ns_per_round": [
+            1726.04038,
+            1726.87336,
+            1728.1492,
+            1730.14189,
+            1731.68948,
+            1731.81447,
+            1732.54832,
+            1733.51383,
+            1733.81624,
+            1738.10495,
+            1739.23012,
+            1739.42855,
+            1740.43604,
+            1750.58841,
+            1754.89445,
+            1756.65072,
+            1762.01879,
+            1763.31944,
+            1775.68522,
+            1776.74936,
+            1790.14448
+          ]
+        },
+        "fallback": {
+          "median_ns": 5127.7811,
+          "min_ns": 5068.36818,
+          "max_ns": 5219.19424,
+          "process_p95_ns": 5196.1062,
+          "process_cpu_ns_per_round": [
+            5068.36818,
+            5090.24212,
+            5092.61129,
+            5097.73279,
+            5105.64303,
+            5107.38171,
+            5112.84938,
+            5113.27536,
+            5115.60703,
+            5121.89701,
+            5127.7811,
+            5133.64294,
+            5141.73124,
+            5143.13605,
+            5154.73741,
+            5163.8685,
+            5172.54,
+            5174.3993,
+            5175.7901,
+            5196.1062,
+            5219.19424
+          ]
+        }
+      },
+      "actual_anchor_eligibility_observed": false,
+      "note": "CPU spread includes ASLR/layout effects but is not an observed eligibility percentage."
+    },
+    "crosspage": {
+      "report": "work/resources-complete/native-final-crosspage/benchmark.json",
+      "summary": {
+        "original": {
+          "median_cpu_ns_per_round": 1040.40062,
+          "cpu_q1_ns": 1035.96793,
+          "cpu_q3_ns": 1047.33888,
+          "median_wall_ns_per_round": 1044.62177,
+          "median_cold_round_ns": 2354,
+          "median_sampled_p99_ns": 1102,
+          "median_process_wall_ns": 105398908,
+          "median_minor_faults": 67,
+          "median_raw_ru_maxrss_kib": 21588,
+          "median_current_rss_kib": 1748,
+          "median_private_dirty_kib": 132
+        },
+        "guarded": {
+          "median_cpu_ns_per_round": 1736.06706,
+          "cpu_q1_ns": 1733.5295,
+          "cpu_q3_ns": 1745.11954,
+          "median_wall_ns_per_round": 1741.43568,
+          "median_cold_round_ns": 3276,
+          "median_sampled_p99_ns": 1863,
+          "median_process_wall_ns": 175222627,
+          "median_minor_faults": 67,
+          "median_raw_ru_maxrss_kib": 21588,
+          "median_current_rss_kib": 1752,
+          "median_private_dirty_kib": 132,
+          "cpu_change_percent": 66.86524658164853
+        },
+        "fallback": {
+          "median_cpu_ns_per_round": 5469.64173,
+          "cpu_q1_ns": 5462.56431,
+          "cpu_q3_ns": 5483.12631,
+          "median_wall_ns_per_round": 5485.04784,
+          "median_cold_round_ns": 9068,
+          "median_sampled_p99_ns": 6071,
+          "median_process_wall_ns": 550374639,
+          "median_minor_faults": 67,
+          "median_raw_ru_maxrss_kib": 21588,
+          "median_current_rss_kib": 1744,
+          "median_private_dirty_kib": 132,
+          "cpu_change_percent": 425.7245742510228
+        }
+      },
+      "process_cpu_distribution": {
+        "original": {
+          "median_ns": 1040.40062,
+          "min_ns": 1030.98835,
+          "max_ns": 1083.72959,
+          "process_p95_ns": 1067.15775,
+          "process_cpu_ns_per_round": [
+            1030.98835,
+            1031.99991,
+            1032.45978,
+            1032.92967,
+            1033.57502,
+            1035.96793,
+            1036.75875,
+            1036.81325,
+            1038.3999,
+            1039.52927,
+            1040.40062,
+            1043.12134,
+            1043.38798,
+            1044.75155,
+            1046.50152,
+            1047.33888,
+            1050.64132,
+            1054.96471,
+            1064.74447,
+            1067.15775,
+            1083.72959
+          ]
+        },
+        "guarded": {
+          "median_ns": 1736.06706,
+          "min_ns": 1720.34335,
+          "max_ns": 1780.597,
+          "process_p95_ns": 1779.94876,
+          "process_cpu_ns_per_round": [
+            1720.34335,
+            1731.93388,
+            1732.7186,
+            1732.9155,
+            1733.14593,
+            1733.5295,
+            1733.62654,
+            1733.83646,
+            1733.99253,
+            1735.09202,
+            1736.06706,
+            1736.59149,
+            1738.21038,
+            1742.93451,
+            1742.97605,
+            1745.11954,
+            1749.264,
+            1750.95267,
+            1759.05613,
+            1779.94876,
+            1780.597
+          ]
+        },
+        "fallback": {
+          "median_ns": 5469.64173,
+          "min_ns": 5452.6511,
+          "max_ns": 5548.7438,
+          "process_p95_ns": 5544.51592,
+          "process_cpu_ns_per_round": [
+            5452.6511,
+            5453.13054,
+            5454.47148,
+            5461.44261,
+            5462.04972,
+            5462.56431,
+            5462.90104,
+            5463.28814,
+            5466.32926,
+            5469.02219,
+            5469.64173,
+            5471.20278,
+            5472.34832,
+            5476.95642,
+            5480.16855,
+            5483.12631,
+            5490.01334,
+            5491.8824,
+            5534.56649,
+            5544.51592,
+            5548.7438
+          ]
+        }
+      },
+      "actual_anchor_eligibility_observed": false,
+      "note": "CPU spread includes ASLR/layout effects but is not an observed eligibility percentage."
+    },
+    "changing-core-stack": {
+      "report": "work/resources-complete/native-final-changing-core/benchmark.json",
+      "summary": {
+        "original": {
+          "median_cpu_ns_per_round": 1033.3521,
+          "cpu_q1_ns": 1029.41843,
+          "cpu_q3_ns": 1041.68182,
+          "median_wall_ns_per_round": 1035.97213,
+          "median_cold_round_ns": 2244,
+          "median_sampled_p99_ns": 1082,
+          "median_process_wall_ns": 104477146,
+          "median_minor_faults": 63,
+          "median_raw_ru_maxrss_kib": 21360,
+          "median_current_rss_kib": 1728,
+          "median_private_dirty_kib": 116
+        },
+        "guarded": {
+          "median_cpu_ns_per_round": 1054.0482,
+          "cpu_q1_ns": 1045.32871,
+          "cpu_q3_ns": 1714.46286,
+          "median_wall_ns_per_round": 1056.94507,
+          "median_cold_round_ns": 2465,
+          "median_sampled_p99_ns": 1172,
+          "median_process_wall_ns": 106606140,
+          "median_minor_faults": 63,
+          "median_raw_ru_maxrss_kib": 21360,
+          "median_current_rss_kib": 1732,
+          "median_private_dirty_kib": 116,
+          "cpu_change_percent": 2.00281201344632
+        },
+        "fallback": {
+          "median_cpu_ns_per_round": 5134.07879,
+          "cpu_q1_ns": 5115.76638,
+          "cpu_q3_ns": 5177.08186,
+          "median_wall_ns_per_round": 5148.98918,
+          "median_cold_round_ns": 8726,
+          "median_sampled_p99_ns": 5781,
+          "median_process_wall_ns": 516662201,
+          "median_minor_faults": 64,
+          "median_raw_ru_maxrss_kib": 21360,
+          "median_current_rss_kib": 1672,
+          "median_private_dirty_kib": 116,
+          "cpu_change_percent": 396.8373113094752
+        }
+      },
+      "process_cpu_distribution": {
+        "original": {
+          "median_ns": 1033.3521,
+          "min_ns": 1026.08944,
+          "max_ns": 1069.22621,
+          "process_p95_ns": 1066.37892,
+          "process_cpu_ns_per_round": [
+            1026.08944,
+            1028.41277,
+            1028.8589,
+            1028.8807,
+            1029.04395,
+            1029.41843,
+            1030.25028,
+            1030.44577,
+            1031.34746,
+            1032.23068,
+            1033.3521,
+            1034.11453,
+            1037.75352,
+            1039.78163,
+            1040.47943,
+            1041.68182,
+            1046.86935,
+            1051.67165,
+            1059.68564,
+            1066.37892,
+            1069.22621
+          ]
+        },
+        "guarded": {
+          "median_ns": 1054.0482,
+          "min_ns": 1035.74943,
+          "max_ns": 1790.37035,
+          "process_p95_ns": 1777.48723,
+          "process_cpu_ns_per_round": [
+            1035.74943,
+            1039.58876,
+            1040.13385,
+            1043.61827,
+            1044.58168,
+            1045.32871,
+            1048.1141,
+            1048.7949,
+            1050.99365,
+            1052.8829,
+            1054.0482,
+            1055.84106,
+            1058.3269,
+            1080.32627,
+            1224.65178,
+            1714.46286,
+            1715.72723,
+            1726.02612,
+            1728.79277,
+            1777.48723,
+            1790.37035
+          ]
+        },
+        "fallback": {
+          "median_ns": 5134.07879,
+          "min_ns": 5099.45976,
+          "max_ns": 5487.28743,
+          "process_p95_ns": 5391.86474,
+          "process_cpu_ns_per_round": [
+            5099.45976,
+            5101.26249,
+            5102.06932,
+            5107.54989,
+            5113.09134,
+            5115.76638,
+            5118.60298,
+            5120.11934,
+            5122.09065,
+            5123.18903,
+            5134.07879,
+            5136.9422,
+            5138.44576,
+            5158.21652,
+            5171.7385,
+            5177.08186,
+            5189.21979,
+            5220.54635,
+            5286.70977,
+            5391.86474,
+            5487.28743
+          ]
+        }
+      },
+      "actual_anchor_eligibility_observed": false,
+      "note": "CORE soft0/1 actually changed in owned benchmark processes; no parent or hard-limit mutations."
+    }
+  },
+  "evidence": {
+    "default_validation": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/default-final-validation/summary.json",
+      "sha256": "1d6daf8416ff853af6f424ae82e93d4856005d706fa18d5e10b316e13bc7892c"
+    },
+    "guest_performance": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/default-benchmark/performance.json",
+      "sha256": "5e311e45243b15341797435bff1ab248c39e58429409041f2fa5014583011524"
+    },
+    "native_all_layouts": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/native-simd-cohorts.json",
+      "sha256": "b995d283b9348ec8fd3937bd0cbd2566c02adb24f5fdd87938a0c9cc94c1197c"
+    },
+    "native_stack": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/native-final-stack/benchmark.json",
+      "sha256": "c53776e1df9b854af529d6aec928dfd6f2bad2e0b13f3d1e85af00c67c63e96e"
+    },
+    "native_heap": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/native-final-heap/benchmark.json",
+      "sha256": "cd8f0ffb2bd6bbb693fe804950e056e41750aea342c677a9d40dbaac7eb61806"
+    },
+    "native_crosspage": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/native-final-crosspage/benchmark.json",
+      "sha256": "4063a420e04206b85940b01cdbb01c098c367e9b5e4b4b613fc47292f0c3ce3b"
+    },
+    "native_changing_core": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/native-final-changing-core/benchmark.json",
+      "sha256": "ee04f832618f33b249344ca555cd7ac48c454fac6d99f881a92204f0c131d159"
+    },
+    "copy_review": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/ownership-design/anchor-review.json",
+      "sha256": "51775cf4a6017718167f33a4962829b596c4e1aa6aa203d94230aefab54f0a7a"
+    },
+    "copy_implementation": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/copy-design/implementation-verification.json",
+      "sha256": "13f8b7c0a866d27c96e597013ad8078acba1d95476603353c0c1b29a12ed2ce0"
+    },
+    "copy_simd": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resources-complete/copy-design/simd-verification.json",
+      "sha256": "d6a1ba510d543378d34dcc80e3ff8aea5414f653cf60be07593b0842d03e78a8"
+    }
+  },
+  "source_sha256": {
+    "crates/dearust-path/src/abi/guarded.rs": "680d2ddb0e911acac66199b1d1f0315c809d477ffc316501af780114a1dbf006",
+    "tools/fixtures/guarded-copy-native.c": "24479ab87fe72ed1c221763b38c4c1821e4bca720dca99951ca4329c777bf10c",
+    "crates/dearust-process/src/resource_policy.rs": "1397d2448b484828cd94ca5bf43e9f9e15c4401d39f300534c2def58177aae1e",
+    "crates/dearust-process/src/resource_view.rs": "93fb4e58ed06e20b2c48bb4e5e8b71165375d339a83c028664edaf45286885ea",
+    "xtask/src/runtime.rs": "8103745d1e308a5e2ac05b1a79837388fae4ea0d7ef7943a81b61a2807370a5c"
+  },
+  "preservation": "See full default validation summary for hash proof; installed and reference artifacts unchanged",
+  "caveats": [
+    "All owner loader/server/CPU candidates excluded from default runtime and performance claims",
+    "Sanitizers instrument C fixture/boundaries only; ASan SIGBUS/SIGSEGV handlers disabled to preserve runtime under test",
+    "Original C has known correctness bugs; retained matching runtime/paired server are not pristine original Darling",
+    "Raw inherited maxrss counter is not process growth evidence",
+    "No eligibility fraction inferred from ASLR timing; no heap/cross-page gate closed"
+  ]
+}

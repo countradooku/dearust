@@ -4,12 +4,24 @@ use core::ffi::c_void;
 
 unsafe extern "C" {
     fn dearust_copy_guarded(output: *mut u8, input: *const u8, length: usize, path: usize) -> i64;
+    // A real reference (not a raw pointer) keeps this initialized mutable local
+    // live through the entire opaque foreign call. Page equality never becomes
+    // guest pointer provenance or a Rust guest reference.
+    fn dearust_copy_guarded_stack(
+        output: *mut u8,
+        input: *const u8,
+        length: usize,
+        path: usize,
+        anchor: &mut u8,
+    ) -> i64;
     fn dearust_copy_signals_ready() -> i32;
     static dearust_copy_region_begin: u8;
     static dearust_copy_region_end: u8;
     static dearust_copy_guest_read: u8;
     static dearust_copy_guest_binary_read: u8;
     static dearust_copy_guest_write: u8;
+    static dearust_copy_guest_simd_read: u8;
+    static dearust_copy_guest_simd_write: u8;
     static dearust_copy_error: u8;
     static dearust_copy_fallback: u8;
 }
@@ -18,18 +30,24 @@ unsafe extern "C" {
 // as the leaf entry: no linker reordering or dead stripping may split its range.
 #[cfg(target_os = "macos")]
 global_asm!(
+    ".alt_entry {stack_entry}",
     ".alt_entry {begin}",
     ".alt_entry {end}",
     ".alt_entry {read}",
     ".alt_entry {binary_read}",
     ".alt_entry {write}",
+    ".alt_entry {simd_read}",
+    ".alt_entry {simd_write}",
     ".alt_entry {error}",
     ".alt_entry {fallback}",
+    stack_entry = sym dearust_copy_guarded_stack,
     begin = sym dearust_copy_region_begin,
     end = sym dearust_copy_region_end,
     read = sym dearust_copy_guest_read,
     binary_read = sym dearust_copy_guest_binary_read,
     write = sym dearust_copy_guest_write,
+    simd_read = sym dearust_copy_guest_simd_read,
+    simd_write = sym dearust_copy_guest_simd_write,
     error = sym dearust_copy_error,
     fallback = sym dearust_copy_fallback,
 );
@@ -39,15 +57,21 @@ global_asm!(
 // redirect to a local return stub; there is no unwinding through Rust frames.
 global_asm!(
     ".globl {entry}",
+    ".globl {stack_entry}",
     ".globl {begin}",
     ".globl {end}",
     ".globl {read}",
     ".globl {binary_read}",
     ".globl {write}",
+    ".globl {simd_read}",
+    ".globl {simd_write}",
     ".globl {error}",
     ".globl {fallback}",
     ".p2align 4",
     "{entry}:",
+    // Unanchored callers retain the original mask-query proof.
+    "xor r8d, r8d",
+    "{stack_entry}:",
     // A valid unaligned guest address must not become EFAULT merely because
     // the caller enabled x86 alignment checking. Inspect flags before entering
     // the recovery region: its invariant stack frame must not include pushes.
@@ -64,6 +88,51 @@ global_asm!(
     "mov [rsp + 16], rsi",
     "mov [rsp + 24], rdx",
     "mov [rsp + 32], rcx",
+    // Positive fixed-binary proof only: this genuine live mutable Rust local
+    // must remain readable/writable through the call. x86 Linux R/W and pkey
+    // permissions are uniform on a 4KiB page. Revoking this page also invalidates
+    // the actual local anchor, already outside the local-storage contract.
+    "test r8, r8",
+    "jz 9f",
+    "mov r9, rdi",
+    "test rcx, rcx",
+    "jz 10f",
+    "cmp rcx, 2",
+    "jne 9f",
+    "mov r9, rsi",
+    "10:",
+    "cmp rdx, 16",
+    "je 11f",
+    "cmp rdx, 144",
+    "jne 9f",
+    "11:",
+    // This is a local store, deliberately NOT a recoverable guest-access PC.
+    "mov byte ptr [r8], 0",
+    "mov rax, rdx",
+    "dec rax",
+    "add rax, r9",
+    "jc 9f",
+    "mov r10, r9",
+    "xor r10, r8",
+    "xor rax, r8",
+    "or rax, r10",
+    "shr rax, 12",
+    "jnz 9f",
+    // Exclude the anchor byte itself; other local-storage non-overlap remains
+    // part of the existing unsafe ABI contract. No guest reference is created.
+    "mov rax, r8",
+    "sub rax, r9",
+    "cmp rax, rdx",
+    "jb 9f",
+    // The proven lengths are exactly one or nine16-byte chunks. SSE2 is part
+    // of the x86_64 ABI; XMM0 is volatile and MOVDQU performs no FP arithmetic.
+    // AC was checked before the region. Local accesses remain unguarded, while
+    // each guest direction has a distinct exact recovery instruction.
+    "mov rcx, rdx",
+    "cmp qword ptr [rsp + 32], 0",
+    "je 13f",
+    "jmp 14f",
+    "9:",
     // Raw Linux rt_sigprocmask(SIG_BLOCK, NULL, &mask, 8): query only.
     "xor edi, edi",
     "xor esi, esi",
@@ -127,6 +196,24 @@ global_asm!(
     "add rdi, 4",
     "sub rcx, 4",
     "jnz 8b",
+    "jmp 5f",
+    "13:",
+    "movdqu xmm0, xmmword ptr [rsi]",
+    "{simd_write}:",
+    "movdqu xmmword ptr [rdi], xmm0",
+    "add rsi, 16",
+    "add rdi, 16",
+    "sub rcx, 16",
+    "jnz 13b",
+    "jmp 5f",
+    "14:",
+    "{simd_read}:",
+    "movdqu xmm0, xmmword ptr [rsi]",
+    "movdqu xmmword ptr [rdi], xmm0",
+    "add rsi, 16",
+    "add rdi, 16",
+    "sub rcx, 16",
+    "jnz 14b",
     "5:",
     "xor eax, eax",
     "jmp {end}",
@@ -139,17 +226,20 @@ global_asm!(
     "add rsp, 40",
     "ret",
     entry = sym dearust_copy_guarded,
+    stack_entry = sym dearust_copy_guarded_stack,
     begin = sym dearust_copy_region_begin,
     end = sym dearust_copy_region_end,
     read = sym dearust_copy_guest_read,
     binary_read = sym dearust_copy_guest_binary_read,
     write = sym dearust_copy_guest_write,
+    simd_read = sym dearust_copy_guest_simd_read,
+    simd_write = sym dearust_copy_guest_simd_write,
     error = sym dearust_copy_error,
     fallback = sym dearust_copy_fallback,
 );
 
 /// Return a recovery PC for the existing Linux signal bridge, or zero to retain
-/// ordinary dispatch. Positive-code SIGSEGV/SIGBUS are consumed only at the three
+/// ordinary dispatch. Positive-code SIGSEGV/SIGBUS are consumed only at the five
 /// exact guest-access instructions. Every other signal within the region aborts
 /// the optimization before ordinary dispatch, closing asynchronous mask/fork
 /// changes between the query and the copy. Stubs preserve the interrupted stack.
@@ -159,8 +249,10 @@ pub extern "C" fn dearust_copy_signal_fixup(pc: usize, signal: i32, code: i32) -
     let read = core::ptr::addr_of!(dearust_copy_guest_read) as usize;
     let write = core::ptr::addr_of!(dearust_copy_guest_write) as usize;
     let binary_read = core::ptr::addr_of!(dearust_copy_guest_binary_read) as usize;
+    let simd_read = core::ptr::addr_of!(dearust_copy_guest_simd_read) as usize;
+    let simd_write = core::ptr::addr_of!(dearust_copy_guest_simd_write) as usize;
     if synchronous_fault {
-        if pc == read || pc == write || pc == binary_read {
+        if pc == read || pc == write || pc == binary_read || pc == simd_read || pc == simd_write {
             core::ptr::addr_of!(dearust_copy_error) as usize
         } else {
             0
@@ -204,7 +296,14 @@ pub(super) unsafe fn copy_output(
     }
     // SAFETY: caller guarantees the local input; guest stores are guarded at
     // their exact instruction and partial output retains EFAULT semantics.
-    match unsafe { dearust_copy_guarded(output.cast(), input, length, 0) } {
+    match unsafe {
+        if matches!(length, 16 | 144) {
+            let mut anchor = 0_u8;
+            dearust_copy_guarded_stack(output.cast(), input, length, 0, &mut anchor)
+        } else {
+            dearust_copy_guarded(output.cast(), input, length, 0)
+        }
+    } {
         -4096 => None,
         0 => Some(Ok(())),
         error => Some(Err(error)),
@@ -224,7 +323,14 @@ pub(super) unsafe fn copy_input(
     }
     // SAFETY: caller guarantees live initialized local output, while binary
     // guest loads have their own exact recovery PC. No NUL scanning occurs.
-    match unsafe { dearust_copy_guarded(output, input.cast(), length, 2) } {
+    match unsafe {
+        if matches!(length, 16 | 144) {
+            let mut anchor = 0_u8;
+            dearust_copy_guarded_stack(output, input.cast(), length, 2, &mut anchor)
+        } else {
+            dearust_copy_guarded(output, input.cast(), length, 2)
+        }
+    } {
         -4096 => None,
         0 => Some(Ok(())),
         error => Some(Err(error)),
@@ -246,5 +352,14 @@ mod tests {
         assert_eq!(dearust_copy_signal_fixup(input + 2, 11, 1), 0);
         assert_eq!(dearust_copy_signal_fixup(input, 10, 0), fallback);
         assert_eq!(dearust_copy_signal_fixup(input, 11, 0), fallback);
+        let simd_input = core::ptr::addr_of!(dearust_copy_guest_simd_read) as usize;
+        let simd_output = core::ptr::addr_of!(dearust_copy_guest_simd_write) as usize;
+        for pc in [simd_input, simd_output] {
+            assert_eq!(dearust_copy_signal_fixup(pc, 11, 1), error);
+            assert_eq!(dearust_copy_signal_fixup(pc, 7, 2), error);
+            assert_eq!(dearust_copy_signal_fixup(pc, 10, 0), fallback);
+        }
+        assert_eq!(dearust_copy_signal_fixup(simd_input + 4, 11, 1), 0);
+        assert_eq!(dearust_copy_signal_fixup(simd_output - 4, 11, 1), 0);
     }
 }

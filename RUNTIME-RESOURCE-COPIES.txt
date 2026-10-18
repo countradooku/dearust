@@ -1,0 +1,87 @@
+Resource fixed-copy optimization; resource subsystem remains UNFINISHED
+=======================================================================
+
+The default runtime now proves eligible16/144-byte fixed copies safe through
+a continuously live mutable local anchor, then copies with exact SSE2 chunks.
+See crates/dearust-path/SAFETY-MEMORY.txt for the ownership/page proof, exact
+guest PCs and retained negative-path checks. No guest address becomes a Rust
+reference. The optimization does not cache mappings, masks or process identity.
+There are45 private paths.o globals; process-ids.o retains its13 C globals and
+is byte-identical to the preceding resource ABI batch on both supported targets.
+The public/import sets and unchanged original i386 full-link slice are preserved.
+
+This is not completion of the resource subsystem. Its production resource ABI
+still uses the previous Linux-backed conversion and EOVERFLOW containment.
+The separate resource_policy/resource_view modules and owned server/loader
+builders are integration work, not the policy used in these measurements.
+Full unsigned-limit ownership, XNU physical enforcement and generic CPU costs
+remain independently open. No new source-port or retired-target count is claimed.
+
+Fresh exact C comparisons, current production objects
+------------------------------------------------------
+Native:21 alternating fresh processes per variant/layout,100000 three-call
+rounds per process, pinned CPU. Resource copy adapters are the actual production
+paths.o; C sources and headers are the pinned original with raw syscall adapter.
+
+  layout/workload       C ns/round   Rust ns/round   median change
+  stack CORE unchanged   1029.631     1039.896       +1.00%
+  stack CORE alternates  1033.351     1054.048       +2.00%
+  heap                   1031.266     1739.230       +68.65%
+  cross-page             1040.401     1736.071       +66.87%
+
+The changing workload alternates the owned child's CORE soft limit0/1, keeping
+its hard limit; it is not a skipped no-op setter. Its Rust upper quartile remains
+about1714ns, reflecting slower process samples. Anchor eligibility was not traced
+in the timed cohorts, so no eligibility percentage is claimed. Heap/cross-page
+CPU and tails remain material regressions. Forced kernel-copy distributions are
+also retained, about4–5 times C; no fallback performance gate is declared closed.
+Native current RSS/private dirty and all outliers remain in the raw records.
+ru_maxrss inherited from the Python launcher is not used as process-growth proof.
+
+Actual Darling guest:42 samples/variant, alternating kernel order,21x10000 rounds
+per guest after100 warmups. Exact original C entries/common header use matching
+compiler flags; the paired filesystem server and surrounding runtime are the
+same for both variants. This is not a pristine whole-Darling comparison.
+CPU median1.0590 ->1.0782us per three-call round (+1.813%), with overlapping
+quartiles. Twenty latency/memory processes per variant report median p99 2->2us;
+private dirty3512->3508KiB is one-page variation, not a memory reduction claim.
+First samples follow runtime startup and warmups; they are not process-cold
+startup latency. No universal speedup or all-buffer CPU completion is claimed.
+
+Validation
+------------
+202 ordinary Rust tests,11 compile-fail checks,35 Python checks, strict fmt and
+Clippy, all explicit pinned differential/Darwin ABI gates pass. Native/Darwin
+staging repeats byte-identically. Both full links preserve public/import sets
+and original i386 bytes. Native guarded copies pass plain and C ASan/UBSan with
+the signal-runtime sanitizer settings documented in SAFETY-MEMORY.txt. Native
+fixture/assembly are independently reviewed; Rust/assembly are not instrumented.
+
+Actual guests pass resource ABI/fault/pressure/waited-child checks, three signal/
+fork/RPC probes,30 retained regressions, filesystem checks,29 application cases
+(28 strict plus one previously established timestamp normalization),16 utilities
+and three selected GUI applications. TextEditor input is visually checked; the
+hidden GUI helper/display are cleaned up. Original C defect observations remain
+failures in comparative reports; wrapper exit1 is not relabeled a global pass.
+Installed kernel/server/loader, reference sources/builds and prior paired server
+hashes remain unchanged. Owned prefixes are separate from existing user prefixes.
+
+Evidence and reproduction
+--------------------------
+runtime-resource-copies-verification.json indexes full raw reports in
+work/resources-complete/{default-final-validation,default-benchmark,
+native-final-stack,native-final-heap,native-final-crosspage,
+native-final-changing-core,copy-design}. Earlier failed/stale-stage diagnostics
+remain retained. Cargo stages the default runtime normally; no owner candidate
+is activated by cargo xtask runtime.
+
+    cargo xtask check
+    cargo test --workspace --offline --locked -- --ignored
+    python3 -m unittest discover -s tools -p 'test_*.py' -v
+    python3 tools/benchmark_resources.py --source /exact/pinned/source \
+      --runtime /owned/native --output /owned/heap --buffer-layout heap
+    python3 tools/benchmark_resources.py --source /exact/pinned/source \
+      --runtime /owned/native --output /owned/changing --change-core
+
+Run a fresh output directory for each variant/layout. Preserve all strong
+signal/fork/RPC/vchroot/TLS bridges when linking, as in RUNTIME-RESOURCES.txt.

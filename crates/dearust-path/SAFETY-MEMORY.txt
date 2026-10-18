@@ -11,8 +11,10 @@ assembly copy in abi/guarded.rs, integrated with the existing Darling Linux
 signal entries; it does not replace process-wide handlers for individual calls.
 The runtime owns these entries. Native libraries must preserve the installed
 Linux signal hooks, as required by Darling's signal/RPC machinery generally.
-Native code may change signal masks: the copy queries the actual kernel mask on
-EVERY invocation. No cached mask, PID, mapping, or address-range proof is used.
+Native code may change signal masks: potentially faulting copies query the
+actual kernel mask on every invocation. The exact16/144-byte same-page proof
+below can establish that a fixed copy cannot fault independently of live local
+storage. No cached signal mask, PID or mapping is used.
 
 The leaf uses volatile registers and one forty-byte stack allocation. Every PC
 in its recovery region has exactly that frame. Mach-O alternate-entry labels
@@ -32,12 +34,14 @@ guest-load PC is recoverable. Metadata output uses bounded four-byte stores from
 initialized local storage, with one recoverable guest-store PC; supported120/144
 byte layouts are multiples of four. Nonmultiples of four choose the fallback.
 A third exact guest-load PC supports fixed binary input without NUL scanning.
-Positive-code synchronous SIGSEGV/SIGBUS at those exact three PCs redirects to
+Two further exact SIMD guest PCs support the proven fixed-copy path below.
+Positive-code synchronous SIGSEGV/SIGBUS at those exact five PCs redirects to
 EFAULT. Synchronous faults elsewhere retain ordinary dispatch. Other signals
 inside the region redirect to a retry stub BEFORE ordinary signal/RPC delivery;
 a handler cannot fork or change masks and then resume an obsolete copy proof.
 No unwinding, Rust longjmp, mapping preflight or unguarded guest access is used.
-Concurrent unmapping/reprotection therefore causes a contained access fault.
+Guest-only concurrent unmapping/reprotection causes a contained access fault;
+the runtime's own live local storage must remain valid throughout every call.
 
 Copied original sigexc.c and sigaction.c units install the early PC hook in all
 three supported entry paths: sigexc_handler, sigrt_handler, and the direct
@@ -137,3 +141,38 @@ lengths0/1/3/4/8/16/144, embedded zeros, protected/readonly/cross-page/unaligned
 addresses, both boundary modes, signals and fork. These helpers introduce no
 unsafe fallback. Their current CPU cost remains a visible unfinished resource
 completion gate; see RUNTIME-RESOURCES.txt.
+
+Live mutable local anchor and exact SIMD copies
+-----------------------------------------------
+The Rust fixed-copy wrappers hold a genuine initialized &mut u8 local through
+an opaque five-argument assembly call. This is not a raw-pointer cast. The old
+four-argument entry remains and supplies no anchor. The positive path accepts
+only mode0/2, exact lengths16/144, non-overflowing complete ranges, and requires
+both ranges to occupy the same x86 4KiB page as the live mutable local. Neither
+range may overlap the anchor byte; all existing local/guest alias obligations
+still apply. The readiness and RFLAGS.AC checks precede this path.
+
+The owned local must stay writable and initialized for the whole foreign call,
+as required for all runtime local storage. With uniform page permissions and
+PKRU per page, a same-page guest access cannot independently fault while that
+local remains valid. A Rust reference does not pin a VMA: concurrent mutation of
+the page containing live runtime-owned storage violates that existing local
+contract. This proof grants no Rust provenance over the guest range and does
+not use CALL, RET, a past successful write, mapping queries or a mask mirror as
+evidence of continued writability. Heap/different-page/cross-page, missing-anchor,
+malformed and pathname cases retain the current-mask query and kernel fallback.
+
+The positive path uses mandatory x86_64 SSE2 and volatile XMM0, one or nine
+unaligned16-byte chunks, with no overread or floating-point arithmetic. Its
+guest load and guest store have separate recoverable PCs; local counterparts
+are not recoverable. All paths retain the40-byte frame and Mach-O atom. An
+asynchronous signal anywhere in the region invalidates the attempt before
+ordinary handler dispatch. Positive synchronous faults still have exact-PC
+defense; no safety claim depends on silently ignoring an unexpected fault.
+
+Tests deny rt_sigprocmask with owned seccomp while blocking BUS/SEGV, proving
+that eligible copies skip the query and negative cases do not. They retain
+ordinary fault, signal, handler-fork, AC, protection and churn cases. C sanitizer
+execution uses ASAN_OPTIONS=detect_leaks=0:handle_segv=0:handle_sigbus=0 so ASan
+does not replace the signal runtime under test. Rust/assembly are uninstrumented.
+See RUNTIME-RESOURCE-COPIES.txt for the independent review and measured scope.

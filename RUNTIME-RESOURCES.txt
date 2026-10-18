@@ -5,6 +5,8 @@ Project owner: @countradooku. AI assistance: OpenAI Codex.
 Completion status
 ------------------
 This is validated partial migration work, not a completed resource subsystem.
+The later fixed-copy measurements and ownership proof are recorded in
+RUNTIME-RESOURCE-COPIES.txt; the historical final2 timings below remain retained.
 The full unsigned Darwin limit domain cannot be represented by the current
 stateless Linux backing, and measured CPU costs exceed original C materially.
 The completion gates remain OPEN. Passing functional tests does not waive them.
