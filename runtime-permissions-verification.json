@@ -1,0 +1,422 @@
+{
+  "date": "2026-10-18",
+  "base_commit": "590c886",
+  "project_owner": "@countradooku",
+  "ai_assistance": "OpenAI Codex",
+  "scope": "Directory creation, access and permission syscall Rust slices; partial x86_64 migration.",
+  "checks": {
+    "rust_tests": 131,
+    "python_tests": 29,
+    "formatting": "passed",
+    "strict_clippy": "passed",
+    "explicit_darwin_artifact_check": "passed",
+    "independent_review": "No actionable issue; reviewer reran all three native fixtures and six unit tests, including adapters with ASan/UBSan (Rust objects not instrumented).",
+    "source_target_inventory_repeat": "byte-identical"
+  },
+  "sources": {
+    "crates/dearust-mkdirat/Cargo.toml": "92c5f316c470af97c579d12f51c64ec86c39c1e1b894023a2e3ca0599731afae",
+    "crates/dearust-mkdirat/SAFETY.txt": "34858c8c38122f834e7a9178a6b094051be84ef5b3adbc013ff685caf25864ee",
+    "crates/dearust-mkdirat/src/abi.rs": "cd01792c5c0a3f746b221c77a86d2d53a5e90ba9e9538ac3229d72517fa68abb",
+    "crates/dearust-mkdirat/src/lib.rs": "fef0e958b48ee50d91c4eb5af741bc17c9dc667a60ba63097267add3578a095a",
+    "crates/dearust-mkdirat/src/path.rs": "eeddfb6fa6f5916d413fec94761235823e12271b081ac93e4627f3fe53905f3b",
+    "tools/fixtures/mkdirat-native.c": "5ed725c47a2fceb168d1031a16721de24567de035971bf8283b1954adf04cb93",
+    "tools/fixtures/mkdirat-regression.c": "33f97e190a5c97587e11b224d248e47b073e0c9f31ea5a6b4beee11bf7d8fcbe",
+    "crates/dearust-faccessat/Cargo.toml": "330cde8e5f8eaf9a19aa3fba48c766bbd6f872f50ee89e5be63f5dcb66b1e5d2",
+    "crates/dearust-faccessat/SAFETY.txt": "e5a279e2b9cb588f1bf7c0a11805fdf7782013a944877304af3eb187c79a7989",
+    "crates/dearust-faccessat/src/abi.rs": "7940c21448ea4804cf90424428e73de16cb199b2f6bd8891f34c7f7991e6ba2a",
+    "crates/dearust-faccessat/src/lib.rs": "8da8c1d47c291c6b3eb7afeb7003f577edd216f260696920fb2433890c84f708",
+    "crates/dearust-faccessat/src/path.rs": "eeddfb6fa6f5916d413fec94761235823e12271b081ac93e4627f3fe53905f3b",
+    "tools/fixtures/faccessat-native.c": "c0771b20d80b730dd77121b89915d2b34dd0c6c8c9231f33af46f0a1eaaa524f",
+    "tools/fixtures/faccessat-regression.c": "80e32fbc535029047fc3fc6fd571da0dd1d303784970129f59f329455340e8d6",
+    "crates/dearust-fchmodat/Cargo.toml": "b79a14a6ab456dd435a149fbd7e32fed874adb94d4cc76850a5363a6a0e22c2c",
+    "crates/dearust-fchmodat/SAFETY.txt": "8461bb3f201611e7f0fcc47eca66c8a71999f6bfcf5777434659eff8d2ccba9d",
+    "crates/dearust-fchmodat/src/abi.rs": "a8522f52e21365870cdad9c69c3e5da69abaca5f4e853a7b5f404440267beb71",
+    "crates/dearust-fchmodat/src/lib.rs": "788792f7b33dfdcae4de77e64d937a9095ce65c4d2befd8e81d31a88a53b4238",
+    "crates/dearust-fchmodat/src/path.rs": "eeddfb6fa6f5916d413fec94761235823e12271b081ac93e4627f3fe53905f3b",
+    "tools/fixtures/fchmodat-native.c": "8937febeff12069eaaafb5b362b4fada5b2adf9a193d9c65c3058dd670dc32bd",
+    "tools/fixtures/fchmodat-regression.c": "82c48df4a17a00a2eec0364ef1670b18c9c55cdf1bf4a9c7892274ff6df69236",
+    "tools/benchmark_fileops.py": "032d597ffafdd1c31946b4e6ee96b7af3c96aae393ce08c9f0d2b612e21e9857",
+    "tools/fixtures/permissions-bench.c": "a6337b17257c8c24d711bc669cd71e2588aaaa56cfec5b5179de7e53130497b0",
+    "tools/fixtures/permissions-guest-bench.c": "cba23a114e8715373ffedd5a6414dec593802afa3e9f153096e6d37420b865ee",
+    "tools/inspect_path_frames.py": "09e7b75c3aca582862c61ecaecdfa65ce2df1dfd8f8ab79277452f4c668ccf0d"
+  },
+  "evidence": {
+    "apps.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/apps.json",
+      "sha256": "4745074e495febe46f7742c29b66da33b239cf91980d867db9f2f4b9a7ddd37a"
+    },
+    "utilities.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/utilities.json",
+      "sha256": "fac69cb34952bc72becadb9af9c33c0ba31fa921b3f1e7403284bdd7a3c052b4"
+    },
+    "probes.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/probes.json",
+      "sha256": "de59de56aadc0dc8a9ac5999e83d5164997d362e617db1ee8cbdd2c8c8e6ef67"
+    },
+    "gui.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/gui.json",
+      "sha256": "689ee91b4c42d2954176a2895c4c72da1578be4d3ef37f3e68cce9c73719dc7c"
+    },
+    "gui-cleanup.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/gui-cleanup.json",
+      "sha256": "6ba949dfbd1becd541c0db78a1279c5c6031833c66ef68c283fcf6010642a822"
+    },
+    "matching-link.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/matching-link.json",
+      "sha256": "a1e08df24117c641e1b71e219465f83dce6d943671640aa6183e46d6af34baf1"
+    },
+    "pinned-link.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/pinned-link.json",
+      "sha256": "8522870be12fb66cc807c0e3c99a73b26c97560367a270552dcbe90841515fcd"
+    },
+    "probe-build.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/probe-build.json",
+      "sha256": "b64474618c6212aa518a63d8e868fa781446f57c0c705eb2063efecce959ea4a"
+    },
+    "native-benchmark.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/native-benchmark.json",
+      "sha256": "40fc6bbd702500c9fe1758881712a03a35f16451e3130c99342249dc82d70876"
+    },
+    "guest-benchmark.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/guest-benchmark.json",
+      "sha256": "1c7078e3ba2c8a98d2361d56de5d82b4b575e98a7870f3e2cfd064ad353abff4"
+    },
+    "guest-forward.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/guest-forward.json",
+      "sha256": "d24e852c6807e1cfed0d850d9afe3da7e4410fe8e4ff6787a82136a5e0fdf3c9"
+    },
+    "guest-reverse.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/guest-reverse.json",
+      "sha256": "413204b5d2121ae37cb88290094d528e6fc2307524d1f0d449fff08e4f5dd283"
+    },
+    "guest-benchmark-build.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/guest-benchmark-build.json",
+      "sha256": "79e4bcbdf2d11b7765ce9f47e1bc7b054494883306202682e3cd1550ea57b441"
+    },
+    "frames.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/frames.json",
+      "sha256": "cdf303377dc62200ec295858383755a263b2b04285db0aa92b57eca76af9978d"
+    },
+    "cargo-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/cargo-check.log",
+      "sha256": "54ea32f915760987cd807e8caa1eb6b80bcc9d39e5d858f153ec196fec7081e2"
+    },
+    "python-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/python-check.log",
+      "sha256": "7e1b6ebd946c8aa4e37b07911b70cd64a3179d1d7101be8e139f7c353c2f246b"
+    },
+    "darwin-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/darwin-check.log",
+      "sha256": "98999f7fa98d527254a98dca1090d347b0f097cfc144bd3260e5ad13c3982f5d"
+    },
+    "inventory-check.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/inventory-check.json",
+      "sha256": "5e732965d4771835a0aad2a9fb03cebfc1c519e3be3b5b8860bd934a1c7cba67"
+    },
+    "new-probe-preview.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/new-probe-preview.json",
+      "sha256": "0497d43b9e9c9c71176a672e86c276566bb9509faef8a014262978a7cc486f23"
+    },
+    "original-Calculator.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/original-Calculator.png",
+      "sha256": "639cdd1f0781f6e4d195109902aa43a3e9c6d6614e29a8f628912df3b6820182"
+    },
+    "original-TextEditor.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/original-TextEditor.png",
+      "sha256": "211220a7fa0094aedf00e37cee2697b6a3bcc0c74b6410c2e7c871ec908a6809"
+    },
+    "original-CGShadingCreate.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/original-CGShadingCreate.png",
+      "sha256": "213ba91b0d9454fa28d4543e022f3f5cd8482eb3c72574060c4076df07052a9d"
+    },
+    "rust-Calculator.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/rust-Calculator.png",
+      "sha256": "639cdd1f0781f6e4d195109902aa43a3e9c6d6614e29a8f628912df3b6820182"
+    },
+    "rust-TextEditor.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/rust-TextEditor.png",
+      "sha256": "211220a7fa0094aedf00e37cee2697b6a3bcc0c74b6410c2e7c871ec908a6809"
+    },
+    "rust-CGShadingCreate.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/rust-CGShadingCreate.png",
+      "sha256": "213ba91b0d9454fa28d4543e022f3f5cd8482eb3c72574060c4076df07052a9d"
+    },
+    "mkdirat-baseline.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/mkdirat-baseline.asm",
+      "sha256": "14e583f9a581b811df333b2dfb69ad64e3b30d76608469cd08d1e36d05fcf95d"
+    },
+    "mkdirat-optimized.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/mkdirat-optimized.asm",
+      "sha256": "5883137a6fcce91121a7f8e8c5cdd5a7b117ec958527d85ee98f34fe0ce799ea"
+    },
+    "faccessat-baseline.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/faccessat-baseline.asm",
+      "sha256": "ea93600f9acbb04e8c5c152fd785f115166e90f42daada2027a62df06f0dec72"
+    },
+    "faccessat-optimized.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/faccessat-optimized.asm",
+      "sha256": "8288163d5e4d433d0f4edfd9d936f13c78a140d5df7300db7d5fb7426ebd5819"
+    },
+    "fchmodat-baseline.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/fchmodat-baseline.asm",
+      "sha256": "7c157b5a40171663961873a7b2b54711a4dedeb6ddb45c7539b30b7a9eee50ce"
+    },
+    "fchmodat-optimized.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-permissions-verification/fchmodat-optimized.asm",
+      "sha256": "f625b5cb6947f2d01f7686411dd2313507b18251a394c61c5601e184e0a2bdac"
+    }
+  },
+  "suites": {
+    "apps": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 29,
+        "strict_passes": 27,
+        "normalized_passes": 28
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 29,
+        "strict_passes": 28,
+        "normalized_passes": 29
+      }
+    ],
+    "utilities": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 16,
+        "strict_passes": 14,
+        "normalized_passes": 14
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 16,
+        "strict_passes": 16,
+        "normalized_passes": 16
+      }
+    ],
+    "probes": [
+      {
+        "variant": "original",
+        "meaning": "previous Rust kernel",
+        "cases": 14,
+        "strict_passes": 11,
+        "normalized_passes": 11
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 14,
+        "strict_passes": 14,
+        "normalized_passes": 14
+      }
+    ],
+    "gui": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 3,
+        "strict_passes": 3,
+        "normalized_passes": 3
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 3,
+        "strict_passes": 3,
+        "normalized_passes": 3
+      }
+    ]
+  },
+  "gui_visual_review": "All six current captures are byte-identical to previously manually inspected fileops-next captures. Calculator screenshot shows initial19; selftest asserts42; TextEditor text and axial gradient match.",
+  "performance": {
+    "native": {
+      "original": {
+        "median_cpu_ns_per_roundtrip": 4318.015,
+        "cpu_q1_ns_per_roundtrip": 4277.0045,
+        "cpu_q3_ns_per_roundtrip": 4410.9345,
+        "median_wall_ns_per_roundtrip": 4503.526
+      },
+      "rust": {
+        "median_cpu_ns_per_roundtrip": 4371.766,
+        "cpu_q1_ns_per_roundtrip": 4341.8815,
+        "cpu_q3_ns_per_roundtrip": 4394.0095,
+        "median_wall_ns_per_roundtrip": 4669.775
+      },
+      "cpu_change_percent": 1.2448080889019497
+    },
+    "guest": {
+      "baseline": {
+        "samples": 42,
+        "median_cpu_us_per_roundtrip": 25.955,
+        "cpu_q1_us_per_roundtrip": 25.7975,
+        "cpu_q3_us_per_roundtrip": 26.1425,
+        "median_wall_us_per_roundtrip": 26.5425
+      },
+      "rust": {
+        "samples": 42,
+        "median_cpu_us_per_roundtrip": 26.5425,
+        "cpu_q1_us_per_roundtrip": 26.36,
+        "cpu_q3_us_per_roundtrip": 26.686249999999998,
+        "median_wall_us_per_roundtrip": 27.43
+      },
+      "cpu_change_percent": 2.263533037950305
+    },
+    "stack": {
+      "mkdirat": {
+        "baseline": {
+          "object_sha256": "544dc9f277edc605e744254238d48060d1e9431699b65f4fb8297d1cbf7a9794",
+          "object_bytes": 1512,
+          "max_local_stack_subtraction_bytes": 4112,
+          "imports": [
+            "atfd",
+            "errno_linux_to_bsd",
+            "linux_syscall",
+            "strcpy",
+            "vchroot_expand"
+          ]
+        },
+        "optimized": {
+          "object_sha256": "8150584df22fc0df9ba43815a74339df7c28edc610ea341cc9b594272c115670",
+          "object_bytes": 1968,
+          "max_local_stack_subtraction_bytes": 4112,
+          "imports": [
+            "atfd",
+            "linux_syscall",
+            "memset",
+            "vchroot_expand"
+          ]
+        }
+      },
+      "faccessat": {
+        "baseline": {
+          "object_sha256": "657d712349d5d60b33cad2517391c047b56098014f4bcbec5a7068044a75f4af",
+          "object_bytes": 1640,
+          "max_local_stack_subtraction_bytes": 4120,
+          "imports": [
+            "atfd",
+            "atflags_bsd_to_linux",
+            "errno_linux_to_bsd",
+            "linux_syscall",
+            "strcpy",
+            "vchroot_expand"
+          ]
+        },
+        "optimized": {
+          "object_sha256": "c43967ae12ac07ca4e319c627ecad44375a9324fe66bc94529f60b9797581bed",
+          "object_bytes": 2120,
+          "max_local_stack_subtraction_bytes": 4112,
+          "imports": [
+            "atfd",
+            "atflags_bsd_to_linux",
+            "linux_syscall",
+            "memset",
+            "vchroot_expand"
+          ]
+        }
+      },
+      "fchmodat": {
+        "baseline": {
+          "object_sha256": "bcf6be499df6470870cddd1b3398449e7812d26586ce6cc43c49bca6d87d990d",
+          "object_bytes": 2072,
+          "max_local_stack_subtraction_bytes": 4264,
+          "imports": [
+            "atfd",
+            "atflags_bsd_to_linux",
+            "errno_linux_to_bsd",
+            "linux_syscall",
+            "strcpy",
+            "vchroot_expand"
+          ]
+        },
+        "optimized": {
+          "object_sha256": "24de233eb090ea6ed0210066f1e85b4cfd7e04c8a0326179d848b87129722f4a",
+          "object_bytes": 2816,
+          "max_local_stack_subtraction_bytes": 4272,
+          "imports": [
+            "atfd",
+            "atflags_bsd_to_linux",
+            "linux_syscall",
+            "memset",
+            "vchroot_expand"
+          ]
+        }
+      }
+    },
+    "interpretation": "Native adapted CPU cost is 1.24% higher; actual guest median CPU cost is 2.26% higher. No speedup/RSS improvement claimed. No heap allocations and no extra path buffers."
+  },
+  "artifacts": {
+    "matching-final/libsystem_kernel-original.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/permissions-next/matching-final/libsystem_kernel-original.dylib",
+      "sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f"
+    },
+    "matching-final/libsystem_kernel-rust.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/permissions-next/matching-final/libsystem_kernel-rust.dylib",
+      "sha256": "4da6a22ce39a6745c2518e8f3fb964023c80fd05e692be698fdc7581190876ae"
+    },
+    "pinned-final/libsystem_kernel.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/permissions-next/pinned-final/libsystem_kernel.dylib",
+      "sha256": "76368375e269d424bc69ec6212a83d0929e1652826460600fb32479431ecebc3"
+    },
+    "final-stage/objects/mkdirat.o": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/permissions-next/final-stage/objects/mkdirat.o",
+      "sha256": "b70bdb5453b91694dd8018e7f48c0b97cf4245c9da59242051d09670583d3ac7"
+    },
+    "final-stage/objects/faccessat.o": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/permissions-next/final-stage/objects/faccessat.o",
+      "sha256": "e0412d49b5b07a43dd260913d1cc3d0470fc09854b5bea339ecdae8b2184a3bb"
+    },
+    "final-stage/objects/fchmodat.o": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/permissions-next/final-stage/objects/fchmodat.o",
+      "sha256": "b8f50a6b8fbe4734b271371f9a5504334ae6d3dda9604c64d71043eca1dc050a"
+    }
+  },
+  "source_provenance": {
+    "mkdirat": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/mkdirat.c",
+      "sha256": "56e2c93531a4b61cacc3f15ed33604ecc8ba6234c8b90f3139f4f108a33c5ef1",
+      "pinned_and_matching_files_identical": true
+    },
+    "faccessat": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/faccessat.c",
+      "sha256": "53e2fe15e1beb500351ce9bcc9b35aa7ef67eca1d458e0abf13f7002b53acf55",
+      "pinned_and_matching_files_identical": true
+    },
+    "fchmodat": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fchmodat.c",
+      "sha256": "fba44bfecd52dc80518df44816667fa9f96230b1c1f9af01df622ba775d26993",
+      "pinned_and_matching_files_identical": true
+    }
+  },
+  "installation_preserved": {
+    "/usr/local/libexec/darling/usr/lib/system/libsystem_kernel.dylib": "e473a4bcafbcc09a740ef6a82b656b18039db270b1cbed7b930e654a538aa052",
+    "/usr/local/bin/darlingserver": "6c792a7b1ef80284be0291bc5b51e71d6947193e864b332e073b7fe8f5a6bf69"
+  },
+  "migration_counts": {
+    "partial_dependency_sources": 15,
+    "pending_dependency_entries": 265788,
+    "cargo_target_slices": 7,
+    "pending_targets": 1622,
+    "retired_targets": 0
+  },
+  "limitations": [
+    "Most runtime/framework/build work remains C/C++/assembly.",
+    "Original atfd, flag conversion and virtual-root policies are retained. Legacy faccessat ignores flags at the raw Linux syscall; fchmodat retains its symlink-success no-op and metadata/chmod race.",
+    "Non-NULL invalid input pointers still require existing caller validity contracts.",
+    "Native benchmark adapts includes/TLS/vchroot; local matching C tracing raw entry is outside that comparison.",
+    "Fourteen-probe original label means previous Rust kernel; app/utility/GUI original label means original C kernel.",
+    "Known cfbridge log normalization and repaired copied CGShadingCreate nib remain explicit.",
+    "Pinned link excludes process dispatcher port; clean pinned boot and i386 Rust are unverified."
+  ],
+  "preserved_fchmodat_exports": [
+    "sys_fchmodat",
+    "do_linux_fchmodat"
+  ]
+}

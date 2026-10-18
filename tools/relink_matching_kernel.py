@@ -17,6 +17,9 @@ FORK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/process/fork
 UNLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/unlinkat.c.o'
 LINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/linkat.c.o'
 RENAMEAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/renameat.c.o'
+MKDIRAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/mkdirat.c.o'
+FACCESSAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/faccessat.c.o'
+FCHMODAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fchmodat.c.o'
 READLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/readlinkat.c.o'
 SYMLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/symlinkat.c.o'
 FSTATAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstatat.c.o'
@@ -93,6 +96,18 @@ def integrate(args):
         if inputs.count(RENAMEAT) != 1 or not args.renameat_object.is_file():
             raise ValueError('missing unique renameat input')
         replacements[RENAMEAT] = args.renameat_object.resolve(strict=True)
+    if args.mkdirat_object:
+        if inputs.count(MKDIRAT) != 1 or not args.mkdirat_object.is_file():
+            raise ValueError('missing unique mkdirat input')
+        replacements[MKDIRAT] = args.mkdirat_object.resolve(strict=True)
+    if args.faccessat_object:
+        if inputs.count(FACCESSAT) != 1 or not args.faccessat_object.is_file():
+            raise ValueError('missing unique faccessat input')
+        replacements[FACCESSAT] = args.faccessat_object.resolve(strict=True)
+    if args.fchmodat_object:
+        if inputs.count(FCHMODAT) != 1 or not args.fchmodat_object.is_file():
+            raise ValueError('missing unique fchmodat input')
+        replacements[FCHMODAT] = args.fchmodat_object.resolve(strict=True)
     if args.readlinkat_object:
         if inputs.count(READLINKAT) != 1 or not args.readlinkat_object.is_file():
             raise ValueError('missing unique readlinkat input')
@@ -180,6 +195,13 @@ def integrate(args):
                 wanted['_sys_linkat'] = args.linkat_object.name
             if args.renameat_object:
                 wanted['_sys_renameat'] = args.renameat_object.name
+            if args.mkdirat_object:
+                wanted['_sys_mkdirat'] = args.mkdirat_object.name
+            if args.faccessat_object:
+                wanted['_sys_faccessat'] = args.faccessat_object.name
+            if args.fchmodat_object:
+                wanted['_sys_fchmodat'] = args.fchmodat_object.name
+                wanted['_do_linux_fchmodat'] = args.fchmodat_object.name
             if args.readlinkat_object:
                 wanted['_sys_readlinkat'] = args.readlinkat_object.name
             if args.symlinkat_object:
@@ -215,6 +237,9 @@ def main():
     parser.add_argument('--unlinkat-object', type=Path)
     parser.add_argument('--linkat-object', type=Path)
     parser.add_argument('--renameat-object', type=Path)
+    parser.add_argument('--mkdirat-object', type=Path)
+    parser.add_argument('--faccessat-object', type=Path)
+    parser.add_argument('--fchmodat-object', type=Path)
     parser.add_argument('--readlinkat-object', type=Path)
     parser.add_argument('--symlinkat-object', type=Path)
     parser.add_argument('--fstatat-object', type=Path)

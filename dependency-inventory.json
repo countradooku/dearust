@@ -10,8 +10,8 @@
     },
     "inventoried_entries": 265803,
     "entries_by_status": {
-      "partial": 12,
-      "pending": 265791
+      "partial": 15,
+      "pending": 265788
     },
     "license_candidates": 341
   },
@@ -2326907,7 +2326907,10 @@
           "object_id": "e16d09fae2c55d583247653e862e55a0f572caf2",
           "size": 919,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-mkdirat/src/lib.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/mkfifo.c",
@@ -2327141,7 +2327144,10 @@
           "object_id": "6eb2da8a2646ac4d9a8c12cb8b4988a679ad8e14",
           "size": 1037,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-faccessat/src/lib.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fchdir.c",
@@ -2327186,7 +2327192,10 @@
           "object_id": "ae7d59164c76d93d09082ee05b144b479dd48370",
           "size": 2263,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-fchmodat/src/lib.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fchown.c",

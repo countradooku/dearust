@@ -1,0 +1,103 @@
+Dearust continuation: directory creation, access and permission wrappers
+=====================================================================
+
+Project owner: @countradooku. AI assistance: OpenAI Codex. Migration remains
+INCOMPLETE. Exact evidence is in runtime-permissions-verification.json.
+
+Implemented runtime slices
+--------------------------
+New no_std crates dearust-mkdirat, dearust-faccessat and dearust-fchmodat replace
+three x86_64 syscall wrappers. Both fchmodat symbols, sys_fchmodat and the
+externally linked do_linux_fchmodat helper, retain their original ABIs. Original
+atfd/TLS, vchroot and shared flag helpers remain C. The pinned and matching C
+sources are byte-identical. Source paths, hashes and licenses remain recorded.
+
+All three wrappers copy paths directly into one initialized final 4096-byte ABI
+buffer. There is no heap allocation or returned-array intermediate. NULL paths
+return EFAULT; unterminated paths return ENAMETOOLONG instead of overflowing.
+mkdirat already checked NULL in C; faccessat did not. Non-NULL invalid pointers
+retain the existing in-process caller validity contract. Unsafe pointer reads,
+exports and foreign calls are isolated and documented in each SAFETY.txt.
+
+mkdirat preserves unsigned mode width and raw syscall 258. faccessat preserves
+signed mode, final-link expansion policy and the legacy raw syscall 269, whose
+fourth flags slot Linux ignores. This is not a faccessat2/credentials-policy
+migration. Both permission wrappers expand paths before validating BSD flags.
+
+fchmodat preserves syscall 268 and the nonzero-flags metadata check through
+newfstatat 262, including its historical symlink-success no-op. Its helper now
+returns the real negative Linux errno when that check fails. Original C returned
+-1 for every such failure, incorrectly exposing EPERM, including for missing
+paths. The wrapper converts the errno exactly once. The inherited metadata/check
+then chmod race remains; no atomic no-follow guarantee is claimed. The helper's
+144-byte Linux stat layout, eight-byte alignment and mode offset 24 are asserted.
+
+CPU and memory evidence
+-----------------------
+No allocator or panic runtime imports are introduced. Generated native maximum
+local stack subtraction (register pushes/callees excluded):
+                       original C       Rust
+    mkdirat               4112 B       4112 B
+    faccessat             4120 B       4112 B
+    fchmodat              4264 B       4272 B
+
+The fchmodat metadata branch needs stat storage in addition to the single path
+buffer. These measurements do not establish process-RSS changes.
+
+Native mkdirat -> fchmodat -> faccessat -> unlinkat roundtrip CPU medians were
+4318.015 -> 4371.766 ns: 1.24% higher for Rust. Twenty-one alternating samples,
+2000 rounds/sample, one eligible CPU; explicit native vchroot/TLS/include
+adapters, original sources, quartiles and raw samples are preserved. The native
+comparison excludes actual virtual-root/TLS and the matching C tracing wrapper.
+
+The actual matching guest workload, previous/new/new/previous process order,
+42 samples per variant, 200 rounds/sample, measured CPU 25.955 -> 26.5425 us/round:
+2.26% higher for Rust. CPU quartile ranges were 25.7975..26.1425 and 26.36..26.68625;
+wall medians 26.5425 -> 27.43 us. This workload shows a modest CPU regression.
+No guest speedup, general application performance or RSS improvement is claimed.
+Bounded checks and initialized final storage remain explicit correctness costs.
+Existing RUNTIME-PERFORMANCE.txt measurements are separate historical evidence.
+
+Verification
+------------
+131 Rust tests, 29 Python tests, strict Clippy, formatting and the explicit Darwin
+object ABI/staging test pass. Independent review found no actionable issue and
+reran six unit tests plus three native fixtures; adapters also passed ASan/UBSan
+(the Rust objects themselves were not sanitizer-instrumented).
+
+All fourteen guest regression probes pass. The three new probes reproduce
+previous-build failures: mkdirat long-path handling, faccessat NULL crash and
+fchmodat wrong errno. Tests cover dirfd versus cwd, thread-local cwd, umask/modes,
+symlink and error policies, unrelated-file preservation and bounded paths.
+Sixteen utility workloads, the 29-app suite (28 exact plus explicit cfbridge log
+normalization), and three GUI samples pass within their documented limits.
+
+Matching final link preserves 1370 public definitions/40 imports. Pinned link
+preserves 1362 definitions/18 imports and original i386 bytes. Process dispatcher
+integration remains matching-only; pinned runtime boot is still unverified.
+All executions use owned prefixes and the isolated Rust-lockset server. Installed
+binaries and the existing user prefix remain unchanged; hidden nested X is shut
+down. GUI fixtures retain the repaired copied CGShadingCreate nib boundary.
+
+Reproduction and scope
+----------------------
+Follow RUNTIME-FILEOPS.txt, adding these relinker inputs:
+
+    --mkdirat-object "$WORK/runtime/objects/mkdirat.o"
+    --faccessat-object "$WORK/runtime/objects/faccessat.o"
+    --fchmodat-object "$WORK/runtime/objects/fchmodat.o"
+
+Use corresponding matching/pinned fork/TLS bridges. Native staging tests execute
+all three new C fixtures. Build the new *at-regression.c fixtures and
+permissions-guest-bench.c with build_runtime_probes.py, supplying expected stdout
+independently. Guest timings are on stderr. Native measurement:
+
+    python3 tools/benchmark_fileops.py --family permissions --source EXACT_PIN_SOURCE --runtime NATIVE_STAGE --output NEW_DIRECTORY
+    python3 tools/inspect_path_frames.py --baseline ORIGINAL_NATIVE_STAGE --optimized RUST_NATIVE_STAGE --output NEW_DIRECTORY --names mkdirat faccessat fchmodat
+
+Latest artifacts: dearust-continuation/work/permissions-next/
+{final-stage,matching-final,pinned-final}. Fifteen dependency source slices are
+partial, 265788 entries remain pending; seven Cargo target slices, 1622 pending
+targets, zero retired. Most runtime/framework/build implementation remains
+C/C++/assembly. i386 Rust and arbitrary commercial app compatibility remain
+unverified.

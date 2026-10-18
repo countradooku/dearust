@@ -1,0 +1,31 @@
+fchmodat: partial x86_64 runtime source migration
+================================================
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fchmodat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later.
+Both sys_fchmodat (Darwin flags/errno) and do_linux_fchmodat (Linux flags/errno,
+C int result) remain exported. Original atfd, vchroot expansion, then flag
+conversion order and unknown/ignored flag policy remain. Nonzero helper flags
+perform Linux newfstatat with EMPTY_PATH|SYMLINK_NOFOLLOW, then return success
+for symlinks without changing their targets. Other files call Linux fchmodat.
+This preserves the original check/use race and historical flag behavior; it does
+not introduce fchmodat2 or claim atomic symlink-safe permission changes.
+
+Confirmed defect fixed: original helper collapses every stat failure into -1,
+which wrapper conversion exposes as EPERM. Actual negative Linux error now
+propagates from helper and is converted exactly once at the Darwin boundary.
+NULL wrapper paths return Darwin EFAULT; nonterminated paths bounded at 4096
+bytes return Darwin ENAMETOOLONG rather than overflowing/crashing.
+
+No heap, allocator, standard library, panic handler, or Rust OS abstraction is
+linked. Safe bounded copying writes in place, stops at NUL and accepts arbitrary
+byte paths. Wrapper non-NULL pointers must be readable through their terminator
+or 4096 bytes, whichever is shorter; invalid non-NULL memory remains a wider
+emulation-boundary limitation. Exported helper passes its path directly to Linux,
+including NULL, for kernel validation; caller must keep pathname storage alive
+through the syscall. LinuxStat is 144 bytes, aligned eight, with mode at offset24;
+initialized writable storage is passed to raw syscall 262. Mode interpretation
+occurs only on success. Raw syscall 268 retains original int mode extension.
+Foreign calls must not unwind into Rust. Original C handles virtual-root expansion,
+flag conversion and descriptor/per-thread TLS resolution; this remains partial.
+Native recording/real Linux fixture and actual guest regression separately check
+syscall arguments, errors, file modes, nofollow no-op and bounded paths.

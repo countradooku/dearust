@@ -61,6 +61,9 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                         | "dearust-unlinkat"
                         | "dearust-linkat"
                         | "dearust-renameat"
+                        | "dearust-mkdirat"
+                        | "dearust-faccessat"
+                        | "dearust-fchmodat"
                 )
             {
                 return Err(invalid("unknown runtime private-symbol policy"));
@@ -82,6 +85,9 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                             "dearust-unlinkat" => vec!["sys_unlinkat"],
                             "dearust-linkat" => vec!["sys_linkat"],
                             "dearust-renameat" => vec!["sys_renameat"],
+                            "dearust-mkdirat" => vec!["sys_mkdirat"],
+                            "dearust-faccessat" => vec!["sys_faccessat"],
+                            "dearust-fchmodat" => vec!["sys_fchmodat", "do_linux_fchmodat"],
                             "dearust-readlinkat" => vec!["sys_readlinkat"],
                             "dearust-symlinkat" => vec!["sys_symlinkat"],
                             "dearust-fstatat" => vec!["sys_fstatat", "sys_fstatat64"],

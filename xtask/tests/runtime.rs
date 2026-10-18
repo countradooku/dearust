@@ -49,6 +49,9 @@ fn check(triple: &str, label: &str) {
         "unlinkat",
         "linkat",
         "renameat",
+        "mkdirat",
+        "faccessat",
+        "fchmodat",
     ];
     let initial: Vec<_> = names
         .iter()
@@ -89,6 +92,12 @@ fn check(triple: &str, label: &str) {
             "unlinkat" => vec![format!("{prefix}sys_unlinkat")],
             "linkat" => vec![format!("{prefix}sys_linkat")],
             "renameat" => vec![format!("{prefix}sys_renameat")],
+            "mkdirat" => vec![format!("{prefix}sys_mkdirat")],
+            "faccessat" => vec![format!("{prefix}sys_faccessat")],
+            "fchmodat" => ["sys_fchmodat", "do_linux_fchmodat"]
+                .iter()
+                .map(|s| format!("{prefix}{s}"))
+                .collect(),
             "readlinkat" => vec![format!("{prefix}sys_readlinkat")],
             "symlinkat" => vec![format!("{prefix}sys_symlinkat")],
             "process" => vec![format!("{prefix}sys_proc_info")],
@@ -155,7 +164,8 @@ fn check(triple: &str, label: &str) {
                 imports.sort();
                 imports
             }
-            "symlinkat" | "readlinkat" | "unlinkat" | "linkat" | "renameat" => {
+            "symlinkat" | "readlinkat" | "unlinkat" | "linkat" | "renameat" | "mkdirat"
+            | "faccessat" | "fchmodat" => {
                 let mut imports = [
                     "atfd",
                     "vchroot_expand",
@@ -169,7 +179,7 @@ fn check(triple: &str, label: &str) {
                 .iter()
                 .map(|s| format!("{prefix}{s}"))
                 .collect::<Vec<_>>();
-                if matches!(*name, "unlinkat" | "linkat") {
+                if matches!(*name, "unlinkat" | "linkat" | "faccessat" | "fchmodat") {
                     imports.push(format!("{prefix}atflags_bsd_to_linux"));
                 }
                 imports.sort();
@@ -242,6 +252,9 @@ fn check(triple: &str, label: &str) {
             ("unlinkat", 1),
             ("linkat", 1),
             ("renameat", 1),
+            ("mkdirat", 1),
+            ("faccessat", 1),
+            ("fchmodat", 2),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
@@ -267,6 +280,9 @@ fn check(triple: &str, label: &str) {
             "unlinkat",
             "linkat",
             "renameat",
+            "mkdirat",
+            "faccessat",
+            "fchmodat",
         ] {
             let driver = Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join(format!("../tools/fixtures/{name}-native.c"));

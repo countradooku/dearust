@@ -396,3 +396,18 @@ gates pass. Final artifacts: dearust-continuation/work/fileops-next/
 {final-stage,matching-final,pinned-final}. Add --unlinkat-object, --linkat-object
 and --renameat-object to previous relinker options. Twelve dependency sources
 partial, 265791 entries pending; target counts seven/1622/zero retired.
+
+Continuation: mkdirat/faccessat/fchmodat
+--------------------------------------
+Latest evidence: RUNTIME-PERMISSIONS.txt and runtime-permissions-verification.json.
+Three allocation-free x86_64 wrappers preserve syscall widths, atfd/flags/vchroot
+policies and both fchmodat exports. The helper preserves real metadata errno,
+fixing EPERM masking; retain legacy faccessat ignored flags, fchmod symlink no-op
+and check/use race. Native/guest CPU roundtrip costs are 1.24%/2.26% higher; do
+not claim speedups. Stack remains one 4096-byte path, plus 144-byte metadata on
+the fchmod branch. 131 Rust tests, 29 Python tests, 14 guest regression probes,
+16 utilities and documented app/GUI checks pass. Add --mkdirat-object,
+--faccessat-object and --fchmodat-object to previous relinker arguments. Latest
+artifacts: dearust-continuation/work/permissions-next/{final-stage,matching-final,
+pinned-final}. Fifteen dependency slices partial, 265788 entries pending; target
+counts seven/1622/zero retired. Installed binaries/user prefix stay untouched.

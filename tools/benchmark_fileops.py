@@ -34,6 +34,7 @@ def main():
         parser.add_argument('--'+name,type=Path,required=True)
     parser.add_argument('--samples',type=int,default=21)
     parser.add_argument('--iterations',type=int,default=2000)
+    parser.add_argument('--family', choices=['mutation','permissions'], default='mutation')
     args=parser.parse_args()
     if args.samples<3 or args.iterations<1:
         parser.error('at least three samples and positive iterations required')
@@ -44,8 +45,9 @@ def main():
     args.output.mkdir(parents=True,exist_ok=False)
     headers=args.output/'headers';headers.mkdir()
     base=source/'src/external/xnu/darling/src/libsystem_kernel/emulation'
-    names=('unlinkat','linkat','renameat')
-    sources=[base/'src/xnu_syscall/bsd/impl/unistd'/(n+'.c') for n in names]
+    paths = {'unlinkat':'unistd/unlinkat.c', 'linkat':'unistd/linkat.c', 'renameat':'unistd/renameat.c'} if args.family=='mutation' else {'mkdirat':'stat/mkdirat.c', 'faccessat':'unistd/faccessat.c', 'fchmodat':'unistd/fchmodat.c'}
+    names=tuple(paths)
+    sources=[base/'src/xnu_syscall/bsd/impl'/path for path in paths.values()]
     inputs=pinned_hashes(source,[*sources,base/'include/conversion/common_at.h'])
     for p in sources:
         for line in p.read_text().splitlines():
@@ -65,11 +67,16 @@ extern long linux_syscall(long,long,long,long,long,long,int);
     header('conversion/common_at.h',(base/'include/conversion/common_at.h').read_text())
     header('conversion/errno.h','extern int errno_linux_to_bsd(int);\n')
     header('linux_premigration/vchroot_expand.h','struct vchroot_expand_args {char path[4096]; unsigned flags; int dfd;};\n#define VCHROOT_FOLLOW 1\nextern int vchroot_expand(struct vchroot_expand_args *);\n')
+    if args.family=='permissions':
+        header('conversion/stat/common.h', '''struct linux_stat {unsigned long st_dev,st_ino,st_nlink;unsigned st_mode,st_uid,st_gid,pad;unsigned long st_rdev;long st_size,st_blksize,st_blocks,atime,atime_nsec,mtime,mtime_nsec,ctime,ctime_nsec,unused[3];};
+_Static_assert(sizeof(struct linux_stat)==144,"Linux stat size");
+_Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode offset");
+''')
     commands=[]
     for name,path in zip(names,sources):
-        command=['clang','-O3','-fPIC','-I'+str(headers),'-c',str(path),'-o',str(args.output/(name+'.o'))]
+        command=['clang','-O3','-fPIC','-fvisibility=hidden','-I'+str(headers),'-c',str(path),'-o',str(args.output/(name+'.o'))]
         subprocess.run(command,check=True);commands.append(command)
-    driver=Path(__file__).parent/'fixtures/fileops-bench.c'
+    driver=Path(__file__).parent/'fixtures'/('fileops-bench.c' if args.family=='mutation' else 'permissions-bench.c')
     binaries={}
     for variant in ('original','rust'):
         objects=[args.output/(n+'.o') if variant=='original' else runtime/'objects'/(n+'.o') for n in names]
@@ -88,7 +95,7 @@ extern long linux_syscall(long,long,long,long,long,long,int);
         summary[variant]={'median_cpu_ns_per_roundtrip':statistics.median(times),'cpu_q1_ns_per_roundtrip':q[0],'cpu_q3_ns_per_roundtrip':q[2],
                           'median_wall_ns_per_roundtrip':statistics.median(r['wall_ns']/r['roundtrips'] for r in matching)}
     summary['cpu_change_percent']=100*(summary['rust']['median_cpu_ns_per_roundtrip']/summary['original']['median_cpu_ns_per_roundtrip']-1)
-    report={'scope':__doc__,'roundtrip':'linkat -> renameat -> unlinkat; actual temporary native files','samples':args.samples,'iterations':args.iterations,'cpu':cpu,'commands':commands,
+    report={'scope':__doc__,'roundtrip':('linkat -> renameat -> unlinkat' if args.family=='mutation' else 'mkdirat -> fchmodat -> faccessat -> unlinkat')+'; actual temporary native files','samples':args.samples,'iterations':args.iterations,'cpu':cpu,'commands':commands,
             'source_pin':XNU_PIN,'source_sha256':inputs,'native_adapters':{str(p.relative_to(headers)):p.read_text() for p in headers.rglob('*') if p.is_file()},
             'rust_objects_sha256':{str(runtime/'objects'/(n+'.o')):hashlib.sha256((runtime/'objects'/(n+'.o')).read_bytes()).hexdigest() for n in names},
             'records':records,'summary':summary}

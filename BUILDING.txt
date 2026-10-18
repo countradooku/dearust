@@ -305,3 +305,11 @@ and renameat.o and their same-named --*-object relinker options. 125 Rust tests
 and 29 Python tests pass. Twelve dependency sources remain partial with 265791
 pending entries; target retirement counts unchanged. Native/guest performance
 comparisons are explicitly separate; no speedup is claimed for these ports.
+
+Permission continuation: RUNTIME-PERMISSIONS.txt documents mkdirat.o, faccessat.o
+and fchmodat.o and their same-named --*-object relinker options. fchmodat.o must
+preserve both sys_fchmodat and do_linux_fchmodat. 131 Rust tests, 29 Python tests
+and the Darwin artifact check pass. Fifteen dependency slices remain partial;
+265788 entries pending, seven target slices/1622 pending/zero retired. Native
+and actual guest roundtrip CPU costs increase 1.24% and 2.26% respectively; no
+speedup or RSS improvement is claimed. See raw performance scope and limits.

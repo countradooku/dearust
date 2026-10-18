@@ -1,0 +1,21 @@
+mkdirat: bounded x86_64 descriptor-relative runtime migration
+==========================================================
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/mkdirat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later. Original
+Darling/upstream attribution and licenses apply. Pinned/matching C are identical.
+
+One initialized repr(C) Expanded holds final char[4096], uint32 flags and int32
+descriptor. Safe copying writes directly into this storage with no intermediate
+array or allocator. NULL yields Darwin EFAULT (as original); missing terminator
+in 4096 bytes yields ENAMETOOLONG instead of unbounded strcpy overflow.
+Non-NULL input must remain readable through NUL or 4096 bytes; arbitrary invalid
+non-NULL pointers retain the original in-process validity contract.
+
+Unsafe is restricted to abi.rs pointer reads, C export and foreign calls.
+Original atfd preserves guest TLS/per-thread cwd; vchroot_expand flags=0 retains
+final-component behavior and must preserve termination. Helpers must not unwind.
+Raw Linux mkdirat 258 receives unsigned 32-bit mode zero-extended, expanded fd
+and path. Result narrows to int as C; failures map errno, success returns zero.
+No allocator, std, panic runtime, cache, mutex or new permission policy is added.
+Scope is partial, x86_64 only. Native fixtures use explicit path/TLS adapters and
+real Linux syscalls; guest fixtures separately exercise actual Darling paths.

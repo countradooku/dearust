@@ -15,6 +15,20 @@ name = "dearust-errno"
 version = "0.1.0"
 
 [[package]]
+name = "dearust-faccessat"
+version = "0.1.0"
+dependencies = [
+ "dearust-errno",
+]
+
+[[package]]
+name = "dearust-fchmodat"
+version = "0.1.0"
+dependencies = [
+ "dearust-errno",
+]
+
+[[package]]
 name = "dearust-fstatat"
 version = "0.1.0"
 dependencies = [
@@ -49,6 +63,13 @@ version = "0.1.0"
 
 [[package]]
 name = "dearust-lstat"
+version = "0.1.0"
+dependencies = [
+ "dearust-errno",
+]
+
+[[package]]
+name = "dearust-mkdirat"
 version = "0.1.0"
 dependencies = [
  "dearust-errno",
