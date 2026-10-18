@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record generated local stack subtraction and imports for old/new path objects.
+"""Record generated local stack subtraction and imports for old/new runtime objects.
 
 This is assembly evidence, not resident-memory measurement. Register pushes,
 callee stack usage and the caller are excluded from the local subtraction count.
@@ -33,7 +33,7 @@ def main():
                 # Probe pages and remainder appear before the first foreign call.
                 prologue = re.split(r'\bcallq?\b', function, maxsplit=1)[0]
                 frames.append(sum(int(value, 0) for value in re.findall(r'subq\s+\$(0x[0-9a-f]+|[0-9]+),\s*%rsp', prologue)))
-            if not frames or max(frames) == 0:
+            if not frames:
                 raise ValueError('unrecognized x86_64 prologue in '+str(obj))
             imports = subprocess.check_output(['llvm-nm', '--extern-only', '--undefined-only', '--format=posix', str(obj)], text=True)
             result[name][variant] = {'object_sha256': hashlib.sha256(obj.read_bytes()).hexdigest(),

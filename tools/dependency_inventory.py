@@ -37,6 +37,10 @@ RENAMEAT_SOURCE = "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/im
 MKDIRAT_SOURCE = "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/mkdirat.c"
 FACCESSAT_SOURCE = "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/faccessat.c"
 FCHMODAT_SOURCE = "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fchmodat.c"
+FCHMOD_SOURCE = "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fchmod.c"
+FTRUNCATE_SOURCE = "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/ftruncate.c"
+FSYNC_SOURCE = "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fsync.c"
+FDATASYNC_SOURCE = "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fdatasync.c"
 LOCKSET_SOURCE = "duct-tape/xnu/osfmk/kern/sync_lock.c"
 LOCKSET_PIN = "89751e64bc6c2082f7725061824ee0e33395b0de"
 
@@ -136,11 +140,11 @@ class Inventory:
             for entry in entries:
                 entry["category"] = category(entry["path"], entry["mode"])
                 entry["status"] = "pending"
-                if path == "src/external/xnu" and entry["path"] in {NATIVE_ERRNO_SOURCE, FUTEX_SOURCE, PROCESS_SOURCE, GUARDED_SOURCE, LSTAT_SOURCE, FSTATAT_SOURCE, SYMLINKAT_SOURCE, READLINKAT_SOURCE, UNLINKAT_SOURCE, LINKAT_SOURCE, RENAMEAT_SOURCE, MKDIRAT_SOURCE, FACCESSAT_SOURCE, FCHMODAT_SOURCE}:
+                if path == "src/external/xnu" and entry["path"] in {NATIVE_ERRNO_SOURCE, FUTEX_SOURCE, PROCESS_SOURCE, GUARDED_SOURCE, LSTAT_SOURCE, FSTATAT_SOURCE, SYMLINKAT_SOURCE, READLINKAT_SOURCE, UNLINKAT_SOURCE, LINKAT_SOURCE, RENAMEAT_SOURCE, MKDIRAT_SOURCE, FACCESSAT_SOURCE, FCHMODAT_SOURCE, FCHMOD_SOURCE, FTRUNCATE_SOURCE, FSYNC_SOURCE, FDATASYNC_SOURCE}:
                     if commit != NATIVE_ERRNO_PIN:
                         raise ValueError("runtime source replacement requires its exact xnu pin")
                     entry.update(status="partial",
-                                 replacement={NATIVE_ERRNO_SOURCE: "crates/dearust-errno/src/lib.rs", FUTEX_SOURCE: "crates/dearust-futex/src/lib.rs", PROCESS_SOURCE: "crates/dearust-process/src/lib.rs", GUARDED_SOURCE: "crates/dearust-guarded/src/lib.rs", LSTAT_SOURCE: "crates/dearust-lstat/src/lib.rs", FSTATAT_SOURCE: "crates/dearust-fstatat/src/lib.rs", SYMLINKAT_SOURCE: "crates/dearust-symlinkat/src/lib.rs", READLINKAT_SOURCE: "crates/dearust-readlinkat/src/lib.rs", UNLINKAT_SOURCE: "crates/dearust-unlinkat/src/lib.rs", LINKAT_SOURCE: "crates/dearust-linkat/src/lib.rs", RENAMEAT_SOURCE: "crates/dearust-renameat/src/lib.rs", MKDIRAT_SOURCE: "crates/dearust-mkdirat/src/lib.rs", FACCESSAT_SOURCE: "crates/dearust-faccessat/src/lib.rs", FCHMODAT_SOURCE: "crates/dearust-fchmodat/src/lib.rs"}[entry["path"]],
+                                 replacement={NATIVE_ERRNO_SOURCE: "crates/dearust-errno/src/lib.rs", FUTEX_SOURCE: "crates/dearust-futex/src/lib.rs", PROCESS_SOURCE: "crates/dearust-process/src/lib.rs", GUARDED_SOURCE: "crates/dearust-guarded/src/lib.rs", LSTAT_SOURCE: "crates/dearust-lstat/src/lib.rs", FSTATAT_SOURCE: "crates/dearust-fstatat/src/lib.rs", SYMLINKAT_SOURCE: "crates/dearust-symlinkat/src/lib.rs", READLINKAT_SOURCE: "crates/dearust-readlinkat/src/lib.rs", UNLINKAT_SOURCE: "crates/dearust-unlinkat/src/lib.rs", LINKAT_SOURCE: "crates/dearust-linkat/src/lib.rs", RENAMEAT_SOURCE: "crates/dearust-renameat/src/lib.rs", MKDIRAT_SOURCE: "crates/dearust-mkdirat/src/lib.rs", FACCESSAT_SOURCE: "crates/dearust-faccessat/src/lib.rs", FCHMODAT_SOURCE: "crates/dearust-fchmodat/src/lib.rs", FCHMOD_SOURCE: "crates/dearust-fchmod/src/lib.rs", FTRUNCATE_SOURCE: "crates/dearust-ftruncate/src/lib.rs", FSYNC_SOURCE: "crates/dearust-fsync/src/lib.rs", FDATASYNC_SOURCE: "crates/dearust-fdatasync/src/lib.rs"}[entry["path"]],
                                  scope="no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
                                  limitation="i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement")
                     dep["migration_status"] = "partial"

@@ -313,3 +313,12 @@ and the Darwin artifact check pass. Fifteen dependency slices remain partial;
 265788 entries pending, seven target slices/1622 pending/zero retired. Native
 and actual guest roundtrip CPU costs increase 1.24% and 2.26% respectively; no
 speedup or RSS improvement is claimed. See raw performance scope and limits.
+
+Descriptor continuation: RUNTIME-FDOPS.txt documents fchmod.o, ftruncate.o,
+fsync.o and fdatasync.o and same-named --*-object relinker options. Retain
+sys_fsync_nocancel as well as sys_fsync. No added cancellation hooks or EINTR
+retry: original generated guest stub behavior remains. 131 existing Rust tests,
+29 Python tests plus four new native/guest fixtures pass. Native CPU is
+essentially unchanged; guest median is 1.97% lower with overlapping quartiles.
+No heap/path buffers; eight-byte native syscall argument stack slot. Nineteen
+dependency slices partial, 265784 pending; target counts remain seven/1622/zero.

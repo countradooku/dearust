@@ -411,3 +411,18 @@ the fchmod branch. 131 Rust tests, 29 Python tests, 14 guest regression probes,
 artifacts: dearust-continuation/work/permissions-next/{final-stage,matching-final,
 pinned-final}. Fifteen dependency slices partial, 265788 entries pending; target
 counts seven/1622/zero retired. Installed binaries/user prefix stay untouched.
+
+Continuation: descriptor modes, truncation and synchronization
+-------------------------------------------------------------
+Latest evidence: RUNTIME-FDOPS.txt and runtime-fdops-verification.json. Four
+new no_std objects fchmod/ftruncate/fsync/fdatasync preserve original signed
+widths, C int narrowing and errno boundary. Keep both fsync exports, original
+generated cancellation stubs and raw EINTR propagation; no new hook/retry.
+No heap/path storage. Native body uses one eight-byte syscall argument push;
+no RSS claim. Native CPU+0.19%; guest median-1.97% with overlapping quartiles.
+131 existing Rust tests, 29 Python tests, 18 guest probes, 16 utilities and existing
+app/GUI checks pass. New relinker options --fchmod-object, --ftruncate-object,
+--fsync-object, --fdatasync-object extend previous args. Latest artifacts:
+dearust-continuation/work/fdops-next/{final-stage,matching-final,pinned-final}.
+Nineteen dependency slices partial, 265784 pending; seven target slices/1622
+pending/zero retired. Installed binaries/user prefix remain untouched.

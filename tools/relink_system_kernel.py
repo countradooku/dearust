@@ -21,6 +21,10 @@ RENAMEAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/r
 MKDIRAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/mkdirat.c.o'
 FACCESSAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/faccessat.c.o'
 FCHMODAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fchmodat.c.o'
+FCHMOD = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fchmod.c.o'
+FTRUNCATE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/ftruncate.c.o'
+FSYNC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fsync.c.o'
+FDATASYNC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fdatasync.c.o'
 READLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/readlinkat.c.o'
 SYMLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/symlinkat.c.o'
 FSTATAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstatat.c.o'
@@ -140,6 +144,22 @@ def integrate(args):
         if inputs.count(FCHMODAT) != 1 or not args.fchmodat_object.is_file():
             raise ValueError('missing unique fchmodat input')
         replacements[FCHMODAT] = args.fchmodat_object.resolve(strict=True)
+    if args.fchmod_object:
+        if inputs.count(FCHMOD) != 1 or not args.fchmod_object.is_file():
+            raise ValueError('missing unique fchmod input')
+        replacements[FCHMOD] = args.fchmod_object.resolve(strict=True)
+    if args.ftruncate_object:
+        if inputs.count(FTRUNCATE) != 1 or not args.ftruncate_object.is_file():
+            raise ValueError('missing unique ftruncate input')
+        replacements[FTRUNCATE] = args.ftruncate_object.resolve(strict=True)
+    if args.fsync_object:
+        if inputs.count(FSYNC) != 1 or not args.fsync_object.is_file():
+            raise ValueError('missing unique fsync input')
+        replacements[FSYNC] = args.fsync_object.resolve(strict=True)
+    if args.fdatasync_object:
+        if inputs.count(FDATASYNC) != 1 or not args.fdatasync_object.is_file():
+            raise ValueError('missing unique fdatasync input')
+        replacements[FDATASYNC] = args.fdatasync_object.resolve(strict=True)
     if args.readlinkat_object:
         if inputs.count(READLINKAT) != 1 or not args.readlinkat_object.is_file():
             raise ValueError('missing unique readlinkat input')
@@ -234,6 +254,15 @@ def integrate(args):
     if args.fchmodat_object:
         wanted['_sys_fchmodat'] = args.fchmodat_object.name
         wanted['_do_linux_fchmodat'] = args.fchmodat_object.name
+    if args.fchmod_object:
+        wanted['_sys_fchmod'] = args.fchmod_object.name
+    if args.ftruncate_object:
+        wanted['_sys_ftruncate'] = args.ftruncate_object.name
+    if args.fsync_object:
+        wanted['_sys_fsync'] = args.fsync_object.name
+        wanted['_sys_fsync_nocancel'] = args.fsync_object.name
+    if args.fdatasync_object:
+        wanted['_sys_fdatasync'] = args.fdatasync_object.name
     if args.readlinkat_object:
         wanted['_sys_readlinkat'] = args.readlinkat_object.name
     if args.symlinkat_object:
@@ -292,6 +321,10 @@ def main():
     parser.add_argument('--mkdirat-object', type=Path)
     parser.add_argument('--faccessat-object', type=Path)
     parser.add_argument('--fchmodat-object', type=Path)
+    parser.add_argument('--fchmod-object', type=Path)
+    parser.add_argument('--ftruncate-object', type=Path)
+    parser.add_argument('--fsync-object', type=Path)
+    parser.add_argument('--fdatasync-object', type=Path)
     parser.add_argument('--readlinkat-object', type=Path)
     parser.add_argument('--symlinkat-object', type=Path)
     parser.add_argument('--fstatat-object', type=Path)

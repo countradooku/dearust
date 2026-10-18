@@ -1,0 +1,20 @@
+ftruncate: allocation-free x86_64 descriptor syscall runtime migration
+===================================================================
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/ftruncate.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later. Original
+Darling/upstream attribution and licenses apply. Pinned/matching C are identical:
+SHA256 89163fcf0555dbfdb29d1029d0ef63628cdebf4b6d2f39b508a72cb77a828b85.
+
+Unsafe is confined to abi.rs C export and raw foreign call. Linux x86_64 syscall
+77 receives sign-extended int fd and signed 64-bit length (original long long). Remaining four
+argument slots are zero. The original raw syscall ABI must not unwind. Result
+narrows to signed int before checking negativity exactly as original C; negative
+results pass once through the existing Linux-to-Darwin errno mapping.
+
+Rust reads no caller pointer, allocates no heap, and creates no path buffers.
+No std, allocator, panic runtime, mutex or cache is introduced. Kernel permission,
+file type, offset and sizing policy is retained. Migration scope is x86_64 only;
+i386 ftruncate64 argument splitting is not implemented or claimed. Native
+fixtures use real Linux syscalls plus explicit injected raw-result ABI checks;
+guest fixtures separately exercise actual Darling behavior. Sparse-file checks
+use a size above 4GiB without allocating a corresponding user-memory buffer.

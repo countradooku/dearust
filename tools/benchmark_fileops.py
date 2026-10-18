@@ -34,7 +34,7 @@ def main():
         parser.add_argument('--'+name,type=Path,required=True)
     parser.add_argument('--samples',type=int,default=21)
     parser.add_argument('--iterations',type=int,default=2000)
-    parser.add_argument('--family', choices=['mutation','permissions'], default='mutation')
+    parser.add_argument('--family', choices=['mutation','permissions','fdops'], default='mutation')
     args=parser.parse_args()
     if args.samples<3 or args.iterations<1:
         parser.error('at least three samples and positive iterations required')
@@ -46,6 +46,8 @@ def main():
     headers=args.output/'headers';headers.mkdir()
     base=source/'src/external/xnu/darling/src/libsystem_kernel/emulation'
     paths = {'unlinkat':'unistd/unlinkat.c', 'linkat':'unistd/linkat.c', 'renameat':'unistd/renameat.c'} if args.family=='mutation' else {'mkdirat':'stat/mkdirat.c', 'faccessat':'unistd/faccessat.c', 'fchmodat':'unistd/fchmodat.c'}
+    if args.family=='fdops':
+        paths={n:'unistd/'+n+'.c' for n in ['fchmod','ftruncate','fsync','fdatasync']}
     names=tuple(paths)
     sources=[base/'src/xnu_syscall/bsd/impl'/path for path in paths.values()]
     inputs=pinned_hashes(source,[*sources,base/'include/conversion/common_at.h'])
@@ -58,11 +60,15 @@ def main():
         target=headers/'darling/emulation'/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_text(text)
     header('common/base.h','''#include <sys/syscall.h>
 extern long linux_syscall(long,long,long,long,long,long,int);
+#define LL_ARG(x) (x)
+#define LINUX_SYSCALL1(n,a) linux_syscall((long)(a),0,0,0,0,0,n)
+#define LINUX_SYSCALL2(n,a,b) linux_syscall((long)(a),(long)(b),0,0,0,0,n)
+#define SC2(n,a,b) LINUX_SYSCALL2(n,a,b)
 #define SC3(n,a,b,c) linux_syscall((long)(a),(long)(b),(long)(c),0,0,0,n)
 #define SC4(n,a,b,c,d) linux_syscall((long)(a),(long)(b),(long)(c),(long)(d),0,0,n)
 #define SC5(n,a,b,c,d,e) linux_syscall((long)(a),(long)(b),(long)(c),(long)(d),(long)(e),0,n)
 #define PICK(_1,_2,_3,_4,_5,NAME,...) NAME
-#define LINUX_SYSCALL(n,...) PICK(__VA_ARGS__,SC5,SC4,SC3)(n,__VA_ARGS__)
+#define LINUX_SYSCALL(n,...) PICK(__VA_ARGS__,SC5,SC4,SC3,SC2,LINUX_SYSCALL1)(n,__VA_ARGS__)
 ''')
     header('conversion/common_at.h',(base/'include/conversion/common_at.h').read_text())
     header('conversion/errno.h','extern int errno_linux_to_bsd(int);\n')
@@ -72,11 +78,17 @@ extern long linux_syscall(long,long,long,long,long,long,int);
 _Static_assert(sizeof(struct linux_stat)==144,"Linux stat size");
 _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode offset");
 ''')
+    if args.family=='fdops':
+        original_header=base/'include/xnu_syscall/bsd/impl/unistd/fsync.h'
+        inputs.update(pinned_hashes(source,[original_header]))
+        header('xnu_syscall/bsd/impl/unistd/fsync.h',original_header.read_text())
     commands=[]
     for name,path in zip(names,sources):
         command=['clang','-O3','-fPIC','-fvisibility=hidden','-I'+str(headers),'-c',str(path),'-o',str(args.output/(name+'.o'))]
         subprocess.run(command,check=True);commands.append(command)
     driver=Path(__file__).parent/'fixtures'/('fileops-bench.c' if args.family=='mutation' else 'permissions-bench.c')
+    if args.family=='fdops':
+        driver=Path(__file__).parent/'fixtures/fdops-bench.c'
     binaries={}
     for variant in ('original','rust'):
         objects=[args.output/(n+'.o') if variant=='original' else runtime/'objects'/(n+'.o') for n in names]
@@ -95,7 +107,7 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
         summary[variant]={'median_cpu_ns_per_roundtrip':statistics.median(times),'cpu_q1_ns_per_roundtrip':q[0],'cpu_q3_ns_per_roundtrip':q[2],
                           'median_wall_ns_per_roundtrip':statistics.median(r['wall_ns']/r['roundtrips'] for r in matching)}
     summary['cpu_change_percent']=100*(summary['rust']['median_cpu_ns_per_roundtrip']/summary['original']['median_cpu_ns_per_roundtrip']-1)
-    report={'scope':__doc__,'roundtrip':('linkat -> renameat -> unlinkat' if args.family=='mutation' else 'mkdirat -> fchmodat -> faccessat -> unlinkat')+'; actual temporary native files','samples':args.samples,'iterations':args.iterations,'cpu':cpu,'commands':commands,
+    report={'scope':__doc__,'roundtrip':('linkat -> renameat -> unlinkat' if args.family=='mutation' else ('mkdirat -> fchmodat -> faccessat -> unlinkat' if args.family=='permissions' else 'fchmod -> ftruncate -> fsync -> fdatasync'))+'; actual temporary native files','samples':args.samples,'iterations':args.iterations,'cpu':cpu,'commands':commands,
             'source_pin':XNU_PIN,'source_sha256':inputs,'native_adapters':{str(p.relative_to(headers)):p.read_text() for p in headers.rglob('*') if p.is_file()},
             'rust_objects_sha256':{str(runtime/'objects'/(n+'.o')):hashlib.sha256((runtime/'objects'/(n+'.o')).read_bytes()).hexdigest() for n in names},
             'records':records,'summary':summary}

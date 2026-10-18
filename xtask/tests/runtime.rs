@@ -52,6 +52,10 @@ fn check(triple: &str, label: &str) {
         "mkdirat",
         "faccessat",
         "fchmodat",
+        "fchmod",
+        "ftruncate",
+        "fsync",
+        "fdatasync",
     ];
     let initial: Vec<_> = names
         .iter()
@@ -89,6 +93,13 @@ fn check(triple: &str, label: &str) {
             .iter()
             .map(|s| format!("{prefix}{s}"))
             .collect(),
+            "fchmod" => vec![format!("{prefix}sys_fchmod")],
+            "ftruncate" => vec![format!("{prefix}sys_ftruncate")],
+            "fdatasync" => vec![format!("{prefix}sys_fdatasync")],
+            "fsync" => ["sys_fsync", "sys_fsync_nocancel"]
+                .iter()
+                .map(|s| format!("{prefix}{s}"))
+                .collect(),
             "unlinkat" => vec![format!("{prefix}sys_unlinkat")],
             "linkat" => vec![format!("{prefix}sys_linkat")],
             "renameat" => vec![format!("{prefix}sys_renameat")],
@@ -225,6 +236,9 @@ fn check(triple: &str, label: &str) {
                 format!("{prefix}libsimple_lock_lock"),
                 format!("{prefix}libsimple_lock_unlock"),
             ],
+            "fchmod" | "ftruncate" | "fsync" | "fdatasync" => {
+                vec![format!("{prefix}linux_syscall")]
+            }
             "futex" => vec![format!("{prefix}cerror"), format!("{prefix}linux_syscall")],
             _ => vec![],
         };
@@ -255,6 +269,10 @@ fn check(triple: &str, label: &str) {
             ("mkdirat", 1),
             ("faccessat", 1),
             ("fchmodat", 2),
+            ("fchmod", 1),
+            ("ftruncate", 1),
+            ("fsync", 2),
+            ("fdatasync", 1),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
@@ -283,6 +301,10 @@ fn check(triple: &str, label: &str) {
             "mkdirat",
             "faccessat",
             "fchmodat",
+            "fchmod",
+            "ftruncate",
+            "fsync",
+            "fdatasync",
         ] {
             let driver = Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join(format!("../tools/fixtures/{name}-native.c"));

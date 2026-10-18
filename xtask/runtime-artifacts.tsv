@@ -17,3 +17,7 @@ object	dearust_renameat	dearust-renameat	-	private	objects/renameat.o	src/extern
 object	dearust_mkdirat	dearust-mkdirat	-	private	objects/mkdirat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_faccessat	dearust-faccessat	-	private	objects/faccessat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_fchmodat	dearust-fchmodat	-	private	objects/fchmodat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+object	dearust_fchmod	dearust-fchmod	-	private	objects/fchmod.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+object	dearust_ftruncate	dearust-ftruncate	-	private	objects/ftruncate.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+object	dearust_fsync	dearust-fsync	-	private	objects/fsync.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+object	dearust_fdatasync	dearust-fdatasync	-	private	objects/fdatasync.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt

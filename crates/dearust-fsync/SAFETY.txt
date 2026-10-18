@@ -1,0 +1,22 @@
+fsync: x86_64 runtime wrapper migration
+==========================================
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fsync.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later.
+Original Darling authorship and GPL licensing remain intact. Original globals:
+sys_fsync, sys_fsync_nocancel. The pinned and matching source/header contracts agree.
+Signed C int fd is sign extended to the original seven-argument linux_syscall
+boundary, Linux x86_64 syscall 74. Result narrows to C int before its sign check
+and is converted exactly once using the original Linux-to-Darwin errno mapping,
+then sign extended to C long. No cancellation hook is added; original fsync
+simply delegates to its nocancel implementation.
+
+No pointers, heap, std, TLS, locks, cache, panic handler or runtime allocation.
+The only unsafe operation calls the original raw syscall ABI. It must preserve
+its declaration and must not unwind into Rust. Kernel descriptor validation,
+interrupt/error behavior and actual persistence guarantees remain Linux's.
+No retry or coalescing changes the original synchronization semantics. Only
+x86_64 is supported here. Kernel/filesystem/device durability is not proved by
+an fsync success code, and cancellation behavior beyond original delegation is
+not separately claimed. Native recording verifies fd sign extension, result
+narrowing and negative errno conversion; real files, invalid descriptors and
+pipes verify execution. Guest fixtures test the exported Darwin syscall path.

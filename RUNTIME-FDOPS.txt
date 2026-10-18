@@ -1,0 +1,106 @@
+Dearust continuation: descriptor modes, truncation and synchronization
+====================================================================
+
+Project owner: @countradooku. AI assistance: OpenAI Codex. Migration remains
+INCOMPLETE. Exact evidence is in runtime-fdops-verification.json.
+
+Implemented runtime slices
+--------------------------
+New no_std crates dearust-fchmod, dearust-ftruncate, dearust-fsync and
+dearust-fdatasync replace four original x86_64 descriptor-only C sources.
+The extra sys_fsync_nocancel export is retained alongside sys_fsync. Original
+pinned/matching C sources and headers are byte-identical. Original attribution
+and GPL licenses are retained; each crate documents its narrow unsafe boundary.
+
+Linux x86_64 syscall numbers 91/77/74/75, signed descriptor/mode extension,
+full signed 64-bit truncate length, zero unused argument slots and original C
+int result narrowing are preserved. Negative errors convert exactly once to
+Darwin errno. Descriptor validation remains in Linux; there is no path/atfd
+resolution, allocator, cache or caller-buffer access. No new upstream defect
+is claimed for these four original wrappers.
+
+The original C wrappers have no cancellation hook or EINTR retry. fsync simply
+delegates to its nocancel implementation. Rust preserves that behavior, while
+original generated guest stubs retain their distinct cancellation/cerror paths.
+Synthetic native EINTR inputs check single-call propagation; this does not
+establish end-to-end thread cancellation correctness. i386 split arguments and
+clean pinned runtime startup remain outside the verified scope.
+
+CPU and memory evidence
+-----------------------
+All four native Rust objects import only linux_syscall; they add no allocator,
+standard library, panic runtime, TLS lookup or path storage. Generated native
+original and Rust functions each have zero explicit local stack subtraction
+and one eight-byte push for the raw syscall's seventh argument/alignment slot.
+Return addresses and callees are excluded; this is not a zero-stack/RSS claim.
+Both fsync exports share the same Rust body. Native object file sizes:
+                       original C       Rust
+    fchmod                1208 B       1488 B
+    ftruncate             1216 B       1488 B
+    fsync                 1400 B       1504 B
+    fdatasync             1216 B       1472 B
+
+These include object metadata. The complete matching mixed dylib file grew
+2720 bytes (871872 -> 874592 bytes) versus the previous Rust kernel. File sizes
+are not loaded/resident memory measurements. Error conversion is inlined.
+
+Native fchmod -> ftruncate -> fsync -> fdatasync roundtrip median CPU was
+1398.0735 -> 1400.7335 ns: 0.19% higher, with overlapping quartiles. Twenty-one
+alternating samples, 2000 rounds/sample on one eligible CPU. Original source
+files remain unchanged; native header/raw-syscall adapters and all raw records
+are preserved. This excludes the matching C entry's tracing wrapper.
+
+Actual matching guest workload, previous/new/new/previous process order,
+42 samples per variant, 200 rounds/sample: CPU 2.1525 -> 2.1100 us/roundtrip,
+1.97% lower median; quartiles 2.115..2.185 vs 2.100..2.130 overlap. Wall medians
+2.155 -> 2.115 us. These warm repeated operations do not add new file contents
+between rounds. This is not durable-write throughput, general application
+performance or process-RSS evidence. No broad performance improvement is claimed.
+Historical permission/path measurements remain separate evidence.
+
+Verification
+------------
+131 existing Rust tests, 29 Python tests, formatting, strict Clippy and explicit
+Darwin artifact ABI/staging checks pass. New native C fixtures execute the four
+wrappers, both fsync exports, signed/large arguments, original int result
+narrowing, converted errors and real file/pipe/closed-descriptor behavior.
+New guest probes cover both fsync entries, fd modes, sparse size above 4 GiB with an eight-byte read
+buffer, content and file-offset preservation, negative lengths, sync success,
+pipe errors and EBADF. fdatasync uses SDK SYS_fdatasync (187) since the installed
+libc has no public fdatasync entry. All eighteen guest probes pass against both
+the previous and new Rust kernels; these ports preserve existing behavior.
+
+Sixteen utility workloads, the 29-app suite (28 exact plus explicit cfbridge log
+normalization), and three GUI samples pass within existing fixture limits.
+Matching final link preserves 1370 public definitions/40 imports; pinned link
+preserves 1362 definitions/18 imports and original i386 bytes. Matching process
+integration stays separate from pinned linking; pinned boot remains unverified.
+All execution uses owned prefixes and the isolated Rust-lockset server. Installed
+binaries and the existing user prefix are unchanged. Hidden nested X is shut
+down; copied repaired CGShadingCreate nib and sample-only GUI scope remain explicit.
+
+Reproduction and scope
+----------------------
+Follow RUNTIME-PERMISSIONS.txt, adding these relinker inputs:
+
+    --fchmod-object "$WORK/runtime/objects/fchmod.o"
+    --ftruncate-object "$WORK/runtime/objects/ftruncate.o"
+    --fsync-object "$WORK/runtime/objects/fsync.o"
+    --fdatasync-object "$WORK/runtime/objects/fdatasync.o"
+
+Use corresponding matching/pinned fork and TLS bridges. cargo xtask check runs
+native ABI fixtures; the optional Darwin artifact test verifies exact exports,
+imports and visibility. Build the four new *-regression.c fixtures and
+fdops-guest-bench.c with build_runtime_probes.py; supply expected stdout
+independently. Guest CPU/wall samples are on stderr. Native measurement:
+
+    python3 tools/benchmark_fileops.py --family fdops --source EXACT_PIN_SOURCE --runtime NATIVE_STAGE --output NEW_DIRECTORY
+    python3 tools/inspect_path_frames.py --baseline ORIGINAL_NATIVE_STAGE --optimized RUST_NATIVE_STAGE --output NEW_DIRECTORY --names fchmod ftruncate fsync fdatasync
+
+Frame inspection now accepts leaf functions with zero subtraction; assembly
+captures preserve pushes and calls for inspection. Latest artifacts are under
+dearust-continuation/work/fdops-next/{final-stage,matching-final,pinned-final}.
+Nineteen dependency slices remain partial, 265784 entries pending; seven Cargo
+target slices, 1622 pending targets, zero retired. Most runtime/framework/build
+implementation remains C/C++/assembly. Arbitrary commercial application
+compatibility and i386 Rust remain unverified.

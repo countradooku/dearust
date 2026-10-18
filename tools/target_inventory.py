@@ -62,11 +62,15 @@ def main():
                     ('xnu_syscall/bsd/impl/unistd/renameat.c', 'dearust-renameat', 'renameat.o'),
                     ('xnu_syscall/bsd/impl/stat/mkdirat.c', 'dearust-mkdirat', 'mkdirat.o'),
                     ('xnu_syscall/bsd/impl/unistd/faccessat.c', 'dearust-faccessat', 'faccessat.o'),
-                    ('xnu_syscall/bsd/impl/unistd/fchmodat.c', 'dearust-fchmodat', 'fchmodat.o')):
+                    ('xnu_syscall/bsd/impl/unistd/fchmodat.c', 'dearust-fchmodat', 'fchmodat.o'),
+                    ('xnu_syscall/bsd/impl/unistd/fchmod.c', 'dearust-fchmod', 'fchmod.o'),
+                    ('xnu_syscall/bsd/impl/unistd/ftruncate.c', 'dearust-ftruncate', 'ftruncate.o'),
+                    ('xnu_syscall/bsd/impl/unistd/fsync.c', 'dearust-fsync', 'fsync.o'),
+                    ('xnu_syscall/bsd/impl/unistd/fdatasync.c', 'dearust-fdatasync', 'fdatasync.o')):
                 entry['verified_source_slices'].append({
                     'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/' + source,
                     'cargo_package': package, 'cargo_artifact': artifact,
-                    'scope': 'x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending.',
+                    'scope': 'x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending.',
                 })
         if name == 'darlingserver':
             entry['verified_source_slices'] = [{
