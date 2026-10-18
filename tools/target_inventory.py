@@ -74,6 +74,13 @@ def main():
                     'cargo_package': package, 'cargo_artifact': artifact,
                     'scope': 'x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending.',
                 })
+        if name == 'emulation':
+            for source in ('getpid', 'getppid', 'getpgrp', 'getpgid', 'getsid'):
+                entry['verified_source_slices'].append({
+                    'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/' + source + '.c',
+                    'cargo_package': 'dearust-process', 'cargo_artifact': 'process-ids.o',
+                    'scope': 'x86_64 identifier-only Rust artifact; matching runtime checks in runtime-identifiers-verification.json. Query-only process.o integration remains matching-only. Other architectures and original target retirement remain pending.',
+                })
         if name == 'darlingserver':
             entry['verified_source_slices'] = [{
                 'source': 'src/external/darlingserver/duct-tape/xnu/osfmk/kern/sync_lock.c',

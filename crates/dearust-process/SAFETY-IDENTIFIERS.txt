@@ -1,0 +1,29 @@
+Namespace-local process identifiers: x86_64 syscall ABI slice
+===========================================================
+Original Darling/upstream GPL-3.0-or-later attribution and licenses apply.
+Source pin: xnu fa29287aa2f0115271e091f1031f53c9e024005d under
+ darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/.
+Pinned and matching C sources are byte-identical; SHA256:
+getpid.c e30a396febbcdbeb60274eba3f85f414b9a50805a246a7be11fab2d790e387f6
+getppid.c 0c6d3bb449487601d389564ccf93daea7a069f314cb428973f565432e1d7634b
+getpgrp.c 2c48295ca23066b8422e21768e08ccdaf35df2d0aae2cf90ea972a708b326f28
+getpgid.c bc2deb7b3644f01f90b52815e8ca52c1615bd91f2b6b04592de16afb1e69f76d
+getsid.c 19bd231c0ee8d1a70429031c782aa71165446e6608372bb8a899858f2ef67202
+
+Feature queries retains the existing process-query modules. Feature identifiers
+adds only these five exports and the optional existing dearust-errno dependency;
+default enables both. Identifier-only staging does not include procfs query code.
+
+Unsafe is confined to raw C calls and export attributes in identifiers.rs. Only
+linux_syscall is imported, and must preserve the declared seven-argument ABI and
+not unwind. Linux39/110/111 are getpid/getppid/getpgrp; Linux121/124 receive signed
+32-bit pid sign-extended for getpgid/getsid. Unused slots are zero. Each raw
+result narrows to C int before negative Linux-to-Darwin errno conversion once.
+getppid maps zero to one AFTER conversion, retaining launchd's PID-namespace
+root behavior. EINTR is returned directly without retry. No caller pointer,
+heap, TLS/atfd lookup, cache, process-global state, mutex or panic runtime is used.
+
+Scope is x86_64 only. Native fixture records exact syscall ABI, synthetic narrow
+returns, errno and one-call EINTR, plus real process/session identity. Guest
+fixture independently exercises fork-child parent/group/session identity and an
+isolated child setsid; no host-wide process groups or sessions are changed.

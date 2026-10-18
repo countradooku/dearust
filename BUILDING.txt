@@ -332,3 +332,13 @@ replacement object paths and verify all seven exports. 20 workspace packages;
 essentially unchanged; actual guest workload CPU median 4.12% lower, no broad
 performance/RSS claim. Matching dylib file 632 bytes smaller. Twenty-one partial
 dependency slices/265782 pending; seven target slices/1622 pending/zero retired.
+
+Process identifier continuation: RUNTIME-IDENTIFIERS.txt extends dearust-process
+without adding a crate. The runtime graph stages process.o with queries-only and
+process-ids.o with identifiers-only (both --no-default-features); use
+--process-ids-object in both links while --process-object remains matching-only.
+Default combined features are for development, not a substitute runtime object.
+131 existing Rust tests, 29 Python tests and 21 guest probes pass. Native CPU
+median 1.39% higher with overlapping quartiles; guest raw-query median 2.15% lower,
+no general app/RSS claim. Twenty-six partial sources/265777 pending; unchanged
+20 workspace packages and seven target slices/1622 pending/zero retired.

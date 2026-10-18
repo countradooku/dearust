@@ -443,3 +443,19 @@ app claim. 131 existing Rust tests, 29 Python tests, 20 probes and existing util
 app/GUI checks pass. Final artifacts: dearust-continuation/work/descriptors-next/
 {final-stage,matching-final,pinned-final}. Twenty-one dependency slices partial,
 265782 pending; target counts seven/1622/zero retired. Installed/user prefix intact.
+
+Continuation: uncached process identifiers in existing subsystem
+---------------------------------------------------------------
+Latest evidence: RUNTIME-IDENTIFIERS.txt/runtime-identifiers-verification.json.
+Existing dearust-process now owns getpid/getppid/getpgrp/getpgid/getsid, no new
+crate (still 20 packages). Runtime features queries ->process.o/matching-only and
+identifiers ->process-ids.o/bothlinks use --no-default-features. Do not substitute
+a default combined-feature object. Add --process-ids-object to previous arguments.
+Preserve raw signed arguments/int narrowing, getppid 0->1 after conversion, no
+cache across fork/namespaces, original guest stubs and single-call EINTR. Native
+CPU+1.39% with overlapping quartiles; guest raw-query median-2.15%; mixed dylib
+file-1608B, no RSS/general app claim. 131 existing Rust tests, 29 Python tests,
+21 probes plus existing utility/app/GUI gates pass. Latest artifacts:
+dearust-continuation/work/identifiers-next/{final-stage,matching-final,pinned-final}.
+Twenty-six dependency slices partial, 265777 pending; seven target slices/1622
+pending/zero retired. Installed binaries and existing user prefix intact.

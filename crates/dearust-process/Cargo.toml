@@ -4,7 +4,16 @@ version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
 publish = false
-description = "Darling process and vnode queries over namespace-local procfs"
+license = "GPL-3.0-or-later"
+description = "Darling process identifiers and process/vnode queries"
+[features]
+default = ["queries", "identifiers"]
+queries = []
+identifiers = ["dep:dearust-errno"]
+
+[dependencies]
+dearust-errno = { path = "../dearust-errno", optional = true }
+
 [lib]
 name = "dearust_process"
 crate-type = ["rlib"]

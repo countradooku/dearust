@@ -22,7 +22,7 @@ These results reflect a locally modified, matching `x86_64` runtime environment.
 * **Mach Locksets:** Real Mach ports, lock handoff mechanisms, and thread/task lifecycle dispatching implemented in Rust.
 * **Runtime Queries:** Rust BSD/task process information, descriptor guard tables, bounded `lstat`/`fstatat`/`readlinkat` wrappers, directory-relative symlink, deletion, hard-link, rename, directory creation, access and permission operations, plus descriptor-only mode, truncation and synchronization calls, and partial vnode and mapped-file queries. Fixes include the original `bsdtar` null-path crash and guarded-table memory corruption.
 * **Test Coverage:** **131** Rust tests and **29** Python tests pass in the baseline environment.
-* **App Verification:** **29/29** app checks pass against the Rust kernel (28 exact-match outputs, 1 passing with an explicit timestamp normalization on a known `cfbridge` log line). Sixteen additional utility workloads and three GUI samples (**TextEditor**, **Calculator**, and repaired **CGShadingCreate**) pass. See [runtime expansion details](RUNTIME-EXPANSION.txt) the [performance work](RUNTIME-PERFORMANCE.txt), and the [file-operation ports](RUNTIME-FILEOPS.txt) and [permission ports](RUNTIME-PERMISSIONS.txt) and [descriptor ports](RUNTIME-FDOPS.txt) and [latest grouped subsystem](RUNTIME-DESCRIPTORS.txt).
+* **App Verification:** **29/29** app checks pass against the Rust kernel (28 exact-match outputs, 1 passing with an explicit timestamp normalization on a known `cfbridge` log line). Sixteen additional utility workloads and three GUI samples (**TextEditor**, **Calculator**, and repaired **CGShadingCreate**) pass. See [runtime expansion details](RUNTIME-EXPANSION.txt), [performance measurements](RUNTIME-PERFORMANCE.txt), and [latest process subsystem work](RUNTIME-IDENTIFIERS.txt). Earlier batches cover [file operations](RUNTIME-FILEOPS.txt), [permissions](RUNTIME-PERMISSIONS.txt), [descriptor ports](RUNTIME-FDOPS.txt), and [descriptor grouping](RUNTIME-DESCRIPTORS.txt).
 
 ---
 
@@ -48,6 +48,7 @@ All utilities build via Cargo without requiring CMake. The parsers, conversion l
 * **`libsimple` Synchronization:** Provides the 13 documented C synchronization primitives and the externally linked `cmpxchg` helper, maintaining identical 4-byte state layouts. Staged as a `no_std`, panic-abort archive (`liblibsimple_darlingserver.a`).
 * **Darwin/Linux Errno Mapping:** A `no_std` translation layer preserving exact Linux-to-Darwin mappings and signed integer handling (including `INT_MIN` boundary fixes). Staged as a native ELF object with hidden symbols and linked into `libsystem_kernel`.
 * **Descriptor Subsystem (`dearust-fd`):** Groups mode, truncation, synchronization, seek and file-lock operations in one allocation-free runtime crate. The workspace now has 20 packages, down from 23.
+* **Process Identifiers (`dearust-process`):** Five uncached PID, parent, process-group and session queries share the existing subsystem crate. Runtime feature separation preserves the matching/pinned boundaries.
 * **Mach Lockset Server & Process Queries:** Executes real Mach-O applications inside unprivileged user, mount, and PID namespaces without patching installed binaries.
 
 ---

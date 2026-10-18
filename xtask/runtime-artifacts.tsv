@@ -5,7 +5,7 @@ object	dearust_simple	dearust-libsimple	darling,runtime-object	default	objects/l
 object	dearust_futex	dearust-futex	-	default	objects/futex.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_errno	dearust-errno	-	private	objects/errno.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 staticlib	simple_darling	dearust-libsimple	-	default	lib/liblibsimple_darling.a	src/libsimple/CMakeLists.txt
-object	dearust_process	dearust-process	-	private	objects/process.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+object	dearust_process	dearust-process	queries	private	objects/process.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_guarded	dearust-guarded	-	private	objects/guarded.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_lstat	dearust-lstat	-	private	objects/lstat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_fstatat	dearust-fstatat	-	private	objects/fstatat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
@@ -18,3 +18,4 @@ object	dearust_mkdirat	dearust-mkdirat	-	private	objects/mkdirat.o	src/external/
 object	dearust_faccessat	dearust-faccessat	-	private	objects/faccessat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_fchmodat	dearust-fchmodat	-	private	objects/fchmodat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_fd	dearust-fd	-	private	objects/fd.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+object	dearust_process_ids	dearust-process	identifiers	private	objects/process-ids.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt

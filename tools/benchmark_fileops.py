@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare exact original C and Rust file operations with native boundary adapters.
+"""Compare exact original C and Rust runtime operations with native boundary adapters.
 
 The source files are read unchanged; generated include shims expose their raw
 syscall/virtual-root/descriptor boundaries for native execution. This does not
@@ -34,7 +34,7 @@ def main():
         parser.add_argument('--'+name,type=Path,required=True)
     parser.add_argument('--samples',type=int,default=21)
     parser.add_argument('--iterations',type=int,default=2000)
-    parser.add_argument('--family', choices=['mutation','permissions','fdops','descriptors'], default='mutation')
+    parser.add_argument('--family', choices=['mutation','permissions','fdops','descriptors','identifiers'], default='mutation')
     args=parser.parse_args()
     if args.samples<3 or args.iterations<1:
         parser.error('at least three samples and positive iterations required')
@@ -51,6 +51,8 @@ def main():
         if args.family=='descriptors':
             descriptor_names += ['lseek','flock']
         paths={n:'unistd/'+n+'.c' for n in descriptor_names}
+    if args.family=='identifiers':
+        paths={n:'unistd/'+n+'.c' for n in ['getpid','getppid','getpgrp','getpgid','getsid']}
     names=tuple(paths)
     sources=[base/'src/xnu_syscall/bsd/impl'/path for path in paths.values()]
     inputs=pinned_hashes(source,[*sources,base/'include/conversion/common_at.h'])
@@ -64,6 +66,7 @@ def main():
     header('common/base.h','''#include <sys/syscall.h>
 extern long linux_syscall(long,long,long,long,long,long,int);
 #define LL_ARG(x) (x)
+#define LINUX_SYSCALL0(n) linux_syscall(0,0,0,0,0,0,n)
 #define LINUX_SYSCALL1(n,a) linux_syscall((long)(a),0,0,0,0,0,n)
 #define LINUX_SYSCALL2(n,a,b) linux_syscall((long)(a),(long)(b),0,0,0,0,n)
 #define SC2(n,a,b) LINUX_SYSCALL2(n,a,b)
@@ -94,9 +97,13 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
         driver=Path(__file__).parent/'fixtures/fdops-bench.c'
     if args.family=='descriptors':
         driver=Path(__file__).parent/'fixtures/descriptors-bench.c'
+    if args.family=='identifiers':
+        driver=Path(__file__).parent/'fixtures/identifiers-bench.c'
     rust_objects=[runtime/'objects'/(n+'.o') for n in names]
     if args.family=='descriptors':
         rust_objects=[runtime/'objects/fd.o']
+    if args.family=='identifiers':
+        rust_objects=[runtime/'objects/process-ids.o']
     binaries={}
     for variant in ('original','rust'):
         objects=[args.output/(n+'.o') for n in names] if variant=='original' else rust_objects
@@ -118,7 +125,11 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
     roundtrip = ('linkat -> renameat -> unlinkat' if args.family=='mutation' else ('mkdirat -> fchmodat -> faccessat -> unlinkat' if args.family=='permissions' else 'fchmod -> ftruncate -> fsync -> fdatasync'))
     if args.family=='descriptors':
         roundtrip='fchmod(0600) -> ftruncate(128) -> lseek(64, SEEK_SET) -> flock(EX|NB) -> flock(UN) -> fsync -> fdatasync; warmed same file without new contents'
-    report={'scope':__doc__,'roundtrip':roundtrip+'; actual temporary native files','samples':args.samples,'iterations':args.iterations,'cpu':cpu,'commands':commands,
+    if args.family=='identifiers':
+        roundtrip='getpid -> getppid -> getpgrp -> getpgid(0) -> getsid(0); real native process identifiers, stable checksum checked against libc'
+    else:
+        roundtrip+='; actual temporary native files'
+    report={'scope':__doc__,'roundtrip':roundtrip,'samples':args.samples,'iterations':args.iterations,'cpu':cpu,'commands':commands,
             'source_pin':XNU_PIN,'source_sha256':inputs,'native_adapters':{str(p.relative_to(headers)):p.read_text() for p in headers.rglob('*') if p.is_file()},
             'rust_objects_sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in rust_objects},
             'records':records,'summary':summary}

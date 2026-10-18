@@ -44,6 +44,7 @@ fn check(triple: &str, label: &str) {
         "lstat",
         "fstatat",
         "process",
+        "process-ids",
         "symlinkat",
         "readlinkat",
         "unlinkat",
@@ -113,6 +114,16 @@ fn check(triple: &str, label: &str) {
                 .collect(),
             "readlinkat" => vec![format!("{prefix}sys_readlinkat")],
             "symlinkat" => vec![format!("{prefix}sys_symlinkat")],
+            "process-ids" => [
+                "sys_getpid",
+                "sys_getppid",
+                "sys_getpgrp",
+                "sys_getpgid",
+                "sys_getsid",
+            ]
+            .iter()
+            .map(|s| format!("{prefix}{s}"))
+            .collect(),
             "process" => vec![format!("{prefix}sys_proc_info")],
             "fstatat" => ["sys_fstatat", "sys_fstatat64"]
                 .iter()
@@ -238,7 +249,7 @@ fn check(triple: &str, label: &str) {
                 format!("{prefix}libsimple_lock_lock"),
                 format!("{prefix}libsimple_lock_unlock"),
             ],
-            "fd" => {
+            "fd" | "process-ids" => {
                 vec![format!("{prefix}linux_syscall")]
             }
             "futex" => vec![format!("{prefix}cerror"), format!("{prefix}linux_syscall")],
@@ -263,6 +274,7 @@ fn check(triple: &str, label: &str) {
             ("lstat", 2),
             ("fstatat", 2),
             ("process", 1),
+            ("process-ids", 5),
             ("symlinkat", 1),
             ("readlinkat", 1),
             ("unlinkat", 1),
@@ -301,6 +313,7 @@ fn check(triple: &str, label: &str) {
             "faccessat",
             "fchmodat",
             "fd",
+            "process-ids",
         ] {
             let driver = Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join(format!("../tools/fixtures/{name}-native.c"));

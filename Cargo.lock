@@ -85,6 +85,9 @@ dependencies = [
 [[package]]
 name = "dearust-process"
 version = "0.1.0"
+dependencies = [
+ "dearust-errno",
+]
 
 [[package]]
 name = "dearust-readlinkat"

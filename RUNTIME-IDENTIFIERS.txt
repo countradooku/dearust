@@ -1,0 +1,103 @@
+Dearust continuation: process identifiers within the process subsystem
+=====================================================================
+
+Project owner: @countradooku. AI assistance: OpenAI Codex. Migration remains
+INCOMPLETE. Exact evidence is in runtime-identifiers-verification.json.
+
+Subsystem and ABI
+-----------------
+The existing dearust-process crate now owns getpid, getppid, getpgrp, getpgid
+and getsid alongside its process/vnode query implementation. Workspace package
+count stays 20. No per-syscall crates, allocation, caches, new state, TLS or locks
+are introduced. All five original C exports remain. Source/header blobs match
+both the pinned xnu commit and matching local build; GPL attribution is recorded
+in SAFETY-IDENTIFIERS.txt. No new original-source defect is claimed here.
+
+Raw Linux x86_64 syscall numbers 39/110/111/121/124, signed PID argument extension,
+zero unused slots, original C int result narrowing and once-only errno conversion
+are retained. getppid translates 0 to 1 after narrowing/conversion, preserving
+launchd's required parent result for Linux namespace PID 1. There is no added
+EINTR retry or cancellation hook. No PID/session result is cached across fork
+or namespace changes. Guest generated syscall boundaries remain original C.
+
+Cargo features separate runtime consumers within one subsystem crate:
+- queries emits only sys_proc_info into process.o; matching runtime only.
+- identifiers emits five ID exports into process-ids.o; matching and pinned links.
+- default enables both for normal Rust development/tests.
+
+cargo xtask runtime uses --no-default-features and the per-artifact features.
+Do not substitute an object built with both default features into either link.
+--process-ids-object replaces five unique original emulation inputs and inserts
+the grouped object once. Original guest syscall wrappers stay in each link.
+This separation avoids introducing the matching-only process fallback into the
+pinned library. Clean pinned startup is still unverified.
+
+CPU and memory evidence
+-----------------------
+Each native original/new wrapper uses one eight-byte syscall argument/alignment
+push and no explicit local stack subtraction; return addresses/callees excluded.
+No heap, path storage, runtime initialization or cache is added. The identifiers
+object imports only linux_syscall. Native aggregate original C object 2544 bytes
+versus Rust 2960 bytes (including metadata); Rust shares one 126-byte read-only
+errno table. The matching mixed dylib file is 1608 bytes smaller: 873960 -> 872352.
+These object/file figures do not establish resident-memory changes.
+
+Native five-query roundtrip CPU median 1152.164425 -> 1168.215220 ns, 1.39% higher;
+quartiles 1150.940575..1164.488890 vs 1157.110980..1170.168635 overlap. Twenty-one
+alternating samples, 200000 rounds/sample on one eligible CPU. Unchanged pinned
+C wrapper sources, explicit native headers/raw-syscall adapters, common errno
+object, raw timing/checksum records and compiler commands are preserved. Native
+comparison excludes the local matching C tracing raw-entry wrapper.
+
+Actual matching guest raw five-query roundtrip CPU median 1.23470 -> 1.20815 us,
+2.15% lower; quartiles 1.22890..1.245875 vs 1.193675..1.219775. Wall medians
+1.23745 -> 1.21120 us. Previous/new/new/previous process order, 42 samples per
+variant, 10000 rounds/sample. Every timed guest query uses syscall(SYS_*), avoiding
+libc PID caching; checksums compare all results with libc. This measures this
+local namespace-query workload, not general app speed or process-RSS changes.
+Native and guest results are distinct; no universal speedup is claimed.
+
+Verification
+------------
+131 existing Rust tests, 29 Python tests, formatting, strict Clippy and explicit
+Darwin ABI/staging tests pass. Independent feature builds verify only five
+identifier exports versus only the query dispatcher, with intended imports.
+The new native fixture covers all five syscall numbers, signed arguments, result
+narrowing, zero-parent normalization including injected high 32-bit values, errno
+conversion, single-call EINTR and actual kernel IDs. Independent ASan/UBSan adapter
+execution passes; Rust objects themselves were not sanitizer-instrumented.
+
+All 21 guest probes pass against previous/new Rust kernels. The new probe checks
+fork parent/child identity, direct raw PID/PPID calls before/after child-only
+setsid, inherited and new process group/session, unaffected parent, and ESRCH for
+invalid/reaped PIDs. Session mutation affects only the owned child. Sixteen
+utilities, 29 app checks (28 exact plus explicit cfbridge timestamp normalization)
+and three GUI samples pass within their existing fixture limits.
+
+Matching final link retains 1370 public definitions/40 imports; pinned retains
+1362/18 plus byte-identical original i386 slice. Original guest syscall wrappers
+and query-only matching fallback remain distinct. All execution uses owned
+prefixes and the isolated Rust-lockset server. Installed binaries and existing
+user prefix remain unchanged; hidden nested X is shut down. Repaired copied
+CGShadingCreate nib and sample-only GUI scope remain explicit.
+
+Reproduction and scope
+----------------------
+Follow RUNTIME-DESCRIPTORS.txt, adding:
+
+    --process-ids-object "$WORK/runtime/objects/process-ids.o"
+
+Keep matching-only --process-object and corresponding matching/pinned fork/TLS
+bridges. Build process-ids-regression.c and identifiers-guest-bench.c with
+build_runtime_probes.py; reuse unchanged prior probes and supply stdout goldens
+independently. Native ABI fixture process-ids-native.c runs in staging tests.
+Guest benchmark timing records are on stderr. Native measurement:
+
+    python3 tools/benchmark_fileops.py --family identifiers --iterations 200000 --source EXACT_PIN_SOURCE --runtime NATIVE_STAGE --output NEW_DIRECTORY
+
+Latest artifacts: dearust-continuation/work/identifiers-next/
+{final-stage,matching-final,pinned-final}. Twenty-six dependency slices partial,
+265777 entries pending; seven Cargo target slices, 1622 pending targets, zero
+retired. Most runtime/framework/build code remains C/C++/assembly. i386 Rust,
+clean pinned runtime boot and arbitrary commercial app compatibility remain
+unverified.

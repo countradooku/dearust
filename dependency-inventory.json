@@ -10,8 +10,8 @@
     },
     "inventoried_entries": 265803,
     "entries_by_status": {
-      "partial": 21,
-      "pending": 265782
+      "partial": 26,
+      "pending": 265777
     },
     "license_candidates": 341
   },
@@ -2327318,7 +2327318,10 @@
           "object_id": "d040d029b013a4839179f277c87fdc46d6d95450",
           "size": 374,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-process/src/identifiers.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/getpgrp.c",
@@ -2327327,7 +2327330,10 @@
           "object_id": "170cee12e4d74af8937697a02328d5cdfd6f56b0",
           "size": 439,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-process/src/identifiers.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/getpid.c",
@@ -2327336,7 +2327342,10 @@
           "object_id": "9bf05867590bce890fa38e6fc6ee2930166c80b1",
           "size": 364,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-process/src/identifiers.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/getppid.c",
@@ -2327345,7 +2327354,10 @@
           "object_id": "2871b6f325180e9680b6469bbd8fccabc22915d4",
           "size": 577,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-process/src/identifiers.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/getsid.c",
@@ -2327354,7 +2327366,10 @@
           "object_id": "dec7b093aa7d78b93eb583b2f69dc9ab62113780",
           "size": 371,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-process/src/identifiers.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/gettid.c",
