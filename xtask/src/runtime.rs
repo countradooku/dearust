@@ -51,7 +51,12 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
             if f[4] == "private"
                 && !matches!(
                     f[2],
-                    "dearust-errno" | "dearust-process" | "dearust-guarded" | "dearust-lstat"
+                    "dearust-errno"
+                        | "dearust-process"
+                        | "dearust-guarded"
+                        | "dearust-lstat"
+                        | "dearust-fstatat"
+                        | "dearust-symlinkat"
                 )
             {
                 return Err(invalid("unknown runtime private-symbol policy"));
@@ -70,6 +75,8 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                     hidden_symbols: if f[4] == "private" {
                         match f[2] {
                             "dearust-process" => vec!["sys_proc_info"],
+                            "dearust-symlinkat" => vec!["sys_symlinkat"],
+                            "dearust-fstatat" => vec!["sys_fstatat", "sys_fstatat64"],
                             "dearust-lstat" => vec!["sys_lstat", "sys_lstat64"],
                             "dearust-guarded" => vec![
                                 "guard_table_add",

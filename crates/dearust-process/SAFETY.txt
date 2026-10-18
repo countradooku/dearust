@@ -136,3 +136,34 @@ The pure regression checks newline decoding, preservation of other backslashes,
 NUL capacity and hexadecimal map-file paths. tools/fixtures/process-mapped-path.c
 checks actual region address, identity and exact paths for newline, literal \012
 and ordinary-backslash filenames in an executing guest.
+
+Thread-info and executable-path queries
+---------------------------------------
+PIDTHREADINFO (5) now builds the entire 112-byte public proc_threadinfo locally,
+returning 112 rather than the old implementation's 1. It never clears a caller's
+unused buffer tail or mutates output on failure. The low 32 bits of the handle
+remain Darling's Linux TID convention, also used by sys_thread_selfid and hence
+libpthread's pthread_threadid_np. /proc/PID/task/TID/stat enforces process/thread
+membership; task-name credentials require a registered Darwin process. This does
+not implement XNU's pthread-address handle convention or PIDTHREADID64INFO.
+
+Thread user/system USER_HZ counts become nanoseconds (XNU fill_taskthreadinfo in
+osfmk/kern/bsd_kern.c). Linux R/T/t/S/I/D/Z/X/x map to public Mach running,
+stopped, waiting, uninterruptible and halted states; unknown states remain zero.
+Name comes from the bounded stat comm, including embedded ')' and newline bytes.
+Linux comm truncation still limits name fidelity. Decayed CPU usage, Mach policy,
+flags, sleep duration and Mach scheduler priorities are unavailable and stay
+zero. Linux priorities are not mislabeled as Mach priorities. Exit and state
+changes can race normal procfs snapshots, as with other queries.
+
+PIDPATHINFO (11) uses the existing server executable-path RPC and original
+vchroot_unexpand with full 4096-byte live local storage. The RPC result must
+terminate before byte 3900, reserving conservative headroom for the original C
+EXIT_PATH prefix prepend/memmove, matching the existing region-path bound.
+Null/negative sizes fail;
+the public 1024..4096 size contract is enforced even for direct syscall callers.
+The path is copied only after NUL termination and capacity validation, including
+the NUL byte. Oversized results fail rather than returning an unterminated
+truncated string as the legacy strncpy path did. Existing length-excluding-NUL
+return behavior is retained; proc_pidpath itself returns strlen. Caller tail
+bytes remain unchanged. No exports, OS/MIG imports or allocation are added.

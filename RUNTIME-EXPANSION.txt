@@ -113,3 +113,8 @@ See mapped-path-verification.json for final artifacts and raw comparison records
 No new source is marked complete: six dependency slices remain partial, 265797
 entries and 1622 targets remain pending, and zero legacy targets are retired.
 Project owner: @countradooku. AI assistance: OpenAI Codex.
+
+Further continuation: RUNTIME-NEXT.txt and runtime-next-verification.json record
+thread/executable-path queries, fstatat and symlinkat Rust ports. Eight dependency
+source slices are now partial, with 265795 pending dependency entries. Prior
+counts and verification boundaries above are historical.

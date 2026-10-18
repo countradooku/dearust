@@ -350,3 +350,19 @@ local-protocol bridges with the pinned baseline. Latest artifacts are in
 continuation work/runtime-expansion-{stage,kernel}; server-lockset-release remains
 the tested server. Preserve installed binaries and the existing user prefix.
 README.md includes the project owner @countradooku and OpenAI Codex AI assistance.
+
+Continuation: thread/path queries, fstatat and symlinkat
+-----------------------------------------------------
+Latest implementation/evidence: RUNTIME-NEXT.txt and runtime-next-verification.json.
+Dearust-process now handles thread and executable-path queries with bounded,
+transactional output. Unexpansion requires headroom for the original unchecked
+/Volumes/SystemRoot prefix insertion; the pure path-length tests cover that limit.
+New dearust-fstatat and dearust-symlinkat objects preserve original C conversion,
+flag and virtual-root boundaries. symlinkat now honors its actual directory fd.
+Use both new --fstatat-object and --symlinkat-object relinker options, matching
+fork/TLS bridges separately for matching versus pinned links. Final artifacts
+are dearust-continuation/work/port-next/{final-stage,matching-final,pinned-final}.
+116 Rust tests / 29 Python tests, seven actual guest probes, sixteen utility
+workloads, existing app checks and three GUI samples pass within documented
+normalization/fixture limits. Eight dependency sources remain partial, 265795
+entries remain pending, target counts remain seven / 1622 / zero retired.

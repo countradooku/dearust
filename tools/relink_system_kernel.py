@@ -15,6 +15,8 @@ import subprocess
 from check_errno import DARLING_PIN, XNU_PIN
 
 FORK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/process/fork.c.o'
+SYMLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/symlinkat.c.o'
+FSTATAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstatat.c.o'
 LSTAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/lstat.c.o'
 KERNEL = Path('src/external/xnu/darling/src/libsystem_kernel')
 REPLACEMENTS = {
@@ -107,6 +109,14 @@ def integrate(args):
         if inputs.count(LSTAT) != 1 or not args.lstat_object.is_file():
             raise ValueError('missing unique lstat input')
         replacements[LSTAT] = args.lstat_object.resolve(strict=True)
+    if args.symlinkat_object:
+        if inputs.count(SYMLINKAT) != 1 or not args.symlinkat_object.is_file():
+            raise ValueError('missing unique symlinkat input')
+        replacements[SYMLINKAT] = args.symlinkat_object.resolve(strict=True)
+    if args.fstatat_object:
+        if inputs.count(FSTATAT) != 1 or not args.fstatat_object.is_file():
+            raise ValueError('missing unique fstatat input')
+        replacements[FSTATAT] = args.fstatat_object.resolve(strict=True)
     if args.guarded_object:
         name = 'emulation/CMakeFiles/emulation.dir/src/common/guarded/table.c.o'
         if inputs.count(name) != 1 or not args.guarded_object.is_file():
@@ -176,6 +186,11 @@ def integrate(args):
         wanted['_dearust_get_perthread_wd'] = args.lstat_bridge.name
         wanted['_sys_lstat'] = args.lstat_object.name
         wanted['_sys_lstat64'] = args.lstat_object.name
+    if args.symlinkat_object:
+        wanted['_sys_symlinkat'] = args.symlinkat_object.name
+    if args.fstatat_object:
+        wanted['_sys_fstatat'] = args.fstatat_object.name
+        wanted['_sys_fstatat64'] = args.fstatat_object.name
     if args.fork_object:
         wanted['_sys_fork'] = args.fork_object.name
         for name in ('prefork', 'postfork_parent'):
@@ -221,6 +236,8 @@ def main():
     parser.add_argument('--report', type=Path)
     parser.add_argument('--guarded-object', type=Path)
     parser.add_argument('--fork-object', type=Path)
+    parser.add_argument('--symlinkat-object', type=Path)
+    parser.add_argument('--fstatat-object', type=Path)
     parser.add_argument('--lstat-object', type=Path)
     parser.add_argument('--lstat-bridge', type=Path)
     args = parser.parse_args()

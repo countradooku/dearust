@@ -4,6 +4,13 @@ use crate::parse;
 pub const SHORT_SIZE: usize = 64;
 pub const BSD_SIZE: usize = 136;
 pub const TASK_SIZE: usize = 96;
+pub const THREAD_SIZE: usize = 112;
+
+// Require capacity for the terminating NUL before exposing any pathname bytes.
+pub fn path_length(bytes: &[u8], capacity: usize) -> Option<usize> {
+    let end = bytes.iter().position(|b| *b == 0)?;
+    (end.checked_add(1)? <= capacity).then_some(end)
+}
 
 fn put(dst: &mut [u8], offset: usize, value: &[u8]) {
     if let Some(dst) = dst.get_mut(offset..offset + value.len()) {
@@ -41,6 +48,7 @@ pub struct Stat<'a> {
     ppid: u32,
     pgid: u32,
     status: u32,
+    thread_state: i32,
     comm: &'a [u8],
     nice: i32,
     start: u64,
@@ -74,6 +82,14 @@ impl<'a> Stat<'a> {
             ppid: unsigned(bytes, 4)?.try_into().ok()?,
             pgid: unsigned(bytes, 5)?.try_into().ok()?,
             status,
+            thread_state: match parse::stat_field(bytes, 3)? {
+                b"R" => 1,
+                b"T" | b"t" => 2,
+                b"S" | b"I" => 3,
+                b"D" => 4,
+                b"Z" | b"X" | b"x" => 5,
+                _ => 0,
+            },
             comm: bytes.get(open + 1..close)?,
             nice: signed(bytes, 19)?.try_into().ok()?,
             start: unsigned(bytes, 22)?,
@@ -161,6 +177,24 @@ impl<'a> Stat<'a> {
         );
         Some(out)
     }
+    pub fn thread(&self, hz: u64) -> Option<[u8; THREAD_SIZE]> {
+        let mut out = [0; THREAD_SIZE];
+        put(
+            &mut out,
+            0,
+            &ticks(self.user, hz, 1_000_000_000)?.to_ne_bytes(),
+        );
+        put(
+            &mut out,
+            8,
+            &ticks(self.system, hz, 1_000_000_000)?.to_ne_bytes(),
+        );
+        put(&mut out, 24, &self.thread_state.to_ne_bytes());
+        put(&mut out, 48, self.comm.get(..self.comm.len().min(63))?);
+        // Linux scheduler priorities/policies and cumulative CPU time cannot
+        // reconstruct Mach's decayed usage, scheduler policy or priorities.
+        Some(out)
+    }
     pub fn task(&self, hz: u64, pagesize: u64) -> Option<[u8; TASK_SIZE]> {
         if pagesize == 0 {
             return None;
@@ -234,6 +268,44 @@ mod tests {
         }
         assert_eq!(&a[16..32], b"a ) tricky\nname\0");
         assert_eq!(word(&a, 60), 0);
+    }
+    #[test]
+    fn executable_paths_require_nul_and_never_accept_truncation() {
+        assert_eq!(path_length(b"/long/path\0", 11), Some(10));
+        assert_eq!(path_length(b"/long/path\0", 10), None);
+        assert_eq!(path_length(b"/unterminated", 4096), None);
+        assert_eq!(path_length(b"\0tail", 1), Some(0));
+        assert_eq!(path_length(b"\0", 0), None);
+        // RPC paths must leave headroom for original vchroot EXIT_PATH prepend.
+        let mut rpc = [b'x'; 4096];
+        rpc[3899] = 0;
+        assert_eq!(path_length(&rpc, 3900), Some(3899));
+        rpc[3899] = b'x';
+        rpc[3900] = 0;
+        assert_eq!(path_length(&rpc, 3900), None);
+    }
+    #[test]
+    fn thread_units_name_and_state_match_public_layout() {
+        let stat = Stat::parse(SAMPLE, 42).unwrap();
+        let thread = stat.thread(250).unwrap();
+        assert_eq!(wide(&thread, 0), 492_000_000);
+        assert_eq!(wide(&thread, 8), 180_000_000);
+        assert_eq!(word(&thread, 24), 1);
+        assert_eq!(&thread[48..64], b"a ) tricky\nname\0");
+        for offset in [16, 20, 28, 32, 36, 40, 44] {
+            assert_eq!(word(&thread, offset), 0);
+        }
+        for (state, expected) in [(b'S', 3), (b'D', 4), (b'T', 2), (b'Z', 5)] {
+            let mut bytes = [0; SAMPLE.len()];
+            bytes.copy_from_slice(SAMPLE);
+            let position = bytes.windows(3).position(|s| s == b" R ").unwrap();
+            bytes[position + 1] = state;
+            assert_eq!(
+                word(&Stat::parse(&bytes, 42).unwrap().thread(100).unwrap(), 24),
+                expected
+            );
+        }
+        assert!(stat.thread(0).is_none());
     }
     #[test]
     fn malformed_stat_and_conversion_overflow_fail_closed() {

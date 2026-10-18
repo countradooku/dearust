@@ -1,0 +1,91 @@
+Dearust runtime continuation: thread/path queries and descriptor-relative calls
+============================================================================
+
+Project owner: @countradooku. AI assistance: OpenAI Codex. Full migration remains
+INCOMPLETE. runtime-next-verification.json records exact artifacts and evidence.
+
+Implementation
+--------------
+dearust-process now implements PROC_PIDTHREADINFO and PROC_PIDPATHINFO instead
+of delegating them to the original C dispatcher. Thread records return their
+correct 112-byte size (original returned 1), use the queried Linux TID's name,
+CPU nanoseconds and mapped run state, and copy one transactional record. Mach
+scheduler usage/policy/priority metrics remain unavailable and zero. Darling's
+existing low-32-bit Linux TID handle convention is retained; this is not a new
+native macOS thread-handle implementation. Names containing ')' and newlines,
+worker state, dead/nonexistent threads, units and buffer canaries are tested.
+
+Executable paths use the existing registered-path RPC and vchroot boundary.
+Direct syscall requests enforce public 1024..4096-byte buffer limits and require
+a complete NUL-terminated result. Only the actual string and terminator are
+copied. A conservative 3900-byte input bound reserves room for the original
+unchecked vchroot_unexpand prefix insertion; longer RPC paths return ENAMETOOLONG.
+Independent review caught this headroom requirement before final verification.
+Public caller pointers retain the existing in-process emulation validity contract.
+
+New no_std dearust-fstatat ports sys_fstatat and sys_fstatat64 with bounded
+4096-byte destination paths and early NULL-output errors. Original atfd,
+atflags_bsd_to_linux, vchroot expansion and stat converters remain C. Expansion
+still precedes flag validation, preserving inherited errors and flag policy.
+Original stat/stat64 wrappers now reach Rust through these functions; their C
+source is retained and is not counted as migrated. Relative dirfd paths, follow
+and no-follow links, per-thread cwd, Darwin layouts and untouched output tails
+are checked by native and actual guest fixtures. Invalid directory descriptors
+retain the existing ENOENT expansion behavior in this runtime.
+
+New no_std dearust-symlinkat fixes a confirmed original bug: sys_symlinkat ignored
+the passed dirfd and created links relative to thread cwd. Rust resolves the
+actual descriptor through original atfd, bounds the link destination, and passes
+the target text unchanged to Linux. Relative and non-UTF8 target bytes retain
+their meaning. The guest fixture uses separate owned cwd and destination dirs;
+the prior runtime creates the link in the wrong directory and fails the check.
+
+Each crate's SAFETY.txt records OS/ABI calls, pointer lifetime, architecture and
+remaining C boundaries. No allocator, Rust panic runtime or new host-library
+imports are introduced. Both new sources are byte-identical between pinned and
+matching inputs. Only x86_64 Rust slices are implemented.
+
+Verification
+------------
+116 ordinary Rust tests, formatting, strict Clippy, 29 Python tests and the
+explicit Darwin object ABI/staging test pass. Artifact tests now check exact
+process-object imports, which catch accidental unresolved Rust core helpers.
+Three native C fixtures execute real raw Linux lstat/fstatat/symlinkat syscalls
+with explicit TLS/vchroot/converter test adapters. Actual guest probes separately
+validate production boundaries and Darwin structures.
+
+The final matching link preserves 1370 public definitions and 40 imports.
+The pinned link includes the new fstatat/symlinkat objects, preserves 1362 public
+definitions and 18 imports, and carries its original i386 slice byte-identically.
+The expanded process dispatcher executes in the matching runtime only; pinned
+process-object linkage/boot is not claimed by that separate pinned link gate.
+
+All seven guest probes pass Rust, while the three new probes fail against the
+previous Rust kernel. All sixteen utility workloads pass Rust. The original C
+comparison still fails bsdtar/cpio; that existing observation is not a new
+root-cause diagnosis. The 29 app checks pass with 28 exact outputs and the
+previously explicit cfbridge timestamp normalization. GUI evidence and final
+screenshots are recorded separately in the JSON verification file.
+
+Only owned prefixes and an isolated rebuilt Rust-lockset server are used.
+Installed binaries and the existing user prefix remain unchanged. GUI checks
+use hidden nested X with an unmapped parent, never visible desktop windows.
+
+Reproduction
+------------
+Run cargo xtask check, the tools Python unittest suite and the ignored Darwin
+runtime artifact test as in RUNTIME-EXPANSION.txt. Stage the runtime, then add
+these two arguments to either original relink command:
+
+    --fstatat-object "$WORK/runtime/objects/fstatat.o"
+    --symlinkat-object "$WORK/runtime/objects/symlinkat.o"
+
+Use the corresponding matching or pinned fork/TLS bridges; never mix them.
+Build tools/fixtures/{thread-info,fstatat-regression,symlinkat-regression}.c with
+build_runtime_probes.py and run with check_mac_apps.py inside run_isolated_server.
+Expected output strings are the final puts lines, provided independently of runs.
+
+Scope remains eight partial dependency source slices and 265795 pending entries;
+seven Cargo target slices, 1622 pending targets and zero retired legacy targets.
+Most runtime, frameworks and build graph remain C/C++/assembly. Clean pinned boot,
+i386 Rust integration and arbitrary commercial app compatibility remain pending.

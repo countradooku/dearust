@@ -668,6 +668,74 @@ fn process_info(pid: u32, flavor: u32, out: &mut Output) -> Result<i64, i64> {
     Ok(length as i64)
 }
 
+fn thread_info(pid: u32, handle: u64, out: &mut Output) -> Result<i64, i64> {
+    if out.sizing {
+        return Err(-14);
+    }
+    if out.capacity < info::THREAD_SIZE {
+        return Err(-28);
+    }
+    credentials(pid).ok_or(-3)?;
+    // Preserve Darling's low-32-bit Linux TID handle convention. The task
+    // directory constrains membership; a TID from another process cannot pass.
+    let tid = handle as u32;
+    if tid == 0 || tid > i32::MAX as u32 {
+        return Err(-3);
+    }
+    let mut p = path(pid, b"/task/")?;
+    p.decimal(tid).ok_or(-22)?;
+    p.push(b"/stat").ok_or(-22)?;
+    let mut bytes = [0; 4096];
+    let n = read(&p, &mut bytes).map_err(|e| if e == -2 { -3 } else { e })?;
+    let stat = info::Stat::parse(bytes.get(..n).ok_or(-5)?, tid).ok_or(-22)?;
+    // SAFETY: Existing scalar Linux _SC_CLK_TCK bridge.
+    let hz = unsafe { native_sysconf(2) };
+    if hz <= 0 {
+        return Err(-5);
+    }
+    let result = stat.thread(hz as u64).ok_or(-22)?;
+    out.emit(&result);
+    Ok(info::THREAD_SIZE as i64)
+}
+fn executable_path(pid: u32, out: &mut Output) -> Result<i64, i64> {
+    if out.sizing {
+        return Err(-14);
+    }
+    // Public libproc accepts 1--4 MAXPATHLEN buffers. Enforce this also for
+    // direct __proc_info callers before any RPC or caller-memory write.
+    if out.capacity < 1024 {
+        return Err(-12);
+    }
+    if out.capacity > 4096 {
+        return Err(-84);
+    }
+    let mut bytes = [0; 4096];
+    let mut full_length = 0;
+    // SAFETY: The existing RPC receives a live 4096-byte path and u64 length.
+    let rv = unsafe {
+        dserver_rpc_get_executable_path(
+            pid as i32,
+            bytes.as_mut_ptr(),
+            bytes.len() as u64,
+            &mut full_length,
+        )
+    };
+    if rv != 0 {
+        return Err(if rv > 0 { -(rv as i64) } else { rv as i64 });
+    }
+    // Original vchroot_unexpand can prepend EXIT_PATH using memmove. Reserve
+    // the same conservative headroom as region paths before entering C.
+    info::path_length(&bytes, 3900).ok_or(-63)?;
+    // SAFETY: Full 4096-byte storage; input <3900 leaves prefix expansion room.
+    let rv = unsafe { vchroot_unexpand(bytes.as_mut_ptr()) };
+    if rv != 0 {
+        return Err(rv as i64);
+    }
+    let end = info::path_length(&bytes, out.capacity).ok_or(-63)?;
+    out.emit(bytes.get(..end + 1).ok_or(-5)?);
+    Ok(end as i64)
+}
+
 /// Kernel syscall adapter. Unported flavors retain the original implementation.
 ///
 /// # Safety
@@ -684,7 +752,7 @@ pub unsafe extern "C" fn sys_proc_info(
     size: i32,
 ) -> i64 {
     let supported = call == 1
-        || (call == 2 && matches!(flavor, 1 | 2 | 3 | 4 | 6 | 8 | 9 | 13 | 22 | 23))
+        || (call == 2 && matches!(flavor, 1 | 2 | 3 | 4 | 5 | 6 | 8 | 9 | 11 | 13 | 22 | 23))
         || (call == 3 && matches!(flavor, 1 | 2));
     if !supported {
         // Prevent the legacy signed-to-size_t paths from overflowing caller buffers.
@@ -704,6 +772,8 @@ pub unsafe extern "C" fn sys_proc_info(
         }
         match (call, flavor) {
             (2, 2 | 3 | 4 | 13) => process_info(pid as u32, flavor, &mut out),
+            (2, 5) => thread_info(pid as u32, arg, &mut out),
+            (2, 11) => executable_path(pid as u32, &mut out),
             (2, 1) => fds(pid as u32, &mut out),
             (2, 6) => threads(pid as u32, &mut out),
             (2, 9) => directories(pid as u32, &mut out),

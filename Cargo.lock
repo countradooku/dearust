@@ -15,6 +15,13 @@ name = "dearust-errno"
 version = "0.1.0"
 
 [[package]]
+name = "dearust-fstatat"
+version = "0.1.0"
+dependencies = [
+ "dearust-errno",
+]
+
+[[package]]
 name = "dearust-futex"
 version = "0.1.0"
 dependencies = [
@@ -43,6 +50,13 @@ dependencies = [
 [[package]]
 name = "dearust-process"
 version = "0.1.0"
+
+[[package]]
+name = "dearust-symlinkat"
+version = "0.1.0"
+dependencies = [
+ "dearust-errno",
+]
 
 [[package]]
 name = "dearust-xtask"

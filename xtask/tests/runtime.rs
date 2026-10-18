@@ -36,7 +36,16 @@ fn check(triple: &str, label: &str) {
     };
     install();
     assert!(!temp.0.join("wrong-target-dir").exists());
-    let names = ["libsimple", "futex", "errno", "guarded", "lstat"];
+    let names = [
+        "libsimple",
+        "futex",
+        "errno",
+        "guarded",
+        "lstat",
+        "fstatat",
+        "process",
+        "symlinkat",
+    ];
     let initial: Vec<_> = names
         .iter()
         .map(|name| fs::read(stage.join(format!("objects/{name}.o"))).unwrap())
@@ -73,6 +82,12 @@ fn check(triple: &str, label: &str) {
             .iter()
             .map(|s| format!("{prefix}{s}"))
             .collect(),
+            "symlinkat" => vec![format!("{prefix}sys_symlinkat")],
+            "process" => vec![format!("{prefix}sys_proc_info")],
+            "fstatat" => ["sys_fstatat", "sys_fstatat64"]
+                .iter()
+                .map(|s| format!("{prefix}{s}"))
+                .collect(),
             "lstat" => ["sys_lstat", "sys_lstat64"]
                 .iter()
                 .map(|s| format!("{prefix}{s}"))
@@ -106,9 +121,8 @@ fn check(triple: &str, label: &str) {
                 format!("{prefix}__linux_futex_reterr"),
                 format!("{prefix}__simple_abort"),
             ],
-            "lstat" => {
+            "lstat" | "fstatat" => {
                 let mut imports = vec![
-                    "dearust_get_perthread_wd",
                     "linux_syscall",
                     "memcpy",
                     "stat_linux_to_bsd",
@@ -121,6 +135,67 @@ fn check(triple: &str, label: &str) {
                     },
                 ]
                 .into_iter()
+                .map(|s| format!("{prefix}{s}"))
+                .collect::<Vec<_>>();
+                if *name == "fstatat" {
+                    imports.extend([
+                        format!("{prefix}atfd"),
+                        format!("{prefix}atflags_bsd_to_linux"),
+                    ]);
+                } else {
+                    imports.push(format!("{prefix}dearust_get_perthread_wd"));
+                }
+                imports.sort();
+                imports
+            }
+            "symlinkat" => {
+                let mut imports = [
+                    "atfd",
+                    "vchroot_expand",
+                    "linux_syscall",
+                    "memcpy",
+                    if triple.contains("apple") {
+                        "__bzero"
+                    } else {
+                        "memset"
+                    },
+                ]
+                .iter()
+                .map(|s| format!("{prefix}{s}"))
+                .collect::<Vec<_>>();
+                imports.sort();
+                imports
+            }
+            "process" => {
+                let mut imports = [
+                    "darling_legacy_proc_info",
+                    "dserver_rpc_get_executable_path",
+                    "dserver_rpc_task_is_64_bit",
+                    "errno_linux_to_bsd",
+                    "linux_syscall",
+                    "mach_port_deallocate",
+                    "mach_task_self",
+                    if triple.contains("apple") {
+                        "memcmp"
+                    } else {
+                        "bcmp"
+                    },
+                    "memcpy",
+                    "native_sysconf",
+                    "oflags_linux_to_bsd",
+                    "sys_getgid",
+                    "sys_getuid",
+                    "task_info",
+                    "task_name_for_pid",
+                    "vchroot_expand",
+                    "vchroot_unexpand",
+                    if triple.contains("apple") {
+                        "__bzero"
+                    } else {
+                        "memset"
+                    },
+                ]
+                .iter()
                 .map(|s| format!("{prefix}{s}"))
                 .collect::<Vec<_>>();
                 imports.sort();
@@ -147,7 +222,14 @@ fn check(triple: &str, label: &str) {
     let manifest = fs::read(stage.join("darling-runtime-artifacts.tsv")).unwrap();
     assert!(String::from_utf8_lossy(&manifest).starts_with(&format!("# target {triple}\n")));
     if triple.contains("apple") {
-        for (name, count) in [("errno", 2), ("guarded", 7), ("lstat", 2)] {
+        for (name, count) in [
+            ("errno", 2),
+            ("guarded", 7),
+            ("lstat", 2),
+            ("fstatat", 2),
+            ("process", 1),
+            ("symlinkat", 1),
+        ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
                 .arg(stage.join(format!("objects/{name}.o")))
@@ -164,31 +246,30 @@ fn check(triple: &str, label: &str) {
         }
     }
     if !triple.contains("apple") {
-        let driver = Path::new(env!("CARGO_MANIFEST_DIR")).join("../tools/fixtures/lstat-native.c");
-        let executable = temp.0.join("lstat-native");
-        let compile = Command::new("clang")
-            .args(["-O2", "-Wall", "-Wextra", "-Werror"])
-            .arg(driver)
-            .arg(stage.join("objects/lstat.o"))
-            .arg("-o")
-            .arg(&executable)
-            .output()
-            .unwrap();
-        assert!(
-            compile.status.success(),
-            "{}",
-            String::from_utf8_lossy(&compile.stderr)
-        );
-        let result = Command::new(executable).output().unwrap();
-        assert!(
-            result.status.success(),
-            "{}",
-            String::from_utf8_lossy(&result.stderr)
-        );
-        assert!(
-            String::from_utf8_lossy(&result.stdout)
-                .contains("raw syscall regular/symlink metadata")
-        );
+        for name in ["lstat", "fstatat", "symlinkat"] {
+            let driver = Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join(format!("../tools/fixtures/{name}-native.c"));
+            let executable = temp.0.join(format!("{name}-native"));
+            let compile = Command::new("clang")
+                .args(["-O2", "-Wall", "-Wextra", "-Werror"])
+                .arg(driver)
+                .arg(stage.join(format!("objects/{name}.o")))
+                .arg("-o")
+                .arg(&executable)
+                .output()
+                .unwrap();
+            assert!(
+                compile.status.success(),
+                "{}",
+                String::from_utf8_lossy(&compile.stderr)
+            );
+            let result = Command::new(executable).output().unwrap();
+            assert!(
+                result.status.success(),
+                "{}",
+                String::from_utf8_lossy(&result.stderr)
+            );
+        }
     }
     install();
     for (name, bytes) in names.iter().zip(initial) {

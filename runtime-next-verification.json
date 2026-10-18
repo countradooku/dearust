@@ -1,0 +1,241 @@
+{
+  "date": "2026-10-18",
+  "base_commit": "0932cbd",
+  "project_owner": "@countradooku",
+  "ai_assistance": "OpenAI Codex",
+  "scope": "Incremental x86_64 thread/path-query, fstatat and symlinkat Rust ports; full migration incomplete.",
+  "checks": {
+    "rust_tests": 116,
+    "python_tests": 29,
+    "formatting": "passed",
+    "strict_clippy": "passed",
+    "darwin_artifact_test": "passed",
+    "independent_review": "Completed; PATHINFO unexpand headroom issue fixed before final builds.",
+    "dependency_inventory_repeat": "byte-identical",
+    "target_inventory_repeat": "byte-identical"
+  },
+  "sources": {
+    "crates/dearust-fstatat/Cargo.toml": "b60fa7867afc8bd2382e8eab5d8e267a8622be1f449f921afe73f47fe7cf98b2",
+    "crates/dearust-fstatat/SAFETY.txt": "dc4b654b5e9d243587ffc4994e1a7525286e3dc59030735b86ad45a6fb0bfc1e",
+    "crates/dearust-fstatat/src/abi.rs": "1c19813376ac5691b7f3e8dcb95d1c6751a8e49441c1498094ee2358726f2ba4",
+    "crates/dearust-fstatat/src/lib.rs": "f52fdd2ae23bdf4802ce019b01d3899690742368363453eac10f358d93eb6e80",
+    "crates/dearust-fstatat/src/path.rs": "d4da76a51643c5bf586e473637787fca876dbb401358fe5dccfb49829c364cc2",
+    "crates/dearust-symlinkat/Cargo.toml": "13be5e8bf1cbf9c9ed4ab32922df7542e23266c7bce42b079a5c942bee12f889",
+    "crates/dearust-symlinkat/SAFETY.txt": "a343c3a1cf87c99753b4779e039858793f6b688ec08f5a792debe5b4def58c72",
+    "crates/dearust-symlinkat/src/abi.rs": "5b64fe17fe12406566a3e2745c66f100d4cc3c995fa848ccef1a838a935d82cf",
+    "crates/dearust-symlinkat/src/lib.rs": "5121d2fdd30e9b9c6e2f84184b0c8f1d70bcfd682e28ab1367f85db4113f9caf",
+    "crates/dearust-symlinkat/src/path.rs": "d4da76a51643c5bf586e473637787fca876dbb401358fe5dccfb49829c364cc2",
+    "crates/dearust-process/Cargo.toml": "c0da367c5e07fc433fd317511bf45eeb1eb3b142e4641aa2d6a979fd21439aaa",
+    "crates/dearust-process/SAFETY.txt": "2ab1fff6ba475c7b0115f0fe89493cd5e9fd631e31712da9bd9afa652d58c530",
+    "crates/dearust-process/src/abi.rs": "661b7823c6dca624d48ac9069043f064735cd0528d293457e286cc6368e830ac",
+    "crates/dearust-process/src/info.rs": "4c7d31091cfbdc8e673816e323a5d1a2a67a1e00e46c1c08af5460841ed3d2a0",
+    "crates/dearust-process/src/lib.rs": "8d236ec2a33a3d5f8123257ac06ceda0ab58620442b38bb3d28cfd604155a7c1",
+    "crates/dearust-process/src/parse.rs": "100471164052a300246897e69a59ad77e5cb88e3e6d9b960dd77f742adaa50f7",
+    "tools/fixtures/thread-info.c": "3cf40ddbe15a5b798aba65356ed18e19685410ae6dd28d21da7df53cf3fd5ae1",
+    "tools/fixtures/fstatat-regression.c": "44a675855b3ac6d42b47f5c4f9caa32a056b38f189a6a958093df20c674797b5",
+    "tools/fixtures/fstatat-native.c": "3940f4b709be94ce0f4fbdfc789fbab63d9b7c93625f6d056eff27bcdf03f2b0",
+    "tools/fixtures/symlinkat-regression.c": "c3b05c50f93a93b50d493b55543ed1d9b5462e82d5960d4615bafd3946f23ea5",
+    "tools/fixtures/symlinkat-native.c": "d863b9123d8c8488d9002c6dbc893023c2cceb14263ef70746f5a4d53161728d"
+  },
+  "evidence": {
+    "apps.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/apps.json",
+      "sha256": "24172d038fb7094005b57d2d908e91191bd4f5e5edba320b70657075d7f1851c"
+    },
+    "utilities.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/utilities.json",
+      "sha256": "8a59e1141d75ca1d62230f5d2be12293978aa8b55dda0c4be2c26f4a108c4516"
+    },
+    "probes.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/probes.json",
+      "sha256": "4bbcd49785ee058b9771db59bf2b9e1538c1389a564011aa58d68247aeba5a5a"
+    },
+    "gui.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/gui.json",
+      "sha256": "e5f013f39021bfc0498cec7f0f896e7f3cfb6617bce132022a3704872dd225f7"
+    },
+    "gui-cleanup.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/gui-cleanup.json",
+      "sha256": "6ba949dfbd1becd541c0db78a1279c5c6031833c66ef68c283fcf6010642a822"
+    },
+    "matching-link.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/matching-link.json",
+      "sha256": "6d3c2b243e96c5482f7104297fc289baf18a85e07d3234ae70efc4c8c22c3764"
+    },
+    "pinned-link.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/pinned-link.json",
+      "sha256": "a8daff2c5e89cf0f6c561736d778c61d31b6de9f0009f695c7302c09815f7e1a"
+    },
+    "probe-build.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/probe-build.json",
+      "sha256": "812b8cf3063cbb30c12d34cda4c834a631bd9506566df37b01f3e63e01bc9a97"
+    },
+    "cargo-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/cargo-check.log",
+      "sha256": "438639f5f7890025f6ff2881996d9e65fed98e54bfc2fd086973e0e98b0aa1b2"
+    },
+    "python-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/python-check.log",
+      "sha256": "7e1b6ebd946c8aa4e37b07911b70cd64a3179d1d7101be8e139f7c353c2f246b"
+    },
+    "darwin-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/darwin-check.log",
+      "sha256": "652205bc2a5a96d79e84242f8861bccf6cf2d3fc24fe0795941104296343ad87"
+    },
+    "original-Calculator.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/original-Calculator.png",
+      "sha256": "639cdd1f0781f6e4d195109902aa43a3e9c6d6614e29a8f628912df3b6820182"
+    },
+    "original-TextEditor.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/original-TextEditor.png",
+      "sha256": "211220a7fa0094aedf00e37cee2697b6a3bcc0c74b6410c2e7c871ec908a6809"
+    },
+    "original-CGShadingCreate.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/original-CGShadingCreate.png",
+      "sha256": "213ba91b0d9454fa28d4543e022f3f5cd8482eb3c72574060c4076df07052a9d"
+    },
+    "rust-Calculator.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/rust-Calculator.png",
+      "sha256": "639cdd1f0781f6e4d195109902aa43a3e9c6d6614e29a8f628912df3b6820182"
+    },
+    "rust-TextEditor.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/rust-TextEditor.png",
+      "sha256": "baca93f22605eafc4d67750221471fd5d504306c41215ca2b6cb360c52c55cd6"
+    },
+    "rust-CGShadingCreate.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-next-verification/rust-CGShadingCreate.png",
+      "sha256": "213ba91b0d9454fa28d4543e022f3f5cd8482eb3c72574060c4076df07052a9d"
+    }
+  },
+  "suites": {
+    "apps": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 29,
+        "strict_passes": 27,
+        "normalized_passes": 28
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 29,
+        "strict_passes": 28,
+        "normalized_passes": 29
+      }
+    ],
+    "utilities": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 16,
+        "strict_passes": 14,
+        "normalized_passes": 14
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 16,
+        "strict_passes": 16,
+        "normalized_passes": 16
+      }
+    ],
+    "probes": [
+      {
+        "variant": "original",
+        "meaning": "previous Rust kernel",
+        "cases": 7,
+        "strict_passes": 4,
+        "normalized_passes": 4
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 7,
+        "strict_passes": 7,
+        "normalized_passes": 7
+      }
+    ],
+    "gui": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 3,
+        "strict_passes": 3,
+        "normalized_passes": 3
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 3,
+        "strict_passes": 3,
+        "normalized_passes": 3
+      }
+    ]
+  },
+  "gui_visual_review": {
+    "TextEditor": "Both screenshots show rust gui edit verified typed into the document.",
+    "CGShadingCreate": "Both screenshots show red/black axial gradient and controls.",
+    "Calculator": "Both screenshots show initial value 19 and controls; subsequent selftest logs assert value=42 visible=1."
+  },
+  "artifacts": {
+    "matching-final/libsystem_kernel-original.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/port-next/matching-final/libsystem_kernel-original.dylib",
+      "sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f"
+    },
+    "matching-final/libsystem_kernel-rust.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/port-next/matching-final/libsystem_kernel-rust.dylib",
+      "sha256": "4a631010566e8adf6357f7ee7de3dda2f6beacd0e3044b1ef37ae97181e86c6f"
+    },
+    "pinned-final/libsystem_kernel.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/port-next/pinned-final/libsystem_kernel.dylib",
+      "sha256": "514d2abc78aaba9e0ea3542a0f904cee78690e9c57af38d52324d0f384cf1fae"
+    },
+    "final-stage/objects/process.o": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/port-next/final-stage/objects/process.o",
+      "sha256": "16964c8fc2e2cf4d6a36d9da22a5242e182cead66ca6468f0d1596830e289f88"
+    },
+    "final-stage/objects/fstatat.o": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/port-next/final-stage/objects/fstatat.o",
+      "sha256": "f65df19e8376e4106a2579a54c4b6e89ad85a6a25c9c4dd8e209cf6e20c0eed0"
+    },
+    "final-stage/objects/symlinkat.o": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/port-next/final-stage/objects/symlinkat.o",
+      "sha256": "f03db210c57a0b80229b3feadfa81d34f153d7e8bc2bda91243b43cba53ba97d"
+    }
+  },
+  "new_source_provenance": {
+    "fstatat": {
+      "qualified_path": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/fstatat.c",
+      "pinned_matches_local": true,
+      "sha256": "9825a8339904a6326752e1332027751aefb220c04bc92787fdb8fbebc857d4cd"
+    },
+    "symlinkat": {
+      "qualified_path": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/symlinkat.c",
+      "pinned_matches_local": true,
+      "sha256": "d9a9c71f292b951a3bce4d7e0121f2bee6c99ca029fdd30a2506b6ea96310835"
+    }
+  },
+  "installation_preserved": {
+    "/usr/local/libexec/darling/usr/lib/system/libsystem_kernel.dylib": "e473a4bcafbcc09a740ef6a82b656b18039db270b1cbed7b930e654a538aa052",
+    "/usr/local/bin/darlingserver": "6c792a7b1ef80284be0291bc5b51e71d6947193e864b332e073b7fe8f5a6bf69"
+  },
+  "migration_counts": {
+    "partial_dependency_sources": 8,
+    "pending_dependency_entries": 265795,
+    "cargo_target_slices": 7,
+    "pending_targets": 1622,
+    "retired_targets": 0
+  },
+  "limitations": [
+    "No allocator/panic runtime introduced, but most runtime and frameworks remain original C/C++/assembly.",
+    "Process queries retain simulated credentials and low32 Linux TID model; no full macOS access-control equivalence.",
+    "Thread Mach scheduler policy/usage/priority fields remain unavailable and zero.",
+    "Executable RPC paths >=3900 bytes are rejected before original prefix expansion.",
+    "fstatat retains original flag conversion and ENOENT behavior for invalid dirfd during vchroot expansion.",
+    "Seven-probe original label means previous Rust kernel, not original C.",
+    "One cfbridge log-line normalization remains explicit; strict runner exits1 for it and original mismatches.",
+    "CGShadingCreate still uses the previously repaired copied nib.",
+    "Pinned link does not include the process dispatcher port; clean pinned boot and i386 Rust remain unverified."
+  ]
+}

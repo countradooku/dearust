@@ -281,3 +281,15 @@ local-protocol bridges with the pinned baseline. Latest artifacts are in
 continuation work/runtime-expansion-{stage,kernel}; server-lockset-release remains
 the tested server. Preserve installed binaries and the existing user prefix.
 README.md includes the project owner @countradooku and OpenAI Codex AI assistance.
+
+Continuation: descriptor-relative metadata and symlinks
+-----------------------------------------------------
+RUNTIME-NEXT.txt and runtime-next-verification.json describe Rust thread/path
+queries plus dearust-fstatat and dearust-symlinkat. Stage the same runtime graph,
+then pass --fstatat-object PATH/objects/fstatat.o and --symlinkat-object
+PATH/objects/symlinkat.o to either relinker. Both arguments replace exactly one
+original C object, without retiring its containing target. Native staging tests
+execute all three lstat/fstatat/symlinkat C fixtures and check exact process and
+new-object imports. Eight dependency sources are partial, 265795 entries remain
+pending, and target counts remain seven Cargo slices / 1622 pending / zero retired.
+116 Rust tests, 29 Python tests and the explicit Darwin artifact check pass.
