@@ -52,6 +52,13 @@ name = "dearust-process"
 version = "0.1.0"
 
 [[package]]
+name = "dearust-readlinkat"
+version = "0.1.0"
+dependencies = [
+ "dearust-errno",
+]
+
+[[package]]
 name = "dearust-symlinkat"
 version = "0.1.0"
 dependencies = [

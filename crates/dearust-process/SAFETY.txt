@@ -167,3 +167,13 @@ the NUL byte. Oversized results fail rather than returning an unterminated
 truncated string as the legacy strncpy path did. Existing length-excluding-NUL
 return behavior is retained; proc_pidpath itself returns strlen. Caller tail
 bytes remain unchanged. No exports, OS/MIG imports or allocation are added.
+
+Region-query CPU follow-up
+--------------------------
+Address-based region searches filter impossible mappings before pathname
+recovery and overlay metadata syscalls. Device queries still recover each file
+identity; anonymous maps remain eligible for flavor8 only. No process/path
+cache is introduced. Pure tests cover exclusive mapping ends, following maps,
+anonymous regions and preserved device-query candidates. Actual guest probes
+retain identity/path checks; the separate benchmark records workload-specific
+CPU/wall samples without treating timing as a correctness golden.

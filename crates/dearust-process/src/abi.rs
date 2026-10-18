@@ -468,7 +468,7 @@ fn regions(pid: u32, flavor: u32, arg: u64, out: &mut Output) -> Result<i64, i64
                 break;
             };
             let item = rest.get(..end).ok_or(-5)?;
-            if let Some(m) = parse::mapping(item) {
+            if let Some(m) = parse::mapping(item).filter(|m| m.search_candidate(flavor, arg)) {
                 // Overlayfs maps expose the backing device, while stat exposes
                 // the mounted overlay device. Resolve the still-identical path
                 // to recover the guest-visible identity. Never substitute a new
@@ -499,7 +499,7 @@ fn regions(pid: u32, flavor: u32, arg: u64, out: &mut Output) -> Result<i64, i64
                 let wanted = if flavor == 23 {
                     device == arg as u32 && file_backed
                 } else {
-                    m.address.saturating_add(m.size) > arg && (flavor == 8 || file_backed)
+                    true // Address/file-backed selection already ran before metadata syscalls.
                 };
                 if wanted {
                     let mut bytes = [0; 1272];

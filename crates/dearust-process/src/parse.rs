@@ -131,6 +131,20 @@ pub struct Mapping<'a> {
     pub inode: u64,
     pub path: &'a [u8],
 }
+impl Mapping<'_> {
+    // Address-based queries cannot select earlier mappings. Skip them before
+    // path decoding, overlay stat or map_files readlink. Device queries still
+    // need each file's recovered overlay identity, so retain those candidates.
+    pub fn search_candidate(&self, flavor: u32, arg: u64) -> bool {
+        let file_backed = self.inode != 0 && self.path.first() == Some(&b'/');
+        match flavor {
+            8 => self.address.saturating_add(self.size) > arg,
+            22 => file_backed && self.address.saturating_add(self.size) > arg,
+            23 => file_backed,
+            _ => false,
+        }
+    }
+}
 pub fn mapping(line: &[u8]) -> Option<Mapping<'_>> {
     let mut fields = line.splitn(6, |b| *b == b' ');
     let range = fields.next()?;
@@ -215,6 +229,22 @@ mod tests {
             &p.bytes[..p.len],
             b"/proc/42/map_files/123abc-ffffffffffffffff"
         );
+    }
+    #[test]
+    fn region_search_skips_only_impossible_candidates() {
+        let file = mapping(b"1000-2000 r--p 0000 08:01 42 /tmp/file").unwrap();
+        for flavor in [8, 22] {
+            assert!(file.search_candidate(flavor, 0));
+            assert!(file.search_candidate(flavor, 0x1000));
+            assert!(file.search_candidate(flavor, 0x1fff));
+            assert!(!file.search_candidate(flavor, 0x2000));
+            assert!(!file.search_candidate(flavor, u64::MAX));
+        }
+        assert!(file.search_candidate(23, u64::MAX));
+        let anonymous = mapping(b"1000-2000 rw-p 0000 00:00 0 ").unwrap();
+        assert!(anonymous.search_candidate(8, 0));
+        assert!(!anonymous.search_candidate(22, 0));
+        assert!(!anonymous.search_candidate(23, 0));
     }
     #[test]
     fn mapping_tracks_identity_addresses_and_spaces() {

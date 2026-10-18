@@ -19,21 +19,21 @@ pub unsafe extern "C" fn sys_symlinkat(target: *const u8, fd: i32, link: *const 
     if link.is_null() {
         return -14;
     }
-    let path = match crate::path::copy(|index| {
+    let mut expanded = Expanded {
+        path: [0; crate::path::CAPACITY],
+        flags: 0,
+        dfd: 0,
+    };
+    if let Err(error) = crate::path::copy_into(&mut expanded.path, |index| {
         // SAFETY: caller supplies readable bytes through NUL or capacity;
         // the safe copier reads only indexes <4096 and stops immediately at NUL.
         unsafe { link.add(index).read() }
     }) {
-        Ok(path) => path,
-        Err(error) => return error,
-    };
-    let mut expanded = Expanded {
-        path,
-        flags: 0,
-        // SAFETY: original helper resolves BSD_AT_FDCWD using guest thread TLS.
-        // Unlike original symlinkat, this honors the actual passed descriptor.
-        dfd: unsafe { atfd(fd) },
-    };
+        return error;
+    }
+    // SAFETY: resolve the original guest descriptor/TLS helper only after path
+    // validation, preserving error ordering without a second path buffer.
+    expanded.dfd = unsafe { atfd(fd) };
     // SAFETY: repr(C) matches original args, with writable terminated storage.
     // flags=0 preserves a final link component and callee preserves termination.
     let result = unsafe { vchroot_expand(&mut expanded) };

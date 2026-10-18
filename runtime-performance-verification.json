@@ -1,0 +1,647 @@
+{
+  "date": "2026-10-18",
+  "base_commit": "5a3c082",
+  "project_owner": "@countradooku",
+  "ai_assistance": "OpenAI Codex",
+  "scope": "Bounded x86_64 readlinkat migration, in-place path-copy stack reduction and early region filtering; measured CPU/memory work. Full migration incomplete.",
+  "checks": {
+    "rust_tests": 119,
+    "python_tests": 29,
+    "formatting": "passed",
+    "strict_clippy": "passed",
+    "darwin_artifact_test": "passed",
+    "independent_review": "No actionable correctness findings in in-place copier, readlinkat, candidate filtering or scoped benchmark methodology.",
+    "dependency_inventory_repeat": "byte-identical",
+    "target_inventory_repeat": "byte-identical"
+  },
+  "sources": {
+    "crates/dearust-lstat/Cargo.toml": "a001d8748f13efe7545fbee87f11672a3e38866f9081fbd7fb0cb0497fc6a7b6",
+    "crates/dearust-lstat/SAFETY.txt": "168d38d4216a602b14e497638046d78f0b94f5541bf24c6350ec6af96f192c84",
+    "crates/dearust-lstat/src/abi.rs": "02e9ecf4bb0aece2c9035c12cb35896100250e639b99e306986a27130c64b6e4",
+    "crates/dearust-lstat/src/lib.rs": "f621901c996b4f1f853353cb07f18986ee9e236a88e77e6f10dfb97d8c5a27a5",
+    "crates/dearust-lstat/src/path.rs": "f6c6d240f6d0768eaa95a8ebe40ec030cd5ff727f361fd05ac28e127041551da",
+    "crates/dearust-fstatat/Cargo.toml": "b60fa7867afc8bd2382e8eab5d8e267a8622be1f449f921afe73f47fe7cf98b2",
+    "crates/dearust-fstatat/SAFETY.txt": "2766f517fe84de2b615ccab277afae215c1341a9f611ec35b82ed11581207f70",
+    "crates/dearust-fstatat/src/abi.rs": "4270bd380f7ab6562c124289886463693d0e73c7122cf5bb43c8b187f82ef56d",
+    "crates/dearust-fstatat/src/lib.rs": "f52fdd2ae23bdf4802ce019b01d3899690742368363453eac10f358d93eb6e80",
+    "crates/dearust-fstatat/src/path.rs": "f6c6d240f6d0768eaa95a8ebe40ec030cd5ff727f361fd05ac28e127041551da",
+    "crates/dearust-symlinkat/Cargo.toml": "13be5e8bf1cbf9c9ed4ab32922df7542e23266c7bce42b079a5c942bee12f889",
+    "crates/dearust-symlinkat/SAFETY.txt": "ad2ce9bcc5daff89224bc5b1d5daf1834c31b9113ede0fdc05ef14ba2ea039f2",
+    "crates/dearust-symlinkat/src/abi.rs": "9df266dcb43cfaa52f7455e8772484ba67e9845834fe4b0f8308e375c4ebf6d5",
+    "crates/dearust-symlinkat/src/lib.rs": "5121d2fdd30e9b9c6e2f84184b0c8f1d70bcfd682e28ab1367f85db4113f9caf",
+    "crates/dearust-symlinkat/src/path.rs": "f6c6d240f6d0768eaa95a8ebe40ec030cd5ff727f361fd05ac28e127041551da",
+    "crates/dearust-readlinkat/Cargo.toml": "5b17a416e6ce746289c6370f73069114d808d910f294c9dfafb312edaf273a9d",
+    "crates/dearust-readlinkat/SAFETY.txt": "abfeb7e0b4cff0ab2b61f043a49bf0f3570c72959b27af9b2330f501cddb6bfa",
+    "crates/dearust-readlinkat/src/abi.rs": "e28b6080397713db1ed3112c2c479cc7b2a2ba4f921b3415ac8a23953b778654",
+    "crates/dearust-readlinkat/src/lib.rs": "58a66d3db5c595372b4b6de304644d2ab87d7b7b98e29a0553b70c6ad854e361",
+    "crates/dearust-readlinkat/src/path.rs": "eeddfb6fa6f5916d413fec94761235823e12271b081ac93e4627f3fe53905f3b",
+    "crates/dearust-process/Cargo.toml": "c0da367c5e07fc433fd317511bf45eeb1eb3b142e4641aa2d6a979fd21439aaa",
+    "crates/dearust-process/SAFETY.txt": "ad2c57e2662cb6eef38907476018e3b832b393f0bdcfee4bf77e62bdde1e1c36",
+    "crates/dearust-process/src/abi.rs": "31efc72d23c1459a9be30fc7005fe3bef29ceb3e91b0fe18e2447abca17fe574",
+    "crates/dearust-process/src/info.rs": "4c7d31091cfbdc8e673816e323a5d1a2a67a1e00e46c1c08af5460841ed3d2a0",
+    "crates/dearust-process/src/lib.rs": "8d236ec2a33a3d5f8123257ac06ceda0ab58620442b38bb3d28cfd604155a7c1",
+    "crates/dearust-process/src/parse.rs": "1194e861ecc1b412cae1892b68a01bfe7f056642f4a71acead878d975b043be1",
+    "tools/fixtures/readlinkat-regression.c": "2c382afce1972ad5297470f6adb73748c4b3ac01555a5c7c88384c52259d6145",
+    "tools/fixtures/readlinkat-native.c": "ebab98a651fc690fa720bb231d4a9c770c6c8757c092389931745603018fb41b",
+    "tools/fixtures/region-query-bench.c": "6293cddc79201960fa04e6eb4c44165182672b416ec6f65a7bb2dd7efd8afb95",
+    "tools/fixtures/path-wrapper-bench.c": "c5c358c3b18d494c48d47994803c0622621d935fd7ea846c00561ee4c7037151",
+    "tools/benchmark_path_wrappers.py": "bb7f648b35ca04a036e9c89d7a23a61ce40305ef459cf8d829c1a3c826e0957d",
+    "tools/inspect_path_frames.py": "382486e111e3a433f404d414427b1c544c67d7ef62a55d99d8ef08ea79ec5ea3",
+    "tools/summarize_region_benchmark.py": "3e29e7f80c42e7f0410ac6dbdcbc13866ac80469d4af024d88e902529da742aa"
+  },
+  "evidence": {
+    "apps.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/apps.json",
+      "sha256": "fe159f384a94546a9597b45f49711b652c859f6af7d22b06126043b547760a26"
+    },
+    "utilities.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/utilities.json",
+      "sha256": "cfa202d3f3d7707aa30bed1fa5e576a2b35172d0615de8ca87ff91cbebedaddb"
+    },
+    "probes.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/probes.json",
+      "sha256": "c3fcc0bdcf7eb67427c59b635e904cc2710bdf065c6691e1cc42214bf8e6cebe"
+    },
+    "gui.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/gui.json",
+      "sha256": "2608e4be5aaf8e2c45568bb8c36da58fceff4ee6202c9267eaf495e1258e962a"
+    },
+    "gui-cleanup.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/gui-cleanup.json",
+      "sha256": "6ba949dfbd1becd541c0db78a1279c5c6031833c66ef68c283fcf6010642a822"
+    },
+    "matching-link.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/matching-link.json",
+      "sha256": "4497e6a24124942dc3496aadb21c20325a3f8c0e75db09221e033d6860ec9dd9"
+    },
+    "pinned-link.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/pinned-link.json",
+      "sha256": "c79f92f170aebc19975af4e050ea6a1ee9f6075bceb1e37acd18795337a0cef3"
+    },
+    "probe-build.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/probe-build.json",
+      "sha256": "d26d2955ac1132036298c940911ca4b7b9d3f4bc5bb546ac930c68325e5319ae"
+    },
+    "cargo-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/cargo-check.log",
+      "sha256": "a5f3be6466b1b4adacbf85631b747950b250885300a0604b21f2cac73a9e419a"
+    },
+    "python-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/python-check.log",
+      "sha256": "c50023a25a2f653e42a72b5b925e7688b7d2705df97c4116914ce0361ff05ce5"
+    },
+    "darwin-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/darwin-check.log",
+      "sha256": "3ab5a259594975b10194c53df71daefd2c82108ee38565e9c6edc9cec0dbc599"
+    },
+    "original-Calculator.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/original-Calculator.png",
+      "sha256": "639cdd1f0781f6e4d195109902aa43a3e9c6d6614e29a8f628912df3b6820182"
+    },
+    "original-TextEditor.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/original-TextEditor.png",
+      "sha256": "211220a7fa0094aedf00e37cee2697b6a3bcc0c74b6410c2e7c871ec908a6809"
+    },
+    "original-CGShadingCreate.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/original-CGShadingCreate.png",
+      "sha256": "213ba91b0d9454fa28d4543e022f3f5cd8482eb3c72574060c4076df07052a9d"
+    },
+    "rust-Calculator.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/rust-Calculator.png",
+      "sha256": "639cdd1f0781f6e4d195109902aa43a3e9c6d6614e29a8f628912df3b6820182"
+    },
+    "rust-TextEditor.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/rust-TextEditor.png",
+      "sha256": "211220a7fa0094aedf00e37cee2697b6a3bcc0c74b6410c2e7c871ec908a6809"
+    },
+    "rust-CGShadingCreate.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/rust-CGShadingCreate.png",
+      "sha256": "213ba91b0d9454fa28d4543e022f3f5cd8482eb3c72574060c4076df07052a9d"
+    },
+    "native-path.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/native-path.json",
+      "sha256": "b90fc81d0ff0cfe578aaeca96076725c82a4dac0111529f0626c9b40272a0920"
+    },
+    "guest-region.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/guest-region.json",
+      "sha256": "b896b74f79ae3bf76df2dba9492c7ebf210dd9432a83d8111d3a4c69ddc5f2d4"
+    },
+    "stack-frames.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/stack-frames.json",
+      "sha256": "9adc73a3531a7c124000ed2f422ceb93fe319af892c38a85c59b0cf7dd929cba"
+    },
+    "lstat-baseline.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/lstat-baseline.asm",
+      "sha256": "5eeb81027e451763251ca1f911763f9a76c5eb0bc757cee9fc80641491d4e5db"
+    },
+    "lstat-optimized.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/lstat-optimized.asm",
+      "sha256": "da388d05feaac44fcc1a53f6be1c8e862b58fefd9b7618678c887470a31bd7d2"
+    },
+    "fstatat-baseline.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/fstatat-baseline.asm",
+      "sha256": "7b5f768d059a6b67be5866d7ebc657015689d5e17f87b7c9484148b4130de834"
+    },
+    "fstatat-optimized.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/fstatat-optimized.asm",
+      "sha256": "a03925e658a08e42c0d8c5f227592bf0bbe8bc98961d70e4cfdb6b095a622541"
+    },
+    "symlinkat-baseline.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/symlinkat-baseline.asm",
+      "sha256": "d6a6869cd1a0a4b97c3a70e90fe51270cca2b0b672ae5a2e5575c273ff93d40a"
+    },
+    "symlinkat-optimized.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/symlinkat-optimized.asm",
+      "sha256": "6a38727795864dc7c029bd1a71572abd96da064e4df055e7d33adff2d67615e1"
+    },
+    "region-reverse.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-performance-verification/region-reverse.json",
+      "sha256": "763e4f39eb41c64076b11858830696d08fac9c967e7bdcf5c3973a5e3c1689ca"
+    }
+  },
+  "suites": {
+    "apps": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 29,
+        "strict_passes": 27,
+        "normalized_passes": 28
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 29,
+        "strict_passes": 28,
+        "normalized_passes": 29
+      }
+    ],
+    "utilities": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 16,
+        "strict_passes": 14,
+        "normalized_passes": 14
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 16,
+        "strict_passes": 16,
+        "normalized_passes": 16
+      }
+    ],
+    "probes": [
+      {
+        "variant": "original",
+        "meaning": "previous Rust kernel",
+        "cases": 9,
+        "strict_passes": 8,
+        "normalized_passes": 8
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 9,
+        "strict_passes": 9,
+        "normalized_passes": 9
+      }
+    ],
+    "gui": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 3,
+        "strict_passes": 3,
+        "normalized_passes": 3
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 3,
+        "strict_passes": 3,
+        "normalized_passes": 3
+      }
+    ]
+  },
+  "gui_visual_review": {
+    "TextEditor": "Both screenshots show rust gui edit verified typed into the document.",
+    "CGShadingCreate": "Both screenshots show red/black axial gradient and controls.",
+    "Calculator": "Both screenshots show initial value 19 and controls; subsequent selftest logs assert value=42 visible=1."
+  },
+  "artifacts": {
+    "matching-final/libsystem_kernel-original.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/perf-next/matching-final/libsystem_kernel-original.dylib",
+      "sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f"
+    },
+    "matching-final/libsystem_kernel-rust.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/perf-next/matching-final/libsystem_kernel-rust.dylib",
+      "sha256": "1d777d0500b0188e2c29849dd662580f2005372712f48370d3a1344a8d7deb91"
+    },
+    "pinned-final/libsystem_kernel.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/perf-next/pinned-final/libsystem_kernel.dylib",
+      "sha256": "f3fdc7895a2233927852d0b5816a49e8030f0ecfa8fa9097a587effb76b82405"
+    },
+    "final-stage/objects/process.o": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/perf-next/final-stage/objects/process.o",
+      "sha256": "73fff3c5e47996cbae60f6c31fcec51c18894eb67c0b871d2fa451615e30aecf"
+    },
+    "final-stage/objects/fstatat.o": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/perf-next/final-stage/objects/fstatat.o",
+      "sha256": "8994453824b8480e91fd8d0bf62c98fe18a0a7a55ea69273ab29257b76de4b97"
+    },
+    "final-stage/objects/symlinkat.o": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/perf-next/final-stage/objects/symlinkat.o",
+      "sha256": "683d157bdbfec7522469b87c710ea5231b967f404b94deb7bd8f57783bd29a12"
+    },
+    "final-stage/objects/readlinkat.o": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/perf-next/final-stage/objects/readlinkat.o",
+      "sha256": "a204e21dc2a6a95994acbc5e881ac1ea6076ddbeef85ecb4908f81d7098077c1"
+    }
+  },
+  "new_source_provenance": {
+    "readlinkat": {
+      "qualified_path": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/readlinkat.c",
+      "pinned_matches_local": true,
+      "sha256": "5667822031a2d4ce3f47e4497e667b045671f5fcfd0721fc3549e4debfc60d0d"
+    }
+  },
+  "installation_preserved": {
+    "/usr/local/libexec/darling/usr/lib/system/libsystem_kernel.dylib": "e473a4bcafbcc09a740ef6a82b656b18039db270b1cbed7b930e654a538aa052",
+    "/usr/local/bin/darlingserver": "6c792a7b1ef80284be0291bc5b51e71d6947193e864b332e073b7fe8f5a6bf69"
+  },
+  "migration_counts": {
+    "partial_dependency_sources": 9,
+    "pending_dependency_entries": 265794,
+    "cargo_target_slices": 7,
+    "pending_targets": 1622,
+    "retired_targets": 0
+  },
+  "limitations": [
+    "No allocator/panic runtime introduced, but most runtime and frameworks remain original C/C++/assembly.",
+    "Process queries retain simulated credentials and low32 Linux TID model; no full macOS access-control equivalence.",
+    "Thread Mach scheduler policy/usage/priority fields remain unavailable and zero.",
+    "Executable RPC paths >=3900 bytes are rejected before original prefix expansion.",
+    "fstatat retains original flag conversion and ENOENT behavior for invalid dirfd during vchroot expansion.",
+    "Nine-check original label means previous Rust kernel at5a3c082, not original C.",
+    "One cfbridge log-line normalization remains explicit; strict runner exits1 for it and original mismatches.",
+    "CGShadingCreate still uses the previously repaired copied nib.",
+    "Pinned link does not include the process dispatcher port; clean pinned boot and i386 Rust remain unverified."
+  ],
+  "performance": {
+    "native-path": [
+      {
+        "workload": "linux-fstatat",
+        "path_bytes": 30,
+        "baseline": {
+          "median_cpu_ns_per_call": 780.889,
+          "median_wall_ns_per_call": 787.5085,
+          "cpu_q1_ns_per_call": 769.562,
+          "cpu_q3_ns_per_call": 813.8355
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 700.112,
+          "median_wall_ns_per_call": 704.121,
+          "cpu_q1_ns_per_call": 693.2845,
+          "cpu_q3_ns_per_call": 718.1405
+        },
+        "cpu_change_percent": -10.344235864508278
+      },
+      {
+        "workload": "stub-fstatat",
+        "path_bytes": 8,
+        "baseline": {
+          "median_cpu_ns_per_call": 93.922,
+          "median_wall_ns_per_call": 94.228,
+          "cpu_q1_ns_per_call": 91.933,
+          "cpu_q3_ns_per_call": 101.035
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 30.512,
+          "median_wall_ns_per_call": 30.3925,
+          "cpu_q1_ns_per_call": 30.142,
+          "cpu_q3_ns_per_call": 32.1255
+        },
+        "cpu_change_percent": -67.51346862289985
+      },
+      {
+        "workload": "stub-fstatat",
+        "path_bytes": 128,
+        "baseline": {
+          "median_cpu_ns_per_call": 107.7075,
+          "median_wall_ns_per_call": 108.2245,
+          "cpu_q1_ns_per_call": 105.288,
+          "cpu_q3_ns_per_call": 114.2945
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 48.326,
+          "median_wall_ns_per_call": 48.106,
+          "cpu_q1_ns_per_call": 47.895,
+          "cpu_q3_ns_per_call": 53.045
+        },
+        "cpu_change_percent": -55.13218670937492
+      },
+      {
+        "workload": "stub-fstatat",
+        "path_bytes": 1024,
+        "baseline": {
+          "median_cpu_ns_per_call": 244.445,
+          "median_wall_ns_per_call": 245.003,
+          "cpu_q1_ns_per_call": 238.3935,
+          "cpu_q3_ns_per_call": 255.726
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 182.8195,
+          "median_wall_ns_per_call": 184.113,
+          "cpu_q1_ns_per_call": 181.356,
+          "cpu_q3_ns_per_call": 185.95
+        },
+        "cpu_change_percent": -25.210374521876076
+      },
+      {
+        "workload": "stub-fstatat",
+        "path_bytes": 4095,
+        "baseline": {
+          "median_cpu_ns_per_call": 694.1755,
+          "median_wall_ns_per_call": 699.983,
+          "cpu_q1_ns_per_call": 689.857,
+          "cpu_q3_ns_per_call": 708.2525
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 642.3735,
+          "median_wall_ns_per_call": 645.114,
+          "cpu_q1_ns_per_call": 626.197,
+          "cpu_q3_ns_per_call": 686.3965
+        },
+        "cpu_change_percent": -7.462378029763372
+      },
+      {
+        "workload": "stub-lstat",
+        "path_bytes": 8,
+        "baseline": {
+          "median_cpu_ns_per_call": 96.807,
+          "median_wall_ns_per_call": 96.227,
+          "cpu_q1_ns_per_call": 94.4125,
+          "cpu_q3_ns_per_call": 103.144
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 30.843,
+          "median_wall_ns_per_call": 29.8515,
+          "cpu_q1_ns_per_call": 30.6875,
+          "cpu_q3_ns_per_call": 33.914
+        },
+        "cpu_change_percent": -68.13970064148253
+      },
+      {
+        "workload": "stub-lstat",
+        "path_bytes": 128,
+        "baseline": {
+          "median_cpu_ns_per_call": 108.639,
+          "median_wall_ns_per_call": 110.098,
+          "cpu_q1_ns_per_call": 106.776,
+          "cpu_q3_ns_per_call": 114.465
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 47.1535,
+          "median_wall_ns_per_call": 46.934,
+          "cpu_q1_ns_per_call": 46.9585,
+          "cpu_q3_ns_per_call": 51.757
+        },
+        "cpu_change_percent": -56.59615791750661
+      },
+      {
+        "workload": "stub-lstat",
+        "path_bytes": 1024,
+        "baseline": {
+          "median_cpu_ns_per_call": 235.6135,
+          "median_wall_ns_per_call": 237.013,
+          "cpu_q1_ns_per_call": 232.792,
+          "cpu_q3_ns_per_call": 245.6665
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 184.3865,
+          "median_wall_ns_per_call": 188.7065,
+          "cpu_q1_ns_per_call": 179.7935,
+          "cpu_q3_ns_per_call": 194.065
+        },
+        "cpu_change_percent": -21.741963002968834
+      },
+      {
+        "workload": "stub-lstat",
+        "path_bytes": 4095,
+        "baseline": {
+          "median_cpu_ns_per_call": 689.5665,
+          "median_wall_ns_per_call": 692.2835,
+          "cpu_q1_ns_per_call": 681.1915,
+          "cpu_q3_ns_per_call": 703.1875
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 634.613,
+          "median_wall_ns_per_call": 636.127,
+          "cpu_q1_ns_per_call": 620.2615,
+          "cpu_q3_ns_per_call": 648.79
+        },
+        "cpu_change_percent": -7.969282150452484
+      },
+      {
+        "workload": "stub-symlinkat",
+        "path_bytes": 8,
+        "baseline": {
+          "median_cpu_ns_per_call": 94.643,
+          "median_wall_ns_per_call": 94.704,
+          "cpu_q1_ns_per_call": 93.02,
+          "cpu_q3_ns_per_call": 102.7985
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 29.0495,
+          "median_wall_ns_per_call": 28.8295,
+          "cpu_q1_ns_per_call": 28.539,
+          "cpu_q3_ns_per_call": 30.978
+        },
+        "cpu_change_percent": -69.30623500945659
+      },
+      {
+        "workload": "stub-symlinkat",
+        "path_bytes": 128,
+        "baseline": {
+          "median_cpu_ns_per_call": 111.8205,
+          "median_wall_ns_per_call": 112.783,
+          "cpu_q1_ns_per_call": 110.668,
+          "cpu_q3_ns_per_call": 117.371
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 46.437,
+          "median_wall_ns_per_call": 46.2575,
+          "cpu_q1_ns_per_call": 45.9915,
+          "cpu_q3_ns_per_call": 48.526
+        },
+        "cpu_change_percent": -58.47183655948596
+      },
+      {
+        "workload": "stub-symlinkat",
+        "path_bytes": 1024,
+        "baseline": {
+          "median_cpu_ns_per_call": 242.2405,
+          "median_wall_ns_per_call": 246.992,
+          "cpu_q1_ns_per_call": 238.924,
+          "cpu_q3_ns_per_call": 246.398
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 180.725,
+          "median_wall_ns_per_call": 180.8115,
+          "cpu_q1_ns_per_call": 178.571,
+          "cpu_q3_ns_per_call": 190.3675
+        },
+        "cpu_change_percent": -25.39439111131293
+      },
+      {
+        "workload": "stub-symlinkat",
+        "path_bytes": 4095,
+        "baseline": {
+          "median_cpu_ns_per_call": 710.1905,
+          "median_wall_ns_per_call": 712.356,
+          "cpu_q1_ns_per_call": 705.612,
+          "cpu_q3_ns_per_call": 776.2705
+        },
+        "optimized": {
+          "median_cpu_ns_per_call": 642.358,
+          "median_wall_ns_per_call": 644.7185,
+          "cpu_q1_ns_per_call": 631.583,
+          "cpu_q3_ns_per_call": 653.7945
+        },
+        "cpu_change_percent": -9.551310528653945
+      }
+    ],
+    "guest-region": [
+      {
+        "flavor": 8,
+        "baseline": {
+          "samples": 42,
+          "median_cpu_us_per_call": 255.44,
+          "cpu_q1_us_per_call": 253.49,
+          "cpu_q3_us_per_call": 257.5,
+          "median_wall_us_per_call": 256.85
+        },
+        "optimized": {
+          "samples": 42,
+          "median_cpu_us_per_call": 113.27000000000001,
+          "cpu_q1_us_per_call": 112.685,
+          "cpu_q3_us_per_call": 114.08,
+          "median_wall_us_per_call": 113.53999999999999
+        },
+        "cpu_change_percent": -55.65690573128719
+      },
+      {
+        "flavor": 22,
+        "baseline": {
+          "samples": 42,
+          "median_cpu_us_per_call": 255.39,
+          "cpu_q1_us_per_call": 254.765,
+          "cpu_q3_us_per_call": 258.805,
+          "median_wall_us_per_call": 256.66999999999996
+        },
+        "optimized": {
+          "samples": 42,
+          "median_cpu_us_per_call": 112.35,
+          "cpu_q1_us_per_call": 112.225,
+          "cpu_q3_us_per_call": 112.495,
+          "median_wall_us_per_call": 112.72
+        },
+        "cpu_change_percent": -56.00845765300129
+      }
+    ],
+    "stack-frames": {
+      "lstat": {
+        "baseline": {
+          "object_sha256": "037867db2640bc685403090c67db56f42126d175eae42fa268175729528cb22c",
+          "object_bytes": 1896,
+          "max_local_stack_subtraction_bytes": 12312,
+          "imports": [
+            "___bzero",
+            "_dearust_get_perthread_wd",
+            "_linux_syscall",
+            "_memcpy",
+            "_stat_linux_to_bsd",
+            "_stat_linux_to_bsd64",
+            "_vchroot_expand"
+          ]
+        },
+        "optimized": {
+          "object_sha256": "cad58c17245e9f92e873d8d1cca5793322cda132d1390d290026b8ad706f6c07",
+          "object_bytes": 1704,
+          "max_local_stack_subtraction_bytes": 4264,
+          "imports": [
+            "___bzero",
+            "_dearust_get_perthread_wd",
+            "_linux_syscall",
+            "_stat_linux_to_bsd",
+            "_stat_linux_to_bsd64",
+            "_vchroot_expand"
+          ]
+        }
+      },
+      "fstatat": {
+        "baseline": {
+          "object_sha256": "f65df19e8376e4106a2579a54c4b6e89ad85a6a25c9c4dd8e209cf6e20c0eed0",
+          "object_bytes": 1992,
+          "max_local_stack_subtraction_bytes": 12328,
+          "imports": [
+            "___bzero",
+            "_atfd",
+            "_atflags_bsd_to_linux",
+            "_linux_syscall",
+            "_memcpy",
+            "_stat_linux_to_bsd",
+            "_stat_linux_to_bsd64",
+            "_vchroot_expand"
+          ]
+        },
+        "optimized": {
+          "object_sha256": "8994453824b8480e91fd8d0bf62c98fe18a0a7a55ea69273ab29257b76de4b97",
+          "object_bytes": 1824,
+          "max_local_stack_subtraction_bytes": 4264,
+          "imports": [
+            "___bzero",
+            "_atfd",
+            "_atflags_bsd_to_linux",
+            "_linux_syscall",
+            "_stat_linux_to_bsd",
+            "_stat_linux_to_bsd64",
+            "_vchroot_expand"
+          ]
+        }
+      },
+      "symlinkat": {
+        "baseline": {
+          "object_sha256": "f03db210c57a0b80229b3feadfa81d34f153d7e8bc2bda91243b43cba53ba97d",
+          "object_bytes": 1544,
+          "max_local_stack_subtraction_bytes": 12304,
+          "imports": [
+            "___bzero",
+            "_atfd",
+            "_linux_syscall",
+            "_memcpy",
+            "_vchroot_expand"
+          ]
+        },
+        "optimized": {
+          "object_sha256": "683d157bdbfec7522469b87c710ea5231b967f404b94deb7bd8f57783bd29a12",
+          "object_bytes": 1360,
+          "max_local_stack_subtraction_bytes": 4120,
+          "imports": [
+            "___bzero",
+            "_atfd",
+            "_linux_syscall",
+            "_vchroot_expand"
+          ]
+        }
+      }
+    }
+  },
+  "benchmark_scope": "Native stub savings exclude OS/vchroot/converter costs; adapted Linux fstatat is distinct from guest region timing. Stack-frame reduction is not an RSS claim. CPU reductions are workload-specific.",
+  "toolchain": {
+    "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0\nLLVM version: 23.1.1\n",
+    "clang": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)"
+  }
+}

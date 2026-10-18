@@ -14,6 +14,7 @@ from relink_system_kernel import KERNEL, REPLACEMENTS, digest, link_provenance, 
 
 PROC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/misc/proc_info.c.o'
 FORK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/process/fork.c.o'
+READLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/readlinkat.c.o'
 SYMLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/symlinkat.c.o'
 FSTATAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstatat.c.o'
 LSTAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/lstat.c.o'
@@ -77,6 +78,10 @@ def integrate(args):
         if inputs.count(LSTAT) != 1 or not args.lstat_object.is_file():
             raise ValueError('missing unique lstat input')
         replacements[LSTAT] = args.lstat_object.resolve(strict=True)
+    if args.readlinkat_object:
+        if inputs.count(READLINKAT) != 1 or not args.readlinkat_object.is_file():
+            raise ValueError('missing unique readlinkat input')
+        replacements[READLINKAT] = args.readlinkat_object.resolve(strict=True)
     if args.symlinkat_object:
         if inputs.count(SYMLINKAT) != 1 or not args.symlinkat_object.is_file():
             raise ValueError('missing unique symlinkat input')
@@ -154,6 +159,8 @@ def integrate(args):
                 wanted['_dearust_get_perthread_wd'] = args.lstat_bridge.name
                 wanted['_sys_lstat'] = args.lstat_object.name
                 wanted['_sys_lstat64'] = args.lstat_object.name
+            if args.readlinkat_object:
+                wanted['_sys_readlinkat'] = args.readlinkat_object.name
             if args.symlinkat_object:
                 wanted['_sys_symlinkat'] = args.symlinkat_object.name
             if args.fstatat_object:
@@ -184,6 +191,7 @@ def main():
     parser.add_argument('--process-object', type=Path)
     parser.add_argument('--guarded-object', type=Path)
     parser.add_argument('--fork-object', type=Path)
+    parser.add_argument('--readlinkat-object', type=Path)
     parser.add_argument('--symlinkat-object', type=Path)
     parser.add_argument('--fstatat-object', type=Path)
     parser.add_argument('--lstat-object', type=Path)

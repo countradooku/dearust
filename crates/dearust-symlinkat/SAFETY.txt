@@ -33,3 +33,13 @@ This is a partial source migration retaining original C vchroot/descriptor/TLS
 helpers. Only x86_64 is supported. Native fixture uses explicit vchroot/TLS
 adapters and raw Linux syscalls. Guest fixture separately checks actual Darling
 expansion, link bytes, dirfd differing from cwd, and per-thread cwd behavior.
+
+Performance continuation: the safe copier fills initialized Expanded.path in place,
+rather than returning a 4096-byte array through Result and copying that array into
+Expanded. NULL validation still precedes copying; bounded copying still precedes
+all descriptor/TLS, virtual-root and syscall boundaries. Copying stops at NUL and
+leaves the initialized suffix untouched. No uninitialized storage or new unsafe
+operation is introduced. Native release assembly removes the full-array memcpy
+and reduces local stack allocation by about 8 KiB per wrapper invocation. The
+4096-byte zero initialization is deliberately retained for the foreign boundary.
+Tests also verify untouched destination suffix and exact capacity bounds.

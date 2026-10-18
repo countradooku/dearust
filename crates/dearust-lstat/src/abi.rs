@@ -20,21 +20,21 @@ unsafe fn lstat(path: *const u8, output: *mut c_void, wide: bool) -> i64 {
     if path.is_null() || output.is_null() {
         return -14;
     }
-    let path = match crate::path::copy(|index| {
+    let mut expanded = Expanded {
+        path: [0; crate::path::CAPACITY],
+        flags: 0,
+        dfd: 0,
+    };
+    if let Err(error) = crate::path::copy_into(&mut expanded.path, |index| {
         // SAFETY: caller provides readable bytes through NUL or 4096 bytes,
         // whichever is shorter. The safe copier only requests indexes <4096.
         unsafe { path.add(index).read() }
     }) {
-        Ok(path) => path,
-        Err(error) => return error,
-    };
-    let mut expanded = Expanded {
-        path,
-        flags: 0,
-        // SAFETY: caller is a guest runtime thread with initialized Darling TLS;
-        // bridge uses the original inline per-thread cwd accessor.
-        dfd: unsafe { dearust_get_perthread_wd() },
-    };
+        return error;
+    }
+    // SAFETY: resolve the original guest descriptor/TLS helper only after path
+    // validation, preserving error ordering without a second path buffer.
+    expanded.dfd = unsafe { dearust_get_perthread_wd() };
     // SAFETY: repr(C) argument matches original vchroot_expand_args with writable
     // NUL-terminated storage; callee follows no final symlink because flags=0.
     let result = unsafe { vchroot_expand(&mut expanded) };

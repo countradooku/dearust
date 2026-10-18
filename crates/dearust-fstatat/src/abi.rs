@@ -22,20 +22,21 @@ unsafe fn fstatat(fd: i32, path: *const u8, output: *mut c_void, flags: i32, wid
     if path.is_null() || output.is_null() {
         return -14;
     }
-    let path = match crate::path::copy(|index| {
+    let mut expanded = Expanded {
+        path: [0; crate::path::CAPACITY],
+        flags: if flags & 0x20 == 0 { 1 } else { 0 },
+        dfd: 0,
+    };
+    if let Err(error) = crate::path::copy_into(&mut expanded.path, |index| {
         // SAFETY: caller supplies readable bytes through NUL or 4096 bytes;
         // the safe copier requests only in-bounds indexes and stops at NUL.
         unsafe { path.add(index).read() }
     }) {
-        Ok(path) => path,
-        Err(error) => return error,
-    };
-    let mut expanded = Expanded {
-        path,
-        flags: if flags & 0x20 == 0 { 1 } else { 0 },
-        // SAFETY: original helper reads initialized guest TLS for BSD_AT_FDCWD.
-        dfd: unsafe { atfd(fd) },
-    };
+        return error;
+    }
+    // SAFETY: resolve the original guest descriptor/TLS helper only after path
+    // validation, preserving error ordering without a second path buffer.
+    expanded.dfd = unsafe { atfd(fd) };
     // SAFETY: repr(C) matches vchroot_expand_args and holds a terminated path.
     // The callee must preserve termination on success and must not unwind.
     let result = unsafe { vchroot_expand(&mut expanded) };

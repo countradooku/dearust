@@ -1,0 +1,100 @@
+Dearust runtime continuation: bounded readlinkat and measured path/query costs
+============================================================================
+
+Project owner: @countradooku. AI assistance: OpenAI Codex.
+Full migration remains INCOMPLETE. Exact evidence: runtime-performance-verification.json.
+
+New runtime implementation
+--------------------------
+The no_std dearust-readlinkat crate replaces original sys_readlinkat with a bounded
+path copied directly into initialized vchroot storage. Original atfd/TLS and
+no-follow expansion remain C. Linux readlinkat syscall 267 receives the original
+output pointer and sign-extended int count; the result is narrowed as in C.
+No NUL terminator is added. Kernel output validation and errors for zero/negative
+counts, missing paths and NULL outputs are retained. NULL input now returns
+EFAULT instead of crashing; unterminated 4096-byte input returns ENAMETOOLONG.
+Readlink's original C wrapper now reaches Rust through this entry but is not
+counted as migrated. Arbitrary invalid non-NULL input pointers remain outside
+the existing in-process caller contract. SAFETY.txt records those boundaries.
+
+Memory and CPU changes
+----------------------
+lstat/lstat64, fstatat/fstatat64 and symlinkat now fill the initialized ABI path
+array directly. The old by-value array return caused full-buffer copies and
+multiple stack buffers. The safe bounded copier still reads at most 4096 bytes,
+stops at NUL, preserves arbitrary byte paths and leaves the initialized suffix
+alone. Existing validation-before-TLS ordering is preserved for those wrappers.
+No new unsafe, heap allocation, panic runtime or stale global cache is introduced.
+
+Generated Darwin local stack subtractions, excluding register pushes/callees:
+                    before       after
+    lstat           12312 B      4264 B
+    fstatat         12328 B      4264 B
+    symlinkat       12304 B      4120 B
+
+Both full-buffer memcpy calls are absent from the new Darwin path implementations.
+One initialized path buffer remains. This is about 8 KiB less local stack per
+invocation; it is NOT a measured process-RSS reduction. inspect_path_frames.py
+records actual staged-object disassembly, object sizes, hashes and imports.
+
+Region queries now reject impossible address candidates before path decoding,
+map_files readlink and overlay stat. Address-based flavors 8/22 skip mappings
+ending before the requested address; file-backed flavor22 skips anonymous maps.
+Device-based flavor23 still checks recovered file identity. No mapping/credential
+cache is introduced, preserving existing process/mapping lifetime behavior.
+Pure boundary tests and actual guest identity/path probes cover selection.
+
+Measurements
+------------
+Compared against commit 5a3c082 on the same host and compiler/toolchain:
+
+- 21 alternating native baseline/optimized samples, 2000 calls per workload,
+  pinned to one eligible CPU. Synthetic boundary adapters isolate wrapper costs:
+  short paths improve about 55..69%; 1024-byte paths about 22..25%; 4095-byte
+  paths about 8..10%. These adapters omit production vchroot and OS costs.
+- A real Linux fstatat syscall with the same explicit guest-boundary adapters
+  measured median thread CPU 780.9 -> 700.1 ns/call, about 10% lower. This is
+  still native Linux validation, not a Darling syscall-latency measurement.
+- Actual matching guest region queries over 128 file-mapping aliases, 50 calls
+  per sample, 42 samples per flavor, old/new/new/old process order: flavor8
+  median CPU 255.44 -> 113.27 us/call; flavor22 255.39 -> 112.35 us/call.
+  Both reduce CPU by about 56% in this workload. CPU interquartile ranges are
+  recorded; wall-time medians are approximately 257 -> 113 us/call.
+
+Raw samples, timers and scope distinctions are preserved. These workload-specific
+results do not establish a general application or full Darling speedup. Heap-free
+wrappers and reduced generated stack storage are distinct from resident memory.
+
+Verification and reproduction
+-----------------------------
+119 Rust tests, 29 Python tests, formatting, strict Clippy and the explicit Darwin
+ABI/staging test pass. Native C fixtures execute lstat/fstatat/symlinkat/readlinkat
+with actual Linux syscalls and explicit TLS/vchroot/converter adapters. Nine guest
+checks (eight regression probes plus the region workload) pass the final Rust
+kernel. Prior Rust crashes in the new NULL-path readlinkat regression.
+
+Matching link preserves 1370 public definitions and 40 imports. Pinned link
+preserves 1362 definitions and 18 imports and its original i386 slice bytes.
+The process dispatcher still executes only in the matching integration gate.
+All sixteen utilities, existing 29 app checks (28 exact plus explicit cfbridge
+normalization), and three GUI samples pass the final runtime within their
+previous fixture/coverage limits. All execution uses owned prefixes and the
+isolated Rust-lockset server. Installed kernel/server and user prefix are intact.
+
+Reproduce runtime staging and linking as in RUNTIME-NEXT.txt, adding:
+
+    --readlinkat-object "$WORK/runtime/objects/readlinkat.o"
+
+Build readlinkat-regression.c and region-query-bench.c with build_runtime_probes.py.
+The latter emits predetermined PASS stdout and raw timing records on stderr.
+Run old/new and reversed new/old kernel comparisons, then summarize them with
+summarize_region_benchmark.py --forward JSON --reverse JSON --output JSON.
+Native performance helpers:
+
+    python3 tools/benchmark_path_wrappers.py --baseline OLD_NATIVE_STAGE --optimized NEW_NATIVE_STAGE --output NEW_DIRECTORY
+    python3 tools/inspect_path_frames.py --baseline OLD_DARWIN_STAGE --optimized NEW_DARWIN_STAGE --output NEW_DIRECTORY
+
+Most runtime/framework/build work remains: nine dependency source slices partial,
+265794 dependency entries pending; seven Cargo target slices, 1622 pending targets,
+zero retired targets. i386 Rust, clean pinned boot and arbitrary commercial app
+compatibility remain unverified.

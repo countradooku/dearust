@@ -45,6 +45,7 @@ fn check(triple: &str, label: &str) {
         "fstatat",
         "process",
         "symlinkat",
+        "readlinkat",
     ];
     let initial: Vec<_> = names
         .iter()
@@ -82,6 +83,7 @@ fn check(triple: &str, label: &str) {
             .iter()
             .map(|s| format!("{prefix}{s}"))
             .collect(),
+            "readlinkat" => vec![format!("{prefix}sys_readlinkat")],
             "symlinkat" => vec![format!("{prefix}sys_symlinkat")],
             "process" => vec![format!("{prefix}sys_proc_info")],
             "fstatat" => ["sys_fstatat", "sys_fstatat64"]
@@ -124,7 +126,6 @@ fn check(triple: &str, label: &str) {
             "lstat" | "fstatat" => {
                 let mut imports = vec![
                     "linux_syscall",
-                    "memcpy",
                     "stat_linux_to_bsd",
                     "stat_linux_to_bsd64",
                     "vchroot_expand",
@@ -148,12 +149,11 @@ fn check(triple: &str, label: &str) {
                 imports.sort();
                 imports
             }
-            "symlinkat" => {
+            "symlinkat" | "readlinkat" => {
                 let mut imports = [
                     "atfd",
                     "vchroot_expand",
                     "linux_syscall",
-                    "memcpy",
                     if triple.contains("apple") {
                         "__bzero"
                     } else {
@@ -229,6 +229,7 @@ fn check(triple: &str, label: &str) {
             ("fstatat", 2),
             ("process", 1),
             ("symlinkat", 1),
+            ("readlinkat", 1),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
@@ -246,7 +247,7 @@ fn check(triple: &str, label: &str) {
         }
     }
     if !triple.contains("apple") {
-        for name in ["lstat", "fstatat", "symlinkat"] {
+        for name in ["lstat", "fstatat", "symlinkat", "readlinkat"] {
             let driver = Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join(format!("../tools/fixtures/{name}-native.c"));
             let executable = temp.0.join(format!("{name}-native"));

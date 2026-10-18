@@ -366,3 +366,19 @@ are dearust-continuation/work/port-next/{final-stage,matching-final,pinned-final
 workloads, existing app checks and three GUI samples pass within documented
 normalization/fixture limits. Eight dependency sources remain partial, 265795
 entries remain pending, target counts remain seven / 1622 / zero retired.
+
+Continuation: CPU/memory performance and readlinkat
+-------------------------------------------------
+User explicitly prioritizes very high CPU and memory performance. Preserve ABI
+and correctness, avoid allocations/caches that change process lifetime semantics,
+and measure actual work rather than infer gains from Rust. Latest evidence is
+RUNTIME-PERFORMANCE.txt and runtime-performance-verification.json. In-place path
+copying cuts generated local stack from ~12KiB to ~4KiB; address region queries
+skip impossible metadata work and measure ~56% less CPU in the specified guest
+workload. Do not turn those into general app or process-RSS claims. New readlinkat
+object replaces one C source, preserving raw output/count behavior. Add its
+--readlinkat-object relinker option to previous arguments. Final artifacts are
+dearust-continuation/work/perf-next/{final-stage,matching-final,pinned-final}.
+119 Rust tests, 29 Python tests and documented app/utility/GUI/probe gates pass.
+Nine dependency sources remain partial, 265794 entries pending; target counts
+remain seven Cargo slices / 1622 pending / zero retired.
