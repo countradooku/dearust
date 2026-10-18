@@ -27,7 +27,9 @@ FSYNC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fsyn
 FDATASYNC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fdatasync.c.o'
 LSEEK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/lseek.c.o'
 FLOCK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/flock.c.o'
-PROCESS_IDS = tuple('emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/'+name+'.c.o' for name in ('getpid','getppid','getpgrp','getpgid','getsid'))
+UMASK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/umask.c.o'
+GETDTABLESIZE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/getdtablesize.c.o'
+PROCESS_IDS = tuple('emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/'+name+'.c.o' for name in ('getpid','getppid','getpgrp','getpgid','getsid','setpgid','setsid'))
 READLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/readlinkat.c.o'
 SYMLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/symlinkat.c.o'
 FSTATAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstatat.c.o'
@@ -159,7 +161,7 @@ def integrate(args):
             raise ValueError('grouped fd object conflicts with individual descriptor objects')
         if not args.fd_object.is_file():
             raise ValueError('missing grouped descriptor object')
-        for name in (FCHMOD, FTRUNCATE, FSYNC, FDATASYNC, LSEEK, FLOCK):
+        for name in (FCHMOD, FTRUNCATE, FSYNC, FDATASYNC, LSEEK, FLOCK, UMASK, GETDTABLESIZE):
             if inputs.count(name) != 1:
                 raise ValueError('missing unique grouped descriptor input: ' + name)
             replacements[name] = args.fd_object.resolve(strict=True)
@@ -289,6 +291,8 @@ def integrate(args):
         wanted['_sys_getpgrp'] = args.process_ids_object.name
         wanted['_sys_getpgid'] = args.process_ids_object.name
         wanted['_sys_getsid'] = args.process_ids_object.name
+        wanted['_sys_setpgid'] = args.process_ids_object.name
+        wanted['_sys_setsid'] = args.process_ids_object.name
     if args.fd_object:
         wanted['_sys_fchmod'] = args.fd_object.name
         wanted['_sys_ftruncate'] = args.fd_object.name
@@ -297,6 +301,8 @@ def integrate(args):
         wanted['_sys_lseek'] = args.fd_object.name
         wanted['_sys_flock'] = args.fd_object.name
         wanted['_sys_fsync_nocancel'] = args.fd_object.name
+        wanted['_sys_umask'] = args.fd_object.name
+        wanted['_sys_getdtablesize'] = args.fd_object.name
     if args.fchmod_object:
         wanted['_sys_fchmod'] = args.fchmod_object.name
     if args.ftruncate_object:

@@ -99,6 +99,8 @@ fn check(triple: &str, label: &str) {
                 "sys_lseek",
                 "sys_flock",
                 "sys_fsync_nocancel",
+                "sys_umask",
+                "sys_getdtablesize",
             ]
             .iter()
             .map(|s| format!("{prefix}{s}"))
@@ -120,6 +122,8 @@ fn check(triple: &str, label: &str) {
                 "sys_getpgrp",
                 "sys_getpgid",
                 "sys_getsid",
+                "sys_setpgid",
+                "sys_setsid",
             ]
             .iter()
             .map(|s| format!("{prefix}{s}"))
@@ -249,9 +253,11 @@ fn check(triple: &str, label: &str) {
                 format!("{prefix}libsimple_lock_lock"),
                 format!("{prefix}libsimple_lock_unlock"),
             ],
-            "fd" | "process-ids" => {
-                vec![format!("{prefix}linux_syscall")]
-            }
+            "fd" => vec![
+                format!("{prefix}linux_syscall"),
+                format!("{prefix}sys_getrlimit"),
+            ],
+            "process-ids" => vec![format!("{prefix}linux_syscall")],
             "futex" => vec![format!("{prefix}cerror"), format!("{prefix}linux_syscall")],
             _ => vec![],
         };
@@ -274,7 +280,7 @@ fn check(triple: &str, label: &str) {
             ("lstat", 2),
             ("fstatat", 2),
             ("process", 1),
-            ("process-ids", 5),
+            ("process-ids", 7),
             ("symlinkat", 1),
             ("readlinkat", 1),
             ("unlinkat", 1),
@@ -283,7 +289,7 @@ fn check(triple: &str, label: &str) {
             ("mkdirat", 1),
             ("faccessat", 1),
             ("fchmodat", 2),
-            ("fd", 7),
+            ("fd", 9),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")

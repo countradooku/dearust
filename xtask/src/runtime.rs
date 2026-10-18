@@ -90,6 +90,8 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                                 "sys_lseek",
                                 "sys_flock",
                                 "sys_fsync_nocancel",
+                                "sys_umask",
+                                "sys_getdtablesize",
                             ],
                             "dearust-process" if f[3] == "identifiers" => vec![
                                 "sys_getpid",
@@ -97,6 +99,8 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                                 "sys_getpgrp",
                                 "sys_getpgid",
                                 "sys_getsid",
+                                "sys_setpgid",
+                                "sys_setsid",
                             ],
                             "dearust-process" => vec!["sys_proc_info"],
                             "dearust-unlinkat" => vec!["sys_unlinkat"],

@@ -11,16 +11,16 @@ Sources at xnu fa29287aa2f0115271e091f1031f53c9e024005d under
  flock.c      f59872b99eedcb5718388af71be338e84dda9f990a1be39c7788c285a0132a4c
 Hashes are SHA256; exact pinned/matching C files are byte-identical.
 
-Seven public ABI entries retain six original source implementations. Only the
-original seven-argument raw linux_syscall foreign boundary is imported. Its ABI
-must be preserved and it must not unwind. Rust reads no caller pointers. The
+Nine public ABI entries retain eight original source implementations. The
+original seven-argument raw linux_syscall and original sys_getrlimit boundaries
+are imported. Both ABIs must be preserved and neither may unwind. Rust reads no caller pointers. The
 unsafe region is confined to ABI exports and raw calls in abi.rs. Signed 32-bit
 fd, mode, whence and flock operation are sign-extended; signed 64-bit length and
 offset are preserved. Unused raw slots are zero. Linux x86_64 syscall numbers:
-fchmod91, ftruncate77, fsync74, fdatasync75, lseek8, flock73.
+fchmod91, ftruncate77, fsync74, fdatasync75, lseek8, flock73, umask95.
 
-All except lseek narrow raw results to C int before sign checking/one errno
-conversion. lseek retains every nonnegative signed 64-bit result; only negative
+Raw syscall wrappers except lseek narrow results to C int before sign checking
+and one errno conversion. lseek retains every nonnegative signed 64-bit result; only negative
 results narrow to original errno converter int. sys_fsync delegates directly to
 sys_fsync_nocancel. No cancellation hooks, EINTR retry, credential changes or lock
 emulation are added. Kernel permission, lock ownership, shared open-file-description
@@ -31,3 +31,31 @@ Scope is x86_64 only; i386 ftruncate64/_llseek splitting is not implemented.
 Native fixture checks exact arguments, synthetic return widths and EINTR once,
 plus real descriptor behavior. Guest fixtures independently exercise actual
 Darling lseek/flock. Sparse >4GiB files require only small fixed user buffers.
+
+Mask and descriptor-limit continuation
+--------------------------------------
+Additional exact-pin/matching byte-identical sources and SHA256:
+ umask.c ce44aa93d4c9e597c1c98023d10e4f594507d321df49491fa5fe17a358aef4e5
+ getdtablesize.c e5ad0ef6d4e0136db41e757fca12a87e8f1767b3831d02104808ff551220fe56
+Unsigned 32-bit umask is ZERO-extended; its result still narrows to signed C int
+before one Linux/Darwin conversion. Native masks are restored in the owned test
+process; other user processes' masks and limits are unchanged.
+
+getdtablesize retains original sys_getrlimit(BSD_RLIMIT_NOFILE=8) policy, including
+its Linux soft/hard-limit decrements. Status narrows from long to C int exactly
+as C; negative status is already Darwin errno and MUST NOT be converted again.
+Every nonnegative status, even positive, returns unsigned soft limit clamped to
+INT_MAX. Full UINT64_MAX clamps safely, including high signed bits.
+
+The retained header conversion/misc/getrlimit.h defines xnu_rlimit as two u64s
+followed by 20 reserved long slots (176 bytes, alignment 8 in LP64). Rust matches
+the FULL initialized structure, with current at offset 0 and maximum at offset 8.
+The retained C sys_getrlimit must write only within that storage, not retain its
+pointer, and not unwind. It currently passes its first 16 bytes to prlimit64 and
+decrements those two values; the reserved tail is preserved for the declared ABI.
+No new converter or limit cache exists. Native callback tests can write every
+byte of the full structure. Native mask changes are restored in their own process;
+guest soft-limit changes occur only in a forked owned child and are restored
+before child exit. Tests cover status narrowing, no double conversion and clamp
+boundaries. The full fixed local limit buffer costs 176 bytes; native optimized assembly uses
+a 184-byte local frame including call alignment. No heap is used.

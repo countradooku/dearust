@@ -20,4 +20,6 @@ pub use abi::sys_proc_info;
 #[allow(unsafe_code)]
 mod identifiers;
 #[cfg(feature = "identifiers")]
-pub use identifiers::{sys_getpgid, sys_getpgrp, sys_getpid, sys_getppid, sys_getsid};
+pub use identifiers::{
+    sys_getpgid, sys_getpgrp, sys_getpid, sys_getppid, sys_getsid, sys_setpgid, sys_setsid,
+};

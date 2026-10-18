@@ -1,4 +1,16 @@
+// Full original xnu_rlimit layout, including its reserved twenty-long tail.
+#[repr(C)]
+struct XnuRlimit {
+    current: u64,
+    maximum: u64,
+    reserved: [i64; 20],
+}
+const _: () = assert!(core::mem::size_of::<XnuRlimit>() == 176);
+const _: () = assert!(core::mem::align_of::<XnuRlimit>() == 8);
+const _: () = assert!(core::mem::offset_of!(XnuRlimit, current) == 0);
+const _: () = assert!(core::mem::offset_of!(XnuRlimit, maximum) == 8);
 unsafe extern "C" {
+    fn sys_getrlimit(which: u32, limit: *mut XnuRlimit) -> i64;
     fn linux_syscall(a1: i64, a2: i64, a3: i64, a4: i64, a5: i64, a6: i64, nr: i32) -> i64;
 }
 
@@ -72,5 +84,32 @@ pub extern "C" fn sys_lseek(fd: i32, offset: i64, whence: i32) -> i64 {
         i64::from(dearust_errno::linux_to_bsd(result as i32))
     } else {
         result
+    }
+}
+
+/// Preserves unsigned mask argument width and the original errno contract.
+#[unsafe(no_mangle)]
+pub extern "C" fn sys_umask(newmask: u32) -> i64 {
+    // SAFETY: raw Linux umask95 accepts a zero-extended unsigned mask, no pointer;
+    // the foreign ABI must be preserved and must not unwind into Rust.
+    narrow_result(unsafe { linux_syscall(i64::from(newmask), 0, 0, 0, 0, 0, 95) })
+}
+
+/// Uses the retained Darling rlimit policy and clamps its unsigned soft limit.
+#[unsafe(no_mangle)]
+pub extern "C" fn sys_getdtablesize() -> i64 {
+    let mut limit = XnuRlimit {
+        current: 0,
+        maximum: 0,
+        reserved: [0; 20],
+    };
+    // SAFETY: full initialized176-byte repr(C) storage matches original xnu_rlimit.
+    // Original sys_getrlimit for BSD_NOFILE8 writes within it and retains no pointer.
+    // The foreign boundary must not unwind and returns an already-Darwin error.
+    let status = unsafe { sys_getrlimit(8, &mut limit) } as i32;
+    if status < 0 {
+        i64::from(status)
+    } else {
+        limit.current.min(i32::MAX as u64) as i64
     }
 }

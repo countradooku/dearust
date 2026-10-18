@@ -34,7 +34,7 @@ def main():
         parser.add_argument('--'+name,type=Path,required=True)
     parser.add_argument('--samples',type=int,default=21)
     parser.add_argument('--iterations',type=int,default=2000)
-    parser.add_argument('--family', choices=['mutation','permissions','fdops','descriptors','identifiers'], default='mutation')
+    parser.add_argument('--family', choices=['mutation','permissions','fdops','descriptors','identifiers','control'], default='mutation')
     args=parser.parse_args()
     if args.samples<3 or args.iterations<1:
         parser.error('at least three samples and positive iterations required')
@@ -53,6 +53,8 @@ def main():
         paths={n:'unistd/'+n+'.c' for n in descriptor_names}
     if args.family=='identifiers':
         paths={n:'unistd/'+n+'.c' for n in ['getpid','getppid','getpgrp','getpgid','getsid']}
+    if args.family=='control':
+        paths={n:'unistd/'+n+'.c' for n in ['setpgid','setsid','umask','getdtablesize']}
     names=tuple(paths)
     sources=[base/'src/xnu_syscall/bsd/impl'/path for path in paths.values()]
     inputs=pinned_hashes(source,[*sources,base/'include/conversion/common_at.h'])
@@ -88,6 +90,14 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
         original_header=base/'include/xnu_syscall/bsd/impl/unistd/fsync.h'
         inputs.update(pinned_hashes(source,[original_header]))
         header('xnu_syscall/bsd/impl/unistd/fsync.h',original_header.read_text())
+    if args.family=='control':
+        for relative in ('xnu_syscall/bsd/impl/misc/getrlimit.h', 'conversion/misc/getrlimit.h'):
+            original_header=base/'include'/relative
+            inputs.update(pinned_hashes(source,[original_header]))
+            header(relative,original_header.read_text())
+        # Audit the retained NOFILE -1 policy even though this native adapter
+        # uses host getrlimit instead of guest prlimit64/TLS runtime paths.
+        inputs.update(pinned_hashes(source,[base/'src/xnu_syscall/bsd/impl/misc/getrlimit.c']))
     commands=[]
     for name,path in zip(names,sources):
         command=['clang','-O3','-fPIC','-fvisibility=hidden','-I'+str(headers),'-c',str(path),'-o',str(args.output/(name+'.o'))]
@@ -99,16 +109,20 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
         driver=Path(__file__).parent/'fixtures/descriptors-bench.c'
     if args.family=='identifiers':
         driver=Path(__file__).parent/'fixtures/identifiers-bench.c'
+    if args.family=='control':
+        driver=Path(__file__).parent/'fixtures/control-bench.c'
     rust_objects=[runtime/'objects'/(n+'.o') for n in names]
     if args.family=='descriptors':
         rust_objects=[runtime/'objects/fd.o']
     if args.family=='identifiers':
         rust_objects=[runtime/'objects/process-ids.o']
+    if args.family=='control':
+        rust_objects=[runtime/'objects/fd.o',runtime/'objects/process-ids.o',runtime/'objects/errno.o']
     binaries={}
     for variant in ('original','rust'):
         objects=[args.output/(n+'.o') for n in names] if variant=='original' else rust_objects
         if variant=='original':objects.append(runtime/'objects/errno.o')
-        command=['clang','-O2','-Wall','-Wextra','-Werror',str(driver),*[str(p) for p in objects],'-o',str(args.output/variant)]
+        command=['clang','-O2','-Wall','-Wextra','-Werror','-I'+str(headers),str(driver),*[str(p) for p in objects],'-o',str(args.output/variant)]
         subprocess.run(command,check=True);commands.append(command);binaries[variant]=args.output/variant
     cpu=min(os.sched_getaffinity(0));os.sched_setaffinity(0,{cpu});records=[]
     for sample in range(args.samples):
@@ -127,6 +141,8 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
         roundtrip='fchmod(0600) -> ftruncate(128) -> lseek(64, SEEK_SET) -> flock(EX|NB) -> flock(UN) -> fsync -> fdatasync; warmed same file without new contents'
     if args.family=='identifiers':
         roundtrip='getpid -> getppid -> getpgrp -> getpgid(0) -> getsid(0); real native process identifiers, stable checksum checked against libc'
+    elif args.family=='control':
+        roundtrip='setpgid(0,0) success -> setsid EPERM -> umask(022) warmed prior022 -> getdtablesize retained NOFILE-1/clamp; owned group-leader child only; warm mutator/error paths, not successful session-creation throughput'
     else:
         roundtrip+='; actual temporary native files'
     report={'scope':__doc__,'roundtrip':roundtrip,'samples':args.samples,'iterations':args.iterations,'cpu':cpu,'commands':commands,

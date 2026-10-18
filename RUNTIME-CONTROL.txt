@@ -1,0 +1,106 @@
+Dearust continuation: grouped process control, masks and descriptor limits
+=======================================================================
+
+Project owner: @countradooku. AI assistance: OpenAI Codex. Migration remains
+INCOMPLETE. Exact evidence is in runtime-control-verification.json.
+
+Subsystem extensions and ABI
+-----------------------------
+No new crates: dearust-process adds setpgid/setsid to its identifiers feature;
+dearust-fd adds umask/getdtablesize. Package count stays 20. The process-ids.o
+artifact has seven exports, fd.o nine, and query-only process.o remains matching-
+only. All original C symbols and original guest syscall wrappers remain.
+Grouped input replacement inserts each Rust object once and removes the new
+four original emulation sources along with their previous grouped sources.
+
+setpgid raw Linux 109 receives signed PID/PGID; setsid raw 112 takes no arguments.
+Original int result narrowing, one errno conversion, namespace mutation policy,
+zero unused raw slots and direct EINTR propagation are retained. No caches,
+retry, locks, new process-global Rust state or cancellation hook are introduced.
+Tests confine group/session changes to owned fork children and verify the parent.
+
+umask raw 95 preserves unsigned 32-bit zero-extension, original int result
+narrowing and once-only Linux-to-Darwin conversion. getdtablesize calls retained
+C sys_getrlimit(BSD_RLIMIT_NOFILE=8), preserving its NOFILE-minus-one compatibility
+policy; Linux limits are not substituted directly. The helper status narrows
+from long to C int. A negative status is already Darwin errno and returns
+unchanged. Every nonnegative status clamps unsigned rlim_cur to INT_MAX.
+
+The complete original xnu_rlimit ABI is 176 bytes: two u64 fields followed by 20
+reserved LP64 longs, eight-byte alignment. Rust initializes the full structure,
+asserts size/alignment/field offsets and passes bounded live stack storage to C.
+The callback must not retain the pointer or unwind. Native fixtures write all 176
+bytes, including the reserved tail, to verify storage compatibility. No heap,
+caller pointers, path storage or limit cache is added. Original GPL attribution,
+source/header hashes and retained-helper provenance are recorded.
+
+CPU and memory evidence
+-----------------------
+New raw wrappers retain a single eight-byte syscall argument/alignment push.
+getdtablesize has 184 bytes of native local stack subtraction in both original C
+and Rust; this includes its full 176-byte ABI object and alignment. Return-address
+and callee storage are excluded. It adds no per-process retained buffer. The
+native full fd/process-ID objects remain at 126 bytes of shared read-only errno
+data each. Their file sizes 4224/3712 bytes include older grouped operations and
+metadata, so they are not directly comparable with the new-C-only frame groups.
+The complete matching dylib file shrinks 1312 bytes: 872352 -> 871040. None of these
+figures establishes process-RSS changes.
+
+Warm four-operation workload in an owned group-leader child:
+setpgid(0,0) success -> setsid EPERM -> umask(022) -> getdtablesize.
+Native original four C wrappers versus Rust median CPU 1022.317 -> 1028.084 ns,
+0.56% higher with overlapping quartiles 1019.7985..1027.2565 vs 1019.804..1034.1055.
+Twenty-one alternating samples, 2000 rounds/sample, one eligible CPU. The native
+adapter preserves full rlimit layout, original soft/hard NOFILE decrements and
+common errno conversion. Original sources/includes and raw records are retained.
+The local matching C tracing raw-entry wrapper is outside this native comparison.
+
+Actual matching guest CPU median 1.13455 -> 1.10800 us/roundtrip, 2.34% lower;
+quartiles 1.131125..1.137150 vs 1.094500..1.118525. Wall medians 1.14035 -> 1.11910 us.
+Previous/new/new/previous process order, 42 samples/variant, 10000 rounds/sample.
+Every timed guest operation uses raw Darwin syscalls. Parent identity and mask
+are checked unchanged; only an owned child mutates process state. Successful
+session creation, fork cost and broad application throughput are outside the
+timed scope. These local measurements do not establish a general speedup/RSS gain.
+
+Verification
+------------
+131 existing Rust tests, 29 Python tests, formatting, strict Clippy and explicit
+Darwin ABI/staging tests pass. Expanded fd/process-ID native fixtures check signed
+and unsigned widths, int result narrowing, single-call EINTR, all exports, full
+rlimit writes, positive helper statuses, unchanged Darwin errors and UINT64_MAX
+clamping. Independent ASan/UBSan adapters pass; Rust objects are not instrumented.
+Review verifies exact feature exports/imports, grouped link inputs and retention
+of the original misc/getrlimit.c object in both links.
+
+All 24 guest probes pass against previous/new Rust kernels. New checks include
+raw setpgid/setsid success/error paths and unaffected parent, umask-created file
+permissions with restored mask, and raw/libc descriptor-limit results after
+child-only soft-limit changes and restoration. Sixteen utilities, 29 app checks
+(28 exact plus explicit cfbridge log normalization) and three GUI samples pass
+within existing fixture limits.
+
+Matching link preserves 1370 public definitions/40 imports; pinned 1362/18 and
+original i386 bytes. Query dispatcher stays matching-only; clean pinned boot
+and i386 Rust remain unverified. Execution uses owned prefixes/isolated Rust-
+lockset server. Installed binaries and existing user prefix remain unchanged;
+owned hidden X is shut down. Repaired copied CGShadingCreate nib and sample-only
+GUI scope remain explicit. No new original-source defect is claimed here.
+
+Reproduction and scope
+----------------------
+Use the same --fd-object and --process-ids-object options from
+RUNTIME-IDENTIFIERS.txt, with newly staged runtime objects. Keep query-only
+--process-object matching-only and preserve matching/pinned fork/TLS bridges.
+Native staging runs expanded fd-native.c and process-ids-native.c. Build
+process-control-regression.c, umask-regression.c, getdtablesize-regression.c and
+control-guest-bench.c using build_runtime_probes.py; supply stdout independently.
+Guest timings are on stderr. Native measurement:
+
+    python3 tools/benchmark_fileops.py --family control --source EXACT_PIN_SOURCE --runtime NATIVE_STAGE --output NEW_DIRECTORY
+
+Latest artifacts: dearust-continuation/work/control-next/
+{final-stage,matching-final,pinned-final}. Thirty dependency slices partial,
+265773 pending; seven Cargo target slices, 1622 pending targets, zero retired.
+Most runtime/framework/build code remains C/C++/assembly. Arbitrary commercial
+application compatibility remains unverified.

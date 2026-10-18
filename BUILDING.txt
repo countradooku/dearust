@@ -342,3 +342,12 @@ Default combined features are for development, not a substitute runtime object.
 median 1.39% higher with overlapping quartiles; guest raw-query median 2.15% lower,
 no general app/RSS claim. Twenty-six partial sources/265777 pending; unchanged
 20 workspace packages and seven target slices/1622 pending/zero retired.
+
+Control continuation: RUNTIME-CONTROL.txt extends existing fd.o to nine exports
+and process-ids.o to seven, keeping the same two relinker options. fd.o now
+also imports retained C sys_getrlimit; full 176-byte xnu_rlimit storage is kept
+on stack (184-byte local frame, as original C), with no heap or path buffers.
+No new crates: still 20 packages. 131 existing Rust tests, 29 Python tests and 24
+guest probes pass. Native warm-control CPU+0.56% with overlapping quartiles;
+guest median-2.34%, not successful-session-creation throughput or a general
+app/RSS claim. Thirty partial dependency slices/265773 pending; targets 7/1622/0.

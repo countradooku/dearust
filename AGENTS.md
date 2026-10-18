@@ -459,3 +459,20 @@ file-1608B, no RSS/general app claim. 131 existing Rust tests, 29 Python tests,
 dearust-continuation/work/identifiers-next/{final-stage,matching-final,pinned-final}.
 Twenty-six dependency slices partial, 265777 pending; seven target slices/1622
 pending/zero retired. Installed binaries and existing user prefix intact.
+
+Continuation: process group/session control, masks and descriptor limits
+----------------------------------------------------------------------
+Latest evidence RUNTIME-CONTROL.txt/runtime-control-verification.json. Existing
+process identifiers feature adds setpgid/setsid (seven exports); fd adds
+umask/getdtablesize (nine exports). Same --process-ids-object/--fd-object options,
+20 packages. getdtablesize retains C sys_getrlimit, declared FULL 176-byte xnu_rlimit
+(twoU64+reserved20LP64longs) initialized on stack; Cintstatusnarrow, negative
+Darwin error returned unchanged, unsigned cur clampedINTMAX. Do not optimize
+away the reserved ABI tail. Native frame 184 B matches originalC. No heap/cache/path
+storage. Warm group-leader-child control/error workload nativeCPU+0.56% with
+overlapping quartiles; guestmedian-2.34%, no successful-session creation/general
+app/RSS claim. 131 existing Rust tests, 29 Python tests, 24 probes and existing
+app/utility/GUI gates pass. Mutations use owned children/restored masks/limits.
+Artifacts: dearust-continuation/work/control-next/{final-stage,matching-final,
+pinned-final}. Thirty partial sources/265773 pending; target slices 7/1622/0.
+Installed binaries and existing user prefix intact.

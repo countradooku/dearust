@@ -55,3 +55,21 @@ pub extern "C" fn sys_getsid(pid: i32) -> i64 {
     let result = convert(unsafe { linux_syscall(i64::from(pid), 0, 0, 0, 0, 0, 124) });
     i64::from(result)
 }
+
+/// Sets the namespace-local process group using the original signed arguments.
+#[unsafe(no_mangle)]
+pub extern "C" fn sys_setpgid(pid: i32, pgid: i32) -> i64 {
+    // SAFETY: Linux x86_64 setpgid 109 validates signed pid/pgid and mutates
+    // kernel process state. The foreign ABI must be preserved and not unwind.
+    i64::from(convert(unsafe {
+        linux_syscall(i64::from(pid), i64::from(pgid), 0, 0, 0, 0, 109)
+    }))
+}
+
+/// Creates a session according to the original namespace-local kernel policy.
+#[unsafe(no_mangle)]
+pub extern "C" fn sys_setsid() -> i64 {
+    // SAFETY: Linux x86_64 setsid 112 takes no arguments. The kernel validates
+    // session policy; the foreign boundary must preserve its ABI and not unwind.
+    i64::from(convert(unsafe { linux_syscall(0, 0, 0, 0, 0, 0, 112) }))
+}

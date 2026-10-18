@@ -68,18 +68,20 @@ def main():
                     ('xnu_syscall/bsd/impl/unistd/fsync.c', 'dearust-fd', 'fd.o'),
                     ('xnu_syscall/bsd/impl/unistd/fdatasync.c', 'dearust-fd', 'fd.o'),
                     ('xnu_syscall/bsd/impl/unistd/lseek.c', 'dearust-fd', 'fd.o'),
-                    ('xnu_syscall/bsd/impl/unistd/flock.c', 'dearust-fd', 'fd.o')):
+                    ('xnu_syscall/bsd/impl/unistd/flock.c', 'dearust-fd', 'fd.o'),
+                    ('xnu_syscall/bsd/impl/unistd/umask.c', 'dearust-fd', 'fd.o'),
+                    ('xnu_syscall/bsd/impl/unistd/getdtablesize.c', 'dearust-fd', 'fd.o')):
                 entry['verified_source_slices'].append({
                     'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/' + source,
                     'cargo_package': package, 'cargo_artifact': artifact,
-                    'scope': 'x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending.',
+                    'scope': 'x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending.',
                 })
         if name == 'emulation':
-            for source in ('getpid', 'getppid', 'getpgrp', 'getpgid', 'getsid'):
+            for source in ('getpid', 'getppid', 'getpgrp', 'getpgid', 'getsid', 'setpgid', 'setsid'):
                 entry['verified_source_slices'].append({
                     'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/' + source + '.c',
                     'cargo_package': 'dearust-process', 'cargo_artifact': 'process-ids.o',
-                    'scope': 'x86_64 identifier-only Rust artifact; matching runtime checks in runtime-identifiers-verification.json. Query-only process.o integration remains matching-only. Other architectures and original target retirement remain pending.',
+                    'scope': 'x86_64 identifier-only Rust artifact; matching runtime checks in runtime-control-verification.json and runtime-identifiers-verification.json. Query-only process.o integration remains matching-only. Other architectures and original target retirement remain pending.',
                 })
         if name == 'darlingserver':
             entry['verified_source_slices'] = [{
