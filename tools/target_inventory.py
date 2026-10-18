@@ -55,14 +55,14 @@ def main():
                     ('common/guarded/table.c', 'dearust-guarded', 'guarded.o'),
                     ('xnu_syscall/bsd/impl/stat/lstat.c', 'dearust-lstat', 'lstat.o'),
                     ('xnu_syscall/bsd/impl/stat/fstatat.c', 'dearust-fstatat', 'fstatat.o'),
-                    ('xnu_syscall/bsd/impl/unistd/symlinkat.c', 'dearust-symlinkat', 'symlinkat.o'),
-                    ('xnu_syscall/bsd/impl/unistd/readlinkat.c', 'dearust-readlinkat', 'readlinkat.o'),
-                    ('xnu_syscall/bsd/impl/unistd/unlinkat.c', 'dearust-unlinkat', 'unlinkat.o'),
-                    ('xnu_syscall/bsd/impl/unistd/linkat.c', 'dearust-linkat', 'linkat.o'),
-                    ('xnu_syscall/bsd/impl/unistd/renameat.c', 'dearust-renameat', 'renameat.o'),
-                    ('xnu_syscall/bsd/impl/stat/mkdirat.c', 'dearust-mkdirat', 'mkdirat.o'),
-                    ('xnu_syscall/bsd/impl/unistd/faccessat.c', 'dearust-faccessat', 'faccessat.o'),
-                    ('xnu_syscall/bsd/impl/unistd/fchmodat.c', 'dearust-fchmodat', 'fchmodat.o'),
+                    ('xnu_syscall/bsd/impl/unistd/symlinkat.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/unistd/readlinkat.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/unistd/unlinkat.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/unistd/linkat.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/unistd/renameat.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/stat/mkdirat.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/unistd/faccessat.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/unistd/fchmodat.c', 'dearust-path', 'paths.o'),
                     ('xnu_syscall/bsd/impl/unistd/fchmod.c', 'dearust-fd', 'fd.o'),
                     ('xnu_syscall/bsd/impl/unistd/ftruncate.c', 'dearust-fd', 'fd.o'),
                     ('xnu_syscall/bsd/impl/unistd/fsync.c', 'dearust-fd', 'fd.o'),
@@ -70,11 +70,13 @@ def main():
                     ('xnu_syscall/bsd/impl/unistd/lseek.c', 'dearust-fd', 'fd.o'),
                     ('xnu_syscall/bsd/impl/unistd/flock.c', 'dearust-fd', 'fd.o'),
                     ('xnu_syscall/bsd/impl/unistd/umask.c', 'dearust-fd', 'fd.o'),
-                    ('xnu_syscall/bsd/impl/unistd/getdtablesize.c', 'dearust-fd', 'fd.o')):
+                    ('xnu_syscall/bsd/impl/unistd/getdtablesize.c', 'dearust-fd', 'fd.o'),
+                    ('xnu_syscall/bsd/impl/stat/rmdir.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/unistd/truncate.c', 'dearust-path', 'paths.o')):
                 entry['verified_source_slices'].append({
                     'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/' + source,
                     'cargo_package': package, 'cargo_artifact': artifact,
-                    'scope': 'x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending.',
+                    'scope': 'x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending.',
                 })
         if name == 'emulation':
             for source in ('getpid', 'getppid', 'getpgrp', 'getpgid', 'getsid', 'setpgid', 'setsid'):

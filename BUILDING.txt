@@ -351,3 +351,13 @@ No new crates: still 20 packages. 131 existing Rust tests, 29 Python tests and 2
 guest probes pass. Native warm-control CPU+0.56% with overlapping quartiles;
 guest median-2.34%, not successful-session-creation throughput or a general
 app/RSS claim. Thirty partial dependency slices/265773 pending; targets 7/1622/0.
+
+Path subsystem continuation: RUNTIME-PATHS.txt consolidates eight path crates
+into dearust-path and ports rmdir/truncate. Use --paths-object (paths.o) instead
+of eight prior pathname switches; original thread-cwd bridge/lstat integration
+remains required. 13 workspace packages; 117 Rust tests after removing duplicate
+copier tests, 29 Python tests and 26 guest probes pass; all ten native operation
+fixtures still run. Native CPU+2.11%; guest median-2.23% with overlapping ranges,
+no broad speedup/RSS claim. Native readonly errno data 1008 -> 126 bytes and dylib
+file-4768B are scoped object/file evidence. Thirty-two partial sources/265771
+pending; target counts seven/1622/zero retired.

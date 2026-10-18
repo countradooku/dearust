@@ -1,0 +1,323 @@
+Pathname operations: consolidated x86_64 runtime subsystem
+=========================================================
+Original Darling/upstream GPL-3.0-or-later attribution and licenses apply.
+This crate consolidates the existing symlinkat/readlinkat/unlinkat/linkat/
+renameat/mkdirat/faccessat/fchmodat Rust wrappers without changing their ABI
+implementations. Nine existing exports (including do_linux_fchmodat) retain
+original code; two additional rmdir/truncate wrappers are documented below.
+
+Unsafe remains limited to the ABI modules. Each retains its original repr(C)
+structure, foreign declarations, argument widths, expansion/copy ordering and
+errno conversion. Module-local repeated declarations describe the same C ABI;
+they introduce no duplicate exported implementations. Original C helpers must
+preserve their declared ABI, not unwind, and retain successful path termination.
+Caller input pointers retain the original readability requirements. Arbitrary
+invalid non-NULL pointers are not made fault-safe.
+
+One pure shared path::copy_into writes bounded bytes directly into initialized
+final storage. The copier function body and CAPACITY=4096 were identical in all
+eight predecessor crates; only documentation and unit-test organization differed.
+The shared module preserves the symlinkat variant's three unit tests, including
+full-tail retention, final-byte NUL, bounded unterminated input and non-UTF8 bytes.
+No extra intermediate path array, heap allocation, allocator, mutex, cache or
+panic runtime is introduced. One-path operations retain one 4096-byte path;
+linkat/renameat retain two simultaneously live final path buffers. Generated
+frames and execution performance require separate measurement after consolidation.
+
+Retained entry-specific safety contracts
+---------------------------------------
+
+symlinkat: bounded descriptor-relative x86_64 runtime migration
+==============================================================
+
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/symlinkat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later. Pinned and
+locally matching source files are byte-identical; original Darling/upstream
+attribution and licensing continue to apply. Safe path copier is copied from
+dearust-lstat through dearust-fstatat, under the same license.
+
+Original sys_symlinkat ignores its supplied directory fd, expanding link against
+get_perthread_wd() instead. This creates links in the wrong directory whenever
+dirfd differs from thread cwd. The Rust port uses original atfd(fd), honoring
+ordinary descriptors and BSD_AT_FDCWD (-2)/per-thread working directories.
+Only destination is expanded, with flags=0. The target pointer/text is passed
+unchanged to Linux x86_64 symlinkat syscall 266; relative and arbitrary byte
+targets remain symlink contents, not vchroot-expanded paths. NULL target is
+validated by Linux, preserving original destination-expansion error ordering.
+
+Destination copying is bounded to 4096 bytes. NULL destination returns -EFAULT;
+no NUL in 4096 bytes returns Darwin -ENAMETOOLONG rather than overflowing the
+original strcpy stack buffer. Non-NULL destination must remain readable through
+NUL or 4096 bytes, whichever comes first. Arbitrary invalid non-NULL destinations
+are not newly made fault-safe. The target is not dereferenced by Rust: its memory
+must satisfy the Linux syscall input contract to create a link successfully.
+
+Unsafe is limited to abi.rs: destination byte reads, foreign ABI calls and the
+exported contract. Expanded is repr(C) char[4096], uint32 flags, int32 dfd;
+vchroot must preserve termination on success. Foreign functions must not unwind.
+atfd requires initialized guest TLS for BSD_AT_FDCWD. No allocator, std, mutex,
+panic handler/runtime or hardcoded guest TLS key is introduced.
+
+This is a partial source migration retaining original C vchroot/descriptor/TLS
+helpers. Only x86_64 is supported. Native fixture uses explicit vchroot/TLS
+adapters and raw Linux syscalls. Guest fixture separately checks actual Darling
+expansion, link bytes, dirfd differing from cwd, and per-thread cwd behavior.
+
+Performance continuation: the safe copier fills initialized Expanded.path in place,
+rather than returning a 4096-byte array through Result and copying that array into
+Expanded. NULL validation still precedes copying; bounded copying still precedes
+all descriptor/TLS, virtual-root and syscall boundaries. Copying stops at NUL and
+leaves the initialized suffix untouched. No uninitialized storage or new unsafe
+operation is introduced. Native release assembly removes the full-array memcpy
+and reduces local stack allocation by about 8 KiB per wrapper invocation. The
+4096-byte zero initialization is deliberately retained for the foreign boundary.
+Tests also verify untouched destination suffix and exact capacity bounds.
+
+
+readlinkat: bounded, allocation-free x86_64 runtime migration
+===========================================================
+
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/readlinkat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later. Exact pinned
+and locally matching C files are byte-identical. Original Darling/upstream
+attribution and licenses continue to apply. Safe bounded copier derives from
+this project's dearust-symlinkat path module under the same license.
+
+Original atfd and vchroot_expand remain C boundaries: flags=0 prevents following
+the final link; atfd preserves BSD_AT_FDCWD (-2)/per-thread cwd. Raw Linux x86_64
+readlinkat syscall 267 receives the expanded descriptor/path and unchanged caller
+buffer. The original signed int count is sign-extended to the syscall ABI.
+Its result is narrowed to int as in C then converted to negative Darwin errno.
+No NUL is appended and truncation returns the actual byte count. Invalid output
+pointers, zero/negative count and path/output error ordering remain kernel or
+expansion decisions; Rust does not eagerly reject an output pointer.
+
+Confirmed unbounded strcpy is replaced with at most 4096 byte reads directly
+into an initialized Expanded, avoiding a returned/copied 4096-byte path array.
+NULL path returns Darwin -EFAULT; no NUL in 4096 bytes returns -ENAMETOOLONG.
+Non-NULL path must remain readable through NUL or 4096 bytes, whichever is first.
+Arbitrary invalid non-NULL paths are not made fault-safe. Kernel output memory
+must not alias Rust's live stack; Rust creates no references to caller output.
+
+Unsafe is confined to abi.rs: pointer reads, exported contract and foreign calls.
+Expanded repr(C) is char[4096], uint32 flags, int32 dfd. Expansion must preserve
+termination on success; helpers must not unwind. atfd needs initialized guest TLS.
+No allocator, std, mutex, panic runtime or hardcoded guest TLS key is introduced.
+
+Scope is partial, x86_64 only. Native fixture uses explicit vchroot/TLS adapters
+and real Linux syscalls; guest fixture separately exercises actual Darling paths,
+working directories, output bytes, truncation and error propagation.
+
+
+unlinkat: bounded, allocation-free x86_64 runtime migration
+========================================================
+
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/unlinkat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later. Pinned and
+locally matching C sources are byte-identical. Original Darling/upstream
+attribution and licenses apply. Bounded copier derives from Dearust's existing
+path modules under the same license.
+
+ABI remains long sys_unlinkat(int, const char*, int). Original atfd resolves
+BSD_AT_FDCWD (-2) using guest per-thread cwd. Original vchroot_expand receives
+flags=0, so the final symlink is not followed. Original atflags_bsd_to_linux
+runs AFTER successful expansion, retaining its accepted/ignored bit policy,
+LINUX_AT_INVALID=1 rejection and path/flag error precedence. Linux x86_64 raw
+syscall 263 receives the expanded fd/path and converted flags. Raw result is
+narrowed to int before negative Linux-to-BSD errno conversion, matching C.
+
+One initialized repr(C) Expanded (char[4096], uint32 flags, int32 dfd) is filled
+in place; no heap, array-return copy, locks, cache or panic runtime. NULL source
+returns Darwin EFAULT; no NUL within 4096 bytes returns ENAMETOOLONG instead of
+original strcpy crash/overflow. Non-NULL source must remain readable through NUL
+or 4096 bytes. Arbitrary invalid non-NULL pointers are not fault-safe. Unsafe
+is confined to abi.rs pointer reads and original foreign calls; foreign helpers
+must preserve path termination on success and cannot unwind. TLS must be ready.
+
+Native tests use explicit vchroot/TLS/flag adapters and real Linux unlinkat;
+guest fixture separately exercises actual path expansion, per-thread cwd,
+error ordering and deletion boundaries. Only x86_64 is supported. No complete
+runtime migration or arbitrary application compatibility is claimed.
+
+
+linkat: bounded x86_64 descriptor-relative runtime migration
+================================================================
+
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/linkat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later. Pinned and
+matching local C sources are byte-identical. Darling/upstream attribution and
+licenses continue to apply; bounded copier derives from dearust-readlinkat.
+
+Two initialized repr(C) Expanded values hold exactly the two final 4096-byte
+paths, uint32 flags and int32 fd. Copying writes directly into them; no allocator,
+intermediate path array, cache, mutex or panic runtime is introduced. Safe copier
+reads no more than 4096 bytes and stops at NUL. NULL input returns Darwin -EFAULT;
+unterminated input returns -ENAMETOOLONG instead of unbounded strcpy overflow.
+Non-NULL inputs must be readable through NUL or 4096 bytes. Arbitrary invalid
+non-NULL pointers are outside the existing in-process caller contract.
+
+Unsafe is limited to abi.rs pointer reads, C exports and foreign ABI calls.
+Original C atfd preserves BSD_AT_FDCWD/per-thread cwd, and original vchroot
+expands source before destination. Both paths are copied before any expansion.
+Helpers must not unwind and must preserve path termination. Raw seven-argument
+Linux syscall 265 receives expanded descriptors and paths. The return value
+narrows to int exactly as C, then maps Linux errno to negative Darwin errno.
+Source follows its final symlink only for BSD flag 0x40; destination never
+follows. C atflags_bsd_to_linux executes only after both expansions; its invalid
+sentinel 1 returns -EINVAL. Other flag policy stays at the existing C boundary.
+Success returns the narrowed syscall result, matching original linkat.
+
+Scope is partial and x86_64 only. Native fixtures use explicit path/TLS adapters
+with actual Linux syscalls; guest fixtures separately exercise real Darling paths.
+
+
+renameat: bounded x86_64 descriptor-relative runtime migration
+================================================================
+
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/renameat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later. Pinned and
+matching local C sources are byte-identical. Darling/upstream attribution and
+licenses continue to apply; bounded copier derives from dearust-readlinkat.
+
+Two initialized repr(C) Expanded values hold exactly the two final 4096-byte
+paths, uint32 flags and int32 fd. Copying writes directly into them; no allocator,
+intermediate path array, cache, mutex or panic runtime is introduced. Safe copier
+reads no more than 4096 bytes and stops at NUL. NULL input returns Darwin -EFAULT;
+unterminated input returns -ENAMETOOLONG instead of unbounded strcpy overflow.
+Non-NULL inputs must be readable through NUL or 4096 bytes. Arbitrary invalid
+non-NULL pointers are outside the existing in-process caller contract.
+
+Unsafe is limited to abi.rs pointer reads, C exports and foreign ABI calls.
+Original C atfd preserves BSD_AT_FDCWD/per-thread cwd, and original vchroot
+expands source before destination. Both paths are copied before any expansion.
+Helpers must not unwind and must preserve path termination. Raw seven-argument
+Linux syscall 264 receives expanded descriptors and paths. The return value
+narrows to int exactly as C, then maps Linux errno to negative Darwin errno.
+Neither path follows its final symlink. Success returns zero, retaining the
+original renameat behavior even if a foreign syscall helper returns positive.
+
+Scope is partial and x86_64 only. Native fixtures use explicit path/TLS adapters
+with actual Linux syscalls; guest fixtures separately exercise real Darling paths.
+
+
+mkdirat: bounded x86_64 descriptor-relative runtime migration
+==========================================================
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/mkdirat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later. Original
+Darling/upstream attribution and licenses apply. Pinned/matching C are identical.
+
+One initialized repr(C) Expanded holds final char[4096], uint32 flags and int32
+descriptor. Safe copying writes directly into this storage with no intermediate
+array or allocator. NULL yields Darwin EFAULT (as original); missing terminator
+in 4096 bytes yields ENAMETOOLONG instead of unbounded strcpy overflow.
+Non-NULL input must remain readable through NUL or 4096 bytes; arbitrary invalid
+non-NULL pointers retain the original in-process validity contract.
+
+Unsafe is restricted to abi.rs pointer reads, C export and foreign calls.
+Original atfd preserves guest TLS/per-thread cwd; vchroot_expand flags=0 retains
+final-component behavior and must preserve termination. Helpers must not unwind.
+Raw Linux mkdirat 258 receives unsigned 32-bit mode zero-extended, expanded fd
+and path. Result narrows to int as C; failures map errno, success returns zero.
+No allocator, std, panic runtime, cache, mutex or new permission policy is added.
+Scope is partial, x86_64 only. Native fixtures use explicit path/TLS adapters and
+real Linux syscalls; guest fixtures separately exercise actual Darling paths.
+
+
+faccessat: bounded x86_64 descriptor-relative runtime migration
+=============================================================
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/faccessat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later. Original
+Darling/upstream attribution and licenses apply. Pinned/matching C are identical.
+
+One initialized repr(C) Expanded holds final char[4096], uint32 flags and int32
+fd. Safe copying writes directly into this storage without intermediate arrays
+or heap. NULL yields Darwin EFAULT, fixing original strcpy crash; missing NUL in
+4096 bytes yields ENAMETOOLONG. Non-NULL input must remain readable through NUL
+or 4096 bytes; arbitrary invalid non-NULL pointers are not made fault-safe.
+
+Unsafe is confined to abi.rs pointer reads, export and foreign calls. Original
+atfd preserves initialized guest TLS/per-thread cwd. vchroot_expand follows the
+final symlink except when BSD_AT_SYMLINK_NOFOLLOW (0x20) is set. It must preserve
+termination; helpers must not unwind. Original C atflags conversion runs AFTER
+expansion and returns EINVAL on sentinel 1. Raw Linux faccessat 269 receives
+signed mode and the original fourth flags slot, with exact int result narrowing.
+Linux faccessat ignores this fourth slot: effective-credential flags and final
+nofollow semantics are NOT fully implemented by this port. Original converter
+also does not implement EACCESS policy. This existing limitation is preserved;
+there is no faccessat2 switch or newly invented Darwin credential policy.
+
+No allocator, std, panic runtime, cache or mutex is introduced. Scope is partial,
+x86_64 only. Native fixture uses explicit path/TLS adapters and actual Linux
+syscalls; guest fixture separately exercises actual Darling path handling.
+
+
+fchmodat: partial x86_64 runtime source migration
+================================================
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fchmodat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later.
+Both sys_fchmodat (Darwin flags/errno) and do_linux_fchmodat (Linux flags/errno,
+C int result) remain exported. Original atfd, vchroot expansion, then flag
+conversion order and unknown/ignored flag policy remain. Nonzero helper flags
+perform Linux newfstatat with EMPTY_PATH|SYMLINK_NOFOLLOW, then return success
+for symlinks without changing their targets. Other files call Linux fchmodat.
+This preserves the original check/use race and historical flag behavior; it does
+not introduce fchmodat2 or claim atomic symlink-safe permission changes.
+
+Confirmed defect fixed: original helper collapses every stat failure into -1,
+which wrapper conversion exposes as EPERM. Actual negative Linux error now
+propagates from helper and is converted exactly once at the Darwin boundary.
+NULL wrapper paths return Darwin EFAULT; nonterminated paths bounded at 4096
+bytes return Darwin ENAMETOOLONG rather than overflowing/crashing.
+
+No heap, allocator, standard library, panic handler, or Rust OS abstraction is
+linked. Safe bounded copying writes in place, stops at NUL and accepts arbitrary
+byte paths. Wrapper non-NULL pointers must be readable through their terminator
+or 4096 bytes, whichever is shorter; invalid non-NULL memory remains a wider
+emulation-boundary limitation. Exported helper passes its path directly to Linux,
+including NULL, for kernel validation; caller must keep pathname storage alive
+through the syscall. LinuxStat is 144 bytes, aligned eight, with mode at offset24;
+initialized writable storage is passed to raw syscall 262. Mode interpretation
+occurs only on success. Raw syscall 268 retains original int mode extension.
+Foreign calls must not unwind into Rust. Original C handles virtual-root expansion,
+flag conversion and descriptor/per-thread TLS resolution; this remains partial.
+Native recording/real Linux fixture and actual guest regression separately check
+syscall arguments, errors, file modes, nofollow no-op and bounded paths.
+
+
+rmdir and truncate continuation
+------------------------------
+Exact-pin/matching byte-identical source SHA256:
+ stat/rmdir.c 0bdd635cf50f289f0bf77198b908a9cbad1ebc1d04c35134f275acc173818f87
+ unistd/truncate.c 55d8f87cbbf0067e51b952e43a71467655cc7413e359818b4d3d7fdb330a35e2
+The existing attribution, GPL license, pinned source and x86_64 limitations apply.
+
+Both new wrappers use private repr(C) Expanded with initialized4096-byte path,
+u32 flags and i32 dfd, copied in place without additional path-sized temporaries.
+The original dearust_get_perthread_wd()->int TLS bridge resolves cwd before path
+copy and virtual-root expansion. It requires initialized guest thread state;
+matching and pinned bridges must come from the corresponding original headers.
+
+rmdir retains flags0 (no final-symlink following), Linux unlinkat263 with expanded
+dfd, path, REMOVEDIR0x200, C int result narrowing, then negative errno conversion
+or0 for every nonnegative result. truncate retains FOLLOW1, original Linux
+truncate76 with expanded absolute path and full signed64-bit length, then C int
+result narrowing and exactly one negative Linux/Darwin conversion. vchroot owns
+relative/TLS cwd expansion for truncate's path-only Linux syscall. No fd-relative
+replacement, retries, caching, allocation or symlink policy change is introduced.
+
+Original rmdir already rejects NULL; truncate's NULL crash is fixed by returning
+Darwin EFAULT. Both reject paths without NUL in4096 bytes with ENAMETOOLONG,
+replacing unbounded strcpy. Non-NULL caller paths must remain readable through
+NUL or4096 bytes, whichever is shorter. Arbitrary non-NULL invalid addresses
+remain the existing emulation boundary limitation. vchroot must preserve path
+termination, not retain the pointer, obey its layout and never unwind into Rust.
+The raw syscall reads only live terminated storage during the call. No runtime
+panic, allocator or standard library is linked.
+
+Separate native fixtures record TLS/expansion/raw ordering, error short circuits,
+exact arguments, signed length and result narrowing, EINTR without retry and
+4095/4096-byte termination bounds. Actual filesystem tests cover non-following
+rmdir, symlink-target truncate, sparse>4GiB file size/zero fill, unchanged offset,
+small-buffer content guards, negative lengths and missing paths. Guest fixtures
+exercise actual thread cwd with unrelated process-cwd targets preserved. They
+are focused regressions, not arbitrary-application compatibility evidence.

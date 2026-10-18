@@ -1,0 +1,114 @@
+Dearust continuation: consolidated pathname subsystem and two new wrappers
+========================================================================
+
+Project owner: @countradooku. AI assistance: OpenAI Codex. Migration remains
+INCOMPLETE. Exact evidence is in runtime-paths-verification.json.
+
+Subsystem and behavior
+-----------------------
+One no_std dearust-path crate replaces eight per-operation crates: symlinkat,
+readlinkat, unlinkat, linkat, renameat, mkdirat, faccessat and fchmodat. It also
+ports rmdir and truncate. Package count 20 -> 13. The eleven original C exports
+include do_linux_fchmodat. Logical per-operation ABI modules remain, with one
+safe in-place path copier and shared errno data. All eight moved ABI modules
+are byte-identical to their predecessor implementations at commit 9c1efeb.
+Existing fixes/flag policies remain, including faccessat's ignored raw flags,
+fchmodat's historical symlink no-op and inherited metadata/check/use race.
+
+paths.o replaces ten unique original emulation inputs and is inserted once.
+--paths-object replaces the eight earlier pathname object switches; combining
+those switches is rejected. Historical individual options remain usable with
+historical artifacts. The original thread-cwd bridge is required alongside the
+existing lstat integration. lstat/fstatat and other subsystem crates stay separate.
+No new production stubs, allocator, cache, locks or process-global state are added.
+
+rmdir preserves thread-local cwd, expansion flags 0 and raw Linux unlinkat 263
+with the expanded descriptor/path and AT_REMOVEDIR 0x200. Result narrows to int,
+negative errors convert once and every nonnegative result returns zero. The
+final symlink is not followed. Its existing NULL EFAULT handling is retained.
+truncate preserves thread-local cwd, FOLLOW 1 expansion, raw truncate 76 with
+expanded absolute path and full signed 64-bit length, int result narrowing and
+one errno conversion. It does not incorrectly pass a dirfd to raw truncate.
+
+Both copy directly into initialized final 4096-byte ABI buffers. NULL truncate
+now returns EFAULT instead of crashing; unterminated/overlong paths return
+ENAMETOOLONG rather than unbounded strcpy overflow. The new guest probes exit
+132 (rmdir long path) and 139 (truncate NULL) on the previous runtime and pass
+with Rust. Non-NULL invalid pointers retain the wider caller-validity contract.
+No returned-array intermediate or path cache is introduced; two-path operations
+still need exactly two live buffers. See SAFETY.txt for all preserved boundaries.
+
+CPU and memory evidence
+-----------------------
+Native local stack subtraction before first foreign call (pushes/callees excluded):
+                       original C       Rust
+    mkdirat               4112 B       4112 B
+    rmdir                 4120 B       4112 B
+    truncate              4112 B       4120 B
+Existing linkat/renameat remain 8216 B each for two paths. Per-function push counts
+and assembly are recorded separately. The full native previous eight Rust + two C
+aggregate object contains 1008 bytes of readonly errno data versus 126 bytes for
+the grouped ten-operation Rust object. The complete matching dylib file shrinks
+4768 bytes: 871040 -> 866272. These are object/file/frame figures, not RSS results.
+
+Native original mkdirat -> rmdir -> truncate(128) wrappers versus grouped Rust
+CPU median 4512.836 -> 4607.8615 ns/roundtrip, 2.11% higher. Quartiles 4496.097..4537.605
+versus 4562.1645..4619.876. Twenty-one alternating samples, 2000 rounds/sample, one
+eligible CPU. Unchanged pinned C sources, explicit native no-op virtual-root/TLS
+adapters and common errno object are recorded. Native timings exclude actual
+vchroot/TLS and the local matching C tracing raw-entry wrapper.
+
+Actual guest previous/new/new/previous process order, 42 samples per variant,
+200 rounds/sample: CPU median 26.1125 -> 25.5300 us (2.23% lower) with overlapping
+quartiles 25.475..26.3925 versus 25.11125..26.12875. Wall medians 27.155 -> 26.2275 us.
+This owned-path warm workload uses same-size file truncation; it is not general
+app performance, durable-write throughput or RSS evidence. Grouping and the two
+new ports jointly change the guest comparison; no broad speedup is established.
+Native safety/initialization costs remain explicit rather than inferred away.
+
+Verification
+------------
+117 Rust tests, 29 Python tests, formatting, strict Clippy and explicit Darwin
+ABI/staging checks pass. The lower Rust test count replaces fourteen duplicated
+path-copy cases with the shared copier tests; all ten operation-specific native
+fixtures are still executed, plus metadata/fd/process fixtures. Independent
+ASan/UBSan adapters pass all ten; Rust objects themselves are not instrumented.
+Native fixture links use weak abort-only adapters for unexercised imports; strong
+fixture callbacks override them. These test adapters never enter runtime artifacts.
+
+All 26 guest probes pass in the new runtime, including thread cwd, final-symlink
+rmdir policy, missing paths, NULL/long errors, sparse sizes above 4 GiB, preserved
+contents/file offsets and unrelated files. Existing app 29 checks (28 exact plus
+explicit cfbridge log normalization), sixteen utilities and three GUI samples
+pass within their documented limits. Captures are inspected or compared to
+previously inspected evidence as recorded; no arbitrary-app claim is made.
+
+Matching link preserves 1370 public definitions/40 imports; pinned 1362/18 and
+original i386 bytes. Both retain the exact original thread-cwd bridge and guest
+syscall wrappers. Process query integration stays matching-only. Installed
+binaries and existing user prefix are unchanged; owned prefixes and hidden X
+shut down. Repaired copied CGShadingCreate nib/sample-only GUI scope remains.
+
+Reproduction and scope
+----------------------
+Follow RUNTIME-CONTROL.txt, replacing the eight individual pathname switches with:
+
+    --paths-object "$WORK/runtime/objects/paths.o"
+
+Keep metadata objects, original matching/pinned lstat/fork bridges, --fd-object
+and --process-ids-object. --process-object stays matching-only. Native staging
+runs all ten C fixtures against paths.o; path-unused-boundaries-native.c is a
+native-test-only link adapter. Build rmdir-regression.c, truncate-regression.c
+and paths-guest-bench.c with build_runtime_probes.py, supplying stdout goldens
+independently. Guest timing records are on stderr. Native measurement:
+
+    python3 tools/benchmark_fileops.py --family paths --source EXACT_PIN_SOURCE --runtime NATIVE_STAGE --output NEW_DIRECTORY
+
+Old benchmark families retain their previous artifact expectations for historical
+stages. inspect_path_frames.py now records per-function frames as well as object
+maxima; this avoids comparing three new-C wrappers with a whole subsystem maximum.
+Latest artifacts: dearust-continuation/work/paths-next/
+{final-stage,matching-final,pinned-final}. Thirty-two dependency slices partial,
+265771 pending; seven Cargo target slices, 1622 pending targets, zero retired.
+Most runtime/framework/build code remains C/C++/assembly. i386 Rust, clean pinned
+boot and arbitrary commercial application compatibility remain unverified.

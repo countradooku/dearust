@@ -26,6 +26,8 @@ FSYNC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fsyn
 FDATASYNC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fdatasync.c.o'
 LSEEK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/lseek.c.o'
 FLOCK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/flock.c.o'
+RMDIR = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/rmdir.c.o'
+TRUNCATE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/truncate.c.o'
 UMASK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/umask.c.o'
 GETDTABLESIZE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/getdtablesize.c.o'
 PROCESS_IDS = tuple('emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/'+name+'.c.o' for name in ('getpid','getppid','getpgrp','getpgid','getsid','setpgid','setsid'))
@@ -117,6 +119,15 @@ def integrate(args):
         if inputs.count(FCHMODAT) != 1 or not args.fchmodat_object.is_file():
             raise ValueError('missing unique fchmodat input')
         replacements[FCHMODAT] = args.fchmodat_object.resolve(strict=True)
+    if args.paths_object:
+        if any([args.symlinkat_object, args.readlinkat_object, args.unlinkat_object, args.linkat_object, args.renameat_object, args.mkdirat_object, args.faccessat_object, args.fchmodat_object]):
+            raise ValueError('grouped paths object conflicts with individual pathname objects')
+        if not args.paths_object.is_file() or not args.lstat_bridge:
+            raise ValueError('grouped paths object requires its object and original thread-cwd bridge')
+        for name in (SYMLINKAT, READLINKAT, UNLINKAT, LINKAT, RENAMEAT, MKDIRAT, FACCESSAT, FCHMODAT, RMDIR, TRUNCATE):
+            if inputs.count(name) != 1:
+                raise ValueError('missing unique grouped pathname input: ' + name)
+            replacements[name] = args.paths_object.resolve(strict=True)
     if args.process_ids_object:
         if not args.process_ids_object.is_file():
             raise ValueError('missing process identifier object')
@@ -252,6 +263,18 @@ def integrate(args):
             if args.fchmodat_object:
                 wanted['_sys_fchmodat'] = args.fchmodat_object.name
                 wanted['_do_linux_fchmodat'] = args.fchmodat_object.name
+            if args.paths_object:
+                wanted['_sys_symlinkat'] = args.paths_object.name
+                wanted['_sys_readlinkat'] = args.paths_object.name
+                wanted['_sys_unlinkat'] = args.paths_object.name
+                wanted['_sys_linkat'] = args.paths_object.name
+                wanted['_sys_renameat'] = args.paths_object.name
+                wanted['_sys_mkdirat'] = args.paths_object.name
+                wanted['_sys_faccessat'] = args.paths_object.name
+                wanted['_sys_fchmodat'] = args.paths_object.name
+                wanted['_sys_rmdir'] = args.paths_object.name
+                wanted['_sys_truncate'] = args.paths_object.name
+                wanted['_do_linux_fchmodat'] = args.paths_object.name
             if args.process_ids_object:
                 wanted['_sys_getpid'] = args.process_ids_object.name
                 wanted['_sys_getppid'] = args.process_ids_object.name
@@ -317,6 +340,7 @@ def main():
     parser.add_argument('--mkdirat-object', type=Path)
     parser.add_argument('--faccessat-object', type=Path)
     parser.add_argument('--fchmodat-object', type=Path)
+    parser.add_argument('--paths-object', type=Path)
     parser.add_argument('--process-ids-object', type=Path)
     parser.add_argument('--fd-object', type=Path)
     parser.add_argument('--fchmod-object', type=Path)

@@ -15,20 +15,6 @@ name = "dearust-errno"
 version = "0.1.0"
 
 [[package]]
-name = "dearust-faccessat"
-version = "0.1.0"
-dependencies = [
- "dearust-errno",
-]
-
-[[package]]
-name = "dearust-fchmodat"
-version = "0.1.0"
-dependencies = [
- "dearust-errno",
-]
-
-[[package]]
 name = "dearust-fd"
 version = "0.1.0"
 dependencies = [
@@ -58,13 +44,6 @@ name = "dearust-libsimple"
 version = "0.1.0"
 
 [[package]]
-name = "dearust-linkat"
-version = "0.1.0"
-dependencies = [
- "dearust-errno",
-]
-
-[[package]]
 name = "dearust-lockset"
 version = "0.1.0"
 
@@ -76,7 +55,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dearust-mkdirat"
+name = "dearust-path"
 version = "0.1.0"
 dependencies = [
  "dearust-errno",
@@ -84,34 +63,6 @@ dependencies = [
 
 [[package]]
 name = "dearust-process"
-version = "0.1.0"
-dependencies = [
- "dearust-errno",
-]
-
-[[package]]
-name = "dearust-readlinkat"
-version = "0.1.0"
-dependencies = [
- "dearust-errno",
-]
-
-[[package]]
-name = "dearust-renameat"
-version = "0.1.0"
-dependencies = [
- "dearust-errno",
-]
-
-[[package]]
-name = "dearust-symlinkat"
-version = "0.1.0"
-dependencies = [
- "dearust-errno",
-]
-
-[[package]]
-name = "dearust-unlinkat"
 version = "0.1.0"
 dependencies = [
  "dearust-errno",

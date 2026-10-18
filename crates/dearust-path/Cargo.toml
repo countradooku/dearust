@@ -1,11 +1,11 @@
 [package]
-name = "dearust-renameat"
+name = "dearust-path"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
 publish = false
 license = "GPL-3.0-or-later"
-description = "Bounded descriptor-relative renameat for Darling's x86_64 runtime"
+description = "Bounded allocation-free pathname operations for Darling's x86_64 runtime"
 
 [dependencies]
 dearust-errno = { path = "../dearust-errno" }

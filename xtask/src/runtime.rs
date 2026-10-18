@@ -56,15 +56,8 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                         | "dearust-guarded"
                         | "dearust-lstat"
                         | "dearust-fstatat"
-                        | "dearust-symlinkat"
-                        | "dearust-readlinkat"
-                        | "dearust-unlinkat"
-                        | "dearust-linkat"
-                        | "dearust-renameat"
-                        | "dearust-mkdirat"
-                        | "dearust-faccessat"
-                        | "dearust-fchmodat"
                         | "dearust-fd"
+                        | "dearust-path"
                 )
             {
                 return Err(invalid("unknown runtime private-symbol policy"));
@@ -82,6 +75,19 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                     destination: f[5],
                     hidden_symbols: if f[4] == "private" {
                         match f[2] {
+                            "dearust-path" => vec![
+                                "sys_symlinkat",
+                                "sys_readlinkat",
+                                "sys_unlinkat",
+                                "sys_linkat",
+                                "sys_renameat",
+                                "sys_mkdirat",
+                                "sys_faccessat",
+                                "sys_fchmodat",
+                                "sys_rmdir",
+                                "sys_truncate",
+                                "do_linux_fchmodat",
+                            ],
                             "dearust-fd" => vec![
                                 "sys_fchmod",
                                 "sys_ftruncate",
@@ -103,14 +109,6 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                                 "sys_setsid",
                             ],
                             "dearust-process" => vec!["sys_proc_info"],
-                            "dearust-unlinkat" => vec!["sys_unlinkat"],
-                            "dearust-linkat" => vec!["sys_linkat"],
-                            "dearust-renameat" => vec!["sys_renameat"],
-                            "dearust-mkdirat" => vec!["sys_mkdirat"],
-                            "dearust-faccessat" => vec!["sys_faccessat"],
-                            "dearust-fchmodat" => vec!["sys_fchmodat", "do_linux_fchmodat"],
-                            "dearust-readlinkat" => vec!["sys_readlinkat"],
-                            "dearust-symlinkat" => vec!["sys_symlinkat"],
                             "dearust-fstatat" => vec!["sys_fstatat", "sys_fstatat64"],
                             "dearust-lstat" => vec!["sys_lstat", "sys_lstat64"],
                             "dearust-guarded" => vec![

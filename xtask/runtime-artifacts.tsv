@@ -9,13 +9,6 @@ object	dearust_process	dearust-process	queries	private	objects/process.o	src/ext
 object	dearust_guarded	dearust-guarded	-	private	objects/guarded.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_lstat	dearust-lstat	-	private	objects/lstat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_fstatat	dearust-fstatat	-	private	objects/fstatat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
-object	dearust_symlinkat	dearust-symlinkat	-	private	objects/symlinkat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
-object	dearust_readlinkat	dearust-readlinkat	-	private	objects/readlinkat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
-object	dearust_unlinkat	dearust-unlinkat	-	private	objects/unlinkat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
-object	dearust_linkat	dearust-linkat	-	private	objects/linkat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
-object	dearust_renameat	dearust-renameat	-	private	objects/renameat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
-object	dearust_mkdirat	dearust-mkdirat	-	private	objects/mkdirat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
-object	dearust_faccessat	dearust-faccessat	-	private	objects/faccessat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
-object	dearust_fchmodat	dearust-fchmodat	-	private	objects/fchmodat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_fd	dearust-fd	-	private	objects/fd.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_process_ids	dearust-process	identifiers	private	objects/process-ids.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+object	dearust_path	dearust-path	-	private	objects/paths.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt

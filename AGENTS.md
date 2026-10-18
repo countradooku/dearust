@@ -476,3 +476,23 @@ app/utility/GUI gates pass. Mutations use owned children/restored masks/limits.
 Artifacts: dearust-continuation/work/control-next/{final-stage,matching-final,
 pinned-final}. Thirty partial sources/265773 pending; target slices 7/1622/0.
 Installed binaries and existing user prefix intact.
+
+Continuation: consolidated pathname subsystem, rmdir and truncate
+----------------------------------------------------------------
+Latest RUNTIME-PATHS.txt/runtime-paths-verification.json. dearust-path replaces
+eight single-operation crates and adds rmdir/truncate (ten C sources/11 exports).
+All eight previous ABI modules are copied unchanged; shared copier retains three
+tests. Packages 20 -> 13; 117 Rust tests after fourteen duplicate cases removed, 29 Python
+tests and 26 guest probes plus existing apps/utilities/GUI gates pass. Preserve
+module semantics/unsafe contracts; no heap/intermediate path arrays/cache.
+Use --paths-object(paths.o), removing eight prior pathname object switches;
+keep lstat/fstatat metadata objects and matching/pinned original TLS/fork bridges.
+Old switches remain accepted separately for historical objects, not with paths.
+Native CPU+2.11%, guest median-2.23% overlapping ranges; readonly errno data
+1008 -> 126 bytes, mixed file-4768B; no general app/RSS claim. New NULL truncate
+and overlong paths return bounded errors; prior guest probes fail 132/139.
+Native test-only weak abort adapters satisfy unexercised consolidated imports;
+never include them in production. All ten native fixtures still execute.
+Artifacts: dearust-continuation/work/paths-next/{final-stage,matching-final,
+pinned-final}. Thirty-two partial sources/265771 pending; target counts 7/1622/0.
+Installed binaries and existing user prefix intact; full migration incomplete.

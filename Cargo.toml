@@ -9,7 +9,7 @@ description = "Dearust: Rust ports of Darling host utilities"
 repository = "https://github.com/countradooku/dearust"
 
 [workspace]
-members = ["xtask", "crates/dearust-coredump", "crates/dearust-libsimple", "crates/dearust-errno", "crates/dearust-futex", "crates/dearust-lockset", "crates/dearust-process", "crates/dearust-guarded", "crates/dearust-lstat", "crates/dearust-fstatat", "crates/dearust-symlinkat", "crates/dearust-readlinkat", "crates/dearust-unlinkat", "crates/dearust-linkat", "crates/dearust-renameat", "crates/dearust-mkdirat", "crates/dearust-faccessat", "crates/dearust-fchmodat", "crates/dearust-fd"]
+members = ["xtask", "crates/dearust-coredump", "crates/dearust-libsimple", "crates/dearust-errno", "crates/dearust-futex", "crates/dearust-lockset", "crates/dearust-process", "crates/dearust-guarded", "crates/dearust-lstat", "crates/dearust-fstatat", "crates/dearust-fd", "crates/dearust-path"]
 resolver = "3"
 
 [lints.rust]

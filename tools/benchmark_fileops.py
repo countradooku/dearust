@@ -34,7 +34,7 @@ def main():
         parser.add_argument('--'+name,type=Path,required=True)
     parser.add_argument('--samples',type=int,default=21)
     parser.add_argument('--iterations',type=int,default=2000)
-    parser.add_argument('--family', choices=['mutation','permissions','fdops','descriptors','identifiers','control'], default='mutation')
+    parser.add_argument('--family', choices=['mutation','permissions','fdops','descriptors','identifiers','control','paths'], default='mutation')
     args=parser.parse_args()
     if args.samples<3 or args.iterations<1:
         parser.error('at least three samples and positive iterations required')
@@ -55,6 +55,8 @@ def main():
         paths={n:'unistd/'+n+'.c' for n in ['getpid','getppid','getpgrp','getpgid','getsid']}
     if args.family=='control':
         paths={n:'unistd/'+n+'.c' for n in ['setpgid','setsid','umask','getdtablesize']}
+    if args.family=='paths':
+        paths={'mkdirat':'stat/mkdirat.c','rmdir':'stat/rmdir.c','truncate':'unistd/truncate.c'}
     names=tuple(paths)
     sources=[base/'src/xnu_syscall/bsd/impl'/path for path in paths.values()]
     inputs=pinned_hashes(source,[*sources,base/'include/conversion/common_at.h'])
@@ -98,6 +100,14 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
         # Audit the retained NOFILE -1 policy even though this native adapter
         # uses host getrlimit instead of guest prlimit64/TLS runtime paths.
         inputs.update(pinned_hashes(source,[base/'src/xnu_syscall/bsd/impl/misc/getrlimit.c']))
+    if args.family=='paths':
+        header('common/bsdthread/per_thread_wd.h','extern int get_perthread_wd(void);\n')
+        for name,relative in paths.items():
+            original_header=base/'include/xnu_syscall/bsd/impl'/relative.replace('.c','.h')
+            inputs.update(pinned_hashes(source,[original_header]))
+            header('xnu_syscall/bsd/impl/'+relative.replace('.c','.h'),original_header.read_text())
+        # Original rmdir/truncate rely on the full build's string declaration.
+        header('common/base.h',(headers/'darling/emulation/common/base.h').read_text()+'\n#include <string.h>\n')
     commands=[]
     for name,path in zip(names,sources):
         command=['clang','-O3','-fPIC','-fvisibility=hidden','-I'+str(headers),'-c',str(path),'-o',str(args.output/(name+'.o'))]
@@ -111,6 +121,8 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
         driver=Path(__file__).parent/'fixtures/identifiers-bench.c'
     if args.family=='control':
         driver=Path(__file__).parent/'fixtures/control-bench.c'
+    if args.family=='paths':
+        driver=Path(__file__).parent/'fixtures/paths-bench.c'
     rust_objects=[runtime/'objects'/(n+'.o') for n in names]
     if args.family=='descriptors':
         rust_objects=[runtime/'objects/fd.o']
@@ -118,6 +130,8 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
         rust_objects=[runtime/'objects/process-ids.o']
     if args.family=='control':
         rust_objects=[runtime/'objects/fd.o',runtime/'objects/process-ids.o',runtime/'objects/errno.o']
+    if args.family=='paths':
+        rust_objects=[runtime/'objects/paths.o']
     binaries={}
     for variant in ('original','rust'):
         objects=[args.output/(n+'.o') for n in names] if variant=='original' else rust_objects
@@ -143,6 +157,8 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
         roundtrip='getpid -> getppid -> getpgrp -> getpgid(0) -> getsid(0); real native process identifiers, stable checksum checked against libc'
     elif args.family=='control':
         roundtrip='setpgid(0,0) success -> setsid EPERM -> umask(022) warmed prior022 -> getdtablesize retained NOFILE-1/clamp; owned group-leader child only; warm mutator/error paths, not successful session-creation throughput'
+    elif args.family=='paths':
+        roundtrip='mkdirat -> rmdir -> truncate(128); owned absolute directory/file paths; no-op native virtual-root/TLS adapters; retained initialized in-place path buffers'
     else:
         roundtrip+='; actual temporary native files'
     report={'scope':__doc__,'roundtrip':roundtrip,'samples':args.samples,'iterations':args.iterations,'cpu':cpu,'commands':commands,

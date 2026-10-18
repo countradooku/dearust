@@ -45,15 +45,8 @@ fn check(triple: &str, label: &str) {
         "fstatat",
         "process",
         "process-ids",
-        "symlinkat",
-        "readlinkat",
-        "unlinkat",
-        "linkat",
-        "renameat",
-        "mkdirat",
-        "faccessat",
-        "fchmodat",
         "fd",
+        "paths",
     ];
     let initial: Vec<_> = names
         .iter()
@@ -105,17 +98,22 @@ fn check(triple: &str, label: &str) {
             .iter()
             .map(|s| format!("{prefix}{s}"))
             .collect(),
-            "unlinkat" => vec![format!("{prefix}sys_unlinkat")],
-            "linkat" => vec![format!("{prefix}sys_linkat")],
-            "renameat" => vec![format!("{prefix}sys_renameat")],
-            "mkdirat" => vec![format!("{prefix}sys_mkdirat")],
-            "faccessat" => vec![format!("{prefix}sys_faccessat")],
-            "fchmodat" => ["sys_fchmodat", "do_linux_fchmodat"]
-                .iter()
-                .map(|s| format!("{prefix}{s}"))
-                .collect(),
-            "readlinkat" => vec![format!("{prefix}sys_readlinkat")],
-            "symlinkat" => vec![format!("{prefix}sys_symlinkat")],
+            "paths" => [
+                "sys_symlinkat",
+                "sys_readlinkat",
+                "sys_unlinkat",
+                "sys_linkat",
+                "sys_renameat",
+                "sys_mkdirat",
+                "sys_faccessat",
+                "sys_fchmodat",
+                "sys_rmdir",
+                "sys_truncate",
+                "do_linux_fchmodat",
+            ]
+            .iter()
+            .map(|s| format!("{prefix}{s}"))
+            .collect(),
             "process-ids" => [
                 "sys_getpid",
                 "sys_getppid",
@@ -192,12 +190,13 @@ fn check(triple: &str, label: &str) {
                 imports.sort();
                 imports
             }
-            "symlinkat" | "readlinkat" | "unlinkat" | "linkat" | "renameat" | "mkdirat"
-            | "faccessat" | "fchmodat" => {
+            "paths" => {
                 let mut imports = [
                     "atfd",
-                    "vchroot_expand",
+                    "atflags_bsd_to_linux",
+                    "dearust_get_perthread_wd",
                     "linux_syscall",
+                    "vchroot_expand",
                     if triple.contains("apple") {
                         "__bzero"
                     } else {
@@ -207,9 +206,6 @@ fn check(triple: &str, label: &str) {
                 .iter()
                 .map(|s| format!("{prefix}{s}"))
                 .collect::<Vec<_>>();
-                if matches!(*name, "unlinkat" | "linkat" | "faccessat" | "fchmodat") {
-                    imports.push(format!("{prefix}atflags_bsd_to_linux"));
-                }
                 imports.sort();
                 imports
             }
@@ -281,15 +277,8 @@ fn check(triple: &str, label: &str) {
             ("fstatat", 2),
             ("process", 1),
             ("process-ids", 7),
-            ("symlinkat", 1),
-            ("readlinkat", 1),
-            ("unlinkat", 1),
-            ("linkat", 1),
-            ("renameat", 1),
-            ("mkdirat", 1),
-            ("faccessat", 1),
-            ("fchmodat", 2),
             ("fd", 9),
+            ("paths", 11),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
@@ -318,16 +307,43 @@ fn check(triple: &str, label: &str) {
             "mkdirat",
             "faccessat",
             "fchmodat",
+            "rmdir",
+            "truncate",
             "fd",
             "process-ids",
         ] {
             let driver = Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join(format!("../tools/fixtures/{name}-native.c"));
             let executable = temp.0.join(format!("{name}-native"));
-            let compile = Command::new("clang")
+            let object_name = if [
+                "symlinkat",
+                "readlinkat",
+                "unlinkat",
+                "linkat",
+                "renameat",
+                "mkdirat",
+                "faccessat",
+                "fchmodat",
+                "rmdir",
+                "truncate",
+            ]
+            .contains(&name)
+            {
+                "paths"
+            } else {
+                name
+            };
+            let mut compile = Command::new("clang");
+            if object_name == "paths" {
+                compile.arg(
+                    Path::new(env!("CARGO_MANIFEST_DIR"))
+                        .join("../tools/fixtures/path-unused-boundaries-native.c"),
+                );
+            }
+            let compile = compile
                 .args(["-O2", "-Wall", "-Wextra", "-Werror"])
                 .arg(driver)
-                .arg(stage.join(format!("objects/{name}.o")))
+                .arg(stage.join(format!("objects/{object_name}.o")))
                 .arg("-o")
                 .arg(&executable)
                 .output()

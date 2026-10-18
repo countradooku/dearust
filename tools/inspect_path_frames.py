@@ -29,16 +29,24 @@ def main():
             text = subprocess.check_output(['llvm-objdump', '--disassemble', '--no-show-raw-insn', str(obj)], text=True)
             (args.output/(name+'-'+variant+'.asm')).write_text(text)
             frames = []
-            for function in re.split(r'^\s*[0-9a-f]+ <[^>]+>:\s*$', text, flags=re.M)[1:]:
+            functions = {}
+            boundaries = list(re.finditer(r'^\s*[0-9a-f]+ <([^>]+)>:\s*$', text, flags=re.M))
+            for index, boundary in enumerate(boundaries):
+                end = boundaries[index+1].start() if index+1 < len(boundaries) else len(text)
+                function = text[boundary.end():end]
                 # Probe pages and remainder appear before the first foreign call.
                 prologue = re.split(r'\bcallq?\b', function, maxsplit=1)[0]
-                frames.append(sum(int(value, 0) for value in re.findall(r'subq\s+\$(0x[0-9a-f]+|[0-9]+),\s*%rsp', prologue)))
+                subtraction = sum(int(value, 0) for value in re.findall(r'subq\s+\$(0x[0-9a-f]+|[0-9]+),\s*%rsp', prologue))
+                frames.append(subtraction)
+                functions[boundary.group(1)] = {'local_stack_subtraction_bytes': subtraction,
+                                                'prologue_push_bytes': 8*len(re.findall(r'\bpushq\b', prologue))}
             if not frames:
                 raise ValueError('unrecognized x86_64 prologue in '+str(obj))
             imports = subprocess.check_output(['llvm-nm', '--extern-only', '--undefined-only', '--format=posix', str(obj)], text=True)
             result[name][variant] = {'object_sha256': hashlib.sha256(obj.read_bytes()).hexdigest(),
                                      'object_bytes': obj.stat().st_size,
                                      'max_local_stack_subtraction_bytes': max(frames),
+                                     'functions': functions,
                                      'imports': [line.split()[0] for line in imports.splitlines()]}
     report = {'scope': __doc__, 'objects': result}
     (args.output/'frames.json').write_text(json.dumps(report, indent=2)+'\n')
