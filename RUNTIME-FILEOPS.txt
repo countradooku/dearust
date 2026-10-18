@@ -1,0 +1,93 @@
+Dearust continuation: directory-relative deletion, hard links and renames
+=======================================================================
+
+Project owner: @countradooku. AI assistance: OpenAI Codex. Migration remains
+INCOMPLETE. Exact evidence is in runtime-fileops-verification.json.
+
+Implemented runtime slices
+--------------------------
+New no_std crates dearust-unlinkat, dearust-linkat and dearust-renameat replace
+three x86_64 syscall wrappers. Original atfd/TLS, vchroot and common flag helpers
+remain C. The wrappers preserve syscall argument widths/order, Linux syscall
+numbers 263/265/264, original int result narrowing, and rename success returning
+zero. Source expansion precedes destination expansion and flag validation;
+linkat follows the source only with BSD_AT_SYMLINK_FOLLOW, never the destination.
+No new policy for the original broadly shared flag converter is invented.
+
+Paths are copied directly into initialized final ABI storage, bounded to 4096
+bytes. NULL input returns EFAULT, fixing three actual prior-runtime crashes;
+unterminated input returns ENAMETOOLONG. Link/rename require two live paths,
+so each retains exactly two final buffers, with no returned-array intermediate.
+The original plain unlink/link/rename C wrappers reach these Rust entries and
+are not themselves counted as migrated. Invalid non-NULL input pointers retain
+the existing in-process caller validity contract. See each crate's SAFETY.txt.
+
+Guest probes validate different source/destination dirfds and cwd, per-thread
+AT_FDCWD in both positions, hard-link inode identity, final-symlink follow policy,
+rename replacement/content identity, unlink not following targets, directory
+removal, errors, null/long paths and preserved unrelated files. Missing dirfd
+references retain existing vchroot ENOENT behavior. Some nonexistent paths pass
+expansion and reach flag validation before the raw kernel, also as before.
+Native fixtures separately inject expansion failures to verify error ordering.
+
+CPU and memory evidence
+-----------------------
+The ports allocate no heap and introduce no allocator/panic runtime imports.
+Generated native local stack subtraction (register pushes/callees excluded):
+                       original C       Rust
+    unlinkat              4112 B       4112 B
+    linkat                8224 B       8216 B
+    renameat              8216 B       8216 B
+
+These are frame measurements, not process-RSS claims. All initialized storage
+is in place; safety checks and initialization remain explicit.
+
+A real native linkat -> renameat -> unlinkat roundtrip, with unchanged pinned C
+sources and explicit native vchroot/TLS/include adapters, measured median CPU
+4666.3 -> 4774.1 ns/roundtrip: Rust is 2.31% slower in this workload. Twenty-one
+alternating samples, 2000 roundtrips/sample, one eligible CPU; quartiles/raw
+samples and exact adapter text are preserved. No native speedup is claimed.
+
+The actual matching guest roundtrip, old/new/new/old process order, 42 samples
+per variant and 200 rounds/sample, measured CPU 35.9225 -> 35.9150 us/roundtrip.
+CPU quartile ranges overlap; the medians are essentially equal. Wall medians are
+36.5325 -> 36.7750 us/roundtrip. This does not demonstrate a meaningful guest
+speedup. Native adapters exclude virtual-root/TLS and the local original C raw
+entry's tracing wrapper; do not equate those two measurement environments.
+Existing RUNTIME-PERFORMANCE.txt measurements remain separate historical evidence.
+
+Verification
+------------
+125 Rust tests, 29 Python tests, strict Clippy, formatting and the explicit Darwin
+object ABI/staging test pass. Independent review reran all three native syscall
+fixtures and found no actionable issue. All eleven guest regression probes pass;
+the three new probes crash against the previous Rust runtime at NULL input.
+Sixteen utility workloads, the 29-app suite (28 exact plus explicit cfbridge log
+normalization), and three GUI samples pass within their documented limits.
+
+Matching final link preserves 1370 public definitions/40 imports. Pinned link
+preserves 1362 definitions/18 imports and original i386 bytes. Process dispatcher
+integration remains matching-only; this does not establish pinned runtime boot.
+All execution uses owned prefixes/isolated Rust-lockset server; installed files
+and the user's existing prefix are unchanged. Hidden nested X is shut down.
+
+Reproduction and scope
+----------------------
+Follow RUNTIME-PERFORMANCE.txt, adding these relinker inputs:
+
+    --unlinkat-object "$WORK/runtime/objects/unlinkat.o"
+    --linkat-object "$WORK/runtime/objects/linkat.o"
+    --renameat-object "$WORK/runtime/objects/renameat.o"
+
+Use corresponding matching/pinned fork and TLS bridges. Native ABI/staging tests
+execute the new C fixtures. Build *at-regression.c and fileops-guest-bench.c with
+build_runtime_probes.py; expected stdout is provided independently. The guest
+benchmark prints raw CPU/wall records on stderr. For the native comparison:
+
+    python3 tools/benchmark_fileops.py --source EXACT_PIN_SOURCE --runtime NATIVE_STAGE --output NEW_DIRECTORY
+    python3 tools/inspect_path_frames.py --baseline ORIGINAL_NATIVE_STAGE --optimized RUST_NATIVE_STAGE --output NEW_DIRECTORY --names unlinkat linkat renameat
+
+Twelve dependency source slices are partial, 265791 entries remain pending;
+seven Cargo target slices, 1622 pending targets, zero retired targets. Most
+runtime/framework/build implementation remains C/C++/assembly. i386 Rust, clean
+pinned boot and arbitrary commercial app compatibility remain unverified.

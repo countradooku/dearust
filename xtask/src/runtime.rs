@@ -58,6 +58,9 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                         | "dearust-fstatat"
                         | "dearust-symlinkat"
                         | "dearust-readlinkat"
+                        | "dearust-unlinkat"
+                        | "dearust-linkat"
+                        | "dearust-renameat"
                 )
             {
                 return Err(invalid("unknown runtime private-symbol policy"));
@@ -76,6 +79,9 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                     hidden_symbols: if f[4] == "private" {
                         match f[2] {
                             "dearust-process" => vec!["sys_proc_info"],
+                            "dearust-unlinkat" => vec!["sys_unlinkat"],
+                            "dearust-linkat" => vec!["sys_linkat"],
+                            "dearust-renameat" => vec!["sys_renameat"],
                             "dearust-readlinkat" => vec!["sys_readlinkat"],
                             "dearust-symlinkat" => vec!["sys_symlinkat"],
                             "dearust-fstatat" => vec!["sys_fstatat", "sys_fstatat64"],

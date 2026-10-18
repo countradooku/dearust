@@ -16,10 +16,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('baseline', 'optimized', 'output'):
         parser.add_argument('--'+name, type=Path, required=True)
+    parser.add_argument('--names', nargs='+', default=['lstat', 'fstatat', 'symlinkat'])
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=False)
     result = {}
-    for name in ('lstat', 'fstatat', 'symlinkat'):
+    for name in args.names:
+        if not re.fullmatch(r'[a-z][a-z0-9_]*', name):
+            parser.error('names must be simple object basenames')
         result[name] = {}
         for variant in ('baseline', 'optimized'):
             obj = getattr(args, variant)/'objects'/(name+'.o')

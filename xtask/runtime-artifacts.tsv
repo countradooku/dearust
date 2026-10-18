@@ -11,3 +11,6 @@ object	dearust_lstat	dearust-lstat	-	private	objects/lstat.o	src/external/xnu/da
 object	dearust_fstatat	dearust-fstatat	-	private	objects/fstatat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_symlinkat	dearust-symlinkat	-	private	objects/symlinkat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
 object	dearust_readlinkat	dearust-readlinkat	-	private	objects/readlinkat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+object	dearust_unlinkat	dearust-unlinkat	-	private	objects/unlinkat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+object	dearust_linkat	dearust-linkat	-	private	objects/linkat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt
+object	dearust_renameat	dearust-renameat	-	private	objects/renameat.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt

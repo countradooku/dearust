@@ -46,6 +46,9 @@ fn check(triple: &str, label: &str) {
         "process",
         "symlinkat",
         "readlinkat",
+        "unlinkat",
+        "linkat",
+        "renameat",
     ];
     let initial: Vec<_> = names
         .iter()
@@ -83,6 +86,9 @@ fn check(triple: &str, label: &str) {
             .iter()
             .map(|s| format!("{prefix}{s}"))
             .collect(),
+            "unlinkat" => vec![format!("{prefix}sys_unlinkat")],
+            "linkat" => vec![format!("{prefix}sys_linkat")],
+            "renameat" => vec![format!("{prefix}sys_renameat")],
             "readlinkat" => vec![format!("{prefix}sys_readlinkat")],
             "symlinkat" => vec![format!("{prefix}sys_symlinkat")],
             "process" => vec![format!("{prefix}sys_proc_info")],
@@ -149,7 +155,7 @@ fn check(triple: &str, label: &str) {
                 imports.sort();
                 imports
             }
-            "symlinkat" | "readlinkat" => {
+            "symlinkat" | "readlinkat" | "unlinkat" | "linkat" | "renameat" => {
                 let mut imports = [
                     "atfd",
                     "vchroot_expand",
@@ -163,6 +169,9 @@ fn check(triple: &str, label: &str) {
                 .iter()
                 .map(|s| format!("{prefix}{s}"))
                 .collect::<Vec<_>>();
+                if matches!(*name, "unlinkat" | "linkat") {
+                    imports.push(format!("{prefix}atflags_bsd_to_linux"));
+                }
                 imports.sort();
                 imports
             }
@@ -230,6 +239,9 @@ fn check(triple: &str, label: &str) {
             ("process", 1),
             ("symlinkat", 1),
             ("readlinkat", 1),
+            ("unlinkat", 1),
+            ("linkat", 1),
+            ("renameat", 1),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
@@ -247,7 +259,15 @@ fn check(triple: &str, label: &str) {
         }
     }
     if !triple.contains("apple") {
-        for name in ["lstat", "fstatat", "symlinkat", "readlinkat"] {
+        for name in [
+            "lstat",
+            "fstatat",
+            "symlinkat",
+            "readlinkat",
+            "unlinkat",
+            "linkat",
+            "renameat",
+        ] {
             let driver = Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join(format!("../tools/fixtures/{name}-native.c"));
             let executable = temp.0.join(format!("{name}-native"));

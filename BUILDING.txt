@@ -299,3 +299,9 @@ readlinkat.o runtime graph entry and --readlinkat-object relinker option. Path
 wrappers use bounded in-place copying; ABI tests expect no path-copy memcpy
 import. 119 Rust tests and 29 Python tests pass. Nine dependency sources are
 partial, 265794 entries pending, and no additional target is retired.
+
+File-operation continuation: RUNTIME-FILEOPS.txt documents unlinkat.o, linkat.o
+and renameat.o and their same-named --*-object relinker options. 125 Rust tests
+and 29 Python tests pass. Twelve dependency sources remain partial with 265791
+pending entries; target retirement counts unchanged. Native/guest performance
+comparisons are explicitly separate; no speedup is claimed for these ports.

@@ -1,0 +1,14 @@
+[package]
+name = "dearust-unlinkat"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+license = "GPL-3.0-or-later"
+description = "Bounded descriptor-relative unlinkat for Darling's x86_64 runtime"
+
+[dependencies]
+dearust-errno = { path = "../dearust-errno" }
+
+[lints.clippy]
+undocumented_unsafe_blocks = "deny"

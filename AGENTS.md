@@ -382,3 +382,17 @@ dearust-continuation/work/perf-next/{final-stage,matching-final,pinned-final}.
 119 Rust tests, 29 Python tests and documented app/utility/GUI/probe gates pass.
 Nine dependency sources remain partial, 265794 entries pending; target counts
 remain seven Cargo slices / 1622 pending / zero retired.
+
+Continuation: unlinkat/linkat/renameat
+------------------------------------
+Latest evidence: RUNTIME-FILEOPS.txt and runtime-fileops-verification.json. New
+allocation-free Rust directory-relative mutation wrappers retain original atfd,
+flag/vchroot policies and syscall widths/order. Native stack remains ~4KiB for
+unlinkat and ~8KiB for two-path operations. Native adapted roundtrip is 2.31%
+slower; actual guest CPU medians are essentially equal. Preserve those scope
+limits; do not claim a speedup. Three new NULL-path probes crash prior runtime
+and pass Rust. 125 Rust tests, 29 Python tests and documented regression/app/GUI
+gates pass. Final artifacts: dearust-continuation/work/fileops-next/
+{final-stage,matching-final,pinned-final}. Add --unlinkat-object, --linkat-object
+and --renameat-object to previous relinker options. Twelve dependency sources
+partial, 265791 entries pending; target counts seven/1622/zero retired.

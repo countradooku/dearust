@@ -1,0 +1,29 @@
+unlinkat: bounded, allocation-free x86_64 runtime migration
+========================================================
+
+Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/unlinkat.c
+at fa29287aa2f0115271e091f1031f53c9e024005d, GPL-3.0-or-later. Pinned and
+locally matching C sources are byte-identical. Original Darling/upstream
+attribution and licenses apply. Bounded copier derives from Dearust's existing
+path modules under the same license.
+
+ABI remains long sys_unlinkat(int, const char*, int). Original atfd resolves
+BSD_AT_FDCWD (-2) using guest per-thread cwd. Original vchroot_expand receives
+flags=0, so the final symlink is not followed. Original atflags_bsd_to_linux
+runs AFTER successful expansion, retaining its accepted/ignored bit policy,
+LINUX_AT_INVALID=1 rejection and path/flag error precedence. Linux x86_64 raw
+syscall 263 receives the expanded fd/path and converted flags. Raw result is
+narrowed to int before negative Linux-to-BSD errno conversion, matching C.
+
+One initialized repr(C) Expanded (char[4096], uint32 flags, int32 dfd) is filled
+in place; no heap, array-return copy, locks, cache or panic runtime. NULL source
+returns Darwin EFAULT; no NUL within 4096 bytes returns ENAMETOOLONG instead of
+original strcpy crash/overflow. Non-NULL source must remain readable through NUL
+or 4096 bytes. Arbitrary invalid non-NULL pointers are not fault-safe. Unsafe
+is confined to abi.rs pointer reads and original foreign calls; foreign helpers
+must preserve path termination on success and cannot unwind. TLS must be ready.
+
+Native tests use explicit vchroot/TLS/flag adapters and real Linux unlinkat;
+guest fixture separately exercises actual path expansion, per-thread cwd,
+error ordering and deletion boundaries. Only x86_64 is supported. No complete
+runtime migration or arbitrary application compatibility is claimed.
