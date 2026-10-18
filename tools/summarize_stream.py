@@ -17,10 +17,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('forward','reverse','resource-forward','resource-reverse','output'):
         parser.add_argument('--'+name,type=Path,required=True)
-    parser.add_argument('--workload',choices=['stream','frontends','services'],default='stream')
+    parser.add_argument('--workload',choices=['stream','frontends','services','filesystem'],default='stream')
     args = parser.parse_args()
     family=args.workload
-    expected_rounds={'stream':5000,'frontends':200,'services':10000}[family]
+    expected_rounds={'stream':5000,'frontends':200,'services':10000,'filesystem':200}[family]
     if kernel_pair(args.forward,args.reverse) != kernel_pair(args.resource_forward,args.resource_reverse):
         raise ValueError('CPU and resource cohorts use different kernels')
     cpu = []

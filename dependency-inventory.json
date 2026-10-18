@@ -10,8 +10,8 @@
     },
     "inventoried_entries": 265803,
     "entries_by_status": {
-      "partial": 47,
-      "pending": 265756
+      "partial": 49,
+      "pending": 265754
     },
     "license_candidates": 341
   },
@@ -2326871,7 +2326871,10 @@
           "object_id": "1098510c6766cfba090e581b061b9ff7ee06553f",
           "size": 2513,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-path/src/abi/filesystem.rs",
+          "scope": "Grouped no_std x86_64 filesystem queries in existing paths.o; native and matching guest verification in runtime-filesystem-verification.json; original statfs/statfs64/fstatfs/fstatfs64 ABI retained.",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/getfsstat.c",
@@ -2326976,7 +2326979,10 @@
           "object_id": "a6a51627935ce7e11871d237158dd4cd48bd7128",
           "size": 2538,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-path/src/abi/filesystem.rs",
+          "scope": "Grouped no_std x86_64 filesystem queries in existing paths.o; native and matching guest verification in runtime-filesystem-verification.json; original statfs/statfs64/fstatfs/fstatfs64 ABI retained.",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/synch/semwait_signal.c",

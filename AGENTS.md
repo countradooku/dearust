@@ -756,3 +756,50 @@ withcallerownership/alias/concurrency/inputinit contracts. Kerneladdressvalidati
 isnotRustborrowvalidation. Threecompilefailchecks (115Rustchecks total) enforce
 unsafe calls; CABI andallnative/Darwin objectbytesunchanged. Privateentropyhelpers
 propagateunsafecontractexplicitly. Do not expose these as safe rawpointerRustAPIs.
+
+
+Continuation: filesystem accounting, mount identity and descriptor pressure
+-------------------------------------------------------------------------
+Read RUNTIME-FILESYSTEM.txt/runtime-filesystem-verification.json. Four statfs
+entries now share dearust-path, 24 source slices/39 private paths.o globals.
+No new crate; 11 packages. Initialized2168-byte layout, frsize block units, optimal
+IO size, flags, final symlink following, anonymous-fd EINVAL, exact mount identity
+and guarded copyout fix confirmed defects. Keep unsafe Rust ownership contracts.
+
+Fast path: pinned fd, raw 138 authorization/accounting, statx UNIQUE mount ID,
+statmount 457 flags0/current namespace/root, mask0x330 including optional subtype.
+Never restore BY_FD (foreign mount namespace/root) or drop fuse-style subtype.
+Reuse the4096-byte point scratch; initialize only size word before statmount,
+form references only over the checked initialized prefix. Older/oversized queries
+stream procfs4096-byte pread chunks by legacy mount ID; no mount/capability cache.
+
+Keep source pin alive through cold SCM_RIGHTS RPC83; never reuse overwritten
+point storage as pathname or retry a server error with an unpinned descriptor.
+Full tables and hard/softNOFILE=0 work, including fd0 and F_DUPFD EINVAL. Client
+raw 137/138 probes and type/fsid checks, server userns/actual UID/GID/groups/CapEff/
+LSM checks remain mandatory; pathname mode additionally compares root/mountns.
+Host feature is Linux-only. Server reads client PID/TID mountinfo, exact VM copy
+counts, and owns generated received descriptors. All 83 wrappers preserve existing
+fork/atomic/full-mask/rights cleanup. No speculative RPC83 to old servers.
+
+Final artifacts work/filesystem-next/{native-final5,darwin-final5,matching-final5,
+pinned-final5,server-final4}; host source capture source-final3. Both native/Darwin
+repeat identically; other runtime objects match prior batch. Matching local public
+lolsys_fill_mount_names/cache retained verbatim in compat object, unused by new
+entries or exact C reference. Pinned80 protocol explicitly rebased83 for LINK-only
+validation; no clean pinned boot claim. Preserve matching sigexc-O0 and all bridges.
+
+126 ordinary Rust/3 compile-fail/35 Python checks pass, both ABI tests, native
+plain/sanitizers/forced procfs, injected pressure/security/direct-query cases,
+actual filesystem/NOFILE=0 guests, 30 old+3 signalRPC+4 prior regressions, 29 apps
+(one timestamp normalized), 16 utilities and 3 GUI pass. Original failures recorded.
+Native CPU -84.73%, guest -84.75% for four filesystem calls/round; p99 process median
+158.5->27 us. Private dirty3516->3516 KiB, PSS+3.5 KiB, RSS+92 KiB with overlapping
+quartiles; no RSS reduction/universal speed claim. Same NEW paired server for C
+and Rust, exact pinned C entries/base.h overlay, retained matching runtime.
+42 warm CPU samples/variant and 20 resource processes/variant; first round follows
+100 warmups, not untouched cold startup. Forced fallback has correctness coverage;
+performance claim is tested Linux 7.2.9 direct-query scope. Installed/reference
+runtime and existing user prefix intact.49 partial/265754 pending, 7 target slices/
+1622 pending/0 retired. Full migration and prior deferred resource/positioned/vector
+I/O/credential/dup lifecycle audits remain unfinished; do not claim those fixed.

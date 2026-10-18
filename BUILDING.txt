@@ -173,7 +173,7 @@ Verify committed original sources/headers and reproduce the signed overflow:
 Add --benchmark --report /path/to/record.json for 21 alternating synthetic call
 measurements after warmup. This optional check needs clang, UBSan, nm and readelf.
 All source/header blobs come from the documented Git pins, not working files or
-host errno constants. It compares 131,073 range inputs and one million random
+host errno constants. It compares 131, 073 range inputs and one million random
 inputs, then independently verifies Rust's defined INT_MIN result and C's UBSan
 failure. It verifies both original globals and empty undefined-symbol output.
 
@@ -223,7 +223,7 @@ Installed-runtime application checks
 Actual x86_64 execution uses the locally modified source/build at
 /home/radud/darling-lol/build/darling-src. Its existing server and kernel build
 artifacts match the installed binaries byte-for-byte. Relinking the same original
-objects with the three staged Rust slices preserves 1,370 public definitions and
+objects with the three staged Rust slices preserves 1, 370 public definitions and
 40 imports. A matching original relink serves as the comparison. Both variants
 boot in separate exclusively owned prefixes, leaving installed files unchanged.
 
@@ -367,12 +367,12 @@ Metadata subsystem continuation: RUNTIME-METADATA.txt adds stat/fstat including
 paths.o (19 exports) and keep the original --lstat-bridge, removing separate
 --lstat-object/--fstatat-object switches. Both relinkers replace14 C inputs once;
 individual metadata/pathname options conflict with grouping. Workspace11packages,
-111 Rust tests after six duplicate copier tests removed;29 Python tests. Native
+111 Rust tests after six duplicate copier tests removed; 29 Python tests. Native
 staging executes14 metadata/pathname fixtures plus fd/process identifiers. The
 weak abort boundary adapters are test-only, never runtime inputs. Native metadata
 benchmark uses a shared Rust fstatat backend for both variants; original C stat/
 fstat entries versus Rust entries, not an all-C chain. Guest benchmark explicitly
-selects the legacy120-byte structstat for rawstat/fstat and144-byte stat64 for
+selects the legacy120-byte structstat for rawstat/fstat and 144-byte stat64 for
 wide entries. See runtime-metadata-verification.json for execution/performance.
 Latest artifacts: dearust-continuation/work/metadata-next/
 {final-stage,matching-final,pinned-final}; process query object stays matching-only.
@@ -384,7 +384,7 @@ Guest path copy uses Linux process_vm_readv310 and metadata output uses
 process_vm_writev311, with uncached Linuxgetpid39; no unsafe fallback if unavailable
 or denied. NOFOLLOW chmod uses fchmodat2(452); flagged access uses faccessat2(439),
 flags0 keeps legacy syscalls. Missing kernel/policy support returns actual errors.
-Run all16 native fixtures plus fd/process checks and30 guest probes. Shared
+Run all 16 native fixtures plus fd/process checks and 30 guest probes. Shared
 memory test dispatcher is native-only. New pointer/permissions goldens and updated
 faccessat/fchmodat expectations are independent of execution/timings. New native
 benchmark_hardening.py accepts explicit --baseline/--runtime stages and measures
@@ -466,7 +466,7 @@ fixtures. Supply independent expected stdout files before executing any fixture.
 Traditional pathname continuation
 ---------------------------------
 RUNTIME-PATH-FRONTENDS.txt adds six traditional entries through existing paths.o
-and --paths-object; all35 globals are private externs, imports unchanged. Keep
+and --paths-object; all 35 globals are private externs, imports unchanged. Keep
 the existing strong cwd/fork/signal/RPC/vchroot bridges. readlinkat now uses the
 actual size_t ABI and zero-length Darwin result. Rebuild only that old regression
 fixture with corrected pinned-XNU assertions; retain the other29 probe binaries.
@@ -515,3 +515,27 @@ The entropy and stream raw-buffer Rust exports require unsafe callers to uphold
 ownership/aliasing/concurrency and input initialization contracts. This does not
 change C ABI or runtime object bytes. Three compile-fail doc checks enforce the
 Rust-facing boundary; invalid guest mappings still receive kernel fault errors.
+
+
+Filesystem query integration
+-----------------------------
+Read RUNTIME-FILESYSTEM.txt for the complete paired-server build/relink commands.
+The four entries extend the existing paths.o to39 private globals. Runtime
+staging explicitly selects dearust-path/runtime; host-filesystem requires Linux
+and builds the shared backend into a separate host archive with defaults off.
+No Rust allocator/panic runtime is bundled into the Mach-O client objects.
+
+Use build_filesystem_server.py to append managed atomic RPC83 in owned copies,
+then build_filesystem_rpc_bridge.py for the matching and pinned client bridges.
+Keep all three fork-aware RPC objects and both signal bridge objects. Old servers
+cannot serve RPC83; never probe them with it. Matching uses the preserved public
+local helper from build_filesystem_compat_bridge.py through the required
+--filesystem-compat-object. Pinned client wire numbers are rebased to matching
+for link-only checks, not a clean pinned-runtime boot or protocol guarantee.
+
+For fair original C timing, use build_original_filesystem.py with exact pinned
+source, matching flags, an owned base.h overlay and the retained compatibility
+object. Both variants use the same paired new server. Native timing uses
+benchmark_filesystem.py; guest CPU/resource reports use summarize_stream.py
+--workload filesystem. Keep independent goldens in the test root and binaries
+in 10.8/. Run resource-limit regressions only in owned children/prefixes.

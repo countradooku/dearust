@@ -1,0 +1,240 @@
+Filesystem snapshots: x86_64 LP64
+================================
+
+Original Darling/XNU authorship, source pins and licenses in SAFETY.txt apply.
+This ledger covers sys_statfs, sys_statfs64, sys_fstatfs and sys_fstatfs64 in the
+existing pathname subsystem. It supplements SAFETY-MEMORY.txt. Full Darling
+migration, other architectures and unported filesystem APIs are separate work.
+
+ABI and conversion
+------------------
+
+On x86_64, preserve original Darling's legacy-name aliases to the same2168-byte
+statfs64 layout. These names do not select the historical unrelated bsd_statfs
+structure from conversion/stat/common.h. Fields have the SDK offsets: f_bsize0,
+f_iosize4, counts8..40, fsid48, owner56, type60, flags64, subtype68, typename72,
+mountpoint88, source1112, extendedflags2136, reserved2140..2167.
+
+Pure filesystem.rs forbids unsafe code. Conversion clears the complete output
+and assigns bounded field widths from Linux x86_64 statfs120. The five count
+fields and eight-byte fsid retain their bits. Darwin f_bsize is Linux f_frsize
+when nonzero, otherwise Linux f_bsize; Darwin f_iosize is Linux f_bsize, the
+optimal transfer size. These fields retain their32-bit ABI narrowing. Linux
+block counts use f_frsize units, so using optimal transfer size for Darwin
+f_bsize would overstate capacity when the two sizes differ. glibc's Linux
+internal_statvfs.c copies f_frsize-or-bsize together with unchanged counts;
+GNU gnulib fsusage.c likewise uses f_frsize as their multiplier. Linux
+fs/statfs.c fills absent f_frsize from f_bsize. f_owner is the explicit virtual-root mount-owner policy0, not an
+uninitialized byte pattern or an assertion about the host mounting user.
+f_fssubtype, f_flags_ext and all reserved bytes are0.
+
+Retain Darling's raw low32 Linux filesystem magic as its host filesystem-type
+identity. It identifies ext4/overlay/tmpfs/etc. truthfully; it is not a claim that
+Linux magic equals XNU's dynamically registered vfc_typenum. Names likewise
+identify the actual host filesystem instead of pretending it is a Darwin driver.
+
+Translate only adopted equivalent Linux flags: RDONLY1->Darwin1, NOSUID2->8,
+NODEV4->16, NOEXEC8->4, SYNCHRONOUS16->2, NOATIME1024->0x10000000. Linux ST_VALID,
+MANDLOCK, NODIRATIME, RELATIME and other unmapped bits do not become unrelated
+Darwin flags. Do not infer journaling, async, quotas, local/remote guarantees or
+extended data-volume semantics without implementing their compatibility policy.
+
+Namespace and mount identity
+----------------------------
+
+Path entries capture the original per-thread cwd TLS, bounded-copy the guest
+pathname, and request final-symlink FOLLOW from the retained vchroot resolver.
+An O_PATH|O_CLOEXEC descriptor pins the resolved Linux object without opening
+special devices for I/O or requiring file read permission. Descriptor entries
+use F_DUPFD_CLOEXEC to pin their supplied open file description through every
+step, protecting this multi-call snapshot against another thread closing and
+reusing the original descriptor number. Linux anonymous pipe, socket and
+anon-inode filesystems return Darwin EINVAL; named FIFOs retain their containing
+filesystem and work normally. Invalid descriptors preserve EBADF.
+
+Raw fstatfs operates on the pinned object and remains the authoritative
+accounting/authorization query. Where supported, statx obtains the pinned
+mount's unique ID and statmount looks it up in the caller's current namespace
+and root. It does not request STATMOUNT_BY_FD, which can select names in a
+foreign mount namespace. The24-byte statmount request asks for point, filesystem
+type, source and optional subtype. The first four size bytes are initialized to0 before statmount, so a
+no-write synthetic syscall success cannot expose uninitialized Rust bytes.
+Returned size/mask/string offsets/NULs are validated before publishing anything. The fixed512-byte header's string offsets
+are relative to byte512; strings are already unescaped. Type plus optional
+'.subtype' matches procfs naming, with the same15-byte truncation.
+
+Missing fields, unsupported syscalls, policy denials and oversized direct-query
+strings use the complete procfs backend. This obtains the legacy mount ID
+through statx when supported, otherwise /proc/thread-self/fdinfo, then selects
+that exact ID in /proc/thread-self/mountinfo. No capability-support cache is
+introduced. This avoids the
+original guest-fdpath/host-mountpoint mismatch, textual component-prefix errors,
+stacked/bind mount ambiguity and path dependence for an unlinked open file.
+There is no longest-prefix fallback that silently substitutes another mount.
+A pinned mount absent from the reader's visible mount table returns ESTALE70;
+no empty or unrelated metadata is synthesized. This is an explicit visibility
+policy, not a claim that detached mounts are still enumerated by Linux procfs.
+
+MountIdParser and MountParser stream bounded kernel chunks using a4096-byte
+reader buffer. Short reads and arbitrary chunk boundaries are supported. They do not allocate
+whole lines, mount lists or token strings. Unrelated records and optional fields
+can be arbitrarily long. The selected mountpoint, source and type decode octal
+escapes across chunk boundaries without assuming UTF-8. Checked numeric parsing
+rejects overflow. A mountpoint exceeding4095 bytes returns ENAMETOOLONG; its
+supplied4096-byte scratch reserves its terminating NUL. Source and typename
+truncate to1023 and15 bytes with NUL termination, as XNU's strlcpy fields do.
+Malformed selected data produces EIO; unknown mount IDs cannot become success.
+
+The mountpoint scratch reuses the already allocated pathname buffer; no second
+4096-byte path allocation is introduced. Only its prefix through the checked
+terminator is initialized. The retained, hardened vchroot_unexpand bridge turns
+this host mountpoint into the established guest virtual-root/portal namespace,
+including /Volumes/SystemRoot for paths outside the prefix. It checks capacity
+when adding that portal and never reads the uninitialized suffix. The result is
+truncated into the initialized guest-layout mountpoint field with final NUL.
+
+
+Resource pressure and shared host backend
+----------------------------------------
+
+filesystem_io.rs is the shared raw Linux snapshot implementation, compiled
+under runtime and host-filesystem providers. The runtime provider preserves the
+existing seven-argument linux_syscall ABI. The normal Linux host provider uses
+libc syscall plus current-thread __errno_location and converts the raw negative
+Linux result once. The provider exposes only local pointers and borrowed
+server-owned received descriptors; ManuallyDrop prevents accidental closure of
+those borrowed objects. Path-opened private descriptors still use Drop.
+
+The paired server/RPC extension appends filesystem_snapshot as call83 without
+renumbering existing protocol entries. It is required alongside these runtime
+objects. It receives descriptor references through SCM_RIGHTS atomically,
+requiring no free descriptor slot in the client. Descriptor lifetime belongs to
+the generated request class; the Rust host backend only borrows them. Path input
+is copied into initialized bounded server storage and the host mountpoint is
+returned separately from the fully initialized2168-byte output. The runtime
+retains vchroot_unexpand and final guest copyout in the caller process.
+
+This pressure strategy avoids a shared-TLS clone helper and does not temporarily
+raise RLIMIT_NOFILE or close/reassign guest-owned descriptors. Server procfs
+opens consume server-owned slots. Path opens and procfs resource pressure fall back on EMFILE. Initial
+F_DUPFD_CLOEXEC also treats EINVAL as a reason to perform the authoritative
+allocation-free fstatfs probe: with RLIMIT_NOFILE0, minfd0 is already outside the
+limit and Linux returns EINVAL rather than EMFILE. The probe still rejects an
+invalid source or a client policy denial before RPC. Other errors retain their
+original path and are not silently retried as a more privileged query. Exact returned type/fsid checks guard pathname fallback
+against substituting unrelated filesystem metadata.
+
+Peer identity policy and client-side authorization remain security requirements,
+not performance options. User-namespace identity, Uid/Gid/Groups/CapEff and LSM context must match for
+all delegated operations, comparing the actual server worker through
+/proc/thread-self. Pathname delegation additionally requires matching mount
+namespace and root. Descriptor delegation retains its referenced client mount
+across mount namespaces and obtains names from that client thread's mountinfo. Existing descriptor capabilities
+do not remove Linux security_sb_statfs checks under the querying task's LSM
+context. Client-side raw statfs/fstatfs probes are necessary before delegation
+so client seccomp/LSM policy cannot be bypassed by a server-side syscall.
+The client compares returned filesystem type/fsid against its authorization
+probe. A mismatch returns ESTALE before any guest output publication.
+
+Pathname queries keep their O_PATH reference live throughout snapshot and any
+pressure RPC. Once pinned, fallback transfers that descriptor directly. It never
+rereads a scratch buffer that parsing/direct-query output may have overwritten
+as if it were the original pathname. Only an initial open failure delegates the
+still-initialized absolute pathname after a client-side authorization probe. Descriptor
+fallback distinguishes initial duplication failure from snapshot failure: one
+RPC either uses the original source for an initial allocation failure or retains
+the pinned reference through the RPC. An EMFILE returned by that server call is
+not retried with a subsequently reused original descriptor number.
+
+Resource-pressure, client-policy denial and identity mismatch execution coverage
+remain required completion gates; source review alone does not establish them.
+
+Primary conversion references:
+https://raw.githubusercontent.com/bminor/glibc/master/sysdeps/unix/sysv/linux/internal_statvfs.c
+https://raw.githubusercontent.com/coreutils/gnulib/master/lib/fsusage.c
+https://raw.githubusercontent.com/torvalds/linux/v6.12/fs/statfs.c
+
+Ownership, concurrency and faults
+--------------------------------
+
+Fd owns only descriptors created privately by this invocation. Every normal or
+error path closes them once through Drop, including parser failure, output faults
+and failure opening another procfs source. Do not retry close after EINTR: Linux
+may already have released its descriptor number. No guest-supplied descriptor is
+closed. Descriptors are close-on-exec; no global descriptor, mount, pathname,
+credential, signal-mask or PID cache is added. There is no lock or allocator in
+the runtime snapshot and shared Rust backend. The rare server pressure path
+uses the existing C++ server infrastructure, which can allocate bounded strings
+for credential/namespace policy checks; do not extend the Rust no-allocation
+claim to that surrounding C++ code.
+
+Reader uses explicit pread64 offsets, not a shared kernel file position. If a
+signal handler forks and returns in the child while an invocation is live, both
+processes retain independent parser/offset snapshots even though the inherited
+open file descriptions are shared. EINTR is retried for procfs pread; other
+errors convert once. Kernel-reported counts are checked against local capacity
+before forming any Rust byte slice. Offset addition is checked.
+
+Every output byte is initialized locally before guest copyout, including names,
+padding and reserved fields. No intermediate conversion or mount-discovery step
+writes to guest output. Final copy_output uses the existing guarded store PC
+and signal/RPC bridges from SAFETY-MEMORY.txt;2168 is a multiple of four. When
+fault delivery/readiness/alignment state requires it, the same helper uses the
+signal-blocked process_vm_writev fallback with a fresh scoped PID. No raw guest
+address becomes a Rust reference. A partial copy may modify a prefix before
+returning EFAULT; no atomic rollback is promised. Output must not alias local
+wrapper storage or conflict with Rust borrows/concurrent Rust access. Foreign
+helpers and raw-syscall entries must obey their C ABI, retain no local pointers
+and never unwind through Rust.
+
+Unsafe ledger
+-------------
+
+abi/filesystem.rs contains these narrowly scoped unsafe boundaries:
+- Raw linux_syscall calls with syscall-specific initialized local arrays or
+  terminated local pathname prefixes, never guest references.
+- Original cwd/vchroot foreign calls, relying on their audited layout, bounds,
+  termination, synchronous pointer lifetime and non-unwinding contracts.
+- Reader::read constructs a byte slice over exactly the checked prefix written
+  by successful pread64, leaving the rest as MaybeUninit.
+- After successful vchroot_unexpand, read initialized scratch bytes individually
+  and stop at the first NUL; no reference spans the uninitialized suffix.
+- Exported unsafe C entries require the guest/TLS/output ownership contracts and
+  delegate final guest access to the established shared copy boundary.
+
+Memory and validation accounting
+-------------------------------
+
+The conversion and parsers use no heap allocation or persistent storage. They
+still use kernel descriptors and bounded stack storage. Stack allocation includes the existing4096-byte pathname/mountpoint scratch,
+the2168-byte initialized guest result, accounting locals and bounded reader
+storage on the streaming path. Direct statmount reuses the pathname scratch;
+it does not add a second4096-byte mount buffer. Streaming storage is in a
+separate non-inlined fallback function. Retained foreign resolver/syscall/copy
+callees can add frames. Final native/Darwin object inspection records these bytes below function entry
+(local reservation plus saved registers, excluding incoming return address):
+path wrapper6472, descriptor wrapper6360, direct snapshot440, streaming
+proc_snapshot4344, statmount conversion168. The native RPC adapter reserves184;
+the Darwin adapter200. These are per-function figures, not a whole-call peak:
+call return addresses and retained resolver/syscall/memory/RPC/internal iterator
+callees add frames; streaming snapshot is called beneath the direct dispatcher.
+No Rust allocator, panic or unwinder import remains in either runtime object.
+No universal low-stack/RSS/performance claim follows from allocation-free Rust.
+
+Completion checks must include native and actual guest ABI/fault regressions,
+parser/layout cases, guard bytes, symlinks and per-thread cwd, non-vnode errors,
+unlinked files, descriptor cleanup, strong bridge links, application checks and
+measured CPU/latency/memory against unchanged original C on the same workloads.
+Sanitized C fixtures do not instrument Rust/assembly objects. Any material
+performance regression or confirmed semantic defect remains an open completion
+gate until repaired. Native deterministic fallback fixtures now verify the implemented pressure
+strategy, including zero-slot F_DUPFD EINVAL, intermediate proc-open failures,
+late-read failure with a retained pin, single-RPC behavior, policy denials,
+anonymous descriptors, filesystem-identity mismatches, statx missing-mask/error
+fallback, and statmount valid/malformed/overflow/subtype and no-write-success cases. Plain and
+ClangASan/UBSan C fixture executions pass; the Rust object is uninstrumented.
+Final actual guest/server pressure execution passes with full tables and hard/soft
+NOFILE0, including fd0. RUNTIME-FILESYSTEM.txt and runtime-filesystem-verification.json
+record final native/guest, application, CPU/latency/memory and original-C evidence.
+The tested host uses direct statmount; fallback correctness does not establish
+universal performance on other kernels. Full migration remains unfinished.

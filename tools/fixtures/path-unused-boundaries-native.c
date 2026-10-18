@@ -11,6 +11,10 @@ __attribute__((weak)) void stat_linux_to_bsd(const void *input, void *output) { 
 __attribute__((weak)) void stat_linux_to_bsd64(const void *input, void *output) { (void)input; (void)output; abort(); }
 
 __attribute__((weak)) int vchroot_expand(void *args) { (void)args; abort(); }
+__attribute__((weak)) int vchroot_unexpand(void *args) { (void)args; abort(); }
+__attribute__((weak)) long dearust_filesystem_server_snapshot(int fd, int directory, const void *path, unsigned length, void *output, void *mountpoint) {
+    (void)fd; (void)directory; (void)path; (void)length; (void)output; (void)mountpoint; abort();
+}
 
 __attribute__((weak)) void __getuidgid(int *uid, int *gid) { (void)uid; (void)gid; abort(); }
 

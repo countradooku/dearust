@@ -113,3 +113,13 @@ assert nine definitions, eight private symbols, public `sys_thread_selfid`, and
 only the `linux_syscall` import; native staging executes `services-native.c`.
 The separate queries-only `process.o` and production integration boundaries stay
 as documented in BUILDING.txt/RUNTIME-PROCESS-SERVICES.txt.
+
+
+The existing path artifact now explicitly selects the `runtime` feature and
+contains39 private globals, including four filesystem-statistics ABI entries.
+The native ABI suite executes filesystem-native.c and deterministic
+filesystem-fallback-native.c; the latter supplies its own kernel-copy readiness
+boundary. Runtime imports additionally require the paired filesystem RPC
+adapter. The separate `host-filesystem` feature is Linux-only and builds the
+shared parser/backend for the paired server; it is not a Mach-O artifact feature.
+See RUNTIME-FILESYSTEM.txt for integration, pressure tests and measurements.

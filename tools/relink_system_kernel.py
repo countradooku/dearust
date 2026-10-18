@@ -33,6 +33,8 @@ RMDIR = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/rmdir.
 TRUNCATE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/truncate.c.o'
 STAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/stat.c.o'
 FSTAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstat.c.o'
+STATFS = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/statfs.c.o'
+FSTATFS = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstatfs.c.o'
 ACCESS = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/access.c.o'
 CHMOD = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/chmod.c.o'
 READLINK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/readlink.c.o'
@@ -196,7 +198,7 @@ def integrate(args):
             raise ValueError('grouped paths object conflicts with individual pathname objects')
         if not args.paths_object.is_file() or not args.lstat_bridge:
             raise ValueError('grouped paths object requires its object and original thread-cwd bridge')
-        for name in (SYMLINKAT, READLINKAT, UNLINKAT, LINKAT, RENAMEAT, MKDIRAT, FACCESSAT, FCHMODAT, RMDIR, TRUNCATE, LSTAT, FSTATAT, STAT, FSTAT, ACCESS, CHMOD, READLINK, SYMLINK, LINK, UNLINK, RENAME, MKDIR):
+        for name in (SYMLINKAT, READLINKAT, UNLINKAT, LINKAT, RENAMEAT, MKDIRAT, FACCESSAT, FCHMODAT, RMDIR, TRUNCATE, LSTAT, FSTATAT, STAT, FSTAT, STATFS, FSTATFS, ACCESS, CHMOD, READLINK, SYMLINK, LINK, UNLINK, RENAME, MKDIR):
             if inputs.count(name) != 1:
                 raise ValueError('missing unique grouped pathname input: ' + name)
             replacements[name] = args.paths_object.resolve(strict=True)
@@ -323,6 +325,8 @@ def integrate(args):
     }
     if args.rpc_object:
         wanted['_dserver_rpc_explicit_checkin'] = args.rpc_object.name
+        if args.paths_object:
+            wanted['_dearust_filesystem_server_snapshot'] = args.rpc_object.name
         wanted['_dearust_rpc_syscall'] = args.rpc_leaf_object.name
         wanted['_dearust_rpc_fork_child'] = args.rpc_state_object.name
     if args.lstat_object:
@@ -361,6 +365,10 @@ def integrate(args):
         wanted['_sys_stat64'] = args.paths_object.name
         wanted['_sys_fstat'] = args.paths_object.name
         wanted['_sys_fstat64'] = args.paths_object.name
+        wanted['_sys_statfs'] = args.paths_object.name
+        wanted['_sys_statfs64'] = args.paths_object.name
+        wanted['_sys_fstatfs'] = args.paths_object.name
+        wanted['_sys_fstatfs64'] = args.paths_object.name
         wanted['_sys_access'] = args.paths_object.name
         wanted['_sys_chmod'] = args.paths_object.name
         wanted['_sys_readlink'] = args.paths_object.name

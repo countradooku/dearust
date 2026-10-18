@@ -77,6 +77,8 @@ def main():
                     ('xnu_syscall/bsd/impl/unistd/truncate.c', 'dearust-path', 'paths.o'),
                     ('xnu_syscall/bsd/impl/stat/stat.c', 'dearust-path', 'paths.o'),
                     ('xnu_syscall/bsd/impl/stat/fstat.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/stat/statfs.c', 'dearust-path', 'paths.o'),
+                    ('xnu_syscall/bsd/impl/stat/fstatfs.c', 'dearust-path', 'paths.o'),
                     ('conversion/stat/common.c', 'dearust-path', 'paths.o'),
                     ('xnu_syscall/bsd/impl/unistd/access.c', 'dearust-path', 'paths.o'),
                     ('xnu_syscall/bsd/impl/unistd/chmod.c', 'dearust-path', 'paths.o'),

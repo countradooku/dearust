@@ -121,6 +121,10 @@ fn check(triple: &str, label: &str) {
                 "sys_stat64",
                 "sys_fstat",
                 "sys_fstat64",
+                "sys_statfs",
+                "sys_statfs64",
+                "sys_fstatfs",
+                "sys_fstatfs64",
                 "sys_access",
                 "sys_chmod",
                 "sys_readlink",
@@ -191,17 +195,22 @@ fn check(triple: &str, label: &str) {
                     "atflags_bsd_to_linux",
                     "dearust_get_perthread_wd",
                     "dearust_copy_signals_ready",
+                    "dearust_filesystem_server_snapshot",
                     "linux_syscall",
                     "__getuidgid",
                     "vchroot_expand",
+                    "vchroot_unexpand",
                     "vchroot_expand_stat",
                     "vchroot_expand_at",
+                    "memcpy",
                 ]
                 .iter()
                 .map(|s| format!("{prefix}{s}"))
                 .collect::<Vec<_>>();
                 if triple.contains("apple") {
                     imports.push(format!("{prefix}__bzero"));
+                } else {
+                    imports.push(format!("{prefix}memset"));
                 }
                 imports.sort();
                 imports
@@ -275,7 +284,7 @@ fn check(triple: &str, label: &str) {
             ("process", 1),
             ("process-ids", 8),
             ("fd", 13),
-            ("paths", 35),
+            ("paths", 39),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
@@ -338,6 +347,8 @@ fn check(triple: &str, label: &str) {
             "rmdir",
             "truncate",
             "frontends",
+            "filesystem",
+            "filesystem-fallback",
             "fd",
             "stream",
             "process-ids",
@@ -365,6 +376,8 @@ fn check(triple: &str, label: &str) {
                 "rmdir",
                 "truncate",
                 "frontends",
+                "filesystem",
+                "filesystem-fallback",
             ]
             .contains(&name)
             {
@@ -389,10 +402,12 @@ fn check(triple: &str, label: &str) {
                     Path::new(env!("CARGO_MANIFEST_DIR"))
                         .join("../tools/fixtures/path-unused-boundaries-native.c"),
                 );
-                compile.arg(
-                    Path::new(env!("CARGO_MANIFEST_DIR"))
-                        .join("../tools/fixtures/copy-signal-native.c"),
-                );
+                if name != "filesystem-fallback" {
+                    compile.arg(
+                        Path::new(env!("CARGO_MANIFEST_DIR"))
+                            .join("../tools/fixtures/copy-signal-native.c"),
+                    );
+                }
             }
             let compile = compile
                 .args(["-O2", "-Wall", "-Wextra", "-Werror"])

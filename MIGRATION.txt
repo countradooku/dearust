@@ -15,8 +15,8 @@ Latest process services continuation (2026-10-18)
 -----------------------------------------------
 RUNTIME-PROCESS-SERVICES.txt/runtime-process-services-verification.json record
 getentropy and thread_selfid in existing dearust-process/process-ids.o, nine
-entries (eight private, thread_selfid public). No new package/object;47 partial
-dependency leaves/265756 pending,11 packages,7 target slices/1622 pending/0 retired.
+entries (eight private, thread_selfid public). No new package/object; 47 partial
+dependency leaves/265756 pending, 11 packages, 7 target slices/1622 pending/0 retired.
 Oversize requests, negative-error false success, partial-copy errors and startup
 EINTR handling are corrected. Actual guest and original-C measurement evidence
 remain scoped to the matching x86_64 runtime. Full migration remains incomplete.
@@ -25,20 +25,20 @@ Latest traditional pathname continuation (2026-10-18)
 ----------------------------------------------------
 RUNTIME-PATH-FRONTENDS.txt/runtime-path-frontends-verification.json record six
 traditional entries in dearust-path and corrected readlinkat count/zero semantics.
-35 private paths.o globals, no new crate;45 partial dependency leaves/265758
-pending,11 packages,7 target slices/1622 pending/0 retired. Actual original-C
+35 private paths.o globals, no new crate; 45 partial dependency leaves/265758
+pending, 11 packages, 7 target slices/1622 pending/0 retired. Actual original-C
 workload CPU median-4.04%; native frontend-only difference has overlapping
 quartiles. Full migration remains incomplete.
 
 Latest stream I/O continuation (2026-10-18)
 ------------------------------------------
 RUNTIME-STREAMS.txt and runtime-streams-verification.json record read/write in
-existing dearust-fd:14 exports,13 hidden plus public xtrace, no new package.
+existing dearust-fd:14 exports, 13 hidden plus public xtrace, no new package.
 Darwin64-bit counts, descriptor error precedence, cancellation and PTY EOF/EIO
 behavior are tested. Original-C guest CPU median improves5.73% on the identical
 four-call workload; native difference is within overlapping quartiles. Two new
-partial dependency sources:39 partial/265764 pending,11 packages,7 target slices,
-1622 pending targets,0 retired. Full migration remains incomplete.
+partial dependency sources:39 partial/265764 pending, 11 packages, 7 target slices,
+1622 pending targets, 0 retired. Full migration remains incomplete.
 
 Latest guest-copy continuation (2026-10-18)
 ------------------------------------------
@@ -46,9 +46,9 @@ RUNTIME-COPY-PERFORMANCE.txt and runtime-copy-performance-verification.json reco
 original-C guest comparisons, corrected copy/signal/RPC behavior and resolver
 bounds fixes. Same-workload CPU medians improve4.40% metadata/6.80% permissions.
 A private safe Rust stat conversion slice raises dependency partial leaves to37
-(265766 pending of265803). Public C converters/statfs remain; C bridge fixes are
-not counted as Rust source ports. All160 dependency trees remain inventoried.
-There are still11 packages,7 Cargo target slices,1622 pending targets and0 target
+(265766 pending of 265803). Public C converters/statfs remain; C bridge fixes are
+not counted as Rust source ports. All 160 dependency trees remain inventoried.
+There are still11 packages, 7 Cargo target slices, 1622 pending targets and 0 target
 retirements. Full migration remains incomplete.
 
 Reproduce the scope inventory
@@ -65,12 +65,12 @@ Directories are represented by their leaves. Deleted or untracked working files
 do not change the inventory. Object IDs make each source and dependency pin
 traceable. Outputs have no timestamps or checkout-dependent absolute paths.
 
-At this pin there are 27,274 entries:
-  10,852 source files
-  12,273 ABI headers or interfaces
+At this pin there are 27, 274 entries:
+  10, 852 source files
+  12, 273 ABI headers or interfaces
      280 CMake files
      149 external submodule gitlinks
-   2,890 symbolic links
+   2, 890 symbolic links
       11 scripts
      819 other resources or metadata
 
@@ -81,7 +81,7 @@ reproduce all dynamic-loader policy. Native libsimple is also partial: its Linux
 and external cmpxchg helper work, including a native no_std C-linked archive.
 Darling x86_64 runtime consumers now link and execute selected command-line
 applications inside the locally modified installed runtime. i386/other architectures
-and clean pinned-runtime startup remain unported/unverified. There are 27,267 pending superproject entries. Exact diagnostic text is not guaranteed. Each source replacement has
+and clean pinned-runtime startup remain unported/unverified. There are 27, 267 pending superproject entries. Exact diagnostic text is not guaranteed. Each source replacement has
 behavioral and malformed-input regressions plus a pinned differential suite.
 The host-tool differential gates validate their Linux host slice; the separate
 runtime execution checks below cover selected macOS command-line behavior.
@@ -95,8 +95,8 @@ states remain zero, matching upstream's TODO; no FP extraction port is claimed.
 
 All 149 first-level submodules and 11 nested gitlinks are now expanded at their
 exact pinned commits in dependency-inventory.json. The 160 dependency trees
-contain 265,803 committed leaves (two partial errno/futex source slices and
-265,801 pending), and 341 filename-based
+contain 265, 803 committed leaves (two partial errno/futex source slices and
+265, 801 pending), and 341 filename-based
 license candidates with actual blob hashes. No Git trees are unavailable in this
 snapshot. The isolated baseline still contains 44 Swift Git LFS pointers;
 their binary payloads have not been materialized or migrated. Regeneration is byte-identical with the same object cache; see
@@ -106,7 +106,7 @@ inventorying the remaining dependency entries does not port them. Source-categor
 counts use suffix heuristics; Java, Swift and other code may fall under metadata.
 Every committed leaf remains in scope regardless of its category label.
 
-The two inventories together track 293,077 entries, including parent gitlinks
+The two inventories together track 293, 077 entries, including parent gitlinks
 and their separately expanded contents. Headers/resources may require faithful
 preservation and explicit review rather than translation. No external tree,
 framework, resource or ABI is implicitly waived from the full migration.
@@ -121,17 +121,17 @@ original emulation and system_kernel targets also build. A complete clean pinned
 runtime has not been built or run. Forty-four Swift LFS binary
 payloads remain missing even though their Git pointer objects are inventoried.
 
-upstream-cmake-graph.json captures 1,629 emitted default targets, 7,785 dependency
-edges, 34,478 source records (9,593 generated) and 1,238 targets with installation
+upstream-cmake-graph.json captures 1, 629 emitted default targets, 7, 785 dependency
+edges, 34, 478 source records (9, 593 generated) and 1, 238 targets with installation
 metadata. migration-targets.json maps seven default targets to Cargo artifact
-slices, including partial wrapper/native/Darling library coverage. There are 1,622
+slices, including partial wrapper/native/Darling library coverage. There are 1, 622
 pending default targets and no claim of legacy target retirement. Optional
 print_wrapped_elf is a verified extra artifact absent from the default graph.
 Custom command bodies, optional component configurations and generator-specific
 recipes are not fully represented by the File API and require separate gates.
 The typed Cargo graph stages six tools, the native static archive and a native
 errno validation object;
-it is not a replacement for all 1,629 upstream targets. Reproduction scripts,
+it is not a replacement for all 1, 629 upstream targets. Reproduction scripts,
 logs and reports are listed in tools/BASELINE.txt.
 
 Migration order and executable gates
@@ -257,7 +257,7 @@ Test adapters cover host cerror TLS and fatal abort only; they do not implement
 unported emulation, cancellation or server functionality.
 
 A full original system_kernel link now uses the Rust x86_64 source slices with
-identical 1,362 public definitions and 18 imports, confirmed original/Rust symbol
+identical 1, 362 public definitions and 18 imports, confirmed original/Rust symbol
 provenance and no new stubs or permissive undefined-symbol mode. The i386 final
 slice remains original and is byte-identical. Whole-target migration, original
 C/assembly retirement and Cargo replacement of that complete original graph remain
@@ -268,7 +268,7 @@ Installed-runtime execution gate
 --------------------------------
 The same three Rust x86_64 slices have booted and executed macOS command-line
 programs after relinking against the installed runtime's locally modified build
-objects. Matching original and Rust relinks preserve 1,370 public definitions and
+objects. Matching original and Rust relinks preserve 1, 370 public definitions and
 40 imports. Both pass Bash pipeline, SQLite create/insert/aggregate, Python
 JSON/SHA-256, offline curl version and Objective-C/pthread/TLS/fork/Mach semaphore
 checks. The copied Rust dylib is identified by its checked SHA-256 and the inode
@@ -322,3 +322,25 @@ local-protocol bridges with the pinned baseline. Latest artifacts are in
 continuation work/runtime-expansion-{stage,kernel}; server-lockset-release remains
 the tested server. Preserve installed binaries and the existing user prefix.
 README.md includes the project owner @countradooku and OpenAI Codex AI assistance.
+
+
+Continuation: filesystem accounting and mount identity
+-----------------------------------------------------
+See RUNTIME-FILESYSTEM.txt and runtime-filesystem-verification.json. The four
+statfs/statfs64/fstatfs/fstatfs64 entries now share existing dearust-path/paths.o,
+24 original source slices and 39 private globals. No crate added; 11 packages.
+Correct accounting units, initialized2168-byte results, flags, final symlink
+following, non-vnode errors and fault-contained copies replace original defects.
+Mount names use the pinned mount identity; direct unique-ID statmount and bounded
+streaming procfs both preserve the caller namespace and filesystem subtype.
+
+Full descriptor tables and hard/softNOFILE=0 use the paired server's appended
+managed atomic RPC83 and SCM_RIGHTS without raising limits or consuming a free
+client slot. Client authorization/type/fsid and server identity checks remain
+mandatory. Matching1..82 unchanged; pinned80 protocol is explicitly rebased for
+link-only validation, with no clean pinned startup claim. Retain all strong
+bridges and matching public mount-name compatibility object. Exact original C
+measurements use the same new paired server and scoped matching runtime.
+
+Inventories:49 partial dependency leaves, 265754 pending; 7 Cargo target slices,
+1622 pending targets, 0 retired. Original i386 retained; full migration unfinished.

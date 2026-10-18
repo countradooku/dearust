@@ -39,3 +39,5 @@ pub use permissions::{sys_access, sys_chmod};
 
 mod frontends;
 pub use frontends::{sys_link, sys_mkdir, sys_readlink, sys_rename, sys_symlink, sys_unlink};
+mod filesystem;
+pub use filesystem::{sys_fstatfs, sys_fstatfs64, sys_statfs, sys_statfs64};

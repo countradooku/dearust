@@ -7,6 +7,11 @@ publish = false
 license = "GPL-3.0-or-later"
 description = "Bounded allocation-free pathname operations for Darling's x86_64 runtime"
 
+[features]
+default = ["runtime"]
+runtime = []
+host-filesystem = []
+
 [dependencies]
 dearust-errno = { path = "../dearust-errno" }
 

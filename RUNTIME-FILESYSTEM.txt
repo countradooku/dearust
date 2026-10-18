@@ -1,0 +1,272 @@
+Filesystem queries in the existing pathname subsystem
+=====================================================
+
+The four x86_64 entries are implemented and verified in the existing path
+subsystem. The tested guest workload uses 84.75% less CPU than exact original C,
+with private-dirty memory unchanged. Detailed scope, raw results and source
+hashes are in runtime-filesystem-verification.json. Full migration is unfinished.
+
+Scope and ABI
+-------------
+
+sys_statfs, sys_statfs64, sys_fstatfs and sys_fstatfs64 now belong to dearust-path.
+No crate or runtime object was added: the workspace remains 11 packages, and the
+four private ABI entries extend paths.o from 35 to 39 globals. Runtime staging
+explicitly selects feature runtime. The separate host-filesystem feature builds
+the shared filesystem backend into a Linux server archive with defaults disabled.
+The host-filesystem provider rejects non-Linux targets at compile time; Mach-O
+clients must select runtime. The negative-target gate is recorded separately,
+and adding that guard reproduced the final host archive byte-for-byte.
+
+The two source slices are XNU Darling emulation
+xnu_syscall/bsd/impl/stat/statfs.c and stat/fstatfs.c, pinned at
+fa29287aa2f0115271e091f1031f53c9e024005d beneath Darling superproject
+60ba801decee7a00782f74f6be4c8ffb013f79ff. Both final relinkers replace each
+original object once through --paths-object and verify provenance for all four
+entries. The existing C stat/statfs converter exports remain for unported users.
+
+On supported x86_64 LP64, legacy names alias the same 2168-byte statfs64 layout,
+as the original C does. Output is initialized completely, including reserved and
+padding bytes. Count and fsid bits are preserved. f_bsize uses Linux f_frsize,
+falling back to f_bsize when zero; f_iosize uses the optimal Linux f_bsize.
+The old fstatfs-specific constant 512 is removed. Equivalent adopted Linux mount
+flags are translated explicitly; unmapped bits cannot become unrelated Darwin
+flags. Raw low 32 Linux filesystem magic retains Darling's host filesystem type
+identity; it is not XNU's dynamically registered filesystem number. Mount owner 0
+retains the explicit virtual-root policy. Subtype/extended/reserved fields are 0.
+
+See crates/dearust-path/SAFETY-FILESYSTEM.txt for field offsets and the full
+boundary ledger. Rust files are abi/filesystem.rs, filesystem_io.rs,
+filesystem.rs and host_filesystem.rs within that crate.
+
+Behavior and repaired defects
+-----------------------------
+
+Path entries capture original thread-cwd TLS, bounded-copy the pathname and ask
+the retained virtual-root resolver to follow the final symlink. O_PATH|O_CLOEXEC
+pins the object without opening special devices for I/O or requiring data-read
+permission. Descriptor entries use F_DUPFD_CLOEXEC to retain the original open
+description throughout the multi-query snapshot, including concurrent close and
+descriptor-number reuse. Invalid descriptor/path errors precede output copying.
+Anonymous pipe/socket/anon-inode filesystems return EINVAL; named FIFOs work.
+
+Raw fstatfs supplies accounting and authorization. When supported, statx obtains
+STATX_MNT_ID_UNIQUE and statmount syscall 457 looks up that ID with flags 0 in the caller's
+current mount namespace/root. A 24-byte request asks for point/type/source and
+optional filesystem subtype (mask 0x330). BY_FD is deliberately avoided because
+it can select a foreign mount's namespace/root. The fixed 512-byte result header
+and returned string offsets/masks/NULs are checked before publishing names.
+Type plus optional '.subtype' preserves procfs names such as fuse.sshfs.
+The first four size bytes are initialized before the syscall, so a synthetic
+success without writes falls back without reading uninitialized storage.
+
+Unsupported direct queries, absent fields and oversized strings retain the
+streaming procfs backend. It obtains the legacy mount ID through statx or
+/proc/thread-self/fdinfo, then selects that exact ID in thread-self/mountinfo.
+No mount-table, credential, mapping, capability-support or process-ID cache was
+introduced. The 4096-byte reader handles short reads, split tokens, long unrelated
+records and optional fields without buffering a complete mount table. Octal
+escapes are decoded once; statmount strings are already unescaped. Darwin name
+fields are terminated and truncated at their ABI bounds.
+
+This repairs original textual prefix selection, host-mountpoint versus guest
+fdpath confusion, ambiguous stacked/bind mounts, escaped names, and dependence
+on an open file still having a pathname. A pinned mount absent from the querying
+task's visible table yields ESTALE (70); another mount's data is never substituted.
+This is the visibility policy, not a claim that detached mounts remain visible.
+
+Original direct strcpy/converter writes through guest pointers are replaced by
+bounded input copying, conversion into initialized local storage and the existing
+fault-contained output copier. NULL/protected/readonly/cross-page outputs receive
+EFAULT; a partial output prefix may have been written before that fault. Rust
+exports are unsafe C boundaries with explicit ownership/alias/concurrency
+contracts. Kernel address validation does not establish Rust borrow validity.
+
+Descriptor pressure and paired server
+------------------------------------
+
+Valid existing descriptors must work with a full table or RLIMIT_NOFILE=0. A
+duplicate can fail EMFILE, or EINVAL when minimum 0 equals a zero limit. The
+existing server connection can send SCM_RIGHTS without allocating a client slot.
+If procfs needs a slot after a successful pin, that pin stays alive through RPC;
+scratch already overwritten by a query is never reused as a pathname. If the
+initial path pin cannot be created, only the checked absolute expanded path is
+delegated. No helper process/thread or client descriptor reserve is introduced.
+
+The client performs raw statfs/fstatfs authorization before delegation and checks
+the returned filesystem ID/type against that authorized snapshot. The server
+checks user namespace, actual Linux Uid/Gid/Groups/CapEff and LSM identity for
+both modes, using /proc/thread-self for its own thread. Path mode additionally
+requires matching Linux root and mount namespace. Descriptor mode uses received
+capabilities and the client's real PID/TID mountinfo path, permitting legitimate
+different mount namespaces without returning names from the server namespace.
+Policy mismatch returns EPERM. Virtual Darwin IDs do not replace actual Linux
+authorization. Race-sensitive mismatched filesystem identity returns ESTALE.
+
+Managed atomic filesystem_snapshot is appended as call 83. The request carries
+two optional SCM_RIGHTS descriptors, a bounded local path/length, and local output
+addresses; status is a separate negative-Darwin result. Generated server request
+destructors own received descriptors. Exact process_vm copy counts are required;
+positive partial copies are faults. Fully initialized C++ output buffers cross
+the shared Rust host boundary, and only successful results are copied to client
+locals. Client output still uses the original guarded guest-memory integration.
+
+All 83 generated wrappers retain fork transaction generations, full atomic signal
+masks, abandonment handling and ancillary-rights cleanup from the existing RPC
+bridge. The new server is a required paired artifact: older servers reject
+unknown calls, so no speculative call 83 probe is issued. All existing matching
+call numbers 1..82 and existing wrapper bodies are checked unchanged, except the
+generated interruption-reply union's additional member.
+
+The pinned reference has an older 80-call protocol. Its owned client wrapper
+header is explicitly rebased to matching 83, including the two intervening
+fileport calls, for the final link-only check. This is not original pinned wire
+compatibility, clean pinned startup or a pinned-runtime execution claim.
+
+The server rebuild preserves all earlier lockset and process-lifecycle changes.
+All server C++ translation units use the same generated headers. Existing signal,
+fork, TLS, RPC and vchroot bridges remain required; missing imports are not
+replaced by production stubs. C++ pressure-policy checks may allocate bounded
+strings and use existing server infrastructure. The Rust snapshot/parser backend
+uses local storage; that does not imply that the whole server allocates nothing.
+
+Matching local extension and reference fairness
+---------------------------------------------
+
+The locally modified matching statfs.c also defines public
+lolsys_fill_mount_names and its original private TTL mount cache. That unported
+extension is retained verbatim by build_filesystem_compat_bridge.py, extracting
+the prefix before sys_statfs. The object defines only the original public helper,
+without any of the four migrated entries. Matching relinking requires
+--filesystem-compat-object and verifies visibility/provenance. The new four
+entries do not use this cache. The exact pinned C reference includes the same
+compatibility object but its four entries also do not use that local helper.
+
+build_original_filesystem.py compiles the exact pinned statfs.c/fstatfs.c and
+pinned common/base.h overlay with matching flags. The overlay removes local
+syscall tracing from those measured entries. Both original-C and Rust kernels
+run against the SAME paired new server and retained surrounding matching runtime.
+This compares scoped filesystem workloads, not pristine complete Darling or a
+whole-runtime Rust rewrite. Original failures remain separate recorded evidence.
+
+Reproduction and artifact locations
+-----------------------------------
+
+Repository:
+  /home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust
+Evidence root:
+  /home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/filesystem-next
+
+Final staged/link artifacts are native-final5, darwin-final5, matching-final5,
+pinned-final5, server-final4 and original-filesystem beneath that evidence root.
+Use fresh exclusively owned output paths when repeating commands. Keep original
+source/build trees, installed runtime/server and existing user prefixes intact.
+
+From the repository, ordinary and ABI gates:
+
+    cargo xtask check
+    python3 -m unittest discover -s tools -p 'test_*.py' -v
+    cargo test -p dearust-path --lib filesystem:: --offline --locked
+    cargo test -p dearust-xtask --test runtime native_darling_objects_preserve_exact_c_abi_and_staging --offline --locked -- --nocapture
+    cargo test -p dearust-xtask --test runtime darwin_objects_preserve_exact_c_abi_and_staging --offline --locked -- --ignored --nocapture
+    cargo xtask runtime --target x86_64-unknown-linux-gnu --destdir /an/owned/native-stage
+    cargo xtask runtime --target x86_64-apple-darwin --destdir /an/owned/darwin-stage
+
+Host archive and paired server, with paths substituted for owned destinations:
+
+    cargo rustc -p dearust-path --lib --release --offline --locked --no-default-features --features host-filesystem --crate-type staticlib --target-dir /an/owned/host-target
+    python3 tools/build_filesystem_server.py --build /matching/build --base-server /previous/owned/server/relink.json --host-archive /an/owned/host-target/release/libdearust_path.a --output /an/owned/server
+    python3 tools/build_filesystem_compat_bridge.py --build /matching/build --output /an/owned/compat
+    python3 tools/build_filesystem_rpc_bridge.py --build /matching/build --protocol /an/owned/server --output /an/owned/rpc-matching
+    python3 tools/build_filesystem_rpc_bridge.py --build /pinned/build --protocol /an/owned/server --output /an/owned/rpc-pinned
+
+For an unchanged validated C++ build and updated host archive, the server builder
+accepts --relink-only /an/owned/server with a new --output. It checks recorded
+source, helper, generated-header and object hashes before reusing compilation.
+The final host source capture is host-runtime/source-final3, with exact command,
+compiler identity and source hashes in host-runtime/final3-build.json.
+
+Complete matching/pinned link arguments are recorded in evidence-root/link.py
+and both link reports. They include the existing guarded/fork/TLS/signal/vchroot
+objects, the three new RPC bridge objects, staged subsystem objects and matching
+compat object. Preserve the matching sigexc source's original -O0 setting.
+
+The exact C reference command is:
+
+    python3 tools/build_original_filesystem.py --source /pinned/source --build /matching/build --linked /owned/matching-link --compat-object /owned/compat/filesystem-compat.o --output /owned/original-filesystem
+
+Actual guest execution uses tools/run_isolated_server.py with the paired server,
+then check_mac_apps.py/check_mac_utilities.py and the owned original/Rust kernels.
+Keep resource-limit changes in owned children and check prefix shutdown/mappings.
+Primary-source and native syscall audit evidence is in statmount-audit; both
+namespace/subtype findings are marked resolved against the frozen source capture.
+
+Validation and performance gates
+--------------------------------
+
+Fourteen pure filesystem tests cover accounting units, flags, mount identity,
+escaped/split/long records, bounds, statmount size/offset/NUL/mask validation,
+optional subtype and malformed input without partial publication. All 126 ordinary
+Rust tests, 3 compile-fail ownership checks and 35 Python tests pass; formatting,
+strict Clippy, native and explicit Darwin ABI checks pass. Both target artifact
+sets repeat byte-for-byte, including after the Linux-only host-feature guard.
+Non-path runtime objects match the previous batch.
+
+Five native configurations pass: normal guarded copies, ASan/UBSan, kernel-copy
+fallback, forced procfs without statx/statmount, and forced procfs under sanitizers.
+The injected fallback fixture also passes plain and ASan/UBSan with all four
+entries, zero-slot EINVAL/EMFILE, intermediate/late procfs failures, source pinning,
+single-RPC behavior, client policy errors, anonymous descriptors, filesystem
+identity mismatch, direct-query malformed/overflow/subtype and no-write success.
+C instrumentation does not instrument the Rust object/assembly. Eight server
+policy-helper cases and adapter status/error checks pass.
+
+Actual guest filesystem and descriptor-pressure fixtures pass. The latter uses
+owned fork children with full descriptor tables and Linux soft/hard limits zero,
+including fd0, all four entries, protected/NULL/cross-page output and preserved
+parent limits, signal handlers/masks, descriptor counts and thread counts. Original
+C fails the strict fixtures; the first assertions expose initialized-field and
+accounting defects, so those failures alone are not isolated proofs of every
+pressure defect. Native injected cases separately establish exact branches.
+Thirty previous probes, 3 signal/fork/RPC probes, 4 previous batch regressions,
+29 apps (28 exact plus1 explicit timestamp normalization), 16 utilities and 3 GUI
+samples pass with the final paired server. Rust screenshots were inspected; the
+owned GUI helper was reaped. Baseline failures and shutdown/mapping records remain.
+
+Final planned measurements ran once:21 alternating native pairs of 1000 rounds;
+42 guest CPU samples per variant of 200 rounds, in C/Rust then Rust/C order;
+20 resource processes per variant with 512 rounds after 100 warmups. Every round
+executes statfs/statfs64/fstatfs/fstatfs64. Guest execution is pinned to CPU0.
+Resource figures below are medians of per-process figures, not pooled quantiles.
+
+                                   Original C       Rust
+Native CPU us/four-call round          99.938         15.262
+Guest CPU us/four-call round          152.1375        23.2
+Guest median process p50 us           152             23
+Guest median process p95 us           156             24
+Guest median process p99 us           158.5           27
+First measured round us               216.5           36
+Private dirty KiB                    3516           3516
+PSS KiB                              4169           4172.5
+RSS KiB                             11934          12026
+Peak RSS KiB                        11614          11582
+
+CPU changes are native -84.728% and guest -84.751%; each guest order independently
+improves by more than84%. Native quartiles are C 99.855..100.334 us and
+Rust 15.245..15.383 us; guest CPU quartiles C 152.028..152.350 us and
+Rust 23.170..23.525 us. Largest raw resource rounds are 408us C and 95 us Rust; all
+maxima/outliers remain in the report. First measured rounds follow preparation
+and 100 warmups; they are not untouched cold-process latency measurements.
+
+PSS rises3.5 KiB and RSS92KiB; both distributions overlap. RSS quartiles are
+C 11880..12032 KiB and Rust 11981..12088 KiB. No whole-process memory reduction or
+universal performance claim is established. Extra direct-query speed is measured
+on the tested Linux 7.2.9 host; older-kernel/procfs paths have correctness coverage,
+not a cross-kernel performance guarantee. Initial slower exploratory designs are
+retained as evidence and superseded by the final unique-ID direct query.
+
+Source inventories after this batch: 49 partial dependency leaves, 265754 pending;
+11 packages; 7 target slices, 1622 pending targets and 0 retired legacy targets.
+Other architecture replacements, unported APIs, the clean pinned runtime and
+the full migration remain unfinished. Completion of these four entries does not
+retire their original targets or establish general macOS compatibility.

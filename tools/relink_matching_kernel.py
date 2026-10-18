@@ -32,6 +32,8 @@ RMDIR = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/rmdir.
 TRUNCATE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/truncate.c.o'
 STAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/stat.c.o'
 FSTAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstat.c.o'
+STATFS = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/statfs.c.o'
+FSTATFS = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstatfs.c.o'
 ACCESS = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/access.c.o'
 CHMOD = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/chmod.c.o'
 READLINK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/readlink.c.o'
@@ -95,6 +97,16 @@ def integrate(args):
         raise ValueError('expected one link response')
     inputs = shlex.split((kernel/responses[0][1:]).read_text())
     archive = (build/'src/libsimple-darling/liblibsimple_darling.a').resolve(strict=True)
+    filesystem_compat = getattr(args, 'filesystem_compat_object', None)
+    if filesystem_compat:
+        if not args.paths_object or not filesystem_compat.is_file():
+            raise ValueError('filesystem compatibility helper requires a grouped paths object')
+        if symbols(filesystem_compat, '--defined-only') != {'_lolsys_fill_mount_names'}:
+            raise ValueError('filesystem compatibility object must define only the local public mount helper')
+        details = run(['llvm-nm', '-m', filesystem_compat])
+        lines = [line for line in details.splitlines() if line.endswith(' _lolsys_fill_mount_names')]
+        if len(lines) != 1 or 'external' not in lines[0] or 'private external' in lines[0]:
+            raise ValueError('filesystem compatibility helper must retain public visibility')
     replacements = {key: runtime/value for key, value in REPLACEMENTS.items()}
     for key, value in replacements.items():
         if inputs.count(key) != 1 or not value.is_file():
@@ -160,11 +172,13 @@ def integrate(args):
                 raise ValueError('missing unique copy signal input: ' + original_input)
             replacements[original_input] = replacement.resolve(strict=True)
     if args.paths_object:
+        if '_lolsys_fill_mount_names' in symbols(kernel/STATFS, '--defined-only') and not filesystem_compat:
+            raise ValueError('grouped filesystem replacement requires the local public mount compatibility object')
         if any([args.symlinkat_object, args.readlinkat_object, args.unlinkat_object, args.linkat_object, args.renameat_object, args.mkdirat_object, args.faccessat_object, args.fchmodat_object, args.lstat_object, args.fstatat_object]):
             raise ValueError('grouped paths object conflicts with individual pathname objects')
         if not args.paths_object.is_file() or not args.lstat_bridge:
             raise ValueError('grouped paths object requires its object and original thread-cwd bridge')
-        for name in (SYMLINKAT, READLINKAT, UNLINKAT, LINKAT, RENAMEAT, MKDIRAT, FACCESSAT, FCHMODAT, RMDIR, TRUNCATE, LSTAT, FSTATAT, STAT, FSTAT, ACCESS, CHMOD, READLINK, SYMLINK, LINK, UNLINK, RENAME, MKDIR):
+        for name in (SYMLINKAT, READLINKAT, UNLINKAT, LINKAT, RENAMEAT, MKDIRAT, FACCESSAT, FCHMODAT, RMDIR, TRUNCATE, LSTAT, FSTATAT, STAT, FSTAT, STATFS, FSTATFS, ACCESS, CHMOD, READLINK, SYMLINK, LINK, UNLINK, RENAME, MKDIR):
             if inputs.count(name) != 1:
                 raise ValueError('missing unique grouped pathname input: ' + name)
             replacements[name] = args.paths_object.resolve(strict=True)
@@ -241,6 +255,8 @@ def integrate(args):
             selected.append(str(args.lstat_bridge.resolve(strict=True)))
         if variant == 'rust' and args.rpc_object:
             selected.extend(str(path.resolve(strict=True)) for path in (args.rpc_leaf_object, args.rpc_state_object))
+        if variant == 'rust' and filesystem_compat:
+            selected.append(str(filesystem_compat.resolve(strict=True)))
         response = output/(variant+'.rsp')
         response.write_text(shlex.join(selected)+'\n')
         target = output/('libsystem_kernel-'+variant+'.dylib')
@@ -284,8 +300,12 @@ def integrate(args):
                       '_libsimple_lock_lock': 'liblibsimple_darling.a(dearust_simple.o)'}
             if args.rpc_object:
                 wanted['_dserver_rpc_explicit_checkin'] = args.rpc_object.name
+                if args.paths_object:
+                    wanted['_dearust_filesystem_server_snapshot'] = args.rpc_object.name
                 wanted['_dearust_rpc_syscall'] = args.rpc_leaf_object.name
                 wanted['_dearust_rpc_fork_child'] = args.rpc_state_object.name
+            if filesystem_compat:
+                wanted['_lolsys_fill_mount_names'] = filesystem_compat.name
             if args.process_object:
                 wanted['_sys_proc_info'] = args.process_object.name
                 wanted['_darling_legacy_proc_info'] = 'legacy-proc-info.o'
@@ -328,6 +348,10 @@ def integrate(args):
                 wanted['_sys_stat64'] = args.paths_object.name
                 wanted['_sys_fstat'] = args.paths_object.name
                 wanted['_sys_fstat64'] = args.paths_object.name
+                wanted['_sys_statfs'] = args.paths_object.name
+                wanted['_sys_statfs64'] = args.paths_object.name
+                wanted['_sys_fstatfs'] = args.paths_object.name
+                wanted['_sys_fstatfs64'] = args.paths_object.name
                 wanted['_sys_access'] = args.paths_object.name
                 wanted['_sys_chmod'] = args.paths_object.name
                 wanted['_sys_readlink'] = args.paths_object.name
@@ -399,6 +423,8 @@ def integrate(args):
         record['variants'][variant] = details
     if args.lstat_bridge:
         record['lstat_bridge'] = {'path': str(args.lstat_bridge.resolve()), 'sha256': digest(args.lstat_bridge)}
+    if filesystem_compat:
+        record['filesystem_compat'] = {'path': str(filesystem_compat.resolve()), 'sha256': digest(filesystem_compat)}
     record['replacements'] = {key: {'path': str(value), 'sha256': digest(value)} for key, value in replacements.items()}
     if args.process_object:
         record['process_object_sha256'] = digest(args.process_object)
@@ -420,6 +446,7 @@ def main():
     parser.add_argument('--faccessat-object', type=Path)
     parser.add_argument('--fchmodat-object', type=Path)
     parser.add_argument('--paths-object', type=Path)
+    parser.add_argument('--filesystem-compat-object', type=Path)
     parser.add_argument('--vchroot-object', type=Path)
     parser.add_argument('--rpc-object', type=Path)
     parser.add_argument('--rpc-leaf-object', type=Path)

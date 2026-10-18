@@ -188,14 +188,24 @@ pub(super) unsafe fn copy_metadata(
     }
     let length = if wide { 144 } else { 120 };
     // SAFETY: converted storage is initialized and live for the exact ABI size.
-    let guarded = unsafe { super::guarded::copy_output(converted.0.as_ptr(), output, length) };
+    unsafe { copy_output(&converted.0[..length], output) }
+}
+
+/// Output must not conflict with any live Rust storage, including input. Invalid
+/// guest mappings are permitted; the guarded/kernel boundary diagnoses faults.
+#[inline]
+pub(super) unsafe fn copy_output(input: &[u8], output: *mut c_void) -> Result<(), i64> {
+    let length = input.len();
+    // SAFETY: the input slice supplies initialized, live local storage; caller
+    // guarantees output ownership. Only the guarded leaf accesses guest output.
+    let guarded = unsafe { super::guarded::copy_output(input.as_ptr(), output, length) };
     if let Some(result) = guarded {
         return result;
     }
     with_signals_blocked(|| {
         let count = transfer(
             current_pid(),
-            converted.0.as_mut_ptr().cast(),
+            input.as_ptr().cast_mut().cast(),
             output,
             length,
             true,
