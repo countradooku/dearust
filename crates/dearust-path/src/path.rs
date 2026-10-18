@@ -2,8 +2,8 @@
 #![forbid(unsafe_code)]
 pub const CAPACITY: usize = 4096;
 /// A readable prefix containing NUL is sufficient even when the next page faults.
-pub fn finish_copy(output: &[u8; CAPACITY], copied: usize) -> Result<(), i64> {
-    let copied = copied.min(CAPACITY);
+pub fn finish_copy(output: &[u8], copied: usize) -> Result<(), i64> {
+    let copied = copied.min(CAPACITY).min(output.len());
     let mut index = 0;
     while index < copied {
         if output[index] == 0 {
@@ -27,6 +27,10 @@ mod tests {
         assert_eq!(finish_copy(&bytes, 8), Ok(()));
         assert_eq!(finish_copy(&bytes, 7), Err(-14));
         assert_eq!(finish_copy(&bytes, 0), Err(-14));
+        // A partially initialized buffer exposes only its initialized prefix.
+        assert_eq!(finish_copy(&bytes[..8], usize::MAX), Ok(()));
+        assert_eq!(finish_copy(&bytes[..7], usize::MAX), Err(-14));
+        assert_eq!(finish_copy(&[], usize::MAX), Err(-14));
         bytes[7] = b'x';
         bytes[63] = 0;
         assert_eq!(finish_copy(&bytes, 64), Ok(()));

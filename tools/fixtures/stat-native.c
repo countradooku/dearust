@@ -11,8 +11,9 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 #include "guest-memory-native.h"
+#include "darwin-stat-native.h"
 struct expanded {char path[4096];unsigned flags;int dfd;};
-struct output {unsigned char head[16];struct stat value;int wide;unsigned char tail[16];};
+struct output {unsigned char head[16];_Alignas(8) unsigned char value[144];int wide;unsigned char tail[16];};
 extern long sys_stat(const char *,void *),sys_stat64(const char *,void *);
 static int current_wd=AT_FDCWD,wd_calls,atfd_calls,expansions,conversions,expansion_error;
 int dearust_get_perthread_wd(void){wd_calls++;return current_wd;}
@@ -23,9 +24,7 @@ long linux_syscall(long a,long b,long c,long d,long e,long f,int nr){
     long memory_result; if(dearust_native_memory_syscall(a,b,c,d,e,f,nr,&memory_result)) return memory_result;
 assert(nr==SYS_newfstatat && d==0 && e==0 && f==0);long r=syscall(nr,a,b,c,d,e,f);return r<0?-errno:r;}
 _Static_assert(sizeof(struct stat)==144,"Linux x86_64 stat ABI");
-static int last_wide;
-void stat_linux_to_bsd(const void *input,void *output){memcpy(output,input,120);last_wide=0;conversions++;}
-void stat_linux_to_bsd64(const void *input,void *output){memcpy(output,input,144);last_wide=1;conversions++;}
+void __getuidgid(int32_t *uid,int32_t *gid){conversions++;*uid=(int32_t)getuid();*gid=(int32_t)getgid();}
 
 int main(void){
     char root[]="/tmp/dearust-stat-XXXXXX";assert(mkdtemp(root));int dfd=open(root,O_RDONLY|O_DIRECTORY);assert(dfd>=0);
@@ -44,9 +43,9 @@ int main(void){
         assert(memcmp(&before,&out,sizeof(out))==0);
         expansion_error=-13;assert(call("file",&out.value)==-13 && conversions==cv);expansion_error=0;
         assert(memcmp(&before,&out,sizeof(out))==0);
-        assert(call("link",&out.value)==0 && last_wide==wide);
-        assert(S_ISREG(out.value.st_mode) && out.value.st_ino==reference.st_ino && out.value.st_dev==reference.st_dev && out.value.st_size==7);
-        assert(out.value.st_uid==reference.st_uid && out.value.st_gid==reference.st_gid && out.value.st_nlink==reference.st_nlink);
+        assert(call("link",&out.value)==0);
+        assert(S_ISREG(native_view(out.value,wide).st_mode) && native_view(out.value,wide).st_ino==(wide?reference.st_ino:(uint32_t)reference.st_ino) && native_view(out.value,wide).st_dev==reference.st_dev && native_view(out.value,wide).st_size==7);
+        assert(native_view(out.value,wide).st_uid==reference.st_uid && native_view(out.value,wide).st_gid==reference.st_gid && native_view(out.value,wide).st_nlink==reference.st_nlink);
         for(size_t i=0;i<sizeof(out.head);i++)assert(out.head[i]==0xa5 && out.tail[i]==0xa5);
         before=out;assert(call("missing",&out.value)==-2 && memcmp(&before,&out,sizeof(out))==0);
         assert(call("dangling",&out.value)==-2 && memcmp(&before,&out,sizeof(out))==0);

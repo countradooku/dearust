@@ -1,7 +1,7 @@
 use core::ffi::c_void;
 #[repr(C)]
 struct Expanded {
-    path: [u8; 4096],
+    path: super::memory::PathBuffer,
     flags: u32,
     dfd: i32,
 }
@@ -19,7 +19,7 @@ unsafe fn lstat(path: *const u8, output: *mut c_void, wide: bool) -> i64 {
         return -14;
     }
     let mut expanded = Expanded {
-        path: [0; crate::path::CAPACITY],
+        path: super::memory::path_buffer(),
         flags: 0,
         dfd: 0,
     };
@@ -53,7 +53,7 @@ unsafe fn lstat(path: *const u8, output: *mut c_void, wide: bool) -> i64 {
         return i64::from(dearust_errno::linux_to_bsd(result as i32));
     }
     // SAFETY: stat is a live initialized Linux stat144. The shared boundary
-    // converts into local storage and lets Linux validate the guest output.
+    // converts initialized local storage and fault-contains guest output.
     let converted =
         unsafe { super::memory::copy_metadata((&stat as *const LinuxStat).cast(), output, wide) };
     if let Err(error) = converted {
@@ -62,7 +62,7 @@ unsafe fn lstat(path: *const u8, output: *mut c_void, wide: bool) -> i64 {
     0
 }
 /// # Safety
-/// Guest addresses are validated by Linux; output uses the matching Darwin
+/// Guest addresses use the shared fault-contained copy boundary; output uses the matching Darwin
 /// stat layout. Output must not alias live wrapper storage. Guest TLS must be
 /// initialized where used. Foreign helpers must obey their ABI, preserve path
 /// termination, and must not retain pointers or unwind into Rust.
@@ -72,7 +72,7 @@ pub unsafe extern "C" fn sys_lstat(path: *const u8, output: *mut c_void) -> i64 
     unsafe { lstat(path, output, false) }
 }
 /// # Safety
-/// Guest addresses are validated by Linux; output uses the matching Darwin
+/// Guest addresses use the shared fault-contained copy boundary; output uses the matching Darwin
 /// stat layout. Output must not alias live wrapper storage. Guest TLS must be
 /// initialized where used. Foreign helpers must obey their ABI, preserve path
 /// termination, and must not retain pointers or unwind into Rust.

@@ -1,6 +1,6 @@
 #[repr(C)]
 struct Expanded {
-    path: [u8; 4096],
+    path: super::memory::PathBuffer,
     flags: u32,
     dfd: i32,
 }
@@ -33,8 +33,8 @@ pub unsafe extern "C" fn do_linux_fchmodat(fd: i32, path: *const u8, mode: i32, 
 
 /// # Safety
 /// Guest TLS must be initialized. Foreign functions must preserve the declared
-/// ABI, retain pathname termination, and must not unwind into Rust. Linux
-/// validates guest memory while copying the bounded path.
+/// ABI, retain pathname termination, and must not unwind into Rust. The shared boundary
+/// fault-contains bounded pathname copies.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_fchmodat(fd: i32, path: *const u8, mode: i32, flag: i32) -> i64 {
     if flag & !0x20 != 0 {
@@ -44,7 +44,7 @@ pub unsafe extern "C" fn sys_fchmodat(fd: i32, path: *const u8, mode: i32, flag:
         return -14;
     }
     let mut expanded = Expanded {
-        path: [0; 4096],
+        path: super::memory::path_buffer(),
         flags: if flag & 0x20 != 0 { 0 } else { 1 },
         // SAFETY: original helper resolves BSD_AT_FDCWD using initialized TLS.
         dfd: unsafe { atfd(fd) },
@@ -52,15 +52,21 @@ pub unsafe extern "C" fn sys_fchmodat(fd: i32, path: *const u8, mode: i32, flag:
     if let Err(error) = super::memory::copy_path(&mut expanded.path, path) {
         return error;
     }
-    // SAFETY: live initialized repr(C) input matches the original structure.
+    // SAFETY: live repr(C) input with initialized NUL prefix matches the original structure.
     let result = unsafe { vchroot_expand(&mut expanded) };
     if result < 0 {
         return i64::from(dearust_errno::linux_to_bsd(result));
     }
     let linux_flags = if flag & 0x20 != 0 { 0x100 } else { 0 };
     // SAFETY: expansion provides a terminated path valid through this call.
-    let result =
-        unsafe { do_linux_fchmodat(expanded.dfd, expanded.path.as_ptr(), mode, linux_flags) };
+    let result = unsafe {
+        do_linux_fchmodat(
+            expanded.dfd,
+            expanded.path.as_ptr().cast(),
+            mode,
+            linux_flags,
+        )
+    };
     if result < 0 {
         i64::from(dearust_errno::linux_to_bsd(result))
     } else {

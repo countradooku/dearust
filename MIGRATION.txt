@@ -11,6 +11,17 @@ The migration scope includes every upstream library, framework, executable,
 resource, SDK link and external dependency; existing stubs are not grounds for
 silently deleting an ABI. Performance improvements must be measured per workload.
 
+Latest guest-copy continuation (2026-10-18)
+------------------------------------------
+RUNTIME-COPY-PERFORMANCE.txt and runtime-copy-performance-verification.json record
+original-C guest comparisons, corrected copy/signal/RPC behavior and resolver
+bounds fixes. Same-workload CPU medians improve4.40% metadata/6.80% permissions.
+A private safe Rust stat conversion slice raises dependency partial leaves to37
+(265766 pending of265803). Public C converters/statfs remain; C bridge fixes are
+not counted as Rust source ports. All160 dependency trees remain inventoried.
+There are still11 packages,7 Cargo target slices,1622 pending targets and0 target
+retirements. Full migration remains incomplete.
+
 Reproduce the scope inventory
 ----------------------------
 

@@ -1,5 +1,5 @@
 /* Entry-wrapper comparison with shared canonical Rust fstatat backend.
- * Opaque output adapters copy Linux144 bytes: not native Darwin layout proof. */
+ * Outputs use the real Darwin120/144 layouts with native credential adapters. */
 #define _GNU_SOURCE
 #include <assert.h>
 #include <errno.h>
@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include "darwin-stat-native.h"
 extern long sys_fstat(int,void *),sys_fstat64(int,void *),sys_stat(const char *,void *),sys_stat64(const char *,void *);
 struct expanded {char path[4096];unsigned flags;int dfd;};
 struct output {unsigned char head[16];_Alignas(8) unsigned char opaque[256];unsigned char tail[16];};
@@ -21,8 +22,9 @@ int get_perthread_wd(void){return AT_FDCWD;}
 int dearust_get_perthread_wd(void){return AT_FDCWD;}
 int vchroot_expand(struct expanded *args){(void)args;return 0;}
 long linux_syscall(long a,long b,long c,long d,long e,long f,int nr){long r=syscall(nr,a,b,c,d,e,f);return r<0?-errno:r;}
-void stat_linux_to_bsd(const void *input,void *output){memcpy(output,input,120);}
-void stat_linux_to_bsd64(const void *input,void *output){memcpy(output,input,144);}
+void stat_linux_to_bsd(const void *input,void *output){native_convert(input,output,0);}
+void stat_linux_to_bsd64(const void *input,void *output){native_convert(input,output,1);}
+void __getuidgid(int32_t *uid,int32_t *gid){*uid=(int32_t)getuid();*gid=(int32_t)getgid();}
 static uint64_t nanos(clockid_t clock){struct timespec t;assert(clock_gettime(clock,&t)==0);return (uint64_t)t.tv_sec*1000000000+t.tv_nsec;}
 static void roundtrip(int fd,const char *path,struct output out[4]){
     assert(sys_fstat(fd,out[0].opaque)==0);assert(sys_fstat64(fd,out[1].opaque)==0);
@@ -38,9 +40,9 @@ int main(int argc,char **argv){
     w=nanos(CLOCK_MONOTONIC)-w;c=nanos(CLOCK_THREAD_CPUTIME_ID)-c;
     struct stat reference;assert(fstat(fd,&reference)==0);
     for(unsigned i=0;i<4;i++){
-        struct stat value;memcpy(&value,out[i].opaque,sizeof(value));
-        assert(value.st_ino==reference.st_ino && value.st_size==7 && S_ISREG(value.st_mode));
-        assert(memcmp(out[0].opaque,out[i].opaque,120)==0);
+        struct stat value=native_view(out[i].opaque,i%2);
+        assert(value.st_ino==(i%2?reference.st_ino:(uint32_t)reference.st_ino) && value.st_size==7 && S_ISREG(value.st_mode));
+        assert(value.st_uid==getuid() && value.st_gid==getgid());
         for(unsigned j=0;j<16;j++)assert(out[i].head[j]==0xa5 && out[i].tail[j]==0xa5);
         for(unsigned j=(i%2 ? 144 : 120);j<256;j++)assert(out[i].opaque[j]==0xa5);
     }

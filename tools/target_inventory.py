@@ -75,12 +75,13 @@ def main():
                     ('xnu_syscall/bsd/impl/unistd/truncate.c', 'dearust-path', 'paths.o'),
                     ('xnu_syscall/bsd/impl/stat/stat.c', 'dearust-path', 'paths.o'),
                     ('xnu_syscall/bsd/impl/stat/fstat.c', 'dearust-path', 'paths.o'),
+                    ('conversion/stat/common.c', 'dearust-path', 'paths.o'),
                     ('xnu_syscall/bsd/impl/unistd/access.c', 'dearust-path', 'paths.o'),
                     ('xnu_syscall/bsd/impl/unistd/chmod.c', 'dearust-path', 'paths.o')):
                 entry['verified_source_slices'].append({
                     'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/' + source,
                     'cargo_package': package, 'cargo_artifact': artifact,
-                    'scope': 'x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending.',
+                    'scope': ('Private stat120/stat64 conversion only; original C converter exports and statfs retained. ' if source == 'conversion/stat/common.c' else '') + 'x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending.',
                 })
         if name == 'emulation':
             for source in ('getpid', 'getppid', 'getpgrp', 'getpgid', 'getsid', 'setpgid', 'setsid'):

@@ -118,6 +118,14 @@ fn check(triple: &str, label: &str) {
                 "sys_fstat64",
                 "sys_access",
                 "sys_chmod",
+                "dearust_copy_guarded",
+                "dearust_copy_signal_fixup",
+                "dearust_copy_region_begin",
+                "dearust_copy_region_end",
+                "dearust_copy_guest_read",
+                "dearust_copy_guest_write",
+                "dearust_copy_error",
+                "dearust_copy_fallback",
             ]
             .iter()
             .map(|s| format!("{prefix}{s}"))
@@ -169,19 +177,19 @@ fn check(triple: &str, label: &str) {
                     "atfd",
                     "atflags_bsd_to_linux",
                     "dearust_get_perthread_wd",
+                    "dearust_copy_signals_ready",
                     "linux_syscall",
-                    "stat_linux_to_bsd",
-                    "stat_linux_to_bsd64",
+                    "__getuidgid",
                     "vchroot_expand",
-                    if triple.contains("apple") {
-                        "__bzero"
-                    } else {
-                        "memset"
-                    },
+                    "vchroot_expand_stat",
+                    "vchroot_expand_at",
                 ]
                 .iter()
                 .map(|s| format!("{prefix}{s}"))
                 .collect::<Vec<_>>();
+                if triple.contains("apple") {
+                    imports.push(format!("{prefix}__bzero"));
+                }
                 imports.sort();
                 imports
             }
@@ -252,7 +260,7 @@ fn check(triple: &str, label: &str) {
             ("process", 1),
             ("process-ids", 7),
             ("fd", 9),
-            ("paths", 21),
+            ("paths", 29),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
@@ -272,6 +280,7 @@ fn check(triple: &str, label: &str) {
     if !triple.contains("apple") {
         for name in [
             "pointer",
+            "guarded-copy",
             "permissions",
             "lstat",
             "fstatat",
@@ -295,6 +304,7 @@ fn check(triple: &str, label: &str) {
             let executable = temp.0.join(format!("{name}-native"));
             let object_name = if [
                 "pointer",
+                "guarded-copy",
                 "permissions",
                 "lstat",
                 "fstatat",
@@ -318,10 +328,21 @@ fn check(triple: &str, label: &str) {
                 name
             };
             let mut compile = Command::new("clang");
+            if name == "guarded-copy" {
+                compile.args([
+                    "-DDEARUST_TEST_WRAP_READY",
+                    "-Wl,--wrap=dearust_copy_signals_ready",
+                    "-pthread",
+                ]);
+            }
             if object_name == "paths" {
                 compile.arg(
                     Path::new(env!("CARGO_MANIFEST_DIR"))
                         .join("../tools/fixtures/path-unused-boundaries-native.c"),
+                );
+                compile.arg(
+                    Path::new(env!("CARGO_MANIFEST_DIR"))
+                        .join("../tools/fixtures/copy-signal-native.c"),
                 );
             }
             let compile = compile

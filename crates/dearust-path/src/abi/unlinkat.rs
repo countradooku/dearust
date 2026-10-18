@@ -1,20 +1,20 @@
 #[repr(C)]
 struct Expanded {
-    path: [u8; 4096],
+    path: super::memory::PathBuffer,
     flags: u32,
     dfd: i32,
 }
 unsafe extern "C" {
     fn atfd(fd: i32) -> i32;
     fn atflags_bsd_to_linux(flags: i32) -> i32;
-    fn vchroot_expand(args: *mut Expanded) -> i32;
+    fn vchroot_expand_at(args: *mut Expanded) -> i32;
     fn linux_syscall(a1: i64, a2: i64, a3: i64, a4: i64, a5: i64, a6: i64, nr: i32) -> i64;
 }
 
 /// # Safety
 /// Guest TLS must be initialized. Foreign helpers must obey their ABI,
 /// preserve path termination and must not retain pointers or unwind into Rust.
-/// Guest addresses are validated by Linux. Kernel output must not alias live
+/// Guest addresses use the shared fault-contained copy boundary. Kernel output must not alias live
 /// wrapper storage.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_unlinkat(fd: i32, path: *const u8, flags: i32) -> i64 {
@@ -22,7 +22,7 @@ pub unsafe extern "C" fn sys_unlinkat(fd: i32, path: *const u8, flags: i32) -> i
         return -14;
     }
     let mut expanded = Expanded {
-        path: [0; 4096],
+        path: super::memory::path_buffer(),
         flags: 0,
         // SAFETY: original helper resolves BSD_AT_FDCWD using initialized TLS.
         dfd: unsafe { atfd(fd) },
@@ -30,9 +30,10 @@ pub unsafe extern "C" fn sys_unlinkat(fd: i32, path: *const u8, flags: i32) -> i
     if let Err(error) = super::memory::copy_path(&mut expanded.path, path) {
         return error;
     }
-    // SAFETY: repr(C) matches original writable, terminated args. flags=0 keeps
-    // the final symlink component; expansion must preserve termination.
-    let result = unsafe { vchroot_expand(&mut expanded) };
+    // SAFETY: repr(C) matches writable args with an initialized NUL prefix.
+    // Exact existing single-component nofollow paths may retain their original
+    // directory fd through unlinkat; all other paths use the full resolver.
+    let result = unsafe { vchroot_expand_at(&mut expanded) };
     if result < 0 {
         return i64::from(dearust_errno::linux_to_bsd(result));
     }

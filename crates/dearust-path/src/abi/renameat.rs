@@ -1,6 +1,6 @@
 #[repr(C)]
 struct Expanded {
-    path: [u8; 4096],
+    path: super::memory::PathBuffer,
     flags: u32,
     dfd: i32,
 }
@@ -13,7 +13,7 @@ unsafe extern "C" {
 /// # Safety
 /// Guest TLS must be initialized. Foreign helpers must obey their ABI,
 /// preserve path termination and must not retain pointers or unwind into Rust.
-/// Guest addresses are validated by Linux. Kernel output must not alias live
+/// Guest addresses use the shared fault-contained copy boundary. Kernel output must not alias live
 /// wrapper storage.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_renameat(
@@ -26,7 +26,7 @@ pub unsafe extern "C" fn sys_renameat(
         return -14;
     }
     let mut source = Expanded {
-        path: [0; 4096],
+        path: super::memory::path_buffer(),
         flags: 0,
         // SAFETY: original atfd preserves descriptor and per-thread cwd policy.
         dfd: unsafe { atfd(fd) },
@@ -35,7 +35,7 @@ pub unsafe extern "C" fn sys_renameat(
         return error;
     }
     let mut destination = Expanded {
-        path: [0; 4096],
+        path: super::memory::path_buffer(),
         flags: 0,
         // SAFETY: same original descriptor/TLS contract as source.
         dfd: unsafe { atfd(newfd) },

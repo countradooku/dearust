@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Compare previous/new grouped Rust objects with identical native adapters.
 
-This measures scoped wrapper workloads, excluding real guest TLS/virtual-root
-expansion and Darwin conversion. Object paths are explicit; no installed runtime
+This measures scoped wrapper workloads with native credential adapters and real
+Darwin stat layouts, excluding real guest TLS/virtual-root expansion. Object paths are explicit; no installed runtime
 is modified. Each benchmark validates its owned files and guards before exiting.
 """
 import argparse
@@ -42,6 +42,9 @@ def main():
             command = ['clang', '-O2', '-Wall', '-Wextra', '-Werror', str(driver),
                        str(fixtures / 'path-unused-boundaries-native.c'),
                        str(stage / 'objects/paths.o'), '-o', str(binary)]
+            imports = subprocess.check_output(['nm', '-u', str(stage / 'objects/paths.o')], text=True)
+            if 'dearust_copy_signals_ready' in imports:
+                command.insert(-2, str(fixtures / 'copy-signal-native.c'))
             subprocess.run(command, check=True)
             commands.append(command)
             binaries[variant] = binary

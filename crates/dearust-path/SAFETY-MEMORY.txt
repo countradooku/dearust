@@ -1,62 +1,121 @@
-Guest address hardening: x86_64 LP64
-===================================
+Fault-contained guest addresses: x86_64 LP64
+==========================================
 
-This continuation supersedes the raw guest-pointer read/write contracts in the
-historical SAFETY.txt and SAFETY-FSTAT.txt descriptions. Retain all original
-Darling authorship, pinned-source attribution and licensing recorded there.
+This document supersedes historical raw guest-pointer and kernel-copy-only
+contracts in SAFETY.txt and SAFETY-FSTAT.txt. Original Darling authorship,
+pinned-source attribution and licensing continue to apply.
 
-All migrated pathname inputs now cross abi/memory.rs through Linux raw syscall
-310 process_vm_readv targeting the calling Linux process. Raw syscall39 queries
-the current PID for each pathname-copy operation and each metadata copyout;
-no PID or mapping cache survives a wrapper call or fork. The same existing initialized4096-byte Expanded.path storage is
-the local destination. There are no Rust references to guest input and no Rust
-pointer arithmetic or dereferences on its address. The first request transfers
-at most64 bytes, covering common short paths without copying/pinning a second
-page unnecessarily. If all64 bytes are readable and contain no NUL, a second
-request copies the remaining4032 bytes into the same buffer. Checked integer
-addition computes the second guest address; no guest pointer offset is formed.
-The one fresh PID is reused only within these two synchronous kernel reads,
-with no retained C callback between them. Each returned count bounds the pure
-NUL scan. A partial read is accepted if its readable prefix contains NUL;
-otherwise it is EFAULT.
-A full4096 bytes without NUL is ENAMETOOLONG. Bytes after NUL may be copied from
-mapped pages; a following inaccessible page need not exist. Do not restore a
-raw-copy fallback if process_vm_readv is unavailable or denied: return its
-converted kernel error. Seccomp/kernel restrictions can therefore fail requests.
+Guest addresses never become Rust references. All pathname inputs and all eight
+metadata copyouts use abi/memory.rs. The default optimization is a bounded leaf
+assembly copy in abi/guarded.rs, integrated with the existing Darling Linux
+signal entries; it does not replace process-wide handlers for individual calls.
+The runtime owns these entries. Native libraries must preserve the installed
+Linux signal hooks, as required by Darling's signal/RPC machinery generally.
+Native code may change signal masks: the copy queries the actual kernel mask on
+EVERY invocation. No cached mask, PID, mapping, or address-range proof is used.
 
-All eight metadata exports use original C stat_linux_to_bsd/64 conversions into
-initialized, eight-aligned local144-byte storage. The narrow converter writes
-within its120-byte legacy Darwin stat layout; the wide layout is144 bytes.
-Linux syscall311 process_vm_writev copies exactly the appropriate length to
-caller output. Original converter UID/GID and assigned-field policies remain.
-Unassigned fields and padding now become zero, rather than retaining arbitrary
-caller bytes. Retained converters never receive a guest output address.
+The leaf uses volatile registers and one forty-byte stack allocation. Every PC
+in its recovery region has exactly that frame. Mach-O alternate-entry labels
+keep the region and recovery stubs in the same linker atom. Before entering the
+region it checks RFLAGS.AC; alignment-checking callers use the kernel fallback,
+preserving valid unaligned addresses and the caller's AC flag. Within the region
+raw Linux rt_sigprocmask14 queries the current eight-byte mask. Query failure or
+blocked SIGBUS7/SIGSEGV11 chooses the kernel fallback before guest access.
 
-Kernel errors from metadata queries still take precedence over output access in
-fstat: invalidfd plus any bad output remains EBADF. Existing early NULL checks
-in lstat/fstatat and TLS-first stat delegation remain. Faulting metadata copyout
-can write a prefix before returning EFAULT. No output atomicity or rollback is
-promised. Short transfer must never return success. Legacy output length120 and
-wide length144 have actual guest compile-time layout assertions and guard tests.
+Path storage is [MaybeUninit<u8>;4096]. Only the copied prefix through NUL
+becomes initialized; Rust never forms byte references to its unused suffix.
+C expansion helpers must inspect only that terminated prefix, as their original
+strcpy-based callers also require. This removes repeated4096-byte clears without
+weakening the initialized-memory contract. Path input is read one byte at a time,
+stopping at NUL or4096 bytes. The exact
+guest-load PC is recoverable. Metadata output uses bounded four-byte stores from
+initialized local storage, with one recoverable guest-store PC; supported120/144
+byte layouts are multiples of four. Other fixed lengths choose the fallback.
+Positive-code synchronous SIGSEGV/SIGBUS at those exact two PCs redirects to
+EFAULT. Synchronous faults elsewhere retain ordinary dispatch. Other signals
+inside the region redirect to a retry stub BEFORE ordinary signal/RPC delivery;
+a handler cannot fork or change masks and then resume an obsolete copy proof.
+No unwinding, Rust longjmp, mapping preflight or unguarded guest access is used.
+Concurrent unmapping/reprotection therefore causes a contained access fault.
 
-Unsafe remains only at foreign ABI boundaries: retained TLS/vchroot/converter
-calls and linux_syscall. C callbacks must obey ABI, not unwind, not retain live
-local pointers, stay inside their buffers and preserve successful pathname
-termination. Caller kernel-output addresses must not alias the wrapper's live
-local storage. The kernel and guest run in one address space: mapping checks do
-not provide process isolation or protect against a malicious valid address that
-intentionally targets internal wrapper storage. No whole-runtime memory-safety
-claim is made. Other unported wrappers and internal C vchroot logic remain C.
+Copied original sigexc.c and sigaction.c units install the early PC hook in all
+three supported entry paths: sigexc_handler, sigrt_handler, and the direct
+SIGCHLD/SIGTTOU wrapper. A conservative atomic installation state publishes
+readiness only after successful standard-handler/initial-altstack and both RT
+handler installations. Missing/failed readiness chooses the kernel fallback.
+Signal handling retains ordinary dispatch, including unrelated synchronous
+faults. Stored Darwin masks are converted before Linux use and unioned with the
+interrupted mask; SA_NODEFER is tested in the Darwin flag domain. Signal RPC exit
+is paired with the Linux process that entered: a newly checked-in fork child
+must not pop its parent's server interrupt frame. Positive raw Linux PID queries
+establish that process identity; query failure is fatal rather than a false match.
 
-The two fixed iovec records are LP64 repr(C),16 bytes each. All local buffers
-remain live synchronously across transfers. No heap allocation, signal handler,
-address-range guess, /proc mapping precheck, OS mutex, or new runtime is used.
-Native fixture adapters dispatch39/310/311 to the real Linux kernel before their
-own operation-specific strict syscall assertions. Their fake converters write
-only120/144-byte opaque regions; actual Darwin field-layout proof is guest-only.
+Copied generated RPC wrappers bind each transaction to a process-local epoch.
+After handler fork, the child's signal epilogue advances that epoch and redirects
+an interrupted/restarted no-stack syscall leaf to cancellation. Abandoned sends,
+receives and S2C memory operations cannot act on the fresh child server connection.
+Already completed ordinary replies retain their fork snapshot. Ancillary receive
+storage is initialized/reset on every retry, and abandoned SCM_RIGHTS ownership
+is closed exactly once, including S2C ownership transfer. Native full signal masks
+are saved/restored, retaining RT bits; block/restore failure fails stop. The RPC
+leaf's return PC is outside its recovery region and Mach-O alternate-entry labels
+keep all recovery PCs in one atom. The original RPC protocol is unchanged.
 
-Validation covers low invalid addresses, unmapped pages, PROT_NONE and read-only
-outputs, NUL at a readable page end, unterminated page-end input, all eight raw
-metadata exports, exact output tails, partial writes, invalid-fd error ordering,
-and a fork child (native transfer asserts it uses the child's current PID).
-Supported target remains x86_64 only; an i386 Rust port is not implemented here.
+Fallback copies use process_vm_readv310/process_vm_writev311. All catchable
+signals are blocked across fresh getpid39, every transfer, and completion. This
+closes the getpid/handler-fork stale-parent-PID window. The exact previous mask is
+restored before returning. Block failure returns a converted error. Restore
+failure terminates with raw exit_group231 with status127 (UD2 if exit_group itself is denied),
+rather than continuing with a corrupted mask. There is no unsafe raw fallback.
+Two LP64 repr(C) iovecs are sixteen bytes each and point to live initialized
+local storage (uninitialized destination bytes remain MaybeUninit). A Rust byte
+slice is formed only over the exact kernel-reported initialized prefix. Path fallback first reads at most64 bytes; if nonterminated, a
+checked integer address addition reads the remaining4032. A partial readable
+prefix containing NUL succeeds; other partial reads return EFAULT. A full4096
+bytes without NUL returns ENAMETOOLONG.
+
+Metadata Linux buffers are initialized144-byte locals. abi/conversion.rs forbids
+unsafe code and translates only those local bytes to actual Darwin stat120/stat64
+layouts. Original __getuidgid obtains the process credential pair under one lock;
+there is no new credential cache. All output bytes, padding and reserved fields
+are assigned deterministically, with reserved/birth fields zero. Original C
+converters used by unported callers remain in place. Rust conversion is checked
+against unchanged pinned C conversion source with initialized reserved bytes,
+including extreme/narrowed fields, and SDK field offsets/sizes independently.
+The expansion bridge may return the Linux metadata fetched for the actual last
+ordinary non-symlink component within this same invocation. It creates no cache.
+Only valid0/AT_SYMLINK_NOFOLLOW flags may reuse that snapshot; flag validation
+retains its original ordering, and every other case executes the final stat.
+Only the exact120/144-byte output is copied. Faulting copyout may modify a prefix
+before EFAULT; no atomic rollback is promised. fstat kernel errors keep precedence
+over output access. Existing pathname/TLS/error ordering remains in force.
+
+Unlink expansion may keep a simple, exact existing nofollow basename relative
+to its original directory fd through the final kernel unlinkat. This avoids the
+/proc/self/fd readlink and does not follow a newly substituted final symlink.
+All errors, case-folding work, complex paths and virtual-root transitions use the
+full resolver. The fast path allocates no descriptors or persistent state.
+Copied resolver bounds checks also cover long roots/paths/symlinks, prefix tests,
+fdpath output capacity and dot/dotdot directory semantics. Root updates stage
+validated local state, obtain server approval, then commit the local prefix;
+validation or RPC rejection leaves the previous prefix unchanged. Existing C
+namespace/lifecycle contracts are retained; this is not a whole-resolver port.
+
+Unsafe boundaries are foreign ABI calls, local Linux-stat reference construction,
+and the documented assembly leaf. C helpers must obey ABI, not unwind or retain
+local pointers, remain within buffers and preserve pathname termination. Guest
+output must not alias live wrapper storage. This shared address-space runtime
+cannot isolate malicious valid addresses targeting its own implementation; this
+is not a whole-runtime memory-isolation claim. Unported C remains outside Rust's
+memory-safety guarantees. Supported Rust runtime target remains x86_64 LP64.
+
+Regression coverage includes all exported pointer cases in guarded and forced
+fallback modes; unmapped/PROT_NONE/read-only and page-end inputs; exact ABI tails;
+SIGBUS mappings; unrelated faults; mask preservation and nested handlers;
+restore-failure fail-stop; AC preservation; deterministic native interruption
+with handler fork; concurrent mprotect revocation; and actual Darwin guest
+signal/mask/concurrency/fork execution. Native fixtures use real Darwin-layout
+adapters. ASan/UBSan cover C fixtures/adapters, not the existing Rust/assembly
+objects. No allocation, leak, RSS, universal compatibility or regression-free
+performance claim follows from these tests; performance has its own measured
+completion gate, which remains unfinished while a material slowdown is present.

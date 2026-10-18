@@ -11,8 +11,9 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 #include "guest-memory-native.h"
+#include "darwin-stat-native.h"
 struct expanded { char path[4096]; unsigned flags; int dfd; };
-struct output { struct stat value; int wide; };
+struct output { _Alignas(8) unsigned char value[144]; int wide; };
 extern long sys_lstat(const char *, void *);
 extern long sys_lstat64(const char *, void *);
 static int expanded_calls;
@@ -32,13 +33,7 @@ long linux_syscall(long a, long b, long c, long d, long e, long f, int nr) {
     return result < 0 ? -errno : result;
 }
 _Static_assert(sizeof(struct stat) == 144, "Linux x64 kernel stat layout size");
-static int last_wide;
-void stat_linux_to_bsd(const void *input, void *output) {
-    memcpy(output,input,120); last_wide=0;
-}
-void stat_linux_to_bsd64(const void *input, void *output) {
-    memcpy(output,input,144); last_wide=1;
-}
+void __getuidgid(int32_t *uid,int32_t *gid){*uid=(int32_t)getuid();*gid=(int32_t)getgid();}
 
 int main(void) {
     struct output output;
@@ -65,11 +60,11 @@ int main(void) {
         assert(symlink("file", link) == 0);
         memset(&output, 0xa5, sizeof(output));
         assert(call(target, &output) == 0);
-        assert(last_wide == wide && S_ISREG(output.value.st_mode));
-        assert(output.value.st_size == 13);
+        assert(S_ISREG(native_view(output.value,wide).st_mode));
+        assert(native_view(output.value,wide).st_size == 13);
         assert(call(link, &output) == 0);
-        assert(last_wide == wide && S_ISLNK(output.value.st_mode));
-        assert(output.value.st_size == 4);
+        assert(S_ISLNK(native_view(output.value,wide).st_mode));
+        assert(native_view(output.value,wide).st_size == 4);
         struct output before = output;
         assert(call(missing, &output) == -2);
         assert(memcmp(&before, &output, sizeof(output)) == 0);

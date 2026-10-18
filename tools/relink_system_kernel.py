@@ -33,6 +33,10 @@ STAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/stat.c.
 FSTAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstat.c.o'
 ACCESS = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/access.c.o'
 CHMOD = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/chmod.c.o'
+SIGEXC = 'emulation/CMakeFiles/emulation.dir/src/linux_premigration/signal/sigexc.c.o'
+RPC = 'emulation/CMakeFiles/emulation.dir/__/__/__/__/__/darlingserver/src/rpc.c.o'
+VCHROOT = 'emulation/CMakeFiles/emulation.dir/src/linux_premigration/vchroot_userspace.c.o'
+SIGACTION = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/signal/sigaction.c.o'
 UMASK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/umask.c.o'
 GETDTABLESIZE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/getdtablesize.c.o'
 PROCESS_IDS = tuple('emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/'+name+'.c.o' for name in ('getpid','getppid','getpgrp','getpgid','getsid','setpgid','setsid'))
@@ -157,6 +161,26 @@ def integrate(args):
         if inputs.count(FCHMODAT) != 1 or not args.fchmodat_object.is_file():
             raise ValueError('missing unique fchmodat input')
         replacements[FCHMODAT] = args.fchmodat_object.resolve(strict=True)
+    rpc_parts = (args.rpc_object, args.rpc_leaf_object, args.rpc_state_object)
+    if any(rpc_parts):
+        if not all(rpc_parts) or not args.copy_sigexc_object:
+            raise ValueError('fork-aware RPC requires all three RPC objects and both signal bridges')
+        if inputs.count(RPC) != 1 or any(not path.is_file() for path in rpc_parts):
+            raise ValueError('missing unique RPC input or bridge helper')
+        replacements[RPC] = args.rpc_object.resolve(strict=True)
+    if args.vchroot_object:
+        if inputs.count(VCHROOT) != 1 or not args.vchroot_object.is_file():
+            raise ValueError('missing unique virtual-root expansion input')
+        replacements[VCHROOT] = args.vchroot_object.resolve(strict=True)
+    if bool(args.copy_sigexc_object) != bool(args.copy_sigaction_object):
+        raise ValueError('copy signal integration requires both original signal units')
+    if args.copy_sigexc_object:
+        if not args.paths_object:
+            raise ValueError('copy signal integration requires grouped paths')
+        for original_input, replacement in ((SIGEXC, args.copy_sigexc_object), (SIGACTION, args.copy_sigaction_object)):
+            if inputs.count(original_input) != 1 or not replacement.is_file():
+                raise ValueError('missing unique copy signal input: ' + original_input)
+            replacements[original_input] = replacement.resolve(strict=True)
     if args.paths_object:
         if any([args.symlinkat_object, args.readlinkat_object, args.unlinkat_object, args.linkat_object, args.renameat_object, args.mkdirat_object, args.faccessat_object, args.fchmodat_object, args.lstat_object, args.fstatat_object]):
             raise ValueError('grouped paths object conflicts with individual pathname objects')
@@ -231,6 +255,8 @@ def integrate(args):
         new_inputs.append(path)
     if args.lstat_bridge:
         new_inputs.append(str(args.lstat_bridge.resolve(strict=True)))
+    if args.rpc_object:
+        new_inputs.extend(str(path.resolve(strict=True)) for path in (args.rpc_leaf_object, args.rpc_state_object))
     for name in new_inputs:
         if not Path(name).is_file():
             raise ValueError('missing original runtime link object: ' + name)
@@ -285,6 +311,10 @@ def integrate(args):
         '_cerror': 'libsyscall.dir/custom/errno.c.o',
         '___simple_abort': 'emulation.dir/src/common/simple.c.o',
     }
+    if args.rpc_object:
+        wanted['_dserver_rpc_explicit_checkin'] = args.rpc_object.name
+        wanted['_dearust_rpc_syscall'] = args.rpc_leaf_object.name
+        wanted['_dearust_rpc_fork_child'] = args.rpc_state_object.name
     if args.lstat_object:
         wanted['_dearust_get_perthread_wd'] = args.lstat_bridge.name
         wanted['_sys_lstat'] = args.lstat_object.name
@@ -323,7 +353,16 @@ def integrate(args):
         wanted['_sys_fstat64'] = args.paths_object.name
         wanted['_sys_access'] = args.paths_object.name
         wanted['_sys_chmod'] = args.paths_object.name
+        if args.copy_sigexc_object:
+            wanted['_sigexc_handler'] = args.copy_sigexc_object.name
+            wanted['_sigrt_handler'] = args.copy_sigexc_object.name
+            wanted['_sys_sigaction'] = args.copy_sigaction_object.name
+            wanted['_dearust_copy_signals_ready'] = args.copy_sigexc_object.name
+            wanted['_dearust_copy_signal_fixup'] = args.paths_object.name
         wanted['_sys_truncate'] = args.paths_object.name
+        if args.vchroot_object:
+            wanted['_vchroot_expand_stat'] = args.vchroot_object.name
+            wanted['_vchroot_expand_at'] = args.vchroot_object.name
         wanted['_do_linux_fchmodat'] = args.paths_object.name
     if args.process_ids_object:
         wanted['_sys_getpid'] = args.process_ids_object.name
@@ -411,6 +450,12 @@ def main():
     parser.add_argument('--faccessat-object', type=Path)
     parser.add_argument('--fchmodat-object', type=Path)
     parser.add_argument('--paths-object', type=Path)
+    parser.add_argument('--vchroot-object', type=Path)
+    parser.add_argument('--rpc-object', type=Path)
+    parser.add_argument('--rpc-leaf-object', type=Path)
+    parser.add_argument('--rpc-state-object', type=Path)
+    parser.add_argument('--copy-sigexc-object', type=Path)
+    parser.add_argument('--copy-sigaction-object', type=Path)
     parser.add_argument('--process-ids-object', type=Path)
     parser.add_argument('--fd-object', type=Path)
     parser.add_argument('--fchmod-object', type=Path)

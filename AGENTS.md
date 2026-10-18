@@ -49,6 +49,10 @@ historical continuation notes below.
   unsafe boundaries minimal, auditable, hardened, and tested; documentation by
   itself is not proof of safety. Avoid unnecessary allocations, copies, syscalls,
   locks and caches; any optimization must preserve semantics and lifetime safety.
+- The owner authorizes full use of `rustix` wherever it fits the implementation.
+  Verify its target/backend, ABI, semantics, safety and measured performance;
+  Linux host-tool support does not imply that its Darwin backend can issue the
+  Linux syscalls required inside a Mach-O compatibility runtime.
 - Keep related operations in cohesive subsystem crates, not one crate per
   syscall. Improve the architecture and compatibility rather than translating
   C mechanically or preserving poor design for its own sake.
@@ -602,3 +606,40 @@ i386Rust, cleanpinnedboot and arbitraryapps remainoutsideverifiedscope.
 Thirty-sixpartialdependencyentries/265767pending; targets7/1622/0. Artifacts:
 dearust-continuation/work/hardening-next/{final-stage,matching-final,pinned-final}.
 Installedbinaries/existinguserprefix preserved.
+
+
+Continuation: guest-copy regression removal and signal/fork transactions
+------------------------------------------------------------------------
+Read RUNTIME-COPY-PERFORMANCE.txt and runtime-copy-performance-verification.json.
+Original-C guest CPU regressions are resolved on the same measured workloads:
+metadata -4.40%, permissions -6.80%, 42 samples/variant in reversed order.
+Affinity-controlled latency/memory cohorts have20 processes/variant/workload;
+p99 metadata10->10us and permissions32->30us, private dirty within one page.
+These compare original C kernel code in the matching locally modified runtime,
+using the same unchanged Rust server, not a pristine whole-Darling benchmark.
+Do not turn these workload-specific results into broad compatibility claims.
+
+New guarded exact-PC copies require BOTH signal bridge objects, ALL THREE RPC
+bridge objects, and the single replacement vchroot object. BUILDING.txt gives
+commands. Keep matching per-source sigexc -O0; builders explicitly select x64.
+Strong imports reject missing integration. Native weak boundary adapters are
+only for tests. PathBuffer has an initialized NUL prefix and uninitialized tail;
+never form Rust byte references over that tail or reinstate 4KiB zeroing.
+Fallback blocks catchable signals across fresh getpid and the whole kernel copy.
+No persistent PID, mask, mapping, credential or metadata cache is introduced.
+RPC child epoch/leaf cancellation, complete RT masks, descriptor ownership and
+root transaction ordering are correctness contracts, not optional optimizations.
+All confirmed resolver bounds/dotdot/long-symlink/root transaction bugs tested.
+
+Final evidence: dearust-continuation/work/original-benchmark. matching-final5 and
+pinned-final5 link final objects; native-final2/darwin-final2 reproduce paths.o
+byte-identically. 112 Rust/35 Python tests, strict Clippy/fmt, Darwin ABI test,
+17 native sanitizer fixtures,200008 C converter comparisons, resolver differential
+and bounds/root checks, native signal/RPC regressions pass. New signal/fork/RPC
+probes repeat under two prefixes;30 old probes,29 apps (one timestamp normalized),
+16 utilities and3 actual GUI samples pass. Baseline failures remain recorded.
+No installed runtime/reference/app prefix changed. Workspace still11 packages;
+dependencies37 partial/265766 pending, target slices7/1622 pending/0 retired.
+Regenerate dependency inventory from re/work/upstream with dependency-objects;
+full-baseline alone lacks one nested object store and gives an incomplete count.
+Full migration remains unfinished. Continue from verified subsystem dependencies.

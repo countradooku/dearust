@@ -13,6 +13,7 @@
 #include <sys/syscall.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "darwin-stat-native.h"
 struct expanded{char path[4096];unsigned flags;int dfd;};
 extern long sys_faccessat(int,const char *,int,int),sys_fchmodat(int,const char *,int,int);
 extern int do_linux_fchmodat(int,const char *,int,int);
@@ -31,13 +32,7 @@ long linux_syscall(long a,long b,long c,long d,long e,long f,int nr){
     if(nr==310 || nr==311)assert(a==getpid());
     long result=syscall(nr,a,b,c,d,e,f);return result<0?-errno:result;
 }
-static void convert(void *output,unsigned length){
-    assert(!((uintptr_t)output&7));const unsigned char *p=output;
-    for(unsigned i=0;i<144;i++)assert(p[i]==0);
-    memset(output,0x5b,length);conversions++;
-}
-void stat_linux_to_bsd(const void *input,void *output){assert(input);convert(output,120);}
-void stat_linux_to_bsd64(const void *input,void *output){assert(input);convert(output,144);}
+void __getuidgid(int32_t *uid,int32_t *gid){*uid=0x5b5b5b5b;*gid=0x5b5b5b5b;conversions++;}
 static void paths(const char *bad){
     unsigned char output[144];char buf[16];
 #define BAD(call) assert((call)==-14)
@@ -70,7 +65,9 @@ int main(void){
         unsigned length=(which&1)?144:120;unsigned char out[176];memset(out,0xa5,sizeof(out));
         assert(metadata(which,fd,edge,out+16)==0);
         for(unsigned i=0;i<16;i++)assert(out[i]==0xa5);
-        for(unsigned i=16;i<16+length;i++)assert(out[i]==0x5b);
+        unsigned char expected[144];memcpy(expected,out+16,length);
+        struct stat decoded=native_view(expected,which&1);
+        assert(decoded.st_size==7 && decoded.st_uid==0x5b5b5b5b && decoded.st_gid==0x5b5b5b5b);
         for(unsigned i=16+length;i<sizeof(out);i++)assert(out[i]==0xa5);
         assert(metadata(which,fd,file,(void *)(uintptr_t)1)==-14);
         assert(metadata(which,fd,file,mapping+page)==-14);
@@ -78,7 +75,7 @@ int main(void){
         assert(hole!=MAP_FAILED && munmap(hole,page)==0);
         assert(metadata(which,fd,file,hole)==-14);
         memset(mapping+page-64,0xa5,64);assert(metadata(which,fd,file,mapping+page-64)==-14);
-        for(unsigned i=0;i<64;i++)assert((unsigned char)mapping[page-64+i]==0x5b);
+        assert(memcmp(mapping+page-64,expected,64)==0);
         assert(mprotect(mapping+2*page,page,PROT_READ)==0);
         assert(metadata(which,fd,file,mapping+2*page)==-14);
         assert(mprotect(mapping+2*page,page,PROT_READ|PROT_WRITE)==0);
@@ -89,4 +86,5 @@ int main(void){
     int status;assert(waitpid(child,&status,0)==child && WIFEXITED(status) && WEXITSTATUS(status)==0);
     assert(conversions==48 && close(fd)==0 && unlink(file)==0 && munmap(mapping,3*page)==0);
     puts("Pointer boundaries: invalid/unmapped/protected addresses, readable path prefixes, exact metadata sizes, partial writes and fork");
+    return 0;
 }

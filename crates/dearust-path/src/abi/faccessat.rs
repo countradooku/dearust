@@ -1,6 +1,6 @@
 #[repr(C)]
 struct Expanded {
-    path: [u8; 4096],
+    path: super::memory::PathBuffer,
     flags: u32,
     dfd: i32,
 }
@@ -23,7 +23,7 @@ pub unsafe extern "C" fn sys_faccessat(fd: i32, path: *const u8, mode: i32, flag
         return -14;
     }
     let mut expanded = Expanded {
-        path: [0; 4096],
+        path: super::memory::path_buffer(),
         flags: if flags & 0x20 == 0 { 1 } else { 0 },
         // SAFETY: original helper resolves BSD_AT_FDCWD using initialized TLS.
         dfd: unsafe { atfd(fd) },

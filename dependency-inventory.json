@@ -10,8 +10,8 @@
     },
     "inventoried_entries": 265803,
     "entries_by_status": {
-      "partial": 36,
-      "pending": 265767
+      "partial": 37,
+      "pending": 265766
     },
     "license_candidates": 341
   },
@@ -2325374,7 +2325374,10 @@
           "object_id": "4d1f43793d466979f1cfec87d557bcefdc183c01",
           "size": 2703,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-path/src/abi/conversion.rs",
+          "scope": "Safe Rust stat120/stat64 local-byte conversion used by migrated metadata wrappers, with original credential helper; public C converters/statfs functions remain for unported callers. Differential and matching integration recorded in runtime-copy-performance-verification.json.",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/linux_premigration/elfcalls_wrapper.c",

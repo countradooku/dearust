@@ -4,7 +4,7 @@ unsafe extern "C" {
 }
 
 /// # Safety
-/// Guest addresses are validated by Linux; output uses the matching Darwin
+/// Guest addresses use the shared fault-contained copy boundary; output uses the matching Darwin
 /// stat layout. Output must not alias live wrapper storage. Guest TLS must be
 /// initialized where used. Foreign helpers must obey their ABI, preserve path
 /// termination, and must not retain pointers or unwind into Rust.
@@ -17,7 +17,7 @@ pub unsafe extern "C" fn sys_stat(path: *const u8, output: *mut c_void) -> i64 {
 }
 
 /// # Safety
-/// Guest addresses are validated by Linux; output uses the matching Darwin
+/// Guest addresses use the shared fault-contained copy boundary; output uses the matching Darwin
 /// stat layout. Output must not alias live wrapper storage. Guest TLS must be
 /// initialized where used. Foreign helpers must obey their ABI, preserve path
 /// termination, and must not retain pointers or unwind into Rust.

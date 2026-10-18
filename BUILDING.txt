@@ -393,3 +393,59 @@ metadata+63.49%, permission workload+16.91% in recorded warm microbenchmarks;
 no general app speedup/RSS claim. Read SAFETY-MEMORY.txt/SAFETY-PERMISSIONS.txt for
 current contracts superseding the historical descriptions. Artifacts:
 dearust-continuation/work/hardening-next/{final-stage,matching-final,pinned-final}.
+
+Guest-copy performance continuation (current)
+---------------------------------------------
+Read RUNTIME-COPY-PERFORMANCE.txt and SAFETY-MEMORY.txt before integrating.
+Use owned output directories outside the reference source/build trees. Example
+for a matching configured reference (set these absolute paths for your machine):
+
+    reference_build=/absolute/reference/build
+    reference_source=/absolute/reference/source
+    copy_work=/absolute/owned/new-copy-build
+    cargo xtask runtime --target x86_64-apple-darwin --destdir "$copy_work/runtime"
+    python3 tools/build_guarded_fork_bridge.py --source "$reference_source" \
+      --build "$reference_build" --output "$copy_work/fork"
+    python3 tools/build_lstat_bridge.py --build "$reference_build" \
+      --output "$copy_work/cwd"
+    python3 tools/build_copy_signal_bridge.py --build "$reference_build" \
+      --output "$copy_work/signal" --rpc-fork-guard
+    python3 tools/build_rpc_fork_bridge.py --build "$reference_build" \
+      --output "$copy_work/rpc"
+    python3 tools/build_vchroot_stat_bridge.py --build "$reference_build" \
+      --output "$copy_work/vchroot"
+    python3 tools/relink_matching_kernel.py --build "$reference_build" \
+      --runtime "$copy_work/runtime" \
+      --guarded-object "$copy_work/runtime/objects/guarded.o" \
+      --paths-object "$copy_work/runtime/objects/paths.o" \
+      --fd-object "$copy_work/runtime/objects/fd.o" \
+      --process-object "$copy_work/runtime/objects/process.o" \
+      --process-ids-object "$copy_work/runtime/objects/process-ids.o" \
+      --fork-object "$copy_work/fork/fork.c.o" \
+      --lstat-bridge "$copy_work/cwd/lstat-bridge.o" \
+      --copy-sigexc-object "$copy_work/signal/sigexc.c.o" \
+      --copy-sigaction-object "$copy_work/signal/sigaction.c.o" \
+      --rpc-object "$copy_work/rpc/rpc.c.o" \
+      --rpc-leaf-object "$copy_work/rpc/rpc-fork-leaf.S.o" \
+      --rpc-state-object "$copy_work/rpc/rpc-fork-state.c.o" \
+      --vchroot-object "$copy_work/vchroot/vchroot_userspace.c.o" \
+      --output "$copy_work/kernel"
+
+For the exact pinned build use relink_system_kernel.py, omit --process-object,
+and supply --report "$copy_work/pinned-link.json". Build every bridge against
+that build's own sources/flags. Never mix reference variants. Both links retain
+original i386 bytes; these replacement objects are x86_64 only. The signal
+builder preserves custom per-source options, including matching sigexc -O0.
+All generated source changes live under the owned output, never in references.
+Native boundary adapters are test-only and must not enter a production link.
+
+    python3 tools/check_vchroot_stat_bridge.py --source "$reference_source" \
+      --output "$copy_work/resolver-check" --sanitize
+    python3 tools/summarize_guest_copy.py --forward /path/forward/comparison.json \
+      --reverse /path/reverse/comparison.json \
+      --resource-forward /path/resource-forward/comparison.json \
+      --resource-reverse /path/resource-reverse/comparison.json \
+      --output "$copy_work/performance.json"
+
+The summary verifies kernel/binary equivalence, actual mappings, strict outputs
+and shutdown. Keep the raw comparisons and Linux KiB memory units with it.

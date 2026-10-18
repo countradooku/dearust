@@ -1,0 +1,161 @@
+Guest-copy performance and signal/fork correctness
+=================================================
+
+This x86_64 continuation removes the measured guest-copy CPU regressions without
+restoring unchecked guest pointer access. The full Darling migration remains
+incomplete. Project owner: @countradooku. AI assistance: OpenAI Codex.
+
+Direct original-C comparison
+----------------------------
+The original C kernel and corrected Dearust kernel execute identical prebuilt
+Darwin guest binaries, on owned files, with the same unchanged Rust server.
+The C pathname/metadata/conversion sources match the pinned originals. Matching
+reference C_FLAGS include -O3 -march=native; original per-file signal -O0 is
+preserved. Rust objects use the release profile. The installed matching runtime
+contains local changes elsewhere: this is an original-C implementation comparison
+inside that environment, not a pristine full original-Darling runtime comparison.
+The exact-pin full system_kernel also links; clean pinned-runtime startup is not
+claimed. No installed runtime or reference build/source is modified.
+
+Before this work, direct C comparison found metadata CPU +65.18% and permissions
++16.56%. The corrected combined kernel measures:
+
+  Four-call roundtrip                 C CPU median    Dearust       Change
+  fstat/fstat64/stat/stat64            8.381 us        8.01225 us    -4.40%
+  mkdirat/fchmodat/faccessat/unlinkat  25.7375 us      23.9875 us     -6.80%
+
+These are paired warm workloads, not general application speedups. Each uses
+original/Rust/Rust/original order and42 samples per variant:2000 metadata or200
+permission roundtrips per sample. Permission flags are0. CPU includes user and
+system time; wall medians are8.40775->8.041 us and26.27->24.635 us respectively.
+The before/after experiments use the SAME original-C kernel SHA-256:
+  bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f
+Corrected matching kernel:
+  9736a4dac72ced8e9b6f74933e6fd416414dd1bf089ddfba1370211804c4e145
+
+Latency and memory
+------------------
+Separate affinity-controlled probes use20 processes per variant and workload,
+512 individual four-call roundtrips per process, with one-microsecond clock
+resolution. The following are medians of per-process quantiles, not pooled
+quantiles. First-round values follow fixture setup, not a cold executable launch.
+
+                       Metadata C->Rust       Permissions C->Rust
+  First round               11->11 us                  44->43 us
+  p50                        8->8 us                   26->25 us
+  p95                        9->8 us                   30->28 us
+  p99                       10->10 us                  32->30 us
+
+Raw maxima and all distributions remain in the evidence, including scheduling
+and filesystem outliers. These measurements do not establish universal worst-case
+latency. CPU affinity, hardware model, hashes and exact workload records are saved.
+
+Linux /proc/self/smaps_rollup provides post-workload memory counters. Median
+private dirty memory is3514->3512 KiB for metadata and3512->3514 KiB for permissions
+(within one4-KiB page). Median PSS is4164.5->4167.5 and4176->4173.5 KiB. Median RSS
+is11932->11952 and11900->11974 KiB; these small fixed/measurement differences are
+reported rather than described as a whole-process memory reduction. Linux peak
+RSS medians are11564->11500 and11578->11502 KiB. Peak RSS varies substantially
+between individual processes; both the pinned and unpinned raw cohorts are kept.
+There is no new Rust allocator, persistent mapping/PID/mask cache, or heap path
+buffer. Assembly confirms removal of path-sized4096-byte clears/copies. Local
+frame evidence excludes pushes/callees and does not substitute for measured RSS.
+The unchanged Darling getrusage wrapper passes Linux counters through, so this
+probe labels maxrss as Linux KiB instead of incorrectly assuming macOS bytes.
+
+The native wrapper comparison separately measures previous Dearust versus current
+Dearust, with shared native credential/namespace adapters and actual120/144-byte
+Darwin output layouts. CPU medians improve42.11%/29.76%. It is NOT an all-C native
+baseline and excludes real guest TLS/virtual-root expansion. The guest C baseline
+above is the direct original comparison requested by the owner.
+
+Implementation and confirmed bug fixes
+-------------------------------------
+- Guard actual guest loads/stores at exact assembly PCs using the existing Linux
+  signal entries. Every invocation queries the real mask; asynchronous signal
+  delivery redirects interrupted copying to a safe retry before guest dispatch.
+  Blocked fault signals, failed readiness, query errors and alignment-checking
+  callers use the kernel copy path. Mapping changes fault at the actual access.
+- The fallback blocks catchable signals across getpid and the entire self-copy,
+  fixing the handler-fork stale-parent-PID window. It restores the exact mask;
+  restore failure fails stop. No guessed mapping or unsafe raw fallback is used.
+- PathBuffer uses MaybeUninit with an initialized NUL prefix. Rust byte slices
+  cover only kernel-reported initialized prefixes; C helpers retain the same
+  terminated-prefix contract as their original strcpy callers. Unused4-KiB tails
+  are not cleared. Pure stat conversion forbids unsafe and obtains one consistent
+  credential pair through the original locked helper, with no credential cache.
+- Metadata reuses only the last ordinary non-symlink stat fetched within THIS
+  expansion call, after normal flag validation. Other cases execute final stat.
+  Nofollow unlink of an exact simple existing basename retains the original dirfd
+  through the kernel operation; other paths use the full case-fold resolver.
+- Fix Darling signal-mask domain conversion, preserve the interrupted mask, and
+  test SA_NODEFER in the Darwin flag domain. Handler-fork children no longer pop
+  the parent's server interrupt frame.
+- Bind generated RPC transactions to a child-fork epoch and an exact no-stack
+  syscall leaf. Interrupted/restarted parent transactions cannot retry on the new
+  child connection. Preserve completed ordinary replies, cancel stale S2C work,
+  reset ancillary capacity between receives, and close unconsumed SCM_RIGHTS once.
+  Save/restore complete Linux masks including RT bits, with checked failures.
+- Fix copied resolver path/root/EXIT_PATH/unexpand bounds, zero/small fdpath
+  capacity, prefix boundaries, long symlink truncation, pipe/file dirfd handling
+  and dot/dotdot directory checks. Root configuration stages validated local state,
+  gets server approval, then commits; rejection preserves the previous prefix.
+
+All work stays in the existing11 packages. Signal/RPC/resolver changes are copied
+C integration glue, not claims that those entire sources have been ported to Rust.
+The stat conversion source is a new partial Rust slice: public C converters and
+statfs callers remain. Inventory is37 partial/265766 pending dependency leaves;
+7 target slices,1622 pending targets,0 retired. Original i386 kernel bytes remain
+unchanged; the new Rust/assembly bridges are explicitly x86_64.
+
+Verification
+------------
+112 Rust tests,35 Python tests, strict Clippy, formatting and explicit Darwin
+artifact/ABI staging pass. Both actual final links retain original public/import
+symbol sets. Matching has1370 public definitions; pinned has1362 and preserves
+the original i386 slice byte-for-byte. All29 paths.o globals are private externs.
+
+17 native pathname fixtures pass with ASan/UBSan C adapters; Rust/assembly are not
+sanitizer-instrumented. Guarded-copy tests run five plain plus one sanitizer pass,
+including blocked masks, AC, actual SIGBUS, unrelated faults, partial output,
+concurrent mapping revocation and deterministic handler fork. RPC tests likewise
+run five plain plus one sanitizer pass, including restarted receives, returned-FD
+ownership and full-mask/failure handling. LeakSanitizer is disabled only for the
+guarded-copy fixture's custom SIGCHLD behavior; no leak-check claim is made.
+
+Stat conversion passes200008 byte-exact comparisons against unchanged pinned C
+with initialized reserved fields, plus independent SDK size/offset assertions.
+Resolver checks pass40 differential cases,8 bounds regressions, descriptor-helper
+checks and root-transaction tests, also independently repeated with ASan/UBSan.
+
+Actual matching-runtime results:30 existing guest probes; three new guest signal/
+mask/concurrency/fork/RPC probes repeated under two independent prefixes;29 app
+checks (28 exact, known cfbridge timestamp normalization for one);16 utilities;
+and3 GUI samples (Calculator, TextEditor, repaired CGShadingCreate). Original C
+reference failures are retained in raw records, not counted as Dearust passes.
+The new-three-probe comparison labels both mean the corrected kernel; the
+existing30-probe original label means previous Dearust. App/utility/GUI and CPU/
+resource experiments use the original C kernel in their original/forward slots.
+
+Reproduction and evidence
+-------------------------
+See runtime-copy-performance-verification.json for all input/output hashes,
+commands, baselines, source pins, raw sample references and installation checks.
+Use tools/summarize_guest_copy.py with --forward/--reverse comparison.json inputs
+(and --resource-forward/--resource-reverse optionally) to verify equivalent
+binaries, reversed kernels, mappings, strict correctness and clean shutdown before
+calculating statistics. The report refuses mismatched experiments.
+
+Production integration requires all strong bridges: build_copy_signal_bridge.py
+with --rpc-fork-guard, build_rpc_fork_bridge.py and build_vchroot_stat_bridge.py.
+Use --build MATCHING_BUILD --output OWNED_NEW_DIRECTORY for each. They preserve
+reference trees and original flags, explicitly selecting x86_64; signal source
+options such as matching -O0 are retained. Pass both signal objects, all three RPC
+objects and the one replacement vchroot object to the existing kernel relinker.
+The normal matching fork/cwd bridges remain required. BUILDING.txt has commands.
+Missing bridge symbols cause a link failure; native weak adapters are test-only.
+
+Rustix is authorized where its backend/target/ABI fits. No dependency is forced
+into the Mach-O/Linux syscall boundary. A Wine-style VM registry was considered;
+an authoritative registry would need every mapping/native-interop path covered.
+This implementation contains faults at actual access instructions instead.
