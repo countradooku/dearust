@@ -107,6 +107,13 @@ def main():
                     'cargo_package': 'dearust-process', 'cargo_artifact': 'process-ids.o',
                     'scope': 'Grouped x86_64 process services through the identifiers-feature artifact; public thread_selfid ABI retained. Other architectures and original target retirement remain pending.',
                 })
+        if name == 'emulation':
+            for source in ('getrlimit', 'setrlimit', 'getrusage'):
+                entry['verified_source_slices'].append({
+                    'source': 'src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/misc/' + source + '.c',
+                    'cargo_package': 'dearust-process', 'cargo_artifact': 'process-ids.o',
+                    'scope': 'Grouped x86_64 resources feature in identifiers,resources artifact, preserving rlimit_bsd_to_linux helper. Native/Darwin object and owned consumer links checked; completion gates for full limit domain and native/guest semantics/performance remain UNFINISHED. Other architectures and target retirement remain pending.',
+                })
         if name == 'darlingserver':
             entry['verified_source_slices'] = [{
                 'source': 'src/external/darlingserver/duct-tape/xnu/osfmk/kern/sync_lock.c',

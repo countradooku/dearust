@@ -28,3 +28,11 @@ pub use identifiers::{
 mod services;
 #[cfg(feature = "identifiers")]
 pub use services::{sys_getentropy, sys_thread_selfid};
+
+#[cfg(feature = "resources")]
+#[allow(unsafe_code)]
+mod resource_abi;
+#[cfg(feature = "resources")]
+mod resources;
+#[cfg(feature = "resources")]
+pub use resource_abi::{rlimit_bsd_to_linux, sys_getrlimit, sys_getrusage, sys_setrlimit};

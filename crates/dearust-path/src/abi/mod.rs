@@ -41,3 +41,5 @@ mod frontends;
 pub use frontends::{sys_link, sys_mkdir, sys_readlink, sys_rename, sys_symlink, sys_unlink};
 mod filesystem;
 pub use filesystem::{sys_fstatfs, sys_fstatfs64, sys_statfs, sys_statfs64};
+
+pub use memory::{dearust_copyin, dearust_copyout};

@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from dependency_inventory import Inventory, resolve_url, NATIVE_ERRNO_SOURCE, FUTEX_SOURCE, PROCESS_SOURCE, LOCKSET_SOURCE, LSTAT_SOURCE, FSTATAT_SOURCE, SYMLINKAT_SOURCE, READLINKAT_SOURCE, UNLINKAT_SOURCE, LINKAT_SOURCE, RENAMEAT_SOURCE, MKDIRAT_SOURCE, FACCESSAT_SOURCE, FCHMODAT_SOURCE, FCHMOD_SOURCE, FTRUNCATE_SOURCE, FSYNC_SOURCE, FDATASYNC_SOURCE, LSEEK_SOURCE, FLOCK_SOURCE, GETPID_SOURCE, GETPPID_SOURCE, GETPGRP_SOURCE, GETPGID_SOURCE, GETSID_SOURCE, SETPGID_SOURCE, SETSID_SOURCE, UMASK_SOURCE, GETDTABLESIZE_SOURCE, RMDIR_SOURCE, TRUNCATE_SOURCE, STAT_SOURCE, FSTAT_SOURCE, ACCESS_SOURCE, CHMOD_SOURCE
+from dependency_inventory import Inventory, resolve_url, NATIVE_ERRNO_SOURCE, FUTEX_SOURCE, PROCESS_SOURCE, LOCKSET_SOURCE, LSTAT_SOURCE, FSTATAT_SOURCE, SYMLINKAT_SOURCE, READLINKAT_SOURCE, UNLINKAT_SOURCE, LINKAT_SOURCE, RENAMEAT_SOURCE, MKDIRAT_SOURCE, FACCESSAT_SOURCE, FCHMODAT_SOURCE, FCHMOD_SOURCE, FTRUNCATE_SOURCE, FSYNC_SOURCE, FDATASYNC_SOURCE, LSEEK_SOURCE, FLOCK_SOURCE, GETPID_SOURCE, GETPPID_SOURCE, GETPGRP_SOURCE, GETPGID_SOURCE, GETSID_SOURCE, SETPGID_SOURCE, SETSID_SOURCE, UMASK_SOURCE, GETDTABLESIZE_SOURCE, RMDIR_SOURCE, TRUNCATE_SOURCE, STAT_SOURCE, FSTAT_SOURCE, ACCESS_SOURCE, CHMOD_SOURCE, GETRLIMIT_SOURCE, SETRLIMIT_SOURCE, GETRUSAGE_SOURCE
 
 
 class DependencyInventoryTests(unittest.TestCase):
@@ -95,7 +95,7 @@ class DependencyInventoryTests(unittest.TestCase):
         self.assertEqual(linked["counts"]["by_availability"], {"inventoried": 1})
 
     def test_native_errno_slice_remains_partial_and_requires_its_exact_pin(self):
-        child, commit = self.repo("xnu", {NATIVE_ERRNO_SOURCE: "fixture errno source", FUTEX_SOURCE: "fixture futex source", PROCESS_SOURCE: "fixture process source", LSTAT_SOURCE: "fixture lstat source", FSTATAT_SOURCE: "fixture fstatat source", SYMLINKAT_SOURCE: "fixture symlinkat source", READLINKAT_SOURCE: "fixture readlinkat source", UNLINKAT_SOURCE: "fixture unlinkat source", LINKAT_SOURCE: "fixture linkat source", RENAMEAT_SOURCE: "fixture renameat source", MKDIRAT_SOURCE: "fixture mkdirat source", FACCESSAT_SOURCE: "fixture faccessat source", FCHMODAT_SOURCE: "fixture fchmodat source", FCHMOD_SOURCE: "fixture fchmod source", FTRUNCATE_SOURCE: "fixture ftruncate source", FSYNC_SOURCE: "fixture fsync source", FDATASYNC_SOURCE: "fixture fdatasync source", LSEEK_SOURCE: "fixture lseek source", FLOCK_SOURCE: "fixture flock source", GETPID_SOURCE: "fixture getpid source", GETPPID_SOURCE: "fixture getppid source", GETPGRP_SOURCE: "fixture getpgrp source", GETPGID_SOURCE: "fixture getpgid source", GETSID_SOURCE: "fixture getsid source", SETPGID_SOURCE: "fixture setpgid source", SETSID_SOURCE: "fixture setsid source", UMASK_SOURCE: "fixture umask source", GETDTABLESIZE_SOURCE: "fixture getdtablesize source", RMDIR_SOURCE: "fixture rmdir source", TRUNCATE_SOURCE: "fixture truncate source", STAT_SOURCE: "fixture stat source", FSTAT_SOURCE: "fixture fstat source", ACCESS_SOURCE: "fixture access source", CHMOD_SOURCE: "fixture chmod source", "other.c": "unported"})
+        child, commit = self.repo("xnu", {NATIVE_ERRNO_SOURCE: "fixture errno source", FUTEX_SOURCE: "fixture futex source", PROCESS_SOURCE: "fixture process source", LSTAT_SOURCE: "fixture lstat source", FSTATAT_SOURCE: "fixture fstatat source", SYMLINKAT_SOURCE: "fixture symlinkat source", READLINKAT_SOURCE: "fixture readlinkat source", UNLINKAT_SOURCE: "fixture unlinkat source", LINKAT_SOURCE: "fixture linkat source", RENAMEAT_SOURCE: "fixture renameat source", MKDIRAT_SOURCE: "fixture mkdirat source", FACCESSAT_SOURCE: "fixture faccessat source", FCHMODAT_SOURCE: "fixture fchmodat source", FCHMOD_SOURCE: "fixture fchmod source", FTRUNCATE_SOURCE: "fixture ftruncate source", FSYNC_SOURCE: "fixture fsync source", FDATASYNC_SOURCE: "fixture fdatasync source", LSEEK_SOURCE: "fixture lseek source", FLOCK_SOURCE: "fixture flock source", GETPID_SOURCE: "fixture getpid source", GETPPID_SOURCE: "fixture getppid source", GETPGRP_SOURCE: "fixture getpgrp source", GETPGID_SOURCE: "fixture getpgid source", GETSID_SOURCE: "fixture getsid source", SETPGID_SOURCE: "fixture setpgid source", SETSID_SOURCE: "fixture setsid source", UMASK_SOURCE: "fixture umask source", GETDTABLESIZE_SOURCE: "fixture getdtablesize source", RMDIR_SOURCE: "fixture rmdir source", TRUNCATE_SOURCE: "fixture truncate source", STAT_SOURCE: "fixture stat source", FSTAT_SOURCE: "fixture fstat source", ACCESS_SOURCE: "fixture access source", CHMOD_SOURCE: "fixture chmod source", GETRLIMIT_SOURCE: "fixture getrlimit", SETRLIMIT_SOURCE: "fixture setrlimit", GETRUSAGE_SOURCE: "fixture getrusage", "other.c": "unported"})
         root, root_commit = self.repo("root", {}, [("src/external/xnu", "../xnu.git", commit)])
         self.store(child, "https://example.invalid/xnu.git")
         # The source path alone cannot mark a different version as ported.
@@ -103,7 +103,7 @@ class DependencyInventoryTests(unittest.TestCase):
             Inventory(root, self.cache).run(root_commit, "https://example.invalid/root.git")
         with patch("dependency_inventory.NATIVE_ERRNO_PIN", commit):
             data = Inventory(root, self.cache).run(root_commit, "https://example.invalid/root.git")
-        self.assertEqual(data["counts"]["entries_by_status"], {"partial": 34, "pending": 1})
+        self.assertEqual(data["counts"]["entries_by_status"], {"partial": 37, "pending": 1})
         dependency = data["dependencies"][0]
         self.assertEqual(dependency["migration_status"], "partial")
         source = next(e for e in dependency["entries"] if e["path"] == NATIVE_ERRNO_SOURCE)
@@ -126,6 +126,13 @@ class DependencyInventoryTests(unittest.TestCase):
             entry = next(e for e in dependency["entries"] if e["path"] == path)
             self.assertEqual(entry["status"], "partial")
             self.assertEqual(entry["replacement"], "crates/dearust-process/src/identifiers.rs")
+
+        for path in (GETRLIMIT_SOURCE, SETRLIMIT_SOURCE, GETRUSAGE_SOURCE):
+            entry = next(e for e in dependency["entries"] if e["path"] == path)
+            self.assertEqual(entry["status"], "partial")
+            self.assertEqual(entry["replacement"], "crates/dearust-process/src/resources.rs")
+            self.assertIn("UNFINISHED", entry["limitation"])
+            self.assertIn("limit-domain", entry["limitation"])
 
     def test_lockset_annotation_requires_matching_server_pin(self):
         child, commit = self.repo("server", {LOCKSET_SOURCE: "fixture lockset", "other.c": "legacy"})

@@ -11,6 +11,15 @@ The migration scope includes every upstream library, framework, executable,
 resource, SDK link and external dependency; existing stubs are not grounds for
 silently deleting an ABI. Performance improvements must be measured per workload.
 
+Latest resource ABI continuation (2026-10-18; UNFINISHED)
+--------------------------------------------------------
+RUNTIME-RESOURCES.txt/runtime-resources-verification.json record partial
+getrlimit/setrlimit/getrusage integration in existing dearust-process/process-ids.o.
+Full unsigned limit compatibility, complete resource-specific policy and material
+CPU overhead remain OPEN completion gates. No completed resource subsystem is
+claimed. The three dependency leaves are partial:52 partial/265751 pending of
+265803. Workspace11 packages and target slices7/1622pending/0retired unchanged.
+
 Latest core input continuation (2026-10-18)
 -------------------------------------------
 CORE-INPUT.txt/core-input-verification.json record owned ELF/note metadata,

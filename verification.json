@@ -1,7 +1,7 @@
 {
   "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
   "rust_toolchain": "rustc 1.99.0 (b940084d7 2026-09-28)",
-  "normal_tests_passed": 182,
+  "normal_tests_passed": 187,
   "optional_upstream_differential_tests_explicitly_run_and_passed": 5,
   "checks": [
     "cargo xtask check",
@@ -239,5 +239,20 @@
     "decoded_thread_states": 8,
     "staged_release_comparisons": 6,
     "historical_records": "Other fields retain their original execution scope and counts; CORE-REGISTERS.txt covers actual FP extraction."
+  },
+  "resource_abi_continuation": {
+    "record": "runtime-resources-verification.json",
+    "status": "UNFINISHED",
+    "validation_checks_passed": true,
+    "completion_gates_passed": false,
+    "ordinary_rust_tests": 187,
+    "compile_fail_doctests": 8,
+    "python_tests": 35,
+    "open_gates": [
+      "Full unsigned limit-domain compatibility",
+      "Complete resource-specific enforcement policy",
+      "Material guarded-copy CPU regression"
+    ],
+    "note": "Other fields retain their historical execution scope; this is partial resource ABI integration."
   }
 }

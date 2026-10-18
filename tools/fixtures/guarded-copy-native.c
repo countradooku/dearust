@@ -13,7 +13,9 @@
 extern long dearust_copy_guarded(void *,const void *,size_t,size_t);
 extern unsigned long dearust_copy_signal_fixup(unsigned long,int,int);
 extern char dearust_copy_region_begin,dearust_copy_region_end;
-extern char dearust_copy_guest_read,dearust_copy_guest_write;
+extern char dearust_copy_guest_read,dearust_copy_guest_write,dearust_copy_guest_binary_read;
+extern long dearust_copyin(void *,const void *,size_t);
+extern long dearust_copyout(const void *,void *,size_t);
 extern char dearust_copy_error,dearust_copy_fallback;
 extern int dearust_copy_test_set_handler(int,const struct sigaction *,struct sigaction *);
 #ifdef DEARUST_TEST_WRAP_READY
@@ -50,6 +52,8 @@ static void alignment_check_fallback(void){
     assert(result.status==-4096 && (result.flags&0x40000));
     result=copy_with_alignment_check(output+1,input+1,5,1);
     assert(result.status==-4096 && (result.flags&0x40000));
+    result=copy_with_alignment_check(output+1,input+1,16,2);
+    assert(result.status==-4096 && (result.flags&0x40000));
     for(size_t i=0;i<sizeof(output);i++)assert(output[i]==0xa5);
     unsigned long restored;__asm__ volatile("pushfq; pop %0":"=r"(restored));
     assert(!(restored&0x40000));
@@ -66,7 +70,7 @@ static unsigned long mask(void){unsigned long value=0;assert(syscall(SYS_rt_sigp
 static void exact_fixups(void){
     unsigned long begin=address(&dearust_copy_region_begin),end=address(&dearust_copy_region_end);
     for(unsigned long pc=begin;pc<end;pc++){
-        int access=pc==address(&dearust_copy_guest_read)||pc==address(&dearust_copy_guest_write);
+        int access=pc==address(&dearust_copy_guest_read)||pc==address(&dearust_copy_guest_write)||pc==address(&dearust_copy_guest_binary_read);
         assert(dearust_copy_signal_fixup(pc,SIGSEGV,SEGV_MAPERR)==(access?address(&dearust_copy_error):0));
         assert(dearust_copy_signal_fixup(pc,SIGBUS,BUS_ADRERR)==(access?address(&dearust_copy_error):0));
         assert(dearust_copy_signal_fixup(pc,SIGUSR1,SI_USER)==address(&dearust_copy_fallback));
@@ -116,10 +120,43 @@ static void *churn(void *unused){
     }
     return NULL;
 }
+static void binary_copy_boundaries(void){
+    unsigned long before=mask();
+    unsigned char input[160],output[160];
+    for(size_t i=0;i<sizeof(input);i++)input[i]=(unsigned char)(i*37);
+    const size_t lengths[]={0,1,3,4,8,16,144};
+    for(size_t i=0;i<sizeof(lengths)/sizeof(lengths[0]);i++){
+        size_t length=lengths[i];memset(output,0xa5,sizeof(output));
+        assert(dearust_copyin(output+1,input+1,length)==0);
+        assert(!memcmp(output+1,input+1,length));
+        assert(output[0]==0xa5 && output[length+1]==0xa5);
+        memset(output,0xa5,sizeof(output));
+        assert(dearust_copyout(input+1,output+1,length)==0);
+        assert(!memcmp(output+1,input+1,length));
+        assert(output[0]==0xa5 && output[length+1]==0xa5);
+    }
+    assert(dearust_copyin(output,NULL,0)==0);
+    assert(dearust_copyout(input,NULL,0)==0);
+    assert(dearust_copyin(output,NULL,16)==-14);
+    assert(dearust_copyout(input,NULL,16)==-14);
+    unsigned char *pages=mmap(NULL,8192,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
+    assert(pages!=MAP_FAILED);memset(pages,0x39,8192);
+    assert(mprotect(pages+4096,4096,PROT_NONE)==0);
+    memset(output,0xa5,sizeof(output));
+    assert(dearust_copyin(output,pages+4088,16)==-14);
+    assert(output[16]==0xa5);
+    assert(dearust_copyout(input,pages+4088,16)==-14);
+    assert(dearust_copyin(output,pages+4096,16)==-14);
+    assert(dearust_copyout(input,pages+4096,16)==-14);
+    assert(mprotect(pages,4096,PROT_READ)==0);
+    assert(dearust_copyin(output,pages,16)==0);
+    assert(dearust_copyout(input,pages,16)==-14);
+    assert(munmap(pages,8192)==0);assert(mask()==before);
+}
 int main(void){
-    alarm(30);assert(pointer_boundary_main()==0);exact_fixups();alignment_check_fallback();
+    alarm(30);assert(pointer_boundary_main()==0);exact_fixups();alignment_check_fallback();binary_copy_boundaries();
 #ifdef DEARUST_TEST_WRAP_READY
-    force_kernel_copy=1;conversions=0;assert(pointer_boundary_main()==0);force_kernel_copy=0;
+    force_kernel_copy=1;conversions=0;assert(pointer_boundary_main()==0);binary_copy_boundaries();force_kernel_copy=0;
 #endif
     char file[]="/tmp/dearust-guarded-XXXXXX";owned_fd=mkstemp(file);assert(owned_fd>=0);
     unsigned long original=mask();sigset_t blocked;sigemptyset(&blocked);sigaddset(&blocked,SIGSEGV);sigaddset(&blocked,SIGBUS);

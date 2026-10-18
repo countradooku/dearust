@@ -548,3 +548,15 @@ object. Both variants use the same paired new server. Native timing uses
 benchmark_filesystem.py; guest CPU/resource reports use summarize_stream.py
 --workload filesystem. Keep independent goldens in the test root and binaries
 in 10.8/. Run resource-limit regressions only in owned children/prefixes.
+
+Resource ABI continuation (unfinished)
+---------------------------------------
+Read RUNTIME-RESOURCES.txt before using the new resource slice. The existing
+process-ids.o selects identifiers,resources; --process-ids-object in both relinkers
+replaces the three resource C inputs and keeps rlimit_bsd_to_linux. paths.o must
+provide strong copyin/out helpers with the full existing signal/fork bridges.
+The native-only weak abort adapters are never production runtime inputs.
+getdtablesize now uses the actual16-byte Darwin rlimit ABI and actual NOFILE
+accounting.187 Rust/8 compile-fail/35 Python checks pass, but full unsigned-limit
+compatibility and CPU regression completion gates are open. This is partial
+resource migration, not permission to skip those gates or claim full completion.

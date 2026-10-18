@@ -10,8 +10,8 @@
     },
     "inventoried_entries": 265803,
     "entries_by_status": {
-      "partial": 49,
-      "pending": 265754
+      "partial": 52,
+      "pending": 265751
     },
     "license_candidates": 341
   },
@@ -2326283,7 +2326283,10 @@
           "object_id": "01d467083cb4763d344b4604d501d43ca45f334c",
           "size": 1226,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-process/src/resources.rs",
+          "scope": "Grouped no_std x86_64 resource limits/accounting in existing process-ids.o; original entry and rlimit_bsd_to_linux helper ABI retained, native/Darwin object and owned consumer links checked.",
+          "limitation": "UNFINISHED completion gates: full Darwin limit-domain strategy and representative native/guest correctness/performance validation; i386 replacement and target retirement remain pending."
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/misc/getrusage.c",
@@ -2326292,7 +2326295,10 @@
           "object_id": "a59b3cc62b8c6456a0ed37aae063b9d827a446f4",
           "size": 400,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-process/src/resources.rs",
+          "scope": "Grouped no_std x86_64 resource limits/accounting in existing process-ids.o; original entry and rlimit_bsd_to_linux helper ABI retained, native/Darwin object and owned consumer links checked.",
+          "limitation": "UNFINISHED completion gates: full Darwin limit-domain strategy and representative native/guest correctness/performance validation; i386 replacement and target retirement remain pending."
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/misc/iopolicysys.c",
@@ -2326349,7 +2326355,10 @@
           "object_id": "352c739428ce1d50784a558851b4bde6112adba8",
           "size": 668,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-process/src/resources.rs",
+          "scope": "Grouped no_std x86_64 resource limits/accounting in existing process-ids.o; original entry and rlimit_bsd_to_linux helper ABI retained, native/Darwin object and owned consumer links checked.",
+          "limitation": "UNFINISHED completion gates: full Darwin limit-domain strategy and representative native/guest correctness/performance validation; i386 replacement and target retirement remain pending."
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/misc/shared_region_check_np.c",

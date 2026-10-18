@@ -1,0 +1,91 @@
+Resource limits and accounting: partial host-backed ABI integration
+===================================================================
+Status: UNFINISHED. This ledger is not a claim that the resources completion
+standard has passed. RUNTIME-RESOURCES.txt lists the remaining domain, host-policy
+and CPU gates. Original source attribution and GPL-3.0-or-later apply.
+
+Target and ownership
+--------------------
+The existing dearust-process resources feature has the same x86_64 LP64
+Linux/Darling architecture guard. It joins identifiers in process-ids.o; queries
+remain separate. No allocator, descriptors, cache, locks or new cancellation
+point is introduced by resource_abi.rs/resources.rs. The original four globals
+are retained: sys_getrlimit, sys_setrlimit, sys_getrusage, rlimit_bsd_to_linux.
+All are private in the staged Darwin object; sys_thread_selfid stays public.
+
+resources.rs contains safe conversion only. resource_abi.rs permits unsafe only
+for the existing seven-argument linux_syscall ABI and strong shared copy helpers.
+The foreign functions retain no pointers, remain within local storage and cannot
+unwind into Rust. Linux prlimit64 receives a live initialized16-byte two-u64 pair;
+getrusage receives a live initialized144-byte eighteen-i64 array. Local kernel
+storage remains owned across conversion and synchronous copyout. No raw guest
+address becomes a Rust reference or slice. The returned value is an already
+Darwin error after the boundary conversion, never translated twice.
+
+The three raw-buffer Rust exports are unsafe extern C. Callers must permit
+foreign reads/writes of initialized bytes without conflicting Rust ownership,
+aliasing or concurrent access. Invalid mappings remain allowed as error inputs;
+these contracts do not pretend kernel address checks enforce Rust borrow rules.
+Three compile-fail doctests prevent accidental safe calls. All local output bytes
+are initialized, including timeval padding, before a copyout can expose them.
+The in-place rusage conversion clears upper32 bits of each Linux microsecond
+word, leaving signed32 usec plus zero padding; RSS multiplies by1024 with defined
+wrapping arithmetic matching XNU's native-long narrowing. Other signed counters
+retain their bits. It needs no second144-byte output buffer.
+
+Guest memory and error ordering
+--------------------------------
+Strong dearust_copyin/out are provided by paths.o; their production imports are
+not optional weak stubs. They reuse the existing readiness-gated signal recovery
+and exact process_vm fallback. The new fixed binary input mode has its own exact
+guest-load recovery label. It never stops at NUL. Normal copies query the current
+Linux mask and require SIGBUS/SIGSEGV deliverable. Fallback blocks catchable
+signals across fresh PID lookup and transfer, then restores the exact mask.
+This preserves handler-fork safety. Missing readiness, AC and unsupported lengths
+select the kernel path. A fault or short transfer reports EFAULT; a copyout may
+modify a prefix, with no rollback promise. Zero-length helpers touch no address.
+See dearust-path/SAFETY-MEMORY.txt for the full recovery/fail-stop contract.
+
+setrlimit copies exactly16 bytes before validating the resource, as pinned XNU
+does. Copy failure cannot mutate a limit. getrlimit validates the resource and
+queries owned storage before output; backend failures leave output untouched.
+getrusage accepts only SELF0 and CHILDREN-1 before any output access. Linux's
+extra THREAD domain is not exposed. No generic EINTR retry is added.
+
+Resource domain and incomplete gates
+------------------------------------
+POSIX flag0x1000 is masked only for resource selection. Nine BSD domains map to
+Linux0,1,2,3,4,9,8,6,7, respectively. AS/RSS maps address space, not ignored Linux
+RSS. NOFILE reads/writes use actual Linux values without the obsolete hidden-LKM
++/-1 reservation. fd.o getdtablesize now supplies actual Darwin16-byte storage
+instead of the erroneous original header's176-byte dummy allocation.
+
+Darwin infinity is signed63-bit maximum, Linux infinity is u64 maximum. Darwin's
+unsigned ABI additionally admits finite values beyond its infinity sentinel.
+The stateless Linux backing cannot represent all such pairs losslessly. Current
+set rejects guest soft>hard with EINVAL first, then finiteu64MAX/sentinel-induced
+pair inversion with EOVERFLOW before mutation. Other finite high pairs survive.
+Get rejects Linux finitei64MAX/sentinel-induced inversion with EOVERFLOW before
+copyout. These are explicit representability errors, not claimed exact-XNU
+behavior. Never silently turn a finite guest limit into infinity or emit an
+invalid soft>hard pair. Completing this domain needs a proven broader resource
+ownership/lifecycle design; an unsynchronized cache, unsafe reopen, sentinel swap
+or changing unrelated host limits is not a solution.
+
+Kernel enforcement/accounting remains the caller's Linux policy, as in Darling's
+original wrappers. This is not a port of XNU CPU timers, main-stack protection,
+maxdmap/maxproc policy or Mach VM wire-limit ownership. Those observable policy
+requirements and the measured copy CPU regression remain unfinished gates.
+No installed runtime change or whole-runtime completion claim is made.
+
+Evidence
+---------
+Native injection verifies exact maps, widths, sentinels, ordering, errors,
+byte offsets, padding and defined extrema. Actual mappings exercise unaligned,
+readonly, PROT_NONE, null and cross-page copy faults. Owned children test fork
+inheritance, NOFILE0/1/full tables and getdtablesize consistency. Both real-copy
+fast and forced fallback paths have signal/fork/AC/fault tests. C ASan/UBSan
+covers fixtures/adapters, not Rust/assembly. Actual Darwin guest regressions,
+original-bug observations and pinned ABI oracles are recorded separately.
+Performance and full-domain completion are independent gates, not inferred from
+passing tests or sanitizer results.

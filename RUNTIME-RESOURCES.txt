@@ -1,0 +1,172 @@
+Resource limits and usage continuation — UNFINISHED
+===================================================
+Project owner: @countradooku. AI assistance: OpenAI Codex.
+
+Completion status
+------------------
+This is validated partial migration work, not a completed resource subsystem.
+The full unsigned Darwin limit domain cannot be represented by the current
+stateless Linux backing, and measured CPU costs exceed original C materially.
+The completion gates remain OPEN. Passing functional tests does not waive them.
+No universal speedup, complete XNU policy, installed update or target retirement
+is claimed. runtime-resources-verification.json records the exact final evidence.
+
+Implemented and verified scope
+--------------------------------
+getrlimit, setrlimit and getrusage join the existing dearust-process subsystem
+under resources, alongside identifiers in process-ids.o. Both full relinkers keep
+--process-ids-object and replace the three original misc C inputs exactly once.
+The original rlimit_bsd_to_linux helper is preserved too. There are13 globals:
+12 private, plus the intentionally public sys_thread_selfid. queries-only
+process.o is unchanged. No new crate, allocator, runtime object or export is added
+to the final public dynamic symbol set. paths.o adds private fixed-copy helpers.
+
+ABI authority is pinned XNU fa29287aa2f0115271e091f1031f53c9e024005d,
+bsd/kern/kern_resource.c and bsd/sys/resource.h; original Darling wrappers are
+at superproject60ba801decee7a00782f74f6be4c8ffb013f79ff. Compiled SDK oracles
+establish rlimit16 on both input ABIs, rusage144 on x64 and72 on i386. This Rust
+runtime slice remains x64 LP64; original i386 is retained byte-identically.
+The erroneous original conversion header's176-byte dummy rlimit is not guest ABI.
+fd.o getdtablesize now uses16 bytes and reads the same actual NOFILE policy.
+
+Exactly16 bytes are copied in before setrlimit validates resource or values.
+getrlimit validates resource/query before output; backend failure cannot write
+output. getrusage validates SELF0/CHILDREN-1, excluding LinuxTHREAD1, before access.
+The POSIX0x1000 flag is masked for selecting nine BSD resources, which map to
+Linux0,1,2,3,4,9,8,6,7. AS/RSS uses address-space policy, not ignored Linux RSS.
+All guest pointers remain raw; invalid mappings produce errors rather than Rust
+references, unbounded dereferences or converter crashes. All padding is defined.
+Darwin LP64 timeval has seconds64, usec32 and zero padding32. Linux uses two64-bit
+members. Owned rusage is converted in place: retain usec low32 and clear padding;
+convert maxrss KiB to bytes using defined wrapping native-long arithmetic. Other
+counters retain their values. No second144-byte output array/copy is required.
+
+The old NOFILE +/-1 policy served a disabled LKM driver relocation block in
+emulation/src/other/mach/lkm.c. Current dserver descriptor management does not
+perform that reservation. Both get and set now use actual host limits, with no
+zero underflow, infinity increment or phantom descriptor. Child-only NOFILE0/1,
+full tables, inheritance and getdtablesize checks prove the new coherent behavior.
+There is no new descriptor, cache, lock, permission delegation, cancellation hook
+or generic retry in the resource wrappers.
+
+Fixed-copy infrastructure
+--------------------------
+paths.o supplies strong private dearust_copyin/out. Exact binary copyin uses a
+new recovery PC, separate from NUL-terminated pathname loads. Existing guarded
+readiness,40-byte stack, AC/mask checks, Mach-O alternate-entry atoms and async
+abort-before-dispatch rules remain. The kernel fallback blocks catchable signals
+across fresh PID lookup/process_vm transfer and restores the exact prior mask;
+restoration failure fails stop. No guest address becomes a Rust slice/reference.
+Both helpers require unsafe Rust callers with ownership/aliasing/local-storage
+contracts; invalid mappings remain valid error cases. Production links contain
+no weak fallback stubs. Weak abort adapters exist only for native tests of
+unrelated functions and are overridden by strong resource-fixture adapters.
+See crates/dearust-process/SAFETY-RESOURCES.txt and dearust-path/SAFETY-MEMORY.txt.
+
+Open semantic gates
+--------------------
+Darwin RLIM_INFINITY=i64MAX, Linux RLIM_INFINITY=u64MAX. XNU's rlim_t is unsigned;
+its common setter does not reject every finite value above its infinity sentinel.
+It is impossible to preserve all values and soft/hard ordering with a stateless
+scalar sentinel translation. Swapping sentinels is not correct: it can invert
+an otherwise valid pair. An unsynchronized cache loses state/order under threads,
+fork/exec and external host limit changes; unrelated limit slots cannot be used
+as hidden storage. A broader resource ownership/lifecycle strategy is required.
+
+Current defensive behavior avoids silent corruption: first reject guest soft>hard
+with EINVAL. Reject finite guestu64MAX or translation-induced pair inversion with
+EOVERFLOW before mutation. Preserve other representable high finite pairs. Query
+rejects finite Linuxi64MAX or guest-order inversion with EOVERFLOW before output.
+These representability errors are deliberate containment, NOT exact-XNU success
+semantics. The gate stays unfinished until valid unsupported inputs are handled
+correctly, not merely documented or falsely treated as infinity.
+
+Enforcement and accounting still come from the caller's Linux resource policy.
+This batch does not port XNU CPU timer/immediate-SIGXCPU management, main-stack
+mapping/protection/maxsmap rules, maxdmap/maxproc clipping or Mach wire-limit
+ownership. Resource-specific observable policy belongs in the same unfinished
+compatibility work; direct prlimit is not proof that XNU semantics are complete.
+
+Performance gate
+------------------
+The reproducible native and actual guest workload queries CORE, sets its unchanged
+value, then reads SELF usage. C and Rust preserve the same host effects; original
+C still omits correct Darwin infinity/layout/unit conversion and fault handling.
+The C guest reference compiles exact pinned sources/common base.h with matching
+flags in owned outputs, bypassing local matching trace instrumentation. Both
+variants use the same paired server and guest binary. All raw samples, tails,
+first measured rounds, memory distributions and failed comparisons are retained.
+
+The guarded route adds a Linux mask query per fixed copy. The three-call round
+therefore has three resource syscalls plus three mask queries; original C has
+three resource syscalls and unsafe/direct layout handling. Forced kernel copy
+adds block/getpid/transfer/restore per copy. Native and guest timings independently
+show a material CPU cost. Clearing that gate requires a proven ownership/signal
+strategy or equivalent exact safe mechanism, not skipping mask checks, assuming
+stable mappings, caching stale masks/PIDs or weakening invalid-pointer tests.
+In-place rusage conversion removed avoidable local buffer copying and reduced
+stack; it does not remove the signal-safety syscall requirement.
+
+Exact final2 measurements: native21 alternating samples/variant,100000 rounds:
+CPU original1.029864us, guarded1.725616us (+67.56%), forced fallback5.087805us
+(+394.03%). Native sampled p99 median1092/1843/5721ns; first operation after
+startup2294/3146/8827ns. Current RSS1728/1740/1676KiB and private dirty112/116/116KiB.
+Raw ru_maxrss inherits the Python parent's pre-exec watermark; it is retained but
+not used as evidence of benchmark-process memory growth.
+
+Actual guest42 samples/variant,10000 rounds, C/Rust/Rust/C order:
+CPU median1.06095 ->1.74545us (+64.52%), wall1.07825 ->1.74960us.
+Twenty resource processes/variant,512 rounds after100 warmups,1us clock resolution:
+median first measured round3 ->4us, p50 1 ->2us, p95/p99 2 ->2us. First-round work
+follows runtime startup/prepare and is not untouched process-cold entry latency.
+Linux smaps median private dirty3508 ->3508KiB, PSS4157 ->4165.5KiB,
+RSS11842 ->11944KiB. These small resident changes have overlapping distributions;
+there is no process-memory improvement claim. Native getrusage local frame falls
+from304 to160 bytes (excluding saved registers/foreign callees), exactly144 bytes
+removed by the in-place conversion. Correctness, full-domain and CPU completion
+gates remain independent; this stack improvement does not close the CPU gate.
+
+Verification and preservation
+-------------------------------
+187 ordinary Rust tests,8 compile-fail checks,35 Python tests and every explicit
+optional pinned differential/Darwin artifact gate pass. Native and Darwin staging
+repeat every artifact byte-identically; both full links retain public/import
+sets and original i386 bytes. Native resource injection/fault/pressure and shared
+binary/signal/fork fixtures pass plain and C ASan/UBSan. Sanitizers do not
+instrument Rust/assembly. Actual guest resource ABI/fault/pressure checks pass;
+original owned-child observations reproduce null-pointer crashes, LinuxTHREAD
+acceptance, KiB/bytes and infinity defects. A partial copyout may change a prefix;
+no rollback is promised after a later memory fault.
+
+The existing signal/fork/RPC probes, earlier runtime regressions, application and
+utility checks retain their separate recorded scope. Installed kernel/server,
+paired server, original reference sources/builds and existing app prefixes remain
+unchanged. Source inventories reproduce52 partial dependency leaves and265751
+pending of265803 across160 pinned trees. Still11 packages,7 target slices,
+1622 pending targets and0 retired. Full Darling migration remains unfinished.
+
+Reproduction
+--------------
+Run from the checkout with exclusively owned fresh output directories:
+
+    cargo xtask check
+    python3 -m unittest discover -s tools -p 'test_*.py' -v
+    cargo xtask runtime --target x86_64-unknown-linux-gnu --destdir /owned/native
+    cargo xtask runtime --target x86_64-apple-darwin --destdir /owned/darwin
+    python3 tools/benchmark_resources.py --source /exact/pinned/source \
+      --runtime /owned/native --output /owned/native-benchmark \
+      --samples 21 --iterations 100000
+    python3 tools/build_original_resources.py --source /exact/pinned/source \
+      --build /matching/build --linked /owned/matching-link \
+      --output /owned/original-resources
+
+Retain the full signal/fork/RPC/vchroot/TLS bridges described in
+RUNTIME-FILESYSTEM.txt, replacing runtime paths with the fresh stage. The existing
+--process-ids-object /owned/darwin/objects/process-ids.o handles all resource
+replacements. Compile resources-regression.c/resources-original-faults.c and
+resources-guest-bench.c/resources-resource-guest.c with build_runtime_probes.py.
+Use separately authored stdout goldens, isolated paired server/prefixes, and
+reverse the original/Rust kernels for the second measurement cohort.
+summarize_stream.py --workload resources validates42 CPU samples and20 resource
+processes per variant. Raw Linux memory counters are read directly, so the old
+getrusage KiB bug cannot contaminate memory-unit comparisons.

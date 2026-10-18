@@ -105,6 +105,9 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                                 "sys_unlink",
                                 "sys_rename",
                                 "sys_mkdir",
+                                "dearust_copyin",
+                                "dearust_copyout",
+                                "dearust_copy_guest_binary_read",
                                 "dearust_copy_guarded",
                                 "dearust_copy_signal_fixup",
                                 "dearust_copy_region_begin",
@@ -129,16 +132,24 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                                 "sys_write",
                                 "sys_write_nocancel",
                             ],
-                            "dearust-process" if f[3] == "identifiers" => vec![
-                                "sys_getpid",
-                                "sys_getppid",
-                                "sys_getpgrp",
-                                "sys_getpgid",
-                                "sys_getsid",
-                                "sys_setpgid",
-                                "sys_setsid",
-                                "sys_getentropy",
-                            ],
+                            "dearust-process"
+                                if f[3].split(',').any(|feature| feature == "identifiers") =>
+                            {
+                                vec![
+                                    "sys_getpid",
+                                    "sys_getppid",
+                                    "sys_getpgrp",
+                                    "sys_getpgid",
+                                    "sys_getsid",
+                                    "sys_setpgid",
+                                    "sys_setsid",
+                                    "sys_getentropy",
+                                    "sys_getrlimit",
+                                    "sys_setrlimit",
+                                    "sys_getrusage",
+                                    "rlimit_bsd_to_linux",
+                                ]
+                            }
                             "dearust-process" => vec!["sys_proc_info"],
                             "dearust-guarded" => vec![
                                 "guard_table_add",

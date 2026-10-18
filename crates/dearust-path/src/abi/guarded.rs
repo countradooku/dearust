@@ -8,6 +8,7 @@ unsafe extern "C" {
     static dearust_copy_region_begin: u8;
     static dearust_copy_region_end: u8;
     static dearust_copy_guest_read: u8;
+    static dearust_copy_guest_binary_read: u8;
     static dearust_copy_guest_write: u8;
     static dearust_copy_error: u8;
     static dearust_copy_fallback: u8;
@@ -20,12 +21,14 @@ global_asm!(
     ".alt_entry {begin}",
     ".alt_entry {end}",
     ".alt_entry {read}",
+    ".alt_entry {binary_read}",
     ".alt_entry {write}",
     ".alt_entry {error}",
     ".alt_entry {fallback}",
     begin = sym dearust_copy_region_begin,
     end = sym dearust_copy_region_end,
     read = sym dearust_copy_guest_read,
+    binary_read = sym dearust_copy_guest_binary_read,
     write = sym dearust_copy_guest_write,
     error = sym dearust_copy_error,
     fallback = sym dearust_copy_fallback,
@@ -39,6 +42,7 @@ global_asm!(
     ".globl {begin}",
     ".globl {end}",
     ".globl {read}",
+    ".globl {binary_read}",
     ".globl {write}",
     ".globl {error}",
     ".globl {fallback}",
@@ -77,6 +81,8 @@ global_asm!(
     "mov rcx, [rsp + 24]",
     "cmp qword ptr [rsp + 32], 0",
     "je 3f",
+    "cmp qword ptr [rsp + 32], 2",
+    "je 7f",
     "2:",
     "{read}:",
     "mov dl, byte ptr [rsi]",
@@ -105,6 +111,22 @@ global_asm!(
     "add rdi, 4",
     "sub rcx, 4",
     "jnz 4b",
+    "jmp 5f",
+    "7:",
+    // Binary copyin has a distinct guest-load PC. The local destination store
+    // must never be mistaken for a recoverable guest fault.
+    "test rcx, 3",
+    "jnz {fallback}",
+    "test rcx, rcx",
+    "jz 5f",
+    "8:",
+    "{binary_read}:",
+    "mov edx, dword ptr [rsi]",
+    "mov dword ptr [rdi], edx",
+    "add rsi, 4",
+    "add rdi, 4",
+    "sub rcx, 4",
+    "jnz 8b",
     "5:",
     "xor eax, eax",
     "jmp {end}",
@@ -120,13 +142,14 @@ global_asm!(
     begin = sym dearust_copy_region_begin,
     end = sym dearust_copy_region_end,
     read = sym dearust_copy_guest_read,
+    binary_read = sym dearust_copy_guest_binary_read,
     write = sym dearust_copy_guest_write,
     error = sym dearust_copy_error,
     fallback = sym dearust_copy_fallback,
 );
 
 /// Return a recovery PC for the existing Linux signal bridge, or zero to retain
-/// ordinary dispatch. Positive-code SIGSEGV/SIGBUS are consumed only at the two
+/// ordinary dispatch. Positive-code SIGSEGV/SIGBUS are consumed only at the three
 /// exact guest-access instructions. Every other signal within the region aborts
 /// the optimization before ordinary dispatch, closing asynchronous mask/fork
 /// changes between the query and the copy. Stubs preserve the interrupted stack.
@@ -135,8 +158,9 @@ pub extern "C" fn dearust_copy_signal_fixup(pc: usize, signal: i32, code: i32) -
     let synchronous_fault = (signal == 11 || signal == 7) && code > 0;
     let read = core::ptr::addr_of!(dearust_copy_guest_read) as usize;
     let write = core::ptr::addr_of!(dearust_copy_guest_write) as usize;
+    let binary_read = core::ptr::addr_of!(dearust_copy_guest_binary_read) as usize;
     if synchronous_fault {
-        if pc == read || pc == write {
+        if pc == read || pc == write || pc == binary_read {
             core::ptr::addr_of!(dearust_copy_error) as usize
         } else {
             0
@@ -184,5 +208,43 @@ pub(super) unsafe fn copy_output(
         -4096 => None,
         0 => Some(Ok(())),
         error => Some(Err(error)),
+    }
+}
+
+/// Local output is initialized writable storage for `length` bytes; only the
+/// source is an untrusted guest address. No Rust reference is formed from it.
+pub(super) unsafe fn copy_input(
+    output: *mut u8,
+    input: *const c_void,
+    length: usize,
+) -> Option<Result<(), i64>> {
+    // SAFETY: readiness has the same signal bridge contract as copy_path.
+    if unsafe { dearust_copy_signals_ready() } == 0 {
+        return None;
+    }
+    // SAFETY: caller guarantees live initialized local output, while binary
+    // guest loads have their own exact recovery PC. No NUL scanning occurs.
+    match unsafe { dearust_copy_guarded(output, input.cast(), length, 2) } {
+        -4096 => None,
+        0 => Some(Ok(())),
+        error => Some(Err(error)),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn binary_input_recovers_only_at_its_guest_load_pc() {
+        let input = core::ptr::addr_of!(dearust_copy_guest_binary_read) as usize;
+        let error = core::ptr::addr_of!(dearust_copy_error) as usize;
+        let fallback = core::ptr::addr_of!(dearust_copy_fallback) as usize;
+        assert_eq!(dearust_copy_signal_fixup(input, 11, 1), error);
+        assert_eq!(dearust_copy_signal_fixup(input, 7, 2), error);
+        // The following local store is not a valid recoverable guest fault.
+        assert_eq!(dearust_copy_signal_fixup(input + 2, 11, 1), 0);
+        assert_eq!(dearust_copy_signal_fixup(input, 10, 0), fallback);
+        assert_eq!(dearust_copy_signal_fixup(input, 11, 0), fallback);
     }
 }

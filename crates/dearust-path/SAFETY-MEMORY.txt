@@ -30,8 +30,9 @@ weakening the initialized-memory contract. Path input is read one byte at a time
 stopping at NUL or4096 bytes. The exact
 guest-load PC is recoverable. Metadata output uses bounded four-byte stores from
 initialized local storage, with one recoverable guest-store PC; supported120/144
-byte layouts are multiples of four. Other fixed lengths choose the fallback.
-Positive-code synchronous SIGSEGV/SIGBUS at those exact two PCs redirects to
+byte layouts are multiples of four. Nonmultiples of four choose the fallback.
+A third exact guest-load PC supports fixed binary input without NUL scanning.
+Positive-code synchronous SIGSEGV/SIGBUS at those exact three PCs redirects to
 EFAULT. Synchronous faults elsewhere retain ordinary dispatch. Other signals
 inside the region redirect to a retry stub BEFORE ordinary signal/RPC delivery;
 a handler cannot fork or change masks and then resume an obsolete copy proof.
@@ -119,3 +120,20 @@ adapters. ASan/UBSan cover C fixtures/adapters, not the existing Rust/assembly
 objects. No allocation, leak, RSS, universal compatibility or regression-free
 performance claim follows from these tests; performance has its own measured
 completion gate, which remains unfinished while a material slowdown is present.
+
+Resource fixed binary copies
+----------------------------
+The runtime now exports strong private dearust_copyin(local,guest,length) and
+dearust_copyout(local,guest,length). Both are unsafe Rust APIs with explicit
+local initialization, ownership/aliasing and foreign ABI contracts; the helper
+never forms a reference over a raw guest address. Two compile-fail checks cover
+these contracts. Resource callers use exactly16/144 initialized local bytes.
+Copyin guarded mode2 uses a distinct guest dword-load label; its local store is
+not recoverable. Other lengths use exact-count kernel fallback; zero lengths
+succeed before inspecting either address. Existing40-byte recovery stack,
+Mach-O alternate-entry atom, AC/mask checks, asynchronous abort before ordinary
+dispatch and handler-fork/PID rules are retained. Native fixtures exercise
+lengths0/1/3/4/8/16/144, embedded zeros, protected/readonly/cross-page/unaligned
+addresses, both boundary modes, signals and fork. These helpers introduce no
+unsafe fallback. Their current CPU cost remains a visible unfinished resource
+completion gate; see RUNTIME-RESOURCES.txt.

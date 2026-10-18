@@ -220,3 +220,84 @@ pub(super) unsafe fn copy_output(input: &[u8], output: *mut c_void) -> Result<()
         }
     })
 }
+
+/// Copy an exact binary range from an untrusted guest address into local storage.
+/// Returns zero or a negative Darwin errno, including EFAULT on a partial copy.
+///
+/// # Safety
+/// `local` must designate initialized, uniquely writable local storage of at
+/// least `length` bytes, with no overlapping guest source or conflicting Rust
+/// references/concurrent access. Invalid guest mappings are permitted. Foreign
+/// syscall/signal bridges must obey their ABI and may not unwind through Rust.
+/// No reference is formed from either raw address. Failure may update a prefix
+/// of local storage; callers must consume it only after complete success.
+///
+/// ```compile_fail,E0133
+/// dearust_path::dearust_copyin(core::ptr::null_mut(), core::ptr::null(), 16);
+/// ```
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn dearust_copyin(
+    local: *mut c_void,
+    guest: *const c_void,
+    length: usize,
+) -> i64 {
+    if length == 0 {
+        return 0;
+    }
+    // SAFETY: caller supplies initialized writable local storage and ownership;
+    // guest source loads are confined to the guarded assembly leaf.
+    if let Some(result) = unsafe { super::guarded::copy_input(local.cast(), guest, length) } {
+        return result.err().unwrap_or(0);
+    }
+    with_signals_blocked(|| {
+        let count = transfer(current_pid(), local, guest.cast_mut(), length, false);
+        exact_count(count, length)
+    })
+    .err()
+    .unwrap_or(0)
+}
+
+/// Copy an exact initialized local binary range to an untrusted guest address.
+/// Returns zero or a negative Darwin errno; failure may write a guest prefix.
+///
+/// # Safety
+/// `local` must designate initialized readable local storage of at least
+/// `length` bytes. Guest writes must not overlap it or conflict with live Rust
+/// references, ownership or concurrent access. Invalid guest mappings are
+/// permitted and contained. Foreign syscall/signal bridges must obey their ABI
+/// and may not unwind through Rust. No guest reference is formed.
+///
+/// ```compile_fail,E0133
+/// dearust_path::dearust_copyout(core::ptr::null(), core::ptr::null_mut(), 16);
+/// ```
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn dearust_copyout(
+    local: *const c_void,
+    guest: *mut c_void,
+    length: usize,
+) -> i64 {
+    if length == 0 {
+        return 0;
+    }
+    // SAFETY: local source is initialized/live under the caller contract; only
+    // the exact guarded store instruction accesses untrusted guest output.
+    if let Some(result) = unsafe { super::guarded::copy_output(local.cast(), guest, length) } {
+        return result.err().unwrap_or(0);
+    }
+    with_signals_blocked(|| {
+        let count = transfer(current_pid(), local.cast_mut(), guest, length, true);
+        exact_count(count, length)
+    })
+    .err()
+    .unwrap_or(0)
+}
+
+fn exact_count(count: i64, length: usize) -> Result<(), i64> {
+    if count >= 0 && count as usize == length {
+        Ok(())
+    } else if count < 0 {
+        Err(i64::from(dearust_errno::linux_to_bsd(count as i32)))
+    } else {
+        Err(-14)
+    }
+}

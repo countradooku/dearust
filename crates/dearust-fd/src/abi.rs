@@ -1,11 +1,10 @@
-// Full original xnu_rlimit layout, including its reserved twenty-long tail.
+// Actual Darwin rlimit ABI: two unsigned 64-bit limits.
 #[repr(C)]
 struct XnuRlimit {
     current: u64,
     maximum: u64,
-    reserved: [i64; 20],
 }
-const _: () = assert!(core::mem::size_of::<XnuRlimit>() == 176);
+const _: () = assert!(core::mem::size_of::<XnuRlimit>() == 16);
 const _: () = assert!(core::mem::align_of::<XnuRlimit>() == 8);
 const _: () = assert!(core::mem::offset_of!(XnuRlimit, current) == 0);
 const _: () = assert!(core::mem::offset_of!(XnuRlimit, maximum) == 8);
@@ -101,10 +100,9 @@ pub extern "C" fn sys_getdtablesize() -> i64 {
     let mut limit = XnuRlimit {
         current: 0,
         maximum: 0,
-        reserved: [0; 20],
     };
-    // SAFETY: full initialized176-byte repr(C) storage matches original xnu_rlimit.
-    // Original sys_getrlimit for BSD_NOFILE8 writes within it and retains no pointer.
+    // SAFETY: initialized16-byte repr(C) storage matches the Darwin rlimit ABI.
+    // sys_getrlimit for BSD_NOFILE8 writes within it and retains no pointer.
     // The foreign boundary must not unwind and returns an already-Darwin error.
     let status = unsafe { sys_getrlimit(8, &mut limit) } as i32;
     if status < 0 {

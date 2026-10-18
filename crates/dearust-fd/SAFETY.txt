@@ -41,24 +41,19 @@ Unsigned 32-bit umask is ZERO-extended; its result still narrows to signed C int
 before one Linux/Darwin conversion. Native masks are restored in the owned test
 process; other user processes' masks and limits are unchanged.
 
-getdtablesize retains original sys_getrlimit(BSD_RLIMIT_NOFILE=8) policy, including
-its Linux soft/hard-limit decrements. Status narrows from long to C int exactly
-as C; negative status is already Darwin errno and MUST NOT be converted again.
-Every nonnegative status, even positive, returns unsigned soft limit clamped to
-INT_MAX. Full UINT64_MAX clamps safely, including high signed bits.
+getdtablesize calls grouped process sys_getrlimit(BSD_RLIMIT_NOFILE=8), which
+reports actual descriptor limits without the obsolete LKM reserved-fd adjustment.
+Status narrows from long to C int exactly as C; negative status is already Darwin
+errno and MUST NOT be converted again. Every nonnegative status, even positive,
+returns unsigned soft limit clamped to INT_MAX. Full UINT64_MAX clamps safely.
 
-The retained header conversion/misc/getrlimit.h defines xnu_rlimit as two u64s
-followed by 20 reserved long slots (176 bytes, alignment 8 in LP64). Rust matches
-the FULL initialized structure, with current at offset 0 and maximum at offset 8.
-The retained C sys_getrlimit must write only within that storage, not retain its
-pointer, and not unwind. It currently passes its first 16 bytes to prlimit64 and
-decrements those two values; the reserved tail is preserved for the declared ABI.
-No new converter or limit cache exists. Native callback tests can write every
-byte of the full structure. Native mask changes are restored in their own process;
-guest soft-limit changes occur only in a forked owned child and are restored
-before child exit. Tests cover status narrowing, no double conversion and clamp
-boundaries. The full fixed local limit buffer costs 176 bytes; native optimized assembly uses
-a 184-byte local frame including call alignment. No heap is used.
+The actual Darwin rlimit ABI is two u64 values (16 bytes, alignment 8), current
+at offset 0 and maximum at offset 8. The old conversion header's twenty-long
+reserve is not part of that guest ABI. Rust initializes exactly these 16 bytes;
+the called sys_getrlimit must write within them, retain no pointer and not unwind.
+No limit cache or heap exists. Native callback tests cover the exact initialized
+layout, status narrowing, no double conversion and clamp boundaries. Guest limit
+mutations run only in an owned forked child, with no changes to user processes.
 
 Stream I/O continuation (current)
 ---------------------------------

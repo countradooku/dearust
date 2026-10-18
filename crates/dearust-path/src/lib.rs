@@ -25,3 +25,6 @@ pub use abi::{
 };
 #[cfg(feature = "runtime")]
 pub use abi::{sys_fstatfs, sys_fstatfs64, sys_statfs, sys_statfs64};
+
+#[cfg(feature = "runtime")]
+pub use abi::{dearust_copyin, dearust_copyout};

@@ -917,3 +917,50 @@ CPU C/prior/current is 8.715/14.645/2.985 ms on btrfs, and
 pipe kernel memory is additional. See raw tails and zero extent-history cohorts.
 Full migration and pending
 timestamp/wiring/resource/positioned-vector-I/O/credential/fd audits remain open.
+
+
+Continuation: resource ABI and fixed binary guest copies — UNFINISHED
+---------------------------------------------------------------------
+Read RUNTIME-RESOURCES.txt/runtime-resources-verification.json and process
+SAFETY-RESOURCES.txt. sys_getrlimit/setrlimit/getrusage + original mapping helper
+join existing process-ids.o (identifiers,resources), no new crate/artifact.13
+globals:12 private and public thread_selfid. Both existing relinker options replace
+three C inputs, preserving helper provenance and full public/import sets.
+paths.o has42 private globals including strong copyin/out/new exact input PC.
+Do not use native weak abort test adapters in a runtime link.
+
+Copy exact16 bytes before set validation. Get validates resource/query before
+copyout; usage accepts onlySELF0/CHILDREN-1. Rlimit guest ABI16, not original
+header176. getdtablesize agrees with real NOFILE, without obsolete LKM +/-1.
+Darwin usage144 has seconds64/usec32/zero padding; RSS is bytes. Conversion mutates
+owned kernel storage in place; no extra144-byte output array, no guest refs, no
+new heap/fd/cache/lock/cancellation. Shared copy mode2 has its own fault PC, existing
+mask/readiness/AC checks, signal/fork abort and blocked fresh-PID kernel fallback.
+Do not remove these checks to recover performance.
+
+The resource subsystem is NOT COMPLETE. Darwin infinity=i64MAX versus Linuxu64MAX
+cannot losslessly represent every valid unsigned pair statelessly. Current
+EOVERFLOW on sentinel collision/order inversion prevents silent corruption but
+is NOT exact-XNU success behavior. Source-specific CPU/stack/data/nproc/Mach-wire
+policy is still Linux-backed, not a port of XNU enforcement. Do not hide these
+gates, invent an unsynchronized limit/mask cache, swap sentinels or use unrelated
+limits as hidden state. Completing logical ownership requires fork/exec/external
+limit/lifecycle proof. Keep this subsystem unfinished until the strategy is valid.
+
+187 Rust/8 compile-fail/35 Python checks, all optional/differential/ABI gates,
+repeatnative/Darwin, full links, native fault/injection/pressure/sanitizers and
+actual guest tests pass. Final2 actualguest CPU three-call round increases
+1.06095->1.74545us (+64.52%), native1.029864->1.725616us (+67.56%); forced
+fallback5.087805us. These are material OPEN performance gates, not accepted
+tradeoffs or a completed safe port. In-place conversion removed144B frame/copy
+but does not eliminate one mask query per copy. All raw samples/tails/RSS and
+original baseline failures are retained. No speedup or universal memory claim.
+
+Final artifacts repo work/resources-next/{native-final2,darwin-final2,
+matching-final2,pinned-final2,final-validation2}; paired server remains unchanged
+filesystem-next/server-final4. Other strong signal/RPC/vchroot/TLS/fork bridges
+remain mandatory. Installed/reference runtime unchanged. Inventories52partial/
+265751pending of265803,11packages,7target slices/1622pending/0retired. Full migration
+and prior timestamp/wiring/positioned-vector-I/O/credential/fd audits unfinished.
+Continue substantive work against the resource domain and CPU gates; do not
+count these three partial sources as complete or silently skip the findings.

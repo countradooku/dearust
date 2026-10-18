@@ -50,7 +50,7 @@ UMASK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/umas
 GETDTABLESIZE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/getdtablesize.c.o'
 PROCESS_IDS = tuple('emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/'+name+'.c.o' for name in ('getpid','getppid','getpgrp','getpgid','getsid','setpgid','setsid')) + tuple(
     'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/misc/' + name + '.c.o'
-    for name in ('getentropy', 'thread_selfid'))
+    for name in ('getentropy', 'thread_selfid', 'getrlimit', 'setrlimit', 'getrusage'))
 READLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/readlinkat.c.o'
 SYMLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/symlinkat.c.o'
 FSTATAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstatat.c.o'
@@ -349,6 +349,8 @@ def integrate(args):
                 wanted['_sys_fstat'] = args.paths_object.name
                 wanted['_sys_fstat64'] = args.paths_object.name
                 wanted['_sys_statfs'] = args.paths_object.name
+                wanted['_dearust_copyin'] = args.paths_object.name
+                wanted['_dearust_copyout'] = args.paths_object.name
                 wanted['_sys_statfs64'] = args.paths_object.name
                 wanted['_sys_fstatfs'] = args.paths_object.name
                 wanted['_sys_fstatfs64'] = args.paths_object.name
@@ -381,6 +383,10 @@ def integrate(args):
                 wanted['_sys_setsid'] = args.process_ids_object.name
                 wanted['_sys_getentropy'] = args.process_ids_object.name
                 wanted['_sys_thread_selfid'] = args.process_ids_object.name
+                wanted['_sys_getrlimit'] = args.process_ids_object.name
+                wanted['_sys_setrlimit'] = args.process_ids_object.name
+                wanted['_sys_getrusage'] = args.process_ids_object.name
+                wanted['_rlimit_bsd_to_linux'] = args.process_ids_object.name
             if args.fd_object:
                 wanted['_sys_fchmod'] = args.fd_object.name
                 wanted['_sys_ftruncate'] = args.fd_object.name

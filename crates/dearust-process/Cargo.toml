@@ -7,9 +7,10 @@ publish = false
 license = "GPL-3.0-or-later"
 description = "Darling process identifiers and process/vnode queries"
 [features]
-default = ["queries", "identifiers"]
+default = ["queries", "identifiers", "resources"]
 queries = []
 identifiers = ["dep:dearust-errno"]
+resources = ["dep:dearust-errno"]
 
 [dependencies]
 dearust-errno = { path = "../dearust-errno", optional = true }

@@ -21,8 +21,8 @@ long sys_pthread_canceled(void) { return -22; }
 long __real_ioctl(int fd, unsigned long request, void *arg) {
     (void)fd; (void)request; (void)arg; assert(!"unexpected stream ioctl"); return -1;
 }
-struct xnu_rlimit { uint64_t current, maximum; long reserved[20]; };
-_Static_assert(sizeof(struct xnu_rlimit)==176, "xnu_rlimit size");
+struct xnu_rlimit { uint64_t current, maximum; };
+_Static_assert(sizeof(struct xnu_rlimit)==16, "xnu_rlimit size");
 _Static_assert(_Alignof(struct xnu_rlimit)==8, "xnu_rlimit alignment");
 _Static_assert(__builtin_offsetof(struct xnu_rlimit,current)==0, "current offset");
 _Static_assert(__builtin_offsetof(struct xnu_rlimit,maximum)==8, "maximum offset");
@@ -31,13 +31,13 @@ static long limit_status;
 static uint64_t limit_current;
 long sys_getrlimit(unsigned int which, struct xnu_rlimit *limit) {
     assert(which==8 && ((uintptr_t)limit%8)==0); limit_calls++;
-    unsigned char zero[176]={0}; assert(memcmp(limit,zero,sizeof(zero))==0);
+    unsigned char zero[16]={0}; assert(memcmp(limit,zero,sizeof(zero))==0);
     if(limit_injected) {
         memset(limit,0xa5,sizeof(*limit)); limit->current=limit_current;
         limit->maximum=UINT64_MAX; return limit_status;
     }
     struct rlimit real; assert(getrlimit(RLIMIT_NOFILE,&real)==0);
-    limit->current=real.rlim_cur-1; limit->maximum=real.rlim_max-1; return 0;
+    limit->current=real.rlim_cur; limit->maximum=real.rlim_max; return 0;
 }
 static void limits(void) {
     limit_injected=1;
@@ -54,7 +54,7 @@ static void limits(void) {
     limit_status=INT64_MIN; limit_current=4; assert(sys_getdtablesize()==4);
     limit_status=INT64_C(0x100000000); limit_current=5; assert(sys_getdtablesize()==5);
     limit_injected=0;struct rlimit real;assert(getrlimit(RLIMIT_NOFILE,&real)==0);
-    uint64_t expected=real.rlim_cur-1;
+    uint64_t expected=real.rlim_cur;
     assert(sys_getdtablesize()==(expected>INT_MAX?INT_MAX:(long)expected));
     assert(limit_calls==20);
 }

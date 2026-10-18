@@ -138,6 +138,9 @@ fn check(triple: &str, label: &str) {
                 "dearust_copy_region_begin",
                 "dearust_copy_region_end",
                 "dearust_copy_guest_read",
+                "dearust_copy_guest_binary_read",
+                "dearust_copyin",
+                "dearust_copyout",
                 "dearust_copy_guest_write",
                 "dearust_copy_error",
                 "dearust_copy_fallback",
@@ -155,6 +158,10 @@ fn check(triple: &str, label: &str) {
                 "sys_setsid",
                 "sys_getentropy",
                 "sys_thread_selfid",
+                "sys_getrlimit",
+                "sys_setrlimit",
+                "sys_getrusage",
+                "rlimit_bsd_to_linux",
             ]
             .iter()
             .map(|s| format!("{prefix}{s}"))
@@ -261,7 +268,11 @@ fn check(triple: &str, label: &str) {
                 format!("{prefix}sys_getrlimit"),
                 format!("{prefix}sys_pthread_canceled"),
             ],
-            "process-ids" => vec![format!("{prefix}linux_syscall")],
+            "process-ids" => vec![
+                format!("{prefix}dearust_copyin"),
+                format!("{prefix}dearust_copyout"),
+                format!("{prefix}linux_syscall"),
+            ],
             "futex" => vec![format!("{prefix}cerror"), format!("{prefix}linux_syscall")],
             _ => vec![],
         };
@@ -282,9 +293,9 @@ fn check(triple: &str, label: &str) {
             ("errno", 2),
             ("guarded", 7),
             ("process", 1),
-            ("process-ids", 8),
+            ("process-ids", 12),
             ("fd", 13),
-            ("paths", 39),
+            ("paths", 42),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
@@ -353,6 +364,7 @@ fn check(triple: &str, label: &str) {
             "stream",
             "process-ids",
             "services",
+            "resources",
         ] {
             let driver = Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join(format!("../tools/fixtures/{name}-native.c"));
@@ -384,7 +396,7 @@ fn check(triple: &str, label: &str) {
                 "paths"
             } else if name == "stream" {
                 "fd"
-            } else if name == "services" {
+            } else if name == "services" || name == "resources" {
                 "process-ids"
             } else {
                 name
@@ -408,6 +420,16 @@ fn check(triple: &str, label: &str) {
                             .join("../tools/fixtures/copy-signal-native.c"),
                     );
                 }
+            }
+            if object_name == "process-ids" {
+                compile.arg(
+                    Path::new(env!("CARGO_MANIFEST_DIR"))
+                        .join("../tools/fixtures/process-unused-boundaries-native.c"),
+                );
+            }
+            if name == "resources" {
+                compile.arg(stage.join("objects/fd.o"));
+                compile.arg(stage.join("objects/errno.o"));
             }
             let compile = compile
                 .args(["-O2", "-Wall", "-Wextra", "-Werror"])
