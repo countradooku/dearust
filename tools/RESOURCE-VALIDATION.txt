@@ -1,0 +1,61 @@
+Resource integration validation support
+=======================================
+
+The resource subsystem remains unfinished. These tools never activate resource
+ownership in the default Cargo runtime and never install a candidate.
+
+Isolated ordinary guests
+-------------------------
+run_isolated_server.py accepts an executable --server, an optional executable
+--loader, and an optional regular --kernel. All replacement bind mounts occur
+only after unshare establishes private user/mount/PID namespaces and makes the
+mount tree private. Host UID/GID mapping covers only the invoking user. All
+paths are positional shell arguments; paths are not interpolated into shell code.
+The PID namespace terminates residual children on exit. The child command must
+own and shut down its prefixes, as check_mac_apps.py does.
+
+--kernel supplies the kernel used before guest prefix overlays take effect.
+A guest harness must still stage its guest kernel into each owned prefix. Actual
+bootstrap diagnostics found candidate inode2235044 at the installed namespace
+path, while the guest overlay without staging still mapped old inode842255.
+Binding only the installed namespace path did not replace that guest mapping.
+These inode numbers describe the recorded local run, not portable constants.
+Neither replacement writes to the installed host binaries.
+
+    python3 tools/run_isolated_server.py --server /owned/darlingserver \
+      --loader /owned/mldr --kernel /owned/libsystem_kernel.dylib -- \
+      python3 tools/check_mac_apps.py --original-kernel /owned/kernel-A \
+        --rust-kernel /owned/kernel-B --tests /owned/probes --output /fresh/report
+
+If both variants use the same candidate, their labels are harness slots, not a
+C-versus-Rust or performance comparison. Paired loader/server ABI compatibility
+is a separate requirement; arbitrary builds cannot be mixed safely.
+
+Owned Registry exception checks
+--------------------------------
+patch_resource_registry.py transforms only a supplied header string. It restores
+the factory lookup bypass with RAII, binds that bypass to each actually held
+registry, and rolls back partial three-map insertions after allocation failure.
+Failed publication consumes no eternal ID; exhaustion is rejected. Replacement
+preserves existing historical eternal-ID entries, including kernel threads that
+share a numeric host ID. Actual Process/Thread eternal-ID setters only assign
+their integer field. Arbitrary throwing setters are not a supported template
+contract. Registry factory constructors can have external side effects; this
+map transaction does not roll back process monitoring or kernel objects.
+
+    python3 tools/check_resource_registry.py \
+      --source /exact/darlingserver/source --output /fresh/registry --sanitizers
+
+The checker compiles the exact transformed header with a native Entry fixture.
+Empty dependency declarations isolate this header template; they do not emulate
+server or RPC behavior. Native and ASan/UBSan runs exercise113 injected allocation
+failures and31 successful transactions each, plus factory exception recovery,
+nested lookup locking and replacement/rehash behavior. This is not full server
+OOM/lifecycle, message identity, physical resource enforcement, or performance
+validation. Input hashes and every command/result are recorded in verification.json.
+
+Local evidence retained under work/resources-complete includes registry-native4,
+bootstrap-diagnostic1/2, candidate-ordinary3/4 and churn-diagnostic1/2/churn-retry1.
+Earlier failed reports remain failures. Candidate server/loader work is still
+uncommitted while lifecycle, credential, old-kernel, physical-effect and CPU gates
+remain open. No blocked adversarial RPC validation was retried.
