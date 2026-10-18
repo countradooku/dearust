@@ -1,6 +1,7 @@
 mod faccessat;
 mod fchmodat;
 mod linkat;
+mod memory;
 mod mkdirat;
 mod readlinkat;
 mod renameat;
@@ -30,3 +31,6 @@ pub use stat::{sys_stat, sys_stat64};
 
 mod fstat;
 pub use fstat::{sys_fstat, sys_fstat64};
+
+mod permissions;
+pub use permissions::{sys_access, sys_chmod};

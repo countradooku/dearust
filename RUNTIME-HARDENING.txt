@@ -1,0 +1,134 @@
+Dearust continuation: guest memory and permission correctness
+============================================================
+
+Project owner: @countradooku. AI assistance: OpenAI Codex.
+Full migration remains INCOMPLETE. See runtime-hardening-verification.json.
+
+Fixed behavior and new ports
+-----------------------------
+The existing dearust-path subsystem now owns16 original source slices/21exports.
+New access/chmod entries retain original TLS-first delegation to faccessat/
+fchmodat, signed C int mode widths and flags0. No new crate:11 workspace packages.
+
+All migrated pathname copies now use kernel-mediated self-memory reads instead
+of directly dereferencing guest addresses in Rust. Low invalid, unmapped and
+PROT_NONE addresses return EFAULT. Read64 bytes first for short paths; only a
+nonterminated full first chunk requires the remaining4032 bytes. Both use the
+same initialized final4096-byte expansion buffer and one uncached Linux PID per
+pathname copy. Integer address continuation is checked for overflow. A partial
+read containing NUL succeeds, so a valid string at the end of a readable page
+works even when the next page is inaccessible. Unterminated4096 bytes still
+return ENAMETOOLONG. Linux validates symlink target/readlink output pointers
+that already pass directly to its syscall; no extra local copy is introduced.
+
+All eight metadata entries now convert into initialized local storage, then
+copy exactly120-byte legacy stat or144-byte stat64 through process_vm_writev.
+Retained C converters never receive a guest output pointer. Invalid/read-only/
+protected outputs return errors instead of crashing. Unassigned fields/padding
+now become zero. For fstat/fstat64, kernel query errors preserve priority, including EBADF for
+an invalid descriptor plus invalid output. Other metadata entries retain their
+existing early NULL-output checks. A cross-page output fault can write a
+prefix before EFAULT: there is no atomic-copy or rollback claim.
+
+faccessat now accepts only pinned-XNU AT_EACCESS and AT_SYMLINK_NOFOLLOW, with
+unknown bits rejected before path work. Flags0 keeps Linux faccessat269; flagged
+calls use faccessat2(439) with correct effective-ID/no-follow translation. A
+NOFOLLOW existence check of a dangling symlink succeeds. No credential emulation
+or permission guessing is added; the Linux kernel performs the actual check.
+
+fchmodat accepts only NOFOLLOW, validates unknown bits first and keeps the
+flags0 Linux268 fast path. NOFOLLOW uses one atomic Linux fchmodat2(452), removing
+the metadata check/use race and the previous fake success for symlink chmod.
+Unsupported symlink changes return the actual converted error and preserve the
+target. A native fixture replaces a regular file with a symlink immediately
+before the kernel call and verifies that target permissions are unchanged.
+ENOSYS propagates without an unsafe fallback or support cache. These flagged
+operations therefore require host kernel/policy support for the newer syscall.
+Broader original C virtual-root resolution is retained; final-component NOFOLLOW
+is not a new whole-filesystem isolation guarantee.
+
+CPU and memory evidence
+------------------------
+Fault-returning kernel copies have a real cost. Each copy adds Linux getpid plus
+a memory-transfer syscall; a longer path needs one additional read. There is no
+Rust heap allocation, mapping/PID cache, signal handler or unsafe fast fallback.
+The initial implementation requested4096 bytes even for short paths. Restricting
+the first request to64 bytes reduced measured new native metadata CPU from
+7565.054 to7169.148 ns/roundtrip (about5.23%) and permission CPU from7858.970 to
+7298.201 ns (about7.14%) in successive runs. These are scoped runs, not a general
+application speedup or isolated causal estimate under identical machine state.
+
+Identical native adapters and previous/new grouped Rust objects,21 alternating
+samples,2000 rounds per sample, one eligible CPU:
+  metadata fstat/fstat64/stat/stat64:2029.046 ->7169.148 ns CPU (+253.33%).
+    Quartiles2025.920..2036.533 versus7159.239..7185.300.
+  mkdirat/fchmodat(flags0)/faccessat(flags0)/unlinkat:4511.538 ->7298.201 ns
+    (+61.77%); quartiles4488.676..4531.441 versus7276.407..7378.001.
+Native adapters omit actual guest TLS/vchroot and copy120/144 bytes of opaque
+Linux metadata prefixes; they do not prove Darwin layouts.
+
+Actual matching guest previous/new/new/previous order,42 samples per variant:
+  raw metadata four-call roundtrip,2000 rounds/sample:8.4835 ->13.86925 us CPU
+    (+63.49%), quartiles8.4045..8.6460 versus13.80475..13.9510.
+    Wall medians8.5185 ->13.9265 us.
+  permission four-call roundtrip,200 rounds/sample:26.095 ->30.5075 us CPU
+    (+16.91%), quartiles25.610..26.41625 versus30.10625..30.96875.
+    Wall medians27.0025 ->31.6975 us.
+These warm owned-file/directory workloads demonstrate the cost of fault handling;
+no whole-app CPU or RSS improvement is claimed. Safety is enabled by default.
+
+No extra pathname array is introduced. Metadata copyout adds one144-byte aligned
+local plus two16-byte iovecs. Generated copyout local subtraction200B/saved16B
+and path-copy48B/saved40B are additional callee frames; fstat remains160B/saved8B.
+fchmodat local subtraction drops4272 ->4120B, and do_linux_fchmodat drops its
+160B local metadata frame to0B (saved-register/argument pushes24 ->8B). Whole
+object maximum local subtraction8216 ->8232B excludes callees/pushes. Assembly
+records per-function details; none of these numbers is a process-RSS result.
+Native object file grows15656 ->17368B; readonly errno data remains126B.
+Matching dylib file shrinks480B,865520 ->865040B. Bug fixes and two ports jointly
+change the code; these file figures do not establish application memory savings.
+
+Verification and scope
+-----------------------
+111 Rust tests,29 Python tests, formatting, strict Clippy and explicit native/
+Darwin ABI staging checks pass. Sixteen operation/pointer native fixtures execute against paths.o; fd/process
+fixtures continue to test their respective staged subsystem objects. Independent ASan/UBSan C-adapter
+results are recorded; Rust objects themselves are not sanitizer-instrumented.
+Thirty guest probes pass. Four newly strengthened probes fail the previous
+kernel: dangling NOFOLLOW access, truthful NOFOLLOW chmod, invalid access/chmod
+addresses and full pointer-boundary regression. Prior/new suite labels remain
+explicit in the evidence. Guard tests exercise all eight real raw metadata
+entries with actual120/144-byte layouts, page-edge NUL, protected/unmapped/read-
+only mappings, partial outputs, exact tail guards and a fork child.
+
+Existing29 app checks (28 exact plus known cfbridge log normalization),16utilities
+and3 GUI samples pass within documented limits. Captures/cleanup are recorded.
+Matching link preserves1370 public definitions/40 imports; pinned1362/18 and its
+original i386 bytes. Both remove16 original inputs and include paths.o once;
+process queries stay matching-only. Installed binaries and existing user prefix
+remain unchanged. Repaired copied CGShadingCreate nib/sample-only scope remains.
+
+Read SAFETY-MEMORY.txt and SAFETY-PERMISSIONS.txt in crates/dearust-path for current
+contracts; they supersede earlier direct-pointer and ignored-flag limitations.
+Kernel-mediated copies do not isolate malicious valid addresses targeting live
+internal wrapper storage in this shared address space. Unported C interfaces
+and internal virtual-root logic still need review. Clean pinned boot, i386 Rust,
+credential-switch scenarios and arbitrary application compatibility remain
+unverified. We have not removed architecture guards or claimed those tasks done.
+
+Reproduction
+-------------
+Use the same staged-object/relink commands as RUNTIME-METADATA.txt. --paths-object
+now replaces16 inputs/21exports; original --lstat-bridge remains required.
+Build pointer-regression.c, permissions-regression.c and the updated faccessat/
+fchmodat probes with build_runtime_probes.py, supplying goldens independently.
+Native comparison (explicit old/new stages, exclusive new output directory):
+
+    python3 tools/benchmark_hardening.py --baseline PREVIOUS_NATIVE_STAGE --runtime NATIVE_STAGE --output NEW_DIRECTORY
+
+Guest metadata-guest-bench.c uses raw legacy/wide layouts; permissions-guest-bench.c
+uses flags0 to compare equal operations. Repeated previous/new/new/previous runs
+record timings on stderr; correctness goldens remain independent of timings.
+Latest artifacts: dearust-continuation/work/hardening-next/
+{final-stage,matching-final,pinned-final}. Thirty-six dependency slices partial,
+265767 entries pending; seven Cargo target slices,1622 pending targets,zero retired.

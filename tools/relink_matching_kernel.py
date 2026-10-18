@@ -30,6 +30,8 @@ RMDIR = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/rmdir.
 TRUNCATE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/truncate.c.o'
 STAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/stat.c.o'
 FSTAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstat.c.o'
+ACCESS = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/access.c.o'
+CHMOD = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/chmod.c.o'
 UMASK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/umask.c.o'
 GETDTABLESIZE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/getdtablesize.c.o'
 PROCESS_IDS = tuple('emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/'+name+'.c.o' for name in ('getpid','getppid','getpgrp','getpgid','getsid','setpgid','setsid'))
@@ -128,7 +130,7 @@ def integrate(args):
             raise ValueError('grouped paths object conflicts with individual pathname objects')
         if not args.paths_object.is_file() or not args.lstat_bridge:
             raise ValueError('grouped paths object requires its object and original thread-cwd bridge')
-        for name in (SYMLINKAT, READLINKAT, UNLINKAT, LINKAT, RENAMEAT, MKDIRAT, FACCESSAT, FCHMODAT, RMDIR, TRUNCATE, LSTAT, FSTATAT, STAT, FSTAT):
+        for name in (SYMLINKAT, READLINKAT, UNLINKAT, LINKAT, RENAMEAT, MKDIRAT, FACCESSAT, FCHMODAT, RMDIR, TRUNCATE, LSTAT, FSTATAT, STAT, FSTAT, ACCESS, CHMOD):
             if inputs.count(name) != 1:
                 raise ValueError('missing unique grouped pathname input: ' + name)
             replacements[name] = args.paths_object.resolve(strict=True)
@@ -286,6 +288,8 @@ def integrate(args):
                 wanted['_sys_stat64'] = args.paths_object.name
                 wanted['_sys_fstat'] = args.paths_object.name
                 wanted['_sys_fstat64'] = args.paths_object.name
+                wanted['_sys_access'] = args.paths_object.name
+                wanted['_sys_chmod'] = args.paths_object.name
                 wanted['_sys_truncate'] = args.paths_object.name
                 wanted['_do_linux_fchmodat'] = args.paths_object.name
             if args.process_ids_object:

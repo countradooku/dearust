@@ -5,8 +5,6 @@ struct LinuxStat([u64; 18]);
 
 unsafe extern "C" {
     fn linux_syscall(a1: i64, a2: i64, a3: i64, a4: i64, a5: i64, a6: i64, nr: i32) -> i64;
-    fn stat_linux_to_bsd(input: *const LinuxStat, output: *mut c_void);
-    fn stat_linux_to_bsd64(input: *const LinuxStat, output: *mut c_void);
 }
 
 unsafe fn fstat(fd: i32, output: *mut c_void, wide: bool) -> i64 {
@@ -32,32 +30,34 @@ unsafe fn fstat(fd: i32, output: *mut c_void, wide: bool) -> i64 {
     if output.is_null() {
         return -14;
     }
-    if wide {
-        // SAFETY: caller provides aligned writable Darwin stat64 storage with no
-        // conflicting access; original converter reads the live LinuxStat only.
-        unsafe { stat_linux_to_bsd64(&stat, output) };
-    } else {
-        // SAFETY: caller provides aligned writable Darwin stat storage with no
-        // conflicting access; original converter reads the live LinuxStat only.
-        unsafe { stat_linux_to_bsd(&stat, output) };
+    // SAFETY: stat is a live initialized Linux stat144. The shared boundary
+    // converts into local storage and lets Linux validate the guest output.
+    let converted =
+        unsafe { super::memory::copy_metadata((&stat as *const LinuxStat).cast(), output, wide) };
+    if let Err(error) = converted {
+        return error;
     }
     0
 }
 
 /// # Safety
-/// Non-null output must be aligned writable Darwin stat storage with no
-/// conflicting access. Foreign callees must obey their ABI and not unwind.
+/// Guest addresses are validated by Linux; output uses the matching Darwin
+/// stat layout. Output must not alias live wrapper storage. Guest TLS must be
+/// initialized where used. Foreign helpers must obey their ABI, preserve path
+/// termination, and must not retain pointers or unwind into Rust.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_fstat(fd: i32, output: *mut c_void) -> i64 {
-    // SAFETY: forwards the caller's storage contract to the shared wrapper.
+    // SAFETY: caller provides the non-aliasing and foreign ABI contract.
     unsafe { fstat(fd, output, false) }
 }
 
 /// # Safety
-/// Non-null output must be aligned writable Darwin stat64 storage with no
-/// conflicting access. Foreign callees must obey their ABI and not unwind.
+/// Guest addresses are validated by Linux; output uses the matching Darwin
+/// stat layout. Output must not alias live wrapper storage. Guest TLS must be
+/// initialized where used. Foreign helpers must obey their ABI, preserve path
+/// termination, and must not retain pointers or unwind into Rust.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_fstat64(fd: i32, output: *mut c_void) -> i64 {
-    // SAFETY: forwards the caller's storage contract to the shared wrapper.
+    // SAFETY: caller provides the non-aliasing and foreign ABI contract.
     unsafe { fstat(fd, output, true) }
 }

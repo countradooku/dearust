@@ -21,7 +21,7 @@ int get_perthread_wd(void){return AT_FDCWD;}
 int dearust_get_perthread_wd(void){return AT_FDCWD;}
 int vchroot_expand(struct expanded *args){(void)args;return 0;}
 long linux_syscall(long a,long b,long c,long d,long e,long f,int nr){long r=syscall(nr,a,b,c,d,e,f);return r<0?-errno:r;}
-void stat_linux_to_bsd(const void *input,void *output){memcpy(output,input,144);}
+void stat_linux_to_bsd(const void *input,void *output){memcpy(output,input,120);}
 void stat_linux_to_bsd64(const void *input,void *output){memcpy(output,input,144);}
 static uint64_t nanos(clockid_t clock){struct timespec t;assert(clock_gettime(clock,&t)==0);return (uint64_t)t.tv_sec*1000000000+t.tv_nsec;}
 static void roundtrip(int fd,const char *path,struct output out[4]){
@@ -40,9 +40,9 @@ int main(int argc,char **argv){
     for(unsigned i=0;i<4;i++){
         struct stat value;memcpy(&value,out[i].opaque,sizeof(value));
         assert(value.st_ino==reference.st_ino && value.st_size==7 && S_ISREG(value.st_mode));
-        assert(memcmp(out[0].opaque,out[i].opaque,144)==0);
+        assert(memcmp(out[0].opaque,out[i].opaque,120)==0);
         for(unsigned j=0;j<16;j++)assert(out[i].head[j]==0xa5 && out[i].tail[j]==0xa5);
-        for(unsigned j=144;j<256;j++)assert(out[i].opaque[j]==0xa5);
+        for(unsigned j=(i%2 ? 144 : 120);j<256;j++)assert(out[i].opaque[j]==0xa5);
     }
     assert(close(fd)==0 && unlink(path)==0);
     printf("%u %llu %llu\n",n,(unsigned long long)c,(unsigned long long)w);return 0;

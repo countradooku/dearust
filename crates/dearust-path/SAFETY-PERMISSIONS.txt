@@ -1,0 +1,51 @@
+Current permission wrappers and delegation
+==========================================
+
+Original Darling/XNU GPL attribution and exact source pins in SAFETY.txt remain.
+The faccessat/fchmodat descriptions there document the previous implementation.
+The new wrappers preserve exported C widths and initialized vchroot buffers,
+using the shared guest-memory boundary in SAFETY-MEMORY.txt.
+
+Pinned XNU faccessat accepts only BSD AT_EACCESS0x10 and
+AT_SYMLINK_NOFOLLOW0x20; fchmodat accepts only NOFOLLOW0x20. Reject unknown bits
+with Darwin EINVAL before path access, matching XNU validation order. These
+operations no longer reuse the broad shared atflags converter, whose accepted
+flags include policies appropriate to other syscall families.
+
+faccessat flags0 retains Linux269. Valid nonzero flags use Linux faccessat2(439),
+mapping EACCESS to0x200 and NOFOLLOW to0x100. Kernel credential and symlink checks
+are used directly. No credential-mode emulation or metadata permission guessing
+is performed. In particular, a dangling link can pass F_OK with NOFOLLOW.
+
+fchmodat flags0 retains Linux268. NOFOLLOW uses one Linux fchmodat2(452), with
+AT_SYMLINK_NOFOLLOW0x100. The exported do_linux_fchmodat helper validates Linux
+flags and uses the same operation. There is no preceding metadata query, no
+check/use window for swapping the final component to a symlink, and no fake
+success for symlink permission changes. The Linux kernel/filesystem decides
+whether changing symlink permissions is supported; its errno is converted once.
+Internal/public expanded paths remain live synchronously through the raw call.
+
+On an older kernel or a denying syscall policy, return ENOSYS/the actual error.
+There is no unsafe stat-then-chmod or real-ID fallback, no support cache and no
+silent success. The atomic guarantee covers the final-component NOFOLLOW policy;
+original C vchroot expansion remains outside that syscall and retains its broader
+path resolution semantics. This is not whole-filesystem namespace isolation.
+
+New sys_access/sys_chmod are direct ports of original unistd/access.c and chmod.c,
+reading the original cwd TLS bridge first, then forwarding signed C int mode and
+flags0 to their canonical sibling wrappers. They add no path allocation or copy.
+They require initialized guest TLS even on invalid inputs. Retained C callbacks
+must obey their ABI, preserve path termination, not retain temporary pointers,
+and never unwind into Rust. Guest addresses must not alias live wrapper storage.
+
+Native tests use strict syscall dispatch plus actual filesystem operations,
+verify flags/unknown bits/mode widths, simulate ENOSYS and a path replacement
+immediately before the atomic kernel call, and preserve target contents/modes.
+Real guest tests verify dangling-link access, truthful nofollow chmod errors,
+TLS directory selection, signed modes and invalid-address errors separately.
+
+Primary references: Linux fs/open.c and arch/x86/entry/syscalls/syscall_64.tbl,
+https://github.com/torvalds/linux/blob/master/fs/open.c
+https://github.com/torvalds/linux/blob/master/arch/x86/entry/syscalls/syscall_64.tbl
+Pinned XNU bsd/vfs/vfs_syscalls.c validates Darwin flags. Host Linux support is
+an explicit dependency of the flagged operation, not evidence of i386 support.

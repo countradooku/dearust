@@ -517,3 +517,29 @@ uses raw legacy120Bstat and wide144Bstat64 layouts. Artifacts:
 dearust-continuation/work/metadata-next/{final-stage,matching-final,pinned-final}.
 Thirty-fourpartial sources/265769pending; target slices7/1622/0. Installed binaries
 and existing user prefix intact; full migration remains incomplete.
+
+Continuation: fix guest-pointer and permission limitations while porting
+-----------------------------------------------------------------------
+User explicitly requests fixing outstanding limitations alongside future ports,
+keeping subsystem grouping and CPU/memory priority. Current evidence:
+RUNTIME-HARDENING.txt/runtime-hardening-verification.json. dearust-path nowports
+access/chmod too (16sources/21exports),11packages;111Rust/29Python/30guestprobes plus
+existingapp/utility/GUI gates pass. Use --paths-object withoriginalTLSbridge; both
+links replace16 originals once. Kernel selfmemorycopies replace rawguestderefs:
+64B firstread,4032B continuationifneeded; checkedintegeraddress, freshscopedLinuxPID
+(noforkstale cache), metadataCconverter intoinitializedlocal144B thenexact120/144
+copyout. Invalid/protected/readonly mappings error; partialcopyoutmaywriteprefix
+beforeEFAULT, reserved/paddingbytesnowzero. NoRustheap/signalhandler/unsafe fallback.
+faccessat strictXNUmask0x30 uses439 forflags,269flags0. fchmodatmask0x20 usesatomic
+452NOFOLLOW,268flags0, no metadata check/use or fake symlink success. Unsupported
+kernel/policy errorspropagate; no unsafe fallback/cache. Follow currentledgers
+SAFETY-MEMORY.txt and SAFETY-PERMISSIONS.txt; olderparagraphs historical.
+Measured guestCPUcost metadata+63.49%, permissions+16.91%; native+253.33%/+61.77%.
+Keepcost prominent, no broadperformance/RSSclaim. Optimized64Breadreducesinitial
+safeimplementationCPU. fchmodhelperlocal160B->0B, copyoutlocal200B+16push; extra
+calleeframes apply. Matchingfile-480B; readonlyerrno126B unchanged. Do not promise
+whole-runtime memorysafety: maliciousmappedinternalaliases, unportedC/vchroot,
+i386Rust, cleanpinnedboot and arbitraryapps remainoutsideverifiedscope.
+Thirty-sixpartialdependencyentries/265767pending; targets7/1622/0. Artifacts:
+dearust-continuation/work/hardening-next/{final-stage,matching-final,pinned-final}.
+Installedbinaries/existinguserprefix preserved.

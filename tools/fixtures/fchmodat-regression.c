@@ -22,7 +22,8 @@ int main(void) {
     int dfd = open(dest, O_RDONLY); assert(dfd >= 0);
     assert(chdir(directory) == 0); touch("target"); touch("thread");
     assert(fchmodat(dfd, "target", 0640, 0) == 0 && permissions("target") == 0600);
-    assert(fchmodat(dfd, "link", 0777, AT_SYMLINK_NOFOLLOW) == 0);
+    errno = 0; assert(fchmodat(dfd, "link", 0777, AT_SYMLINK_NOFOLLOW) == -1 && errno == EOPNOTSUPP);
+    assert(fchmodat(dfd, "target", 0640, AT_SYMLINK_NOFOLLOW) == 0);
     struct stat st; assert(fstatat(dfd, "target", &st, 0) == 0 && (st.st_mode & 0777) == 0640);
     errno = 0; assert(fchmodat(dfd, "missing", 0600, AT_SYMLINK_NOFOLLOW) == -1 && errno == ENOENT);
     errno = 0; assert(fchmodat(dfd, "target", 0600, (int)0x80000000) == -1 && errno == EINVAL);

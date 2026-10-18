@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "guest-memory-native.h"
 struct expanded { char path[4096];unsigned flags;int dfd; };
 extern long sys_renameat(int,const char *,int,const char *);
 static int cwd_fd,src_fd,dst_fd,calls,fail_call,forced_positive;
@@ -18,6 +19,7 @@ int vchroot_expand(struct expanded *p) {
     assert(memchr(p->path,0,sizeof(p->path)));return calls==fail_call?-36:0;
 }
 long linux_syscall(long a,long b,long c,long d,long e,long f,int nr) {
+    long memory_result; if(dearust_native_memory_syscall(a,b,c,d,e,f,nr,&memory_result)) return memory_result;
     assert(nr==SYS_renameat && e==0 && f==0);
     if(forced_positive)return 7;
     long r=syscall(nr,a,b,c,d,e,f);return r<0?-errno:r;

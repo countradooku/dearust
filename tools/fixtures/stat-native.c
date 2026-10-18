@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "guest-memory-native.h"
 struct expanded {char path[4096];unsigned flags;int dfd;};
 struct output {unsigned char head[16];struct stat value;int wide;unsigned char tail[16];};
 extern long sys_stat(const char *,void *),sys_stat64(const char *,void *);
@@ -18,10 +19,14 @@ int dearust_get_perthread_wd(void){wd_calls++;return current_wd;}
 int atfd(int fd){atfd_calls++;assert(fd==current_wd);return fd;}
 int atflags_bsd_to_linux(int flags){assert(flags==0);return 0;}
 int vchroot_expand(struct expanded *args){assert(args->dfd==current_wd && args->flags==1);assert(memchr(args->path,0,sizeof(args->path)));expansions++;return expansion_error;}
-long linux_syscall(long a,long b,long c,long d,long e,long f,int nr){assert(nr==SYS_newfstatat && d==0 && e==0 && f==0);long r=syscall(nr,a,b,c,d,e,f);return r<0?-errno:r;}
+long linux_syscall(long a,long b,long c,long d,long e,long f,int nr){
+    long memory_result; if(dearust_native_memory_syscall(a,b,c,d,e,f,nr,&memory_result)) return memory_result;
+assert(nr==SYS_newfstatat && d==0 && e==0 && f==0);long r=syscall(nr,a,b,c,d,e,f);return r<0?-errno:r;}
 _Static_assert(sizeof(struct stat)==144,"Linux x86_64 stat ABI");
-void stat_linux_to_bsd(const void *input,void *output){memcpy(output,input,sizeof(struct stat));*(int *)((unsigned char *)output+sizeof(struct stat))=0;conversions++;}
-void stat_linux_to_bsd64(const void *input,void *output){stat_linux_to_bsd(input,output);*(int *)((unsigned char *)output+sizeof(struct stat))=1;}
+static int last_wide;
+void stat_linux_to_bsd(const void *input,void *output){memcpy(output,input,120);last_wide=0;conversions++;}
+void stat_linux_to_bsd64(const void *input,void *output){memcpy(output,input,144);last_wide=1;conversions++;}
+
 int main(void){
     char root[]="/tmp/dearust-stat-XXXXXX";assert(mkdtemp(root));int dfd=open(root,O_RDONLY|O_DIRECTORY);assert(dfd>=0);
     int fd=openat(dfd,"file",O_CREAT|O_EXCL|O_RDWR,0640);assert(fd>=0 && write(fd,"payload",7)==7);
@@ -39,7 +44,7 @@ int main(void){
         assert(memcmp(&before,&out,sizeof(out))==0);
         expansion_error=-13;assert(call("file",&out.value)==-13 && conversions==cv);expansion_error=0;
         assert(memcmp(&before,&out,sizeof(out))==0);
-        assert(call("link",&out.value)==0 && out.wide==wide);
+        assert(call("link",&out.value)==0 && last_wide==wide);
         assert(S_ISREG(out.value.st_mode) && out.value.st_ino==reference.st_ino && out.value.st_dev==reference.st_dev && out.value.st_size==7);
         assert(out.value.st_uid==reference.st_uid && out.value.st_gid==reference.st_gid && out.value.st_nlink==reference.st_nlink);
         for(size_t i=0;i<sizeof(out.head);i++)assert(out.head[i]==0xa5 && out.tail[i]==0xa5);

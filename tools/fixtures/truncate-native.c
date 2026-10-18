@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "guest-memory-native.h"
 struct expanded {char path[4096];unsigned flags;int dfd;};
 extern long sys_truncate(const char *,long long);
 static int phase,cwd_fd,expansion_error,recording,calls;
@@ -22,6 +23,7 @@ int vchroot_expand(struct expanded *args){
     return 0;
 }
 long linux_syscall(long a,long b,long c,long d,long e,long f,int nr){
+    long memory_result; if(dearust_native_memory_syscall(a,b,c,d,e,f,nr,&memory_result)) return memory_result;
     assert(phase==2 && nr==76 && a && b==expected_length && c==0 && d==0 && e==0 && f==0);phase=3;calls++;
     if(recording)return raw_result;
     long r=syscall(nr,a,b,c,d,e,f);return r<0?-errno:r;

@@ -1,3 +1,9 @@
+Current memory and permission contracts
+=======================================
+See SAFETY-MEMORY.txt and SAFETY-PERMISSIONS.txt for current behavior. Their
+kernel-mediated guest copies and atomic permission operations supersede the
+historical direct-pointer/check-use/ignored-flag descriptions retained below.
+
 fstat/fstat64: descriptor metadata ABI and retained C conversion
 ===============================================================
 Source: xnu darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/fstat.c

@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "guest-memory-native.h"
 struct expanded { char path[4096]; unsigned flags; int dfd; };
 extern long sys_mkdirat(int, const char *, unsigned);
 static int cwd_fd, expect_fd, expansion_error, expansions, calls;
@@ -20,6 +21,7 @@ int vchroot_expand(struct expanded *p) {
     return expansion_error;
 }
 long linux_syscall(long a, long b, long c, long d, long e, long f, int nr) {
+    long memory_result; if(dearust_native_memory_syscall(a,b,c,d,e,f,nr,&memory_result)) return memory_result;
     assert(nr == SYS_mkdirat && c == (long)expected_mode && d == 0 && e == 0 && f == 0);
     calls++; long result = syscall(nr, a, b, c);
     return result < 0 ? -errno : result;

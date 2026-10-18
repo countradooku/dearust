@@ -11,10 +11,10 @@ unsafe extern "C" {
 }
 
 /// # Safety
-/// Non-null path must be readable through NUL or 4096 bytes, whichever comes
-/// first. Buffer is passed unchanged to Linux for kernel validation and must
-/// not alias Rust's live stack storage. Guest TLS must be initialized. Foreign
-/// functions must preserve the declared ABI and must not unwind into Rust.
+/// Guest TLS must be initialized. Foreign helpers must obey their ABI,
+/// preserve path termination and must not retain pointers or unwind into Rust.
+/// Guest addresses are validated by Linux. Kernel output must not alias live
+/// wrapper storage.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_readlinkat(fd: i32, path: *const u8, buf: *mut u8, count: i32) -> i64 {
     if path.is_null() {
@@ -26,11 +26,7 @@ pub unsafe extern "C" fn sys_readlinkat(fd: i32, path: *const u8, buf: *mut u8, 
         // SAFETY: original helper resolves BSD_AT_FDCWD using initialized TLS.
         dfd: unsafe { atfd(fd) },
     };
-    if let Err(error) = crate::path::copy_into(&mut expanded.path, |index| {
-        // SAFETY: caller supplies readable bytes through NUL or capacity; the
-        // copier bounds every index and stops immediately at the first NUL.
-        unsafe { path.add(index).read() }
-    }) {
+    if let Err(error) = super::memory::copy_path(&mut expanded.path, path) {
         return error;
     }
     // SAFETY: repr(C) matches original writable, terminated args. flags=0 keeps

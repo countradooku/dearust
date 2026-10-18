@@ -4,10 +4,10 @@ unsafe extern "C" {
 }
 
 /// # Safety
-/// Guest TLS must be initialized even for invalid/null path or output. Non-null
-/// path must be readable through NUL or 4096 bytes, output must be a writable,
-/// aligned Darwin stat structure without conflicting access. Foreign ABI
-/// helpers must not unwind, retain pointers, or break successful termination.
+/// Guest addresses are validated by Linux; output uses the matching Darwin
+/// stat layout. Output must not alias live wrapper storage. Guest TLS must be
+/// initialized where used. Foreign helpers must obey their ABI, preserve path
+/// termination, and must not retain pointers or unwind into Rust.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_stat(path: *const u8, output: *mut c_void) -> i64 {
     // SAFETY: original stat reads guest cwd before delegating/path validation.
@@ -17,7 +17,10 @@ pub unsafe extern "C" fn sys_stat(path: *const u8, output: *mut c_void) -> i64 {
 }
 
 /// # Safety
-/// Same contract as sys_stat, except output must be a Darwin stat64 structure.
+/// Guest addresses are validated by Linux; output uses the matching Darwin
+/// stat layout. Output must not alias live wrapper storage. Guest TLS must be
+/// initialized where used. Foreign helpers must obey their ABI, preserve path
+/// termination, and must not retain pointers or unwind into Rust.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_stat64(path: *const u8, output: *mut c_void) -> i64 {
     // SAFETY: original stat64 reads guest cwd before delegating/path validation.

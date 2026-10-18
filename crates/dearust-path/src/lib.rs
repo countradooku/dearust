@@ -7,7 +7,7 @@ compile_error!("dearust-path supports only the x86_64 Darling ABI");
 mod abi;
 mod path;
 pub use abi::{
-    do_linux_fchmodat, sys_faccessat, sys_fchmodat, sys_fstat, sys_fstat64, sys_fstatat,
-    sys_fstatat64, sys_linkat, sys_lstat, sys_lstat64, sys_mkdirat, sys_readlinkat, sys_renameat,
-    sys_rmdir, sys_stat, sys_stat64, sys_symlinkat, sys_truncate, sys_unlinkat,
+    do_linux_fchmodat, sys_access, sys_chmod, sys_faccessat, sys_fchmodat, sys_fstat, sys_fstat64,
+    sys_fstatat, sys_fstatat64, sys_linkat, sys_lstat, sys_lstat64, sys_mkdirat, sys_readlinkat,
+    sys_renameat, sys_rmdir, sys_stat, sys_stat64, sys_symlinkat, sys_truncate, sys_unlinkat,
 };

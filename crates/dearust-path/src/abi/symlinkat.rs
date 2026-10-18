@@ -11,9 +11,10 @@ unsafe extern "C" {
 }
 
 /// # Safety
-/// Non-null link must be readable through NUL or 4096 bytes. Target is passed
-/// unchanged to Linux and is subject to kernel pointer/path validation. Calling
-/// thread must have initialized Darling TLS. Foreign calls must not unwind.
+/// Guest TLS must be initialized. Foreign helpers must obey their ABI,
+/// preserve path termination and must not retain pointers or unwind into Rust.
+/// Guest addresses are validated by Linux. Kernel output must not alias live
+/// wrapper storage.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_symlinkat(target: *const u8, fd: i32, link: *const u8) -> i64 {
     if link.is_null() {
@@ -24,11 +25,7 @@ pub unsafe extern "C" fn sys_symlinkat(target: *const u8, fd: i32, link: *const 
         flags: 0,
         dfd: 0,
     };
-    if let Err(error) = crate::path::copy_into(&mut expanded.path, |index| {
-        // SAFETY: caller supplies readable bytes through NUL or capacity;
-        // the safe copier reads only indexes <4096 and stops immediately at NUL.
-        unsafe { link.add(index).read() }
-    }) {
+    if let Err(error) = super::memory::copy_path(&mut expanded.path, link) {
         return error;
     }
     // SAFETY: resolve the original guest descriptor/TLS helper only after path

@@ -1,52 +1,54 @@
-//! Safe bounded path copying, independently testable without guest TLS.
+//! Decisions over a bounded kernel copy; no guest addresses or unsafe code.
 #![forbid(unsafe_code)]
 pub const CAPACITY: usize = 4096;
-/// Copy directly into initialized expansion storage, leaving bytes after NUL alone.
-pub fn copy_into(output: &mut [u8; CAPACITY], read: impl Fn(usize) -> u8) -> Result<(), i64> {
-    for (index, byte) in output.iter_mut().enumerate() {
-        *byte = read(index);
-        if *byte == 0 {
+/// A readable prefix containing NUL is sufficient even when the next page faults.
+pub fn finish_copy(output: &[u8; CAPACITY], copied: usize) -> Result<(), i64> {
+    let copied = copied.min(CAPACITY);
+    let mut index = 0;
+    while index < copied {
+        if output[index] == 0 {
             return Ok(());
         }
+        index += 1;
     }
-    Err(-63) // Darwin ENAMETOOLONG
+    if copied == CAPACITY {
+        Err(-63)
+    } else {
+        Err(-14)
+    }
 }
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
-    fn stops_at_nul_without_reading_or_writing_after_terminator() {
-        let mut output = [0xa5; CAPACITY];
-        copy_into(&mut output, |i| b"abc\0"[i]).unwrap();
-        assert_eq!(&output[..4], b"abc\0");
-        assert!(output[4..].iter().all(|byte| *byte == 0xa5));
-        copy_into(&mut output, |i| {
-            assert_eq!(i, 0);
-            0
-        })
-        .unwrap();
-        assert_eq!(output[0], 0);
-        assert_eq!(output[1], b'b');
+    fn nul_in_readable_prefix_does_not_require_the_next_page() {
+        let mut bytes = [b'x'; CAPACITY];
+        bytes[7] = 0;
+        assert_eq!(finish_copy(&bytes, 8), Ok(()));
+        assert_eq!(finish_copy(&bytes, 7), Err(-14));
+        assert_eq!(finish_copy(&bytes, 0), Err(-14));
+        bytes[7] = b'x';
+        bytes[63] = 0;
+        assert_eq!(finish_copy(&bytes, 64), Ok(()));
+        assert_eq!(finish_copy(&bytes, 63), Err(-14));
+        bytes[63] = b'x';
+        bytes[64] = 0;
+        assert_eq!(finish_copy(&bytes, 64), Err(-14));
+        assert_eq!(finish_copy(&bytes, 65), Ok(()));
     }
     #[test]
     fn accepts_last_byte_terminator_and_rejects_unterminated_capacity() {
-        let mut output = [0; CAPACITY];
-        copy_into(&mut output, |i| if i == CAPACITY - 1 { 0 } else { b'a' }).unwrap();
-        assert!(output[..CAPACITY - 1].iter().all(|byte| *byte == b'a'));
-        assert_eq!(output[CAPACITY - 1], 0);
-        assert_eq!(
-            copy_into(&mut output, |i| {
-                assert!(i < CAPACITY);
-                b'b'
-            }),
-            Err(-63)
-        );
-        assert!(output.iter().all(|byte| *byte == b'b'));
+        let mut bytes = [b'x'; CAPACITY];
+        assert_eq!(finish_copy(&bytes, CAPACITY), Err(-63));
+        bytes[CAPACITY - 1] = 0;
+        assert_eq!(finish_copy(&bytes, CAPACITY), Ok(()));
+        assert_eq!(finish_copy(&bytes, CAPACITY - 1), Err(-14));
     }
     #[test]
     fn preserves_non_utf8_path_bytes() {
-        let mut output = [0; CAPACITY];
-        copy_into(&mut output, |i| [0xff, 0xfe, b'/', 0][i]).unwrap();
-        assert_eq!(&output[..4], &[0xff, 0xfe, b'/', 0]);
+        let mut bytes = [0xff; CAPACITY];
+        bytes[..4].copy_from_slice(&[0xff, 0xfe, b'/', 0]);
+        assert_eq!(finish_copy(&bytes, 4), Ok(()));
+        assert_eq!(&bytes[..4], &[0xff, 0xfe, b'/', 0]);
     }
 }

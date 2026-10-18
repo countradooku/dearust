@@ -10,12 +10,15 @@
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "guest-memory-native.h"
 extern long sys_fstat(int,void *),sys_fstat64(int,void *);
 struct output {unsigned char before[16];struct stat value;unsigned char after[16];};
 static int injected,expected_fd,expected_wide,syscalls,conversions,phase;
 static long raw_result;
 _Static_assert(sizeof(struct stat)==144,"native Linux stat144");
 long linux_syscall(long a,long b,long c,long d,long e,long f,int nr){
+    long memory_result; if(dearust_native_memory_syscall(a,b,c,d,e,f,nr,&memory_result)) return memory_result;
+
     assert(phase==0 && nr==5 && a==expected_fd && b && !(b&7) && c==0 && d==0 && e==0 && f==0);phase=1;syscalls++;
     unsigned char zeros[144]={0};assert(memcmp((void *)b,zeros,144)==0);
     if(injected){memset((void *)b,0x6b,144);return raw_result;}
@@ -24,7 +27,7 @@ long linux_syscall(long a,long b,long c,long d,long e,long f,int nr){
 static void convert(const void *input,void *output,int wide){
     assert(phase==1 && output && wide==expected_wide && !((uintptr_t)input&7));phase=2;conversions++;
     if(injected){unsigned char expected[144];memset(expected,0x6b,144);assert(memcmp(input,expected,144)==0);}
-    memcpy(output,input,144);
+    memcpy(output,input,wide?144:120);
 }
 void stat_linux_to_bsd(const void *input,void *output){convert(input,output,0);}
 void stat_linux_to_bsd64(const void *input,void *output){convert(input,output,1);}

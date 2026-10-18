@@ -93,6 +93,8 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                                 "sys_stat64",
                                 "sys_fstat",
                                 "sys_fstat64",
+                                "sys_access",
+                                "sys_chmod",
                             ],
                             "dearust-fd" => vec![
                                 "sys_fchmod",

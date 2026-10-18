@@ -116,6 +116,8 @@ fn check(triple: &str, label: &str) {
                 "sys_stat64",
                 "sys_fstat",
                 "sys_fstat64",
+                "sys_access",
+                "sys_chmod",
             ]
             .iter()
             .map(|s| format!("{prefix}{s}"))
@@ -250,7 +252,7 @@ fn check(triple: &str, label: &str) {
             ("process", 1),
             ("process-ids", 7),
             ("fd", 9),
-            ("paths", 19),
+            ("paths", 21),
         ] {
             let private = Command::new("llvm-nm")
                 .arg("-m")
@@ -269,6 +271,8 @@ fn check(triple: &str, label: &str) {
     }
     if !triple.contains("apple") {
         for name in [
+            "pointer",
+            "permissions",
             "lstat",
             "fstatat",
             "stat",
@@ -290,6 +294,8 @@ fn check(triple: &str, label: &str) {
                 .join(format!("../tools/fixtures/{name}-native.c"));
             let executable = temp.0.join(format!("{name}-native"));
             let object_name = if [
+                "pointer",
+                "permissions",
                 "lstat",
                 "fstatat",
                 "stat",

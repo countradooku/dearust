@@ -376,3 +376,20 @@ selects the legacy120-byte structstat for rawstat/fstat and144-byte stat64 for
 wide entries. See runtime-metadata-verification.json for execution/performance.
 Latest artifacts: dearust-continuation/work/metadata-next/
 {final-stage,matching-final,pinned-final}; process query object stays matching-only.
+
+Pointer/permission hardening continuation: RUNTIME-HARDENING.txt adds access/chmod
+within dearust-path (16sources/21exports, still11packages). --paths-object replaces
+16 original inputs, preserving the TLS bridge and current feature separation.
+Guest path copy uses Linux process_vm_readv310 and metadata output uses
+process_vm_writev311, with uncached Linuxgetpid39; no unsafe fallback if unavailable
+or denied. NOFOLLOW chmod uses fchmodat2(452); flagged access uses faccessat2(439),
+flags0 keeps legacy syscalls. Missing kernel/policy support returns actual errors.
+Run all16 native fixtures plus fd/process checks and30 guest probes. Shared
+memory test dispatcher is native-only. New pointer/permissions goldens and updated
+faccessat/fchmodat expectations are independent of execution/timings. New native
+benchmark_hardening.py accepts explicit --baseline/--runtime stages and measures
+both workloads with identical adapters. Guest safety has a real CPU cost:
+metadata+63.49%, permission workload+16.91% in recorded warm microbenchmarks;
+no general app speedup/RSS claim. Read SAFETY-MEMORY.txt/SAFETY-PERMISSIONS.txt for
+current contracts superseding the historical descriptions. Artifacts:
+dearust-continuation/work/hardening-next/{final-stage,matching-final,pinned-final}.

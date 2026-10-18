@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "guest-memory-native.h"
 struct expanded { char path[4096]; unsigned flags; int dfd; };
 extern long sys_readlinkat(int, const char *, char *, int);
 static int current_wd = AT_FDCWD, expected_fd, expanded_calls, expansion_error;
@@ -21,6 +22,7 @@ int vchroot_expand(struct expanded *args) {
     return expansion_error;
 }
 long linux_syscall(long a, long b, long c, long d, long e, long f, int nr) {
+    long memory_result; if(dearust_native_memory_syscall(a,b,c,d,e,f,nr,&memory_result)) return memory_result;
     assert(nr == SYS_readlinkat && e == 0 && f == 0);
     assert(c == (long)expected_output && d == (long)expected_count);
     long result = syscall(nr, a, b, c, d, e, f);

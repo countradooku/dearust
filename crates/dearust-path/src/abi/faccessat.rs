@@ -6,17 +6,19 @@ struct Expanded {
 }
 unsafe extern "C" {
     fn atfd(fd: i32) -> i32;
-    fn atflags_bsd_to_linux(flags: i32) -> i32;
     fn vchroot_expand(args: *mut Expanded) -> i32;
     fn linux_syscall(a1: i64, a2: i64, a3: i64, a4: i64, a5: i64, a6: i64, nr: i32) -> i64;
 }
 
 /// # Safety
-/// Non-null path must be readable through NUL or 4096 bytes, whichever comes
-/// first. Guest TLS must be initialized. Foreign
-/// functions must preserve the declared ABI and must not unwind into Rust.
+/// Guest TLS must be initialized. Foreign functions must preserve the declared
+/// ABI and must not unwind into Rust. Linux validates guest memory while
+/// copying the bounded path.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_faccessat(fd: i32, path: *const u8, mode: i32, flags: i32) -> i64 {
+    if flags & !0x30 != 0 {
+        return -22;
+    }
     if path.is_null() {
         return -14;
     }
@@ -26,11 +28,7 @@ pub unsafe extern "C" fn sys_faccessat(fd: i32, path: *const u8, mode: i32, flag
         // SAFETY: original helper resolves BSD_AT_FDCWD using initialized TLS.
         dfd: unsafe { atfd(fd) },
     };
-    if let Err(error) = crate::path::copy_into(&mut expanded.path, |index| {
-        // SAFETY: caller supplies readable bytes through NUL or capacity; the
-        // copier bounds every index and stops immediately at the first NUL.
-        unsafe { path.add(index).read() }
-    }) {
+    if let Err(error) = super::memory::copy_path(&mut expanded.path, path) {
         return error;
     }
     // SAFETY: repr(C) matches original writable, terminated args. Expansion
@@ -39,15 +37,13 @@ pub unsafe extern "C" fn sys_faccessat(fd: i32, path: *const u8, mode: i32, flag
     if result < 0 {
         return i64::from(dearust_errno::linux_to_bsd(result));
     }
-    // SAFETY: original pure converter preserves the accepted BSD flag policy.
-    // Calling after expansion preserves original path/flag error ordering.
-    let linux_flags = unsafe { atflags_bsd_to_linux(flags) };
-    if linux_flags == 1 {
-        return -22;
-    }
-    // SAFETY: raw Linux x86_64 faccessat 269 receives the live path, signed
-    // mode and original fourth flags slot. Linux ignores that fourth slot;
-    // preserving this limitation avoids inventing new credential/flag policy.
+    // Darwin AT_EACCESS is 0x10; Linux uses 0x200. The generic Darling
+    // converter drops this operation-specific flag, so map the accepted mask.
+    let linux_flags =
+        (if flags & 0x10 != 0 { 0x200 } else { 0 }) | (if flags & 0x20 != 0 { 0x100 } else { 0 });
+    // SAFETY: both Linux entries validate descriptor, path and mode. faccessat2
+    // implements credential/no-follow flags in the kernel; raw faccessat ignores
+    // them. Keep the established one-call fast path when no flags are requested.
     let result = unsafe {
         linux_syscall(
             i64::from(expanded.dfd),
@@ -56,7 +52,7 @@ pub unsafe extern "C" fn sys_faccessat(fd: i32, path: *const u8, mode: i32, flag
             i64::from(linux_flags),
             0,
             0,
-            269,
+            if linux_flags == 0 { 269 } else { 439 },
         )
     } as i32;
     if result < 0 {

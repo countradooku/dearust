@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "guest-memory-native.h"
 struct expanded { char path[4096]; unsigned flags; int dfd; };
 extern long sys_unlinkat(int, const char *, int);
 static int cwd_fd = AT_FDCWD, expect_fd, expansion_error, expanded_calls, flag_calls, syscall_calls;
@@ -30,6 +31,7 @@ int atflags_bsd_to_linux(int flags) {
     return flags & ~(0x20 | 0x80 | 0x100 | 0x40 | 0x10 | 0x200 | 0x400) ? 1 : result;
 }
 long linux_syscall(long a, long b, long c, long d, long e, long f, int nr) {
+    long memory_result; if(dearust_native_memory_syscall(a,b,c,d,e,f,nr,&memory_result)) return memory_result;
     assert(nr == SYS_unlinkat && d == 0 && e == 0 && f == 0);
     syscall_calls++;
     long result = syscall(nr, a, b, c, d, e, f);

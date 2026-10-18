@@ -11,9 +11,10 @@ unsafe extern "C" {
 }
 
 /// # Safety
-/// Non-null path must be readable through NUL or 4096 bytes, whichever is shorter.
-/// Original guest TLS must be initialized; foreign callees must preserve their
-/// ABI, keep successful expanded paths terminated, and never unwind into Rust.
+/// Guest TLS must be initialized. Foreign helpers must obey their ABI,
+/// preserve path termination and must not retain pointers or unwind into Rust.
+/// Guest addresses are validated by Linux. Kernel output must not alias live
+/// wrapper storage.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_truncate(path: *const u8, length: i64) -> i64 {
     if path.is_null() {
@@ -25,11 +26,7 @@ pub unsafe extern "C" fn sys_truncate(path: *const u8, length: i64) -> i64 {
         // SAFETY: original C accessor reads initialized guest per-thread cwd TLS.
         dfd: unsafe { dearust_get_perthread_wd() },
     };
-    if let Err(error) = crate::path::copy_into(&mut expanded.path, |index| {
-        // SAFETY: caller supplies readable bytes through first NUL or capacity;
-        // bounded copier stops at NUL and never requests an out-of-range index.
-        unsafe { path.add(index).read() }
-    }) {
+    if let Err(error) = super::memory::copy_path(&mut expanded.path, path) {
         return error;
     }
     // SAFETY: initialized writable repr(C) object matches vchroot ABI; its flags

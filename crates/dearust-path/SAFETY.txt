@@ -1,3 +1,9 @@
+Current memory and permission contracts
+=======================================
+See SAFETY-MEMORY.txt and SAFETY-PERMISSIONS.txt for current behavior. Their
+kernel-mediated guest copies and atomic permission operations supersede the
+historical direct-pointer/check-use/ignored-flag descriptions retained below.
+
 Pathname operations: consolidated x86_64 runtime subsystem
 =========================================================
 Original Darling/upstream GPL-3.0-or-later attribution and licenses apply.

@@ -23,8 +23,9 @@ int main(void) {
     errno = 0; assert(faccessat(fd, "missing", F_OK, 0) == -1 && errno == ENOENT);
     assert(faccessat(fd, "link", F_OK, 0) == 0);
     assert(faccessat(fd, "link", F_OK, AT_SYMLINK_NOFOLLOW) == 0);
-    /* Preserve original raw Linux faccessat's ignored fourth flags argument. */
-    errno = 0; assert(faccessat(fd, "dangling", F_OK, AT_SYMLINK_NOFOLLOW) == -1 && errno == ENOENT);
+    assert(faccessat(fd, "dangling", F_OK, AT_SYMLINK_NOFOLLOW) == 0);
+    assert(faccessat(fd, "target", R_OK | W_OK, AT_EACCESS) == 0);
+    assert(faccessat(fd, "dangling", F_OK, AT_EACCESS | AT_SYMLINK_NOFOLLOW) == 0);
     errno = 0; assert(faccessat(fd, "target", F_OK, (int)0x80000000) == -1 && errno == EINVAL);
     errno = 0; assert(faccessat(fd, NULL, F_OK, 0) == -1 && errno == EFAULT);
     char longpath[4097]; memset(longpath, 'x', sizeof(longpath));

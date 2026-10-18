@@ -184,7 +184,7 @@ void stat_linux_to_bsd64(const struct linux_stat *,struct stat64 *);
     elif args.family=='paths':
         roundtrip='mkdirat -> rmdir -> truncate(128); owned absolute directory/file paths; no-op native virtual-root/TLS adapters; retained initialized in-place path buffers'
     elif args.family=='metadata':
-        roundtrip='fstat -> fstat64 -> stat -> stat64; owned absolute file path, raw Linux144-byte metadata copied into opaque256-byte guarded adapters; original variant uses original C entry wrappers plus shared Rust fstatat backend, not an all-C chain; Rust variant uses all-Rust entry wrappers; no native Darwin layout claim'
+        roundtrip='fstat -> fstat64 -> stat -> stat64; owned absolute file path, raw Linux metadata prefix copied120/144 bytes into opaque256-byte guarded adapters; original variant uses original C entry wrappers plus shared Rust fstatat backend, not an all-C chain; Rust variant uses all-Rust entry wrappers; no native Darwin layout claim'
     else:
         roundtrip+='; actual temporary native files'
     report={'scope':__doc__,'roundtrip':roundtrip,'samples':args.samples,'iterations':args.iterations,'cpu':cpu,'commands':commands,

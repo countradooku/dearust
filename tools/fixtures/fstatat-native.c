@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "guest-memory-native.h"
 struct expanded { char path[4096]; unsigned flags; int dfd; };
 struct output { struct stat value; int wide; unsigned char tail[16]; };
 extern long sys_fstatat(int, const char *, void *, int);
@@ -33,20 +34,21 @@ int vchroot_expand(struct expanded *args) {
     return expansion_error;
 }
 long linux_syscall(long a, long b, long c, long d, long e, long f, int nr) {
+    long memory_result; if(dearust_native_memory_syscall(a,b,c,d,e,f,nr,&memory_result)) return memory_result;
+
     assert(nr == SYS_newfstatat && e == 0 && f == 0);
     long result = syscall(nr, a, b, c, d, e, f);
     return result < 0 ? -errno : result;
 }
 _Static_assert(sizeof(struct stat) == 144, "Linux x64 kernel stat layout");
+static int last_wide;
 void stat_linux_to_bsd(const void *input, void *output) {
-    struct output *result = output;
-    memcpy(&result->value, input, sizeof(result->value));
-    result->wide = 0;
+    memcpy(output,input,120); last_wide=0;
 }
 void stat_linux_to_bsd64(const void *input, void *output) {
-    stat_linux_to_bsd(input, output);
-    ((struct output *)output)->wide = 1;
+    memcpy(output,input,144); last_wide=1;
 }
+
 int main(void) {
     char directory[] = "/tmp/dearust-fstatat-XXXXXX";
     assert(mkdtemp(directory));
@@ -70,7 +72,7 @@ int main(void) {
         assert(call(dfd, "file", &output, 0x8000) == -22);
         assert(memcmp(&before, &output, sizeof(output)) == 0);
         assert(call(dfd, "link", &output, 0) == 0);
-        assert(output.wide == wide && S_ISREG(output.value.st_mode) && output.value.st_size == 7);
+        assert(last_wide == wide && S_ISREG(output.value.st_mode) && output.value.st_size == 7);
         for (size_t i = 0; i < sizeof(output.tail); i++) assert(output.tail[i] == 0xa5);
         expect_follow = 0;
         assert(call(dfd, "link", &output, 0x20) == 0);

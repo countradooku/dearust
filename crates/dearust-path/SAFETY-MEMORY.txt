@@ -1,0 +1,62 @@
+Guest address hardening: x86_64 LP64
+===================================
+
+This continuation supersedes the raw guest-pointer read/write contracts in the
+historical SAFETY.txt and SAFETY-FSTAT.txt descriptions. Retain all original
+Darling authorship, pinned-source attribution and licensing recorded there.
+
+All migrated pathname inputs now cross abi/memory.rs through Linux raw syscall
+310 process_vm_readv targeting the calling Linux process. Raw syscall39 queries
+the current PID for each pathname-copy operation and each metadata copyout;
+no PID or mapping cache survives a wrapper call or fork. The same existing initialized4096-byte Expanded.path storage is
+the local destination. There are no Rust references to guest input and no Rust
+pointer arithmetic or dereferences on its address. The first request transfers
+at most64 bytes, covering common short paths without copying/pinning a second
+page unnecessarily. If all64 bytes are readable and contain no NUL, a second
+request copies the remaining4032 bytes into the same buffer. Checked integer
+addition computes the second guest address; no guest pointer offset is formed.
+The one fresh PID is reused only within these two synchronous kernel reads,
+with no retained C callback between them. Each returned count bounds the pure
+NUL scan. A partial read is accepted if its readable prefix contains NUL;
+otherwise it is EFAULT.
+A full4096 bytes without NUL is ENAMETOOLONG. Bytes after NUL may be copied from
+mapped pages; a following inaccessible page need not exist. Do not restore a
+raw-copy fallback if process_vm_readv is unavailable or denied: return its
+converted kernel error. Seccomp/kernel restrictions can therefore fail requests.
+
+All eight metadata exports use original C stat_linux_to_bsd/64 conversions into
+initialized, eight-aligned local144-byte storage. The narrow converter writes
+within its120-byte legacy Darwin stat layout; the wide layout is144 bytes.
+Linux syscall311 process_vm_writev copies exactly the appropriate length to
+caller output. Original converter UID/GID and assigned-field policies remain.
+Unassigned fields and padding now become zero, rather than retaining arbitrary
+caller bytes. Retained converters never receive a guest output address.
+
+Kernel errors from metadata queries still take precedence over output access in
+fstat: invalidfd plus any bad output remains EBADF. Existing early NULL checks
+in lstat/fstatat and TLS-first stat delegation remain. Faulting metadata copyout
+can write a prefix before returning EFAULT. No output atomicity or rollback is
+promised. Short transfer must never return success. Legacy output length120 and
+wide length144 have actual guest compile-time layout assertions and guard tests.
+
+Unsafe remains only at foreign ABI boundaries: retained TLS/vchroot/converter
+calls and linux_syscall. C callbacks must obey ABI, not unwind, not retain live
+local pointers, stay inside their buffers and preserve successful pathname
+termination. Caller kernel-output addresses must not alias the wrapper's live
+local storage. The kernel and guest run in one address space: mapping checks do
+not provide process isolation or protect against a malicious valid address that
+intentionally targets internal wrapper storage. No whole-runtime memory-safety
+claim is made. Other unported wrappers and internal C vchroot logic remain C.
+
+The two fixed iovec records are LP64 repr(C),16 bytes each. All local buffers
+remain live synchronously across transfers. No heap allocation, signal handler,
+address-range guess, /proc mapping precheck, OS mutex, or new runtime is used.
+Native fixture adapters dispatch39/310/311 to the real Linux kernel before their
+own operation-specific strict syscall assertions. Their fake converters write
+only120/144-byte opaque regions; actual Darwin field-layout proof is guest-only.
+
+Validation covers low invalid addresses, unmapped pages, PROT_NONE and read-only
+outputs, NUL at a readable page end, unterminated page-end input, all eight raw
+metadata exports, exact output tails, partial writes, invalid-fd error ordering,
+and a fork child (native transfer asserts it uses the child's current PID).
+Supported target remains x86_64 only; an i386 Rust port is not implemented here.

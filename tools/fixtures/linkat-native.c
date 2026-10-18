@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "guest-memory-native.h"
 struct expanded { char path[4096]; unsigned flags; int dfd; };
 extern long sys_linkat(int, const char *, int, const char *, int);
 static int cwd_fd, src_fd, dst_fd, follow, calls, fail_call, flag_calls;
@@ -26,6 +27,7 @@ int atflags_bsd_to_linux(int f) {
     return (f & ~0x40) ? 1 : ((f & 0x40) ? AT_SYMLINK_FOLLOW : 0);
 }
 long linux_syscall(long a,long b,long c,long d,long e,long f,int nr) {
+    long memory_result; if(dearust_native_memory_syscall(a,b,c,d,e,f,nr,&memory_result)) return memory_result;
     assert(nr == SYS_linkat && f == 0);
     long r = syscall(nr,a,b,c,d,e,f); return r < 0 ? -errno : r;
 }

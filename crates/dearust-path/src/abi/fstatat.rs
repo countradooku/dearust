@@ -14,8 +14,6 @@ unsafe extern "C" {
     fn atflags_bsd_to_linux(flags: i32) -> i32;
     fn vchroot_expand(args: *mut Expanded) -> i32;
     fn linux_syscall(a1: i64, a2: i64, a3: i64, a4: i64, a5: i64, a6: i64, nr: i32) -> i64;
-    fn stat_linux_to_bsd(input: *const LinuxStat, output: *mut c_void);
-    fn stat_linux_to_bsd64(input: *const LinuxStat, output: *mut c_void);
 }
 
 unsafe fn fstatat(fd: i32, path: *const u8, output: *mut c_void, flags: i32, wide: bool) -> i64 {
@@ -27,11 +25,7 @@ unsafe fn fstatat(fd: i32, path: *const u8, output: *mut c_void, flags: i32, wid
         flags: if flags & 0x20 == 0 { 1 } else { 0 },
         dfd: 0,
     };
-    if let Err(error) = crate::path::copy_into(&mut expanded.path, |index| {
-        // SAFETY: caller supplies readable bytes through NUL or 4096 bytes;
-        // the safe copier requests only in-bounds indexes and stops at NUL.
-        unsafe { path.add(index).read() }
-    }) {
+    if let Err(error) = super::memory::copy_path(&mut expanded.path, path) {
         return error;
     }
     // SAFETY: resolve the original guest descriptor/TLS helper only after path
@@ -66,22 +60,21 @@ unsafe fn fstatat(fd: i32, path: *const u8, output: *mut c_void, flags: i32, wid
     if result < 0 {
         return i64::from(dearust_errno::linux_to_bsd(result as i32));
     }
-    // SAFETY: caller supplies the matching writable Darwin output layout.
-    // Conversion runs only on success, from fully initialized Linux storage.
-    unsafe {
-        if wide {
-            stat_linux_to_bsd64(&stat, output);
-        } else {
-            stat_linux_to_bsd(&stat, output);
-        }
+    // SAFETY: stat is a live initialized Linux stat144. The shared boundary
+    // converts into local storage and lets Linux validate the guest output.
+    let converted =
+        unsafe { super::memory::copy_metadata((&stat as *const LinuxStat).cast(), output, wide) };
+    if let Err(error) = converted {
+        return error;
     }
     0
 }
 
 /// # Safety
-/// Non-null path must be readable through NUL or 4096 bytes. Non-null output
-/// must be a writable, aligned Darwin stat structure without conflicting access.
-/// Calling thread must have initialized Darling TLS; foreign calls cannot unwind.
+/// Guest addresses are validated by Linux; output uses the matching Darwin
+/// stat layout. Output must not alias live wrapper storage. Guest TLS must be
+/// initialized where used. Foreign helpers must obey their ABI, preserve path
+/// termination, and must not retain pointers or unwind into Rust.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_fstatat(
     fd: i32,
@@ -94,7 +87,10 @@ pub unsafe extern "C" fn sys_fstatat(
 }
 
 /// # Safety
-/// Same contract as sys_fstatat, except output must be a Darwin stat64 structure.
+/// Guest addresses are validated by Linux; output uses the matching Darwin
+/// stat layout. Output must not alias live wrapper storage. Guest TLS must be
+/// initialized where used. Foreign helpers must obey their ABI, preserve path
+/// termination, and must not retain pointers or unwind into Rust.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_fstatat64(
     fd: i32,

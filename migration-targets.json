@@ -4117,139 +4117,151 @@
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/common/guarded/table.c",
           "cargo_package": "dearust-guarded",
           "cargo_artifact": "guarded.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/lstat.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/fstatat.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/symlinkat.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/readlinkat.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/unlinkat.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/linkat.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/renameat.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/mkdirat.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/faccessat.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fchmodat.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fchmod.c",
           "cargo_package": "dearust-fd",
           "cargo_artifact": "fd.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/ftruncate.c",
           "cargo_package": "dearust-fd",
           "cargo_artifact": "fd.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fsync.c",
           "cargo_package": "dearust-fd",
           "cargo_artifact": "fd.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fdatasync.c",
           "cargo_package": "dearust-fd",
           "cargo_artifact": "fd.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/lseek.c",
           "cargo_package": "dearust-fd",
           "cargo_artifact": "fd.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/flock.c",
           "cargo_package": "dearust-fd",
           "cargo_artifact": "fd.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/umask.c",
           "cargo_package": "dearust-fd",
           "cargo_artifact": "fd.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/getdtablesize.c",
           "cargo_package": "dearust-fd",
           "cargo_artifact": "fd.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/rmdir.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/truncate.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/stat.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/stat/fstat.c",
           "cargo_package": "dearust-path",
           "cargo_artifact": "paths.o",
-          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+        },
+        {
+          "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/access.c",
+          "cargo_package": "dearust-path",
+          "cargo_artifact": "paths.o",
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
+        },
+        {
+          "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/chmod.c",
+          "cargo_package": "dearust-path",
+          "cargo_artifact": "paths.o",
+          "scope": "x86_64 Rust slice with existing OS/ABI boundaries; matching runtime checks in runtime-hardening-verification.json, runtime-metadata-verification.json, runtime-paths-verification.json, runtime-control-verification.json, runtime-descriptors-verification.json, runtime-fdops-verification.json, runtime-permissions-verification.json, runtime-fileops-verification.json, runtime-performance-verification.json, runtime-next-verification.json and runtime-expansion-verification.json. Other architectures and original target retirement remain pending."
         },
         {
           "source": "src/external/xnu/darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/getpid.c",

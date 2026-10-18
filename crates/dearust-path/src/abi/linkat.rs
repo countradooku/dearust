@@ -12,9 +12,10 @@ unsafe extern "C" {
 }
 
 /// # Safety
-/// Non-null input pointers must be readable through NUL or 4096 bytes, whichever
-/// comes first. Initialized guest TLS and non-unwinding ABI-compatible foreign
-/// helpers are required. Helpers must preserve path termination on success.
+/// Guest TLS must be initialized. Foreign helpers must obey their ABI,
+/// preserve path termination and must not retain pointers or unwind into Rust.
+/// Guest addresses are validated by Linux. Kernel output must not alias live
+/// wrapper storage.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sys_linkat(
     fd: i32,
@@ -32,10 +33,7 @@ pub unsafe extern "C" fn sys_linkat(
         // SAFETY: original atfd preserves descriptor and per-thread cwd policy.
         dfd: unsafe { atfd(fd) },
     };
-    if let Err(error) = crate::path::copy_into(&mut source.path, |index| {
-        // SAFETY: caller guarantees readability; bounded copier stops at NUL.
-        unsafe { path.add(index).read() }
-    }) {
+    if let Err(error) = super::memory::copy_path(&mut source.path, path) {
         return error;
     }
     let mut destination = Expanded {
@@ -44,10 +42,7 @@ pub unsafe extern "C" fn sys_linkat(
         // SAFETY: same original descriptor/TLS contract as source.
         dfd: unsafe { atfd(newfd) },
     };
-    if let Err(error) = crate::path::copy_into(&mut destination.path, |index| {
-        // SAFETY: caller guarantees readability; copier reads at most 4096 bytes.
-        unsafe { newpath.add(index).read() }
-    }) {
+    if let Err(error) = super::memory::copy_path(&mut destination.path, newpath) {
         return error;
     }
     // SAFETY: initialized repr(C) buffers match the original ABI. Source expands
