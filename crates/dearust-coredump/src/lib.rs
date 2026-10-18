@@ -4,7 +4,9 @@
 //! Integer fields are decoded explicitly; core bytes never become native structs.
 #![forbid(unsafe_code)]
 
+mod backing;
 mod fp;
+mod payload;
 
 use std::collections::BTreeSet;
 use std::ffi::OsStr;
@@ -96,21 +98,90 @@ fn home_for_real_uid(status: &str, passwd: &str) -> Option<PathBuf> {
     })
 }
 
+fn unavailable_backing(error: &io::Error) -> bool {
+    matches!(
+        error.kind(),
+        io::ErrorKind::NotFound | io::ErrorKind::PermissionDenied
+    )
+}
+
+fn open_read(path: &Path) -> io::Result<File> {
+    // Opening a FIFO must not block before metadata can reject it. NONBLOCK
+    // has no effect on regular-file reads; the descriptor always owns its fd.
+    Ok(rustix::fs::open(
+        path,
+        rustix::fs::OFlags::RDONLY | rustix::fs::OFlags::NONBLOCK | rustix::fs::OFlags::CLOEXEC,
+        rustix::fs::Mode::empty(),
+    )?
+    .into())
+}
+
+fn open_candidate(path: &Path) -> io::Result<File> {
+    let file = open_read(path).map_err(|error| {
+        // Linux can reserve an fd before looking up a pathname. Under EMFILE,
+        // prove absence without another descriptor; never reinterpret a real
+        // source's resource or I/O failure as an unavailable zero-filled image.
+        if error.raw_os_error() == Some(24) {
+            if let Err(absent) = std::fs::metadata(path) {
+                if unavailable_backing(&absent) {
+                    return absent;
+                }
+            }
+        }
+        error
+    })?;
+    if !file.metadata()?.is_file() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "backing must be a regular file",
+        ));
+    }
+    Ok(file)
+}
+
 impl Options {
-    fn open(&self, path: &Path) -> io::Result<File> {
-        if let Ok(file) = File::open(path) {
-            return Ok(file);
+    fn resolve<T>(
+        &self,
+        path: &Path,
+        mut attempt: impl FnMut(&Path) -> io::Result<T>,
+    ) -> io::Result<T> {
+        match attempt(path) {
+            Ok(value) => return Ok(value),
+            Err(error) if unavailable_backing(&error) => {}
+            Err(error) => return Err(error),
         }
         if let Ok(relative) = path.strip_prefix(&self.prefix) {
-            return File::open(self.libexec.join(relative));
+            return attempt(&self.libexec.join(relative));
         }
         if let Ok(relative) = path.strip_prefix("/") {
-            if let Ok(file) = File::open(self.prefix.join(relative)) {
-                return Ok(file);
+            match attempt(&self.prefix.join(relative)) {
+                Ok(value) => return Ok(value),
+                Err(error) if unavailable_backing(&error) => {}
+                Err(error) => return Err(error),
             }
-            return File::open(self.libexec.join(relative));
+            return attempt(&self.libexec.join(relative));
         }
-        File::open(path)
+        attempt(path)
+    }
+    fn open(&self, path: &Path) -> io::Result<File> {
+        self.resolve(path, open_candidate)
+    }
+    fn metadata(&self, path: &Path) -> io::Result<std::fs::Metadata> {
+        self.resolve(path, |candidate| std::fs::metadata(candidate))
+    }
+}
+
+fn executable_flags(input: &mut impl Read) -> io::Result<Option<u64>> {
+    let mut header = [0; 32];
+    match input.read_exact(&mut header) {
+        Ok(()) => {}
+        Err(error) if error.kind() == io::ErrorKind::UnexpectedEof => return Ok(None),
+        Err(error) => return Err(error),
+    }
+    if matches!(number(&header, 0, 4)?, 0xfeedface | 0xfeedfacf) && number(&header, 12, 4)? == 2 {
+        Ok(Some(number(&header, 24, 4)?))
+    } else {
+        Ok(None)
     }
 }
 #[derive(Debug)]
@@ -196,6 +267,7 @@ impl Thread<'_> {
 
 struct Plan<'a> {
     wide: bool,
+    align_large: bool,
     areas: Vec<Area>,
     threads: Vec<Thread<'a>>,
     floating_layout: Option<&'a [u8]>,
@@ -227,8 +299,14 @@ fn owner(name: &[u8], expected: &[u8]) -> bool {
     name.strip_suffix(&[0]).unwrap_or(name) == expected
 }
 
-impl<'a> Plan<'a> {
-    fn parse(data: &'a [u8], options: &Options) -> io::Result<Self> {
+struct ElfHeader {
+    wide: bool,
+    phoff: u64,
+    entsize: u64,
+    count: u64,
+}
+impl ElfHeader {
+    fn parse(data: &[u8]) -> io::Result<Self> {
         if bytes(data, 0, 4)? != b"\x7fELF"
             || number(data, 5, 1)? != 1
             || number(data, 6, 1)? != 1
@@ -253,11 +331,34 @@ impl<'a> Plan<'a> {
         if entsize < if wide { 56 } else { 32 } {
             return Err(invalid("short ELF program header"));
         }
-        bytes(data, phoff, entsize * count)?;
+        Ok(Self {
+            wide,
+            phoff,
+            entsize,
+            count,
+        })
+    }
+}
+
+fn check_range(input_len: u64, offset: u64, length: u64) -> io::Result<()> {
+    if add(offset, length)? > input_len {
+        return Err(invalid("truncated ELF core"));
+    }
+    Ok(())
+}
+
+struct CoreHeaders {
+    wide: bool,
+    areas: Vec<Area>,
+    notes: Vec<(u64, u64)>,
+}
+impl CoreHeaders {
+    fn parse(header: &ElfHeader, table: &[u8], input_len: u64) -> io::Result<Self> {
+        let wide = header.wide;
         let mut areas = Vec::new();
         let mut notes = Vec::new();
-        for i in 0..count {
-            let ph = bytes(data, add(phoff, i * entsize)?, entsize)?;
+        for i in 0..header.count {
+            let ph = bytes(table, i * header.entsize, header.entsize)?;
             let kind = number(ph, 0, 4)?;
             let (offset, address, length, size, flags) = if wide {
                 (
@@ -277,15 +378,19 @@ impl<'a> Plan<'a> {
                 )
             };
             if kind == 4 && length != 0 {
-                notes.push((offset, bytes(data, offset, length)?));
+                check_range(input_len, offset, length)?;
+                notes.push((offset, length));
             }
             if kind == 1 {
                 if length > size {
                     return Err(invalid("PT_LOAD file size exceeds memory size"));
                 }
-                add(address, size)?;
+                let end = add(address, size)?;
+                if !wide && end > (1_u64 << 32) {
+                    return Err(invalid("32-bit ELF virtual range overflow"));
+                }
                 if length != 0 {
-                    bytes(data, offset, length)?;
+                    check_range(input_len, offset, length)?;
                 }
                 areas.push(Area {
                     address,
@@ -304,17 +409,42 @@ impl<'a> Plan<'a> {
         // register image repeatedly. Validate disjoint ranges before any scan.
         notes.sort_unstable_by_key(|(offset, _)| *offset);
         let mut previous_end = 0;
-        for &(offset, payload) in &notes {
+        for &(offset, length) in &notes {
             if offset < previous_end {
                 return Err(invalid("overlapping PT_NOTE segments"));
             }
-            previous_end = add(offset, payload.len() as u64)?;
+            previous_end = add(offset, length)?;
         }
+        Ok(Self { wide, areas, notes })
+    }
+}
+
+// Match the source page offset for large dumped ranges. On CoW filesystems
+// this permits kernel-copy reflinks instead of copying every byte through RAM.
+// Mach-O segment commands describe the padding explicitly; small segments and
+// reconstructed/zero-filled mappings keep their previous compact layout.
+fn payload_offset(offset: u64, area: &Area, align_large: bool) -> io::Result<u64> {
+    if align_large && area.path.is_none() && area.length >= 65536 {
+        add(offset, area.offset.wrapping_sub(offset) & 4095)
+    } else {
+        Ok(offset)
+    }
+}
+
+impl<'a> Plan<'a> {
+    fn parse(
+        headers: CoreHeaders,
+        notes: &[(u64, &'a [u8])],
+        options: &Options,
+    ) -> io::Result<Self> {
+        let wide = headers.wide;
+        let width = if wide { 8 } else { 4 };
+        let mut areas = headers.areas;
         // Linux emits process-wide XSAVE layout metadata after thread regsets.
         // Pre-scan all segments, so foreign cores never depend on host CPUID.
         let mut floating_layout = None;
         let mut validated_layout = None;
-        visit_notes(&notes, |name, kind, payload| {
+        visit_notes(notes, |name, kind, payload| {
             if owner(name, b"LINUX") && kind == 0x205 {
                 validated_layout = Some(fp::validate_layout(payload)?);
                 if floating_layout.replace(payload).is_some() {
@@ -325,7 +455,7 @@ impl<'a> Plan<'a> {
         })?;
         let mut files = None;
         let mut threads: Vec<Thread<'a>> = Vec::new();
-        visit_notes(&notes, |name, kind, payload| {
+        visit_notes(notes, |name, kind, payload| {
             if owner(name, b"CORE") && kind == 0x46494c45 && files.replace(payload).is_some() {
                 return Err(invalid("duplicate NT_FILE note"));
             }
@@ -410,14 +540,10 @@ impl<'a> Plan<'a> {
             let path = PathBuf::from(OsStr::from_bytes(&names[..end_name]));
             names = &names[end_name + 1..];
             if main_flags.is_none() && !path.starts_with("/dev") {
-                if let Ok(mut file) = options.open(&path) {
-                    let mut header = [0; 32];
-                    if file.read_exact(&mut header).is_ok()
-                        && matches!(number(&header, 0, 4)?, 0xfeedface | 0xfeedfacf)
-                        && number(&header, 12, 4)? == 2
-                    {
-                        main_flags = Some(number(&header, 24, 4)?);
-                    }
+                match options.open(&path) {
+                    Ok(mut file) => main_flags = executable_flags(&mut file)?,
+                    Err(error) if unavailable_backing(&error) => {}
+                    Err(error) => return Err(error),
                 }
             }
             mappings.push(Mapping {
@@ -451,14 +577,21 @@ impl<'a> Plan<'a> {
             }
         }
         areas.retain(|a| a.prot != 0);
-        let plan = Self {
+        let mut plan = Self {
             wide,
+            align_large: false,
             areas,
             threads,
             floating_layout,
             flags: main_flags.unwrap_or(0),
         };
+        // Padding is an optimization, never a reason to reject a valid packed
+        // core close to the architecture's file-offset limit.
         plan.layout()?;
+        plan.align_large = true;
+        if plan.layout().is_err() {
+            plan.align_large = false;
+        }
         Ok(plan)
     }
     fn note_count(&self) -> u64 {
@@ -490,7 +623,7 @@ impl<'a> Plan<'a> {
             return Err(invalid("too many Mach-O commands"));
         }
         for area in &self.areas {
-            offset = add(offset, area.size)?;
+            offset = add(payload_offset(offset, area, self.align_large)?, area.size)?;
             if !self.wide
                 && (offset > u32::MAX as u64
                     || area.address > u32::MAX as u64
@@ -511,7 +644,12 @@ impl<'a> Plan<'a> {
         }
         Ok(commands)
     }
-    fn write(self, data: &[u8], options: &Options, out: &mut impl Write) -> io::Result<()> {
+    fn write<W: Write>(
+        self,
+        out: &mut W,
+        mut payload: impl FnMut(&Area, &mut W) -> io::Result<u64>,
+        mut zero_payload: impl FnMut(&mut W, u64) -> io::Result<()>,
+    ) -> io::Result<()> {
         let width = if self.wide { 8 } else { 4 };
         let header_size = if self.wide { 32 } else { 28 };
         let segment_size = if self.wide { 72 } else { 56 };
@@ -531,7 +669,9 @@ impl<'a> Plan<'a> {
         if self.wide {
             emit(out, 0, 4)?;
         }
+        let mut data_offset = offset;
         for area in &self.areas {
+            offset = payload_offset(offset, area, self.align_large)?;
             emit(out, if self.wide { 0x19 } else { 1 }, 4)?;
             emit(out, segment_size, 4)?;
             zero(out, 16)?;
@@ -575,22 +715,11 @@ impl<'a> Plan<'a> {
             emit_note_command(out, b"DEARUST.XLAYOUT", note_offset, layout.len() as u64)?;
         }
         for area in self.areas {
-            let written = if area.length == 0 {
-                0
-            } else if let Some(path) = area.path {
-                if path.starts_with("/dev") {
-                    0
-                } else if let Ok(mut file) = options.open(&path) {
-                    file.seek(SeekFrom::Start(area.offset))?;
-                    io::copy(&mut file.take(area.length), out)?
-                } else {
-                    0
-                }
-            } else {
-                out.write_all(bytes(data, area.offset, area.length)?)?;
-                area.length
-            };
-            zero(out, area.size - written)?;
+            let aligned = payload_offset(data_offset, &area, self.align_large)?;
+            zero(out, aligned - data_offset)?;
+            let written = payload(&area, out)?;
+            zero_payload(out, area.size - written)?;
+            data_offset = add(aligned, area.size)?;
         }
         for thread in &self.threads {
             for (kind, payload) in thread.floating.raw_notes() {
@@ -624,14 +753,70 @@ fn emit_note_command(out: &mut impl Write, owner: &[u8], offset: u64, size: u64)
 /// Only provided register state is emitted; raw Linux images are retained in
 /// per-thread LC_NOTE records, including components without a Darwin flavor.
 pub fn convert(data: &[u8], output: &mut impl Write, options: &Options) -> io::Result<()> {
-    Plan::parse(data, options)?.write(data, options, output)
+    let header = ElfHeader::parse(data)?;
+    let table = bytes(data, header.phoff, header.entsize * header.count)?;
+    let headers = CoreHeaders::parse(&header, table, data.len() as u64)?;
+    let notes: Vec<_> = headers
+        .notes
+        .iter()
+        .map(|&(offset, length)| Ok((offset, bytes(data, offset, length)?)))
+        .collect::<io::Result<_>>()?;
+    let plan = Plan::parse(headers, &notes, options)?;
+    plan.write(
+        output,
+        |area, out| {
+            if area.length == 0 {
+                Ok(0)
+            } else if let Some(path) = &area.path {
+                if let Some(mut file) = open_backing(options, path)? {
+                    file.seek(SeekFrom::Start(area.offset))?;
+                    io::copy(&mut file.take(area.length), out)
+                } else {
+                    Ok(0)
+                }
+            } else {
+                out.write_all(bytes(data, area.offset, area.length)?)?;
+                Ok(area.length)
+            }
+        },
+        zero,
+    )
 }
 
-/// Convert files, rejecting input/output aliases before truncating the output.
-/// Invalid ELF metadata leaves an existing destination untouched.
+// An unavailable mapping is reconstructed as zeros. Resource exhaustion and I/O
+// errors are not absence: silently accepting them would fabricate missing data.
+fn open_backing(options: &Options, path: &Path) -> io::Result<Option<File>> {
+    if path.starts_with("/dev") {
+        return Ok(None);
+    }
+    match options.open(path) {
+        Ok(file) => Ok(Some(file)),
+        Err(error) if unavailable_backing(&error) => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+
+fn read_range(file: &mut File, input_len: u64, offset: u64, length: u64) -> io::Result<Vec<u8>> {
+    check_range(input_len, offset, length)?;
+    let length = usize::try_from(length).map_err(|_| invalid("metadata too large"))?;
+    let mut data = Vec::new();
+    data.try_reserve_exact(length).map_err(io::Error::other)?;
+    // Bounded read_to_end avoids initializing metadata twice. take() cannot
+    // consume a growing file beyond the already validated range.
+    file.seek(SeekFrom::Start(offset))?;
+    file.take(length as u64).read_to_end(&mut data)?;
+    if data.len() != length {
+        return Err(invalid("truncated ELF core"));
+    }
+    Ok(data)
+}
+
+/// Convert a regular file with owned metadata and bounded payload buffering.
+/// Invalid metadata and source/destination aliases fail before truncation. The
+/// input is pinned, but concurrent writers do not provide snapshot isolation.
+/// Truncation and later I/O errors are reported, and may leave partial output.
 pub fn convert_file(input: &Path, output: &Path, options: &Options) -> io::Result<()> {
-    use std::os::unix::fs::MetadataExt;
-    let input_file = File::open(input)?;
+    let mut input_file = open_read(input)?;
     let input_meta = input_file.metadata()?;
     if !input_meta.is_file() {
         return Err(io::Error::new(
@@ -639,51 +824,189 @@ pub fn convert_file(input: &Path, output: &Path, options: &Options) -> io::Resul
             "input must be a regular core file",
         ));
     }
-    if let Ok(output_meta) = std::fs::metadata(output) {
-        if input_meta.dev() == output_meta.dev() && input_meta.ino() == output_meta.ino() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "input and output are the same file",
-            ));
-        }
-    }
-    let mut data = Vec::new();
-    let limit = input_meta
-        .len()
-        .checked_add(1)
-        .ok_or_else(|| invalid("input length overflow"))?;
-    // A regular file already supplies the bound. Avoid geometric growth and
-    // repeated prefix copies while keeping the checked, immutable snapshot.
-    data.try_reserve_exact(usize::try_from(limit).map_err(|_| invalid("input too large"))?)
-        .map_err(io::Error::other)?;
-    input_file.take(limit).read_to_end(&mut data)?;
-    if data.len() as u64 != input_meta.len() {
+    let input_len = input_meta.len();
+    // The 52-byte common prefix identifies the class; an ELF64 header needs
+    // twelve more bytes. No assumption about the program table's location.
+    let elf = read_range(&mut input_file, input_len, 0, input_len.min(64))?;
+    let header = ElfHeader::parse(&elf)?;
+    drop(elf);
+    let table = read_range(
+        &mut input_file,
+        input_len,
+        header.phoff,
+        header.entsize * header.count,
+    )?;
+    let headers = CoreHeaders::parse(&header, &table, input_len)?;
+    drop(table);
+    let storage = headers
+        .notes
+        .iter()
+        .map(|&(offset, length)| {
+            Ok((
+                offset,
+                read_range(&mut input_file, input_len, offset, length)?,
+            ))
+        })
+        .collect::<io::Result<Vec<_>>>()?;
+    let notes: Vec<_> = storage
+        .iter()
+        .map(|(offset, data)| (*offset, data.as_slice()))
+        .collect();
+    let plan = Plan::parse(headers, &notes, options)?;
+    if input_file.metadata()?.len() != input_len {
         return Err(invalid("input file changed length while reading"));
     }
-    let plan = Plan::parse(&data, options)?;
-    if let Ok(output_meta) = std::fs::metadata(output) {
-        for area in &plan.areas {
-            if let Some(path) = &area.path {
-                if let Ok(file) = options.open(path) {
-                    let metadata = file.metadata()?;
-                    if metadata.dev() == output_meta.dev() && metadata.ino() == output_meta.ino() {
-                        return Err(io::Error::new(
-                            io::ErrorKind::InvalidInput,
-                            "output aliases a backing file",
-                        ));
-                    }
-                }
+    let destination = std::fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .open(output)?;
+    let output_meta = destination.metadata()?;
+    let regular_output = output_meta.is_file();
+    if backing::aliases(&input_meta, &output_meta) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "input and output are the same file",
+        ));
+    }
+    // Even skipped device/empty mappings must not alias the destination. They
+    // are not read later, so these identity-only selections need no held fd.
+    let identity_only: BTreeSet<_> = plan
+        .areas
+        .iter()
+        .filter_map(|area| {
+            area.path
+                .as_deref()
+                .filter(|path| area.length == 0 || path.starts_with("/dev"))
+        })
+        .collect();
+    for path in identity_only {
+        // No data is selected from skipped/empty ranges. Descriptor-free
+        // identity selection also works with no spare fd, and is never reopened.
+        match options.metadata(path) {
+            Ok(metadata) if backing::aliases(&metadata, &output_meta) => {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "output aliases a backing file",
+                ));
             }
+            Ok(_) => {}
+            Err(error) if unavailable_backing(&error) => {}
+            Err(error) => return Err(error),
         }
     }
-    let mut output = io::BufWriter::with_capacity(65536, File::create(output)?);
-    plan.write(&data, options, &mut output)?;
-    output.flush()
+    let mut backing =
+        backing::BackingFiles::prepare(&plan.areas, options, &output_meta, &input_file)?;
+    if input_file.metadata()?.len() != input_len {
+        return Err(invalid(
+            "input file changed length while reading backing files",
+        ));
+    }
+    if regular_output {
+        destination.set_len(0)?;
+    }
+    let mut output = io::BufWriter::with_capacity(65536, destination);
+    let mut copy_buffer = payload::CopyBuffer::default();
+    let mut sparse_output = false;
+    plan.write(
+        &mut output,
+        |area, out| {
+            if area.length == 0 {
+                Ok(0)
+            } else if area.path.is_some() {
+                backing.copy(area, out)
+            } else {
+                copy_buffer.copy(&input_file, area.offset, area.length, out, regular_output)
+            }
+        },
+        |out, length| {
+            if regular_output && length >= 65536 {
+                // Truncation removed every old extent. Seeking over a large zero
+                // range avoids allocating/writing pages; subsequent writes or the
+                // final set_len materialize its exact logical size.
+                let position = out.stream_position()?;
+                out.seek(SeekFrom::Start(add(position, length)?))?;
+                sparse_output = true;
+                Ok(())
+            } else {
+                zero(out, length)
+            }
+        },
+    )?;
+    if input_file.metadata()?.len() != input_len {
+        return Err(invalid("input file changed length while converting"));
+    }
+    output.flush()?;
+    if sparse_output {
+        let length = output.stream_position()?;
+        output.get_ref().set_len(length)?;
+    }
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn backing_absence_does_not_include_resource_or_io_errors() {
+        for errno in [5, 23, 24, 40] {
+            assert!(!unavailable_backing(&io::Error::from_raw_os_error(errno)));
+        }
+        for kind in [io::ErrorKind::NotFound, io::ErrorKind::PermissionDenied] {
+            assert!(unavailable_backing(&io::Error::from(kind)));
+        }
+    }
+
+    #[test]
+    fn backing_open_does_not_hide_candidate_error_with_overlay() {
+        use std::os::unix::fs::symlink;
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let directory = std::env::temp_dir().join(format!(
+            "dearust-backing-open-{}-{unique}",
+            std::process::id()
+        ));
+        std::fs::create_dir(&directory).unwrap();
+        let overlay = directory.join("overlay");
+        std::fs::create_dir(&overlay).unwrap();
+        let path = directory.join("loop");
+        symlink("loop", &path).unwrap();
+        std::fs::write(overlay.join("loop"), b"must not replace failed source").unwrap();
+        let options = Options {
+            prefix: directory.clone(),
+            libexec: overlay,
+        };
+        let result = options.open(&path);
+        std::fs::remove_dir_all(directory).unwrap();
+        assert_eq!(result.unwrap_err().raw_os_error(), Some(40));
+    }
+
+    #[test]
+    fn executable_flags_accept_short_files_but_propagate_read_errors() {
+        struct Failing;
+        impl Read for Failing {
+            fn read(&mut self, _: &mut [u8]) -> io::Result<usize> {
+                Err(io::Error::from_raw_os_error(5))
+            }
+        }
+        assert_eq!(executable_flags(&mut &b"short"[..]).unwrap(), None);
+        assert_eq!(
+            executable_flags(&mut Failing).unwrap_err().raw_os_error(),
+            Some(5)
+        );
+        for magic in [0xfeedface_u32, 0xfeedfacf] {
+            let mut header = [0; 32];
+            header[..4].copy_from_slice(&magic.to_le_bytes());
+            header[12..16].copy_from_slice(&2_u32.to_le_bytes());
+            header[24..28].copy_from_slice(&0x1234_u32.to_le_bytes());
+            assert_eq!(executable_flags(&mut &header[..]).unwrap(), Some(0x1234));
+            header[12..16].copy_from_slice(&1_u32.to_le_bytes());
+            assert_eq!(executable_flags(&mut &header[..]).unwrap(), None);
+        }
+    }
+
     fn area(address: u64, size: u64) -> Area {
         Area {
             address,

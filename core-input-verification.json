@@ -1,0 +1,3372 @@
+{
+  "scope": "Completed Linux host coredump input batch: owned checked metadata, safe bounded exact payload transfer, stable reconstruction selection and nondestructive alias checks. Whole runtime migration remains unfinished.",
+  "base_commit": "ae720782077bbfd92777719a16f7de98c46bcefb",
+  "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
+  "release_sha256": "61eb9cbe471e672ad121b9e26d4bcd0bd7c5be7334db8afbb50f557878438d90",
+  "binaries": {
+    "original_c": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/core-input-next/performance-final9/original_c",
+      "sha256": "4d9df378b440af2a2e23043c4ea500ccf6ec90cdd7c71b56c9760cdb9686be78",
+      "bytes": 58000
+    },
+    "prior_rust": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/core-input-next/performance-final9/prior_rust",
+      "sha256": "9dd09a72d4a884aaa7fb23b00cfbb28733a96b2fd1195024512634f2982fbc69",
+      "bytes": 531256
+    },
+    "current_rust": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/core-input-next/performance-final9/current_rust",
+      "sha256": "61eb9cbe471e672ad121b9e26d4bcd0bd7c5be7334db8afbb50f557878438d90",
+      "bytes": 606168
+    }
+  },
+  "sources": {
+    "Cargo.lock": "000a70130b13ee69065981698217b068b8eb3f388f2321bfdfcd077f238f6436",
+    "crates/dearust-coredump/Cargo.toml": "1889b2cd553f64016f69669c50dc38b7fddb49d66fe0de17ffaa3dec0af7aee0",
+    "tools/check_core_input.py": "008a1580c4a9ff5c93ca96c1be4ab485de92a4dfc0b6887fd68f0b062c56a29b",
+    "tools/benchmark_core_input.py": "b0c14cae9b5a20ed239ba99815a85d33f6088a94ed453cd4c3e0b9dea4f60ba0",
+    "crates/dearust-coredump/src/main.rs": "f64ef1308d333fa68e3bcb2964fb3319bfc3940884a871ecc48f222c44843157",
+    "crates/dearust-coredump/src/lib.rs": "e3119c224e5df759a45b99420067afb7fbae28aefdfdaddc640199c22bdbd012",
+    "crates/dearust-coredump/src/fp.rs": "b0683e2846483dc5e9b76d575a0c8b3c7014d9980bdf0c05edb378a91e6420c2",
+    "crates/dearust-coredump/src/backing.rs": "ddcc2f9afe9038f10246809c3a107c93e72084f023717310836dad6628acf966",
+    "crates/dearust-coredump/src/payload.rs": "b7ca2d4749063108297c3473b6459b4217a9f913cf0b334faed5867a3a1a138e",
+    "crates/dearust-coredump/tests/conversion.rs": "864ca459e301eacbcbcdafeaa8f53f908ae63b1884f6cf5ec78a51bec1a62f86",
+    "crates/dearust-coredump/tests/core_states.rs": "e6a4b4b5ad9fe598e476449fac3f7727206133db8fda7a0f0fc008cf638e1eac"
+  },
+  "safety": {
+    "unsafe_code": "forbidden in dearust-coredump",
+    "file_mapping": false,
+    "whole_dumped_file_vec": false,
+    "metadata_owned_until_output_completes": true,
+    "payload_buffer_max_bytes": 1048576,
+    "private_pipe_max_capacity_bytes": 1048576,
+    "pipe_memory_excluded_from_process_rss": true,
+    "output_buffer_bytes": 65536,
+    "backing_pin_limit": 64,
+    "spill": "Only requested ranges to owned mode0600 O_TMPFILE before destination truncation",
+    "snapshot": "No atomic point-in-time guarantee for concurrent rewrites; observed length changes and short dumped reads fail",
+    "late_io": "Can leave partial destination, as before"
+  },
+  "dependencies": {
+    "host_only": true,
+    "rustix": "1.1.5; fs/pipe; measured Linux linux_raw backend",
+    "bitflags": "2.13.2",
+    "linux_raw_sys": "0.12.1",
+    "notices": "crates/dearust-coredump/THIRD-PARTY.txt"
+  },
+  "verification": {
+    "all_passed": true,
+    "ordinary_rust_tests": 182,
+    "compile_fail_doctests": 3,
+    "python_tests": 35,
+    "explicit_optional_differential_and_abi_checks": true,
+    "independent_fault_cases": 48,
+    "retained_adversarial_cases": 25,
+    "actual_captured_core_variants": 4,
+    "independently_decoded_thread_states": 8,
+    "staged_release_byte_equal_cases": 6,
+    "remaining_concrete_review_findings": [],
+    "debugger": "Not rerun in this input batch. Historical LLDB22 FP/i386 reader gaps retain the CORE-REGISTERS.txt scope."
+  },
+  "performance": {
+    "method": "Benchmark exact C, prior Rust and current core converters on captured x86 state.\n\nRequires --capture-root from tools/check_core_states.py (capture32 and capture64).\nAll fixtures, frozen executable copies, output and reports go into a fresh\n--output directory; references, installed runtime and global caches are untouched.\nWall = native C fork/exec/wait fresh CLI; CPU/RSS = wait4 converter child.\nCold = POSIX_FADV_DONTNEED only on each owned, fsynced mapped input before sample.\nNo output fsync: cached converter writes, not storage durability. Small --only\nstartup64 --rounds 1 --cold-rounds 0 provides a CLI smoke check.\n\nFull FP/FPX/XSAVE raw archives are validated in deterministic FP, FPX, XSAVE order.\nThis script checks byte preservation and scales real register images, not whether\nan external debugger exposes AVX/AVX512 or supports a particular Mach-O class.\n",
+    "main_summary": [
+      {
+        "scenario": "startup64",
+        "mode": "warm",
+        "variants": {
+          "original_c": {
+            "wall_us": {
+              "n": 36,
+              "min": 748.354,
+              "q1": 764.876,
+              "median": 792.4075,
+              "q3": 999.99,
+              "p90": 1099.127,
+              "p99": 1285.97,
+              "max": 1285.97
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 691.0,
+              "q1": 704.0,
+              "median": 723.0,
+              "q3": 928.0,
+              "p90": 1013.0,
+              "p99": 1198.0,
+              "max": 1198.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 3720,
+              "q1": 3804,
+              "median": 4062.0,
+              "q3": 4092,
+              "p90": 4100,
+              "p99": 4148,
+              "max": 4148
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 157,
+              "q1": 161,
+              "median": 161.5,
+              "q3": 162,
+              "p90": 164,
+              "p99": 164,
+              "max": 164
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 748,
+              "q1": 748,
+              "median": 748.0,
+              "q3": 748,
+              "p90": 748,
+              "p99": 748,
+              "max": 748
+            }
+          },
+          "prior_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 489.455,
+              "q1": 497.781,
+              "median": 514.0360000000001,
+              "q3": 559.087,
+              "p90": 599.984,
+              "p99": 661.52,
+              "max": 661.52
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 442.0,
+              "q1": 447.0,
+              "median": 459.5,
+              "q3": 494.0,
+              "p90": 535.0,
+              "p99": 555.0,
+              "max": 555.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1880,
+              "q1": 1964,
+              "median": 2134.0,
+              "q3": 2180,
+              "p90": 2212,
+              "p99": 2260,
+              "max": 2260
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 116,
+              "q1": 117,
+              "median": 118.0,
+              "q3": 118,
+              "p90": 118,
+              "p99": 119,
+              "max": 119
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 216,
+              "q1": 216,
+              "median": 216.0,
+              "q3": 216,
+              "p90": 216,
+              "p99": 216,
+              "max": 216
+            }
+          },
+          "current_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 480.368,
+              "q1": 485.428,
+              "median": 494.249,
+              "q3": 541.704,
+              "p90": 590.306,
+              "p99": 744.457,
+              "max": 744.457
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 429.0,
+              "q1": 434.0,
+              "median": 442.0,
+              "q3": 482.0,
+              "p90": 521.0,
+              "p99": 557.0,
+              "max": 557.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1916,
+              "q1": 2144,
+              "median": 2198.0,
+              "q3": 2212,
+              "p90": 2320,
+              "p99": 2380,
+              "max": 2380
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 100,
+              "q1": 102,
+              "median": 102.0,
+              "q3": 103,
+              "p90": 103,
+              "p99": 105,
+              "max": 105
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 216,
+              "q1": 216,
+              "median": 216.0,
+              "q3": 216,
+              "p90": 216,
+              "p99": 216,
+              "max": 216
+            }
+          }
+        },
+        "current_vs_original_c_cpu_us_percent": -38.86583679114799,
+        "current_vs_original_c_wall_us_percent": -37.62691544438941,
+        "current_vs_original_c_maxrss_kib_percent": -45.888724766125065,
+        "current_vs_prior_rust_cpu_us_percent": -3.80848748639826,
+        "current_vs_prior_rust_wall_us_percent": -3.8493412912714353,
+        "current_vs_prior_rust_maxrss_kib_percent": 2.9990627928772273
+      },
+      {
+        "scenario": "startup32",
+        "mode": "warm",
+        "variants": {
+          "original_c": {
+            "wall_us": {
+              "n": 36,
+              "min": 738.085,
+              "q1": 751.5,
+              "median": 763.2175,
+              "q3": 800.392,
+              "p90": 847.221,
+              "p99": 984.971,
+              "max": 984.971
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 681.0,
+              "q1": 690.0,
+              "median": 698.0,
+              "q3": 724.0,
+              "p90": 746.0,
+              "p99": 829.0,
+              "max": 829.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 3720,
+              "q1": 3812,
+              "median": 4062.0,
+              "q3": 4072,
+              "p90": 4092,
+              "p99": 4148,
+              "max": 4148
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 158,
+              "q1": 160,
+              "median": 161.0,
+              "q3": 162,
+              "p90": 163,
+              "p99": 164,
+              "max": 164
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 640,
+              "q1": 640,
+              "median": 640.0,
+              "q3": 640,
+              "p90": 640,
+              "p99": 640,
+              "max": 640
+            }
+          },
+          "prior_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 481.64,
+              "q1": 491.639,
+              "median": 495.90250000000003,
+              "q3": 501.568,
+              "p90": 510.405,
+              "p99": 554.838,
+              "max": 554.838
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 434.0,
+              "q1": 441.0,
+              "median": 444.0,
+              "q3": 447.0,
+              "p90": 454.0,
+              "p99": 465.0,
+              "max": 465.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1880,
+              "q1": 1964,
+              "median": 2190.0,
+              "q3": 2212,
+              "p90": 2228,
+              "p99": 2264,
+              "max": 2264
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 115,
+              "q1": 116,
+              "median": 117.0,
+              "q3": 118,
+              "p90": 118,
+              "p99": 119,
+              "max": 119
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 108,
+              "q1": 108,
+              "median": 108.0,
+              "q3": 108,
+              "p90": 108,
+              "p99": 108,
+              "max": 108
+            }
+          },
+          "current_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 467.704,
+              "q1": 477.783,
+              "median": 482.4565,
+              "q3": 487.141,
+              "p90": 497.961,
+              "p99": 567.333,
+              "max": 567.333
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 421.0,
+              "q1": 429.0,
+              "median": 431.0,
+              "q3": 434.0,
+              "p90": 442.0,
+              "p99": 475.0,
+              "max": 475.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1924,
+              "q1": 2148,
+              "median": 2166.0,
+              "q3": 2208,
+              "p90": 2308,
+              "p99": 2384,
+              "max": 2384
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 99,
+              "q1": 101,
+              "median": 102.0,
+              "q3": 103,
+              "p90": 104,
+              "p99": 104,
+              "max": 104
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 108,
+              "q1": 108,
+              "median": 108.0,
+              "q3": 108,
+              "p90": 108,
+              "p99": 108,
+              "max": 108
+            }
+          }
+        },
+        "current_vs_original_c_cpu_us_percent": -38.25214899713467,
+        "current_vs_original_c_wall_us_percent": -36.78649926135079,
+        "current_vs_original_c_maxrss_kib_percent": -46.67651403249631,
+        "current_vs_prior_rust_cpu_us_percent": -2.9279279279279313,
+        "current_vs_prior_rust_wall_us_percent": -2.7114200876180328,
+        "current_vs_prior_rust_maxrss_kib_percent": -1.0958904109588996
+      },
+      {
+        "scenario": "full32",
+        "mode": "warm",
+        "variants": {
+          "original_c": {
+            "wall_us": {
+              "n": 36,
+              "min": 741.181,
+              "q1": 755.278,
+              "median": 767.235,
+              "q3": 795.583,
+              "p90": 830.259,
+              "p99": 935.778,
+              "max": 935.778
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 680.0,
+              "q1": 694.0,
+              "median": 702.0,
+              "q3": 711.0,
+              "p90": 747.0,
+              "p99": 783.0,
+              "max": 783.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 3720,
+              "q1": 3784,
+              "median": 3950.0,
+              "q3": 4072,
+              "p90": 4092,
+              "p99": 4148,
+              "max": 4148
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 157,
+              "q1": 160,
+              "median": 161.0,
+              "q3": 162,
+              "p90": 163,
+              "p99": 163,
+              "max": 163
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 640,
+              "q1": 640,
+              "median": 640.0,
+              "q3": 640,
+              "p90": 640,
+              "p99": 640,
+              "max": 640
+            }
+          },
+          "prior_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 489.666,
+              "q1": 499.644,
+              "median": 503.53150000000005,
+              "q3": 509.332,
+              "p90": 574.015,
+              "p99": 600.355,
+              "max": 600.355
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 433.0,
+              "q1": 448.0,
+              "median": 450.0,
+              "q3": 455.0,
+              "p90": 460.0,
+              "p99": 489.0,
+              "max": 489.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1876,
+              "q1": 1944,
+              "median": 2142.0,
+              "q3": 2204,
+              "p90": 2260,
+              "p99": 2264,
+              "max": 2264
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 116,
+              "q1": 118,
+              "median": 119.0,
+              "q3": 120,
+              "p90": 120,
+              "p99": 121,
+              "max": 121
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 3844,
+              "q1": 3844,
+              "median": 3844.0,
+              "q3": 3844,
+              "p90": 3844,
+              "p99": 3844,
+              "max": 3844
+            }
+          },
+          "current_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 477.592,
+              "q1": 485.317,
+              "median": 488.533,
+              "q3": 494.835,
+              "p90": 503.632,
+              "p99": 516.426,
+              "max": 516.426
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 429.0,
+              "q1": 434.0,
+              "median": 437.0,
+              "q3": 441.0,
+              "p90": 451.0,
+              "p99": 455.0,
+              "max": 455.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1916,
+              "q1": 2144,
+              "median": 2162.0,
+              "q3": 2200,
+              "p90": 2316,
+              "p99": 2384,
+              "max": 2384
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 100,
+              "q1": 102,
+              "median": 102.5,
+              "q3": 104,
+              "p90": 105,
+              "p99": 105,
+              "max": 105
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 3844,
+              "q1": 3844,
+              "median": 3844.0,
+              "q3": 3844,
+              "p90": 3844,
+              "p99": 3844,
+              "max": 3844
+            }
+          }
+        },
+        "current_vs_original_c_cpu_us_percent": -37.74928774928775,
+        "current_vs_original_c_wall_us_percent": -36.32550652668348,
+        "current_vs_original_c_maxrss_kib_percent": -45.265822784810126,
+        "current_vs_prior_rust_cpu_us_percent": -2.8888888888888853,
+        "current_vs_prior_rust_wall_us_percent": -2.9786617123258474,
+        "current_vs_prior_rust_maxrss_kib_percent": 0.9337068160597539
+      },
+      {
+        "scenario": "full64",
+        "mode": "warm",
+        "variants": {
+          "original_c": {
+            "wall_us": {
+              "n": 36,
+              "min": 750.568,
+              "q1": 762.461,
+              "median": 771.994,
+              "q3": 786.686,
+              "p90": 835.309,
+              "p99": 886.145,
+              "max": 886.145
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 689.0,
+              "q1": 698.0,
+              "median": 703.0,
+              "q3": 712.0,
+              "p90": 762.0,
+              "p99": 790.0,
+              "max": 790.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 3716,
+              "q1": 3744,
+              "median": 3852.0,
+              "q3": 4072,
+              "p90": 4100,
+              "p99": 4100,
+              "max": 4100
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 156,
+              "q1": 159,
+              "median": 161.0,
+              "q3": 162,
+              "p90": 163,
+              "p99": 164,
+              "max": 164
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 2180,
+              "q1": 2180,
+              "median": 2180.0,
+              "q3": 2180,
+              "p90": 2180,
+              "p99": 2180,
+              "max": 2180
+            }
+          },
+          "prior_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 525.984,
+              "q1": 532.206,
+              "median": 553.8515,
+              "q3": 568.384,
+              "p90": 627.466,
+              "p99": 668.383,
+              "max": 668.383
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 443.0,
+              "q1": 452.0,
+              "median": 456.5,
+              "q3": 460.0,
+              "p90": 465.0,
+              "p99": 506.0,
+              "max": 506.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1864,
+              "q1": 1980,
+              "median": 2184.0,
+              "q3": 2208,
+              "p90": 2228,
+              "p99": 2296,
+              "max": 2296
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 121,
+              "q1": 123,
+              "median": 124.0,
+              "q3": 124,
+              "p90": 126,
+              "p99": 127,
+              "max": 127
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 17228,
+              "q1": 17228,
+              "median": 17228.0,
+              "q3": 17228,
+              "p90": 17228,
+              "p99": 17228,
+              "max": 17228
+            }
+          },
+          "current_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 507.679,
+              "q1": 525.854,
+              "median": 546.0115000000001,
+              "q3": 560.099,
+              "p90": 619.641,
+              "p99": 727.976,
+              "max": 727.976
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 431.0,
+              "q1": 438.0,
+              "median": 444.0,
+              "q3": 448.0,
+              "p90": 468.0,
+              "p99": 515.0,
+              "max": 515.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1916,
+              "q1": 2132,
+              "median": 2152.0,
+              "q3": 2168,
+              "p90": 2224,
+              "p99": 2380,
+              "max": 2380
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 105,
+              "q1": 106,
+              "median": 107.5,
+              "q3": 108,
+              "p90": 109,
+              "p99": 110,
+              "max": 110
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 17228,
+              "q1": 17228,
+              "median": 17228.0,
+              "q3": 17228,
+              "p90": 17228,
+              "p99": 17228,
+              "max": 17228
+            }
+          }
+        },
+        "current_vs_original_c_cpu_us_percent": -36.8421052631579,
+        "current_vs_original_c_wall_us_percent": -29.27257206662227,
+        "current_vs_original_c_maxrss_kib_percent": -44.13291796469366,
+        "current_vs_prior_rust_cpu_us_percent": -2.7382256297918905,
+        "current_vs_prior_rust_wall_us_percent": -1.415541891644223,
+        "current_vs_prior_rust_maxrss_kib_percent": -1.46520146520146
+      },
+      {
+        "scenario": "full64_16",
+        "mode": "warm",
+        "variants": {
+          "original_c": {
+            "wall_us": {
+              "n": 36,
+              "min": 844.716,
+              "q1": 864.474,
+              "median": 889.265,
+              "q3": 965.094,
+              "p90": 1032.571,
+              "p99": 1144.803,
+              "max": 1144.803
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 753.0,
+              "q1": 772.0,
+              "median": 791.0,
+              "q3": 834.0,
+              "p90": 880.0,
+              "p99": 970.0,
+              "max": 970.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 3772,
+              "q1": 3852,
+              "median": 4072.0,
+              "q3": 4072,
+              "p90": 4144,
+              "p99": 4200,
+              "max": 4200
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 159,
+              "q1": 162,
+              "median": 163.0,
+              "q3": 164,
+              "p90": 165,
+              "p99": 165,
+              "max": 165
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 11488,
+              "q1": 11488,
+              "median": 11488.0,
+              "q3": 11488,
+              "p90": 11488,
+              "p99": 11488,
+              "max": 11488
+            }
+          },
+          "prior_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 583.303,
+              "q1": 597.459,
+              "median": 605.6495,
+              "q3": 622.486,
+              "p90": 642.063,
+              "p99": 735.61,
+              "max": 735.61
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 529.0,
+              "q1": 541.0,
+              "median": 546.5,
+              "q3": 556.0,
+              "p90": 567.0,
+              "p99": 590.0,
+              "max": 590.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 2112,
+              "q1": 2380,
+              "median": 2418.0,
+              "q3": 2468,
+              "p90": 2480,
+              "p99": 2516,
+              "max": 2516
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 145,
+              "q1": 146,
+              "median": 146.0,
+              "q3": 148,
+              "p90": 148,
+              "p99": 149,
+              "max": 149
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 91744,
+              "q1": 91744,
+              "median": 91744.0,
+              "q3": 91744,
+              "p90": 91744,
+              "p99": 91744,
+              "max": 91744
+            }
+          },
+          "current_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 574.836,
+              "q1": 584.725,
+              "median": 590.3455,
+              "q3": 599.413,
+              "p90": 629.349,
+              "p99": 760.217,
+              "max": 760.217
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 521.0,
+              "q1": 527.0,
+              "median": 533.5,
+              "q3": 541.0,
+              "p90": 568.0,
+              "p99": 582.0,
+              "max": 582.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1912,
+              "q1": 2148,
+              "median": 2160.0,
+              "q3": 2204,
+              "p90": 2320,
+              "p99": 2384,
+              "max": 2384
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 128,
+              "q1": 129,
+              "median": 130.5,
+              "q3": 131,
+              "p90": 133,
+              "p99": 134,
+              "max": 134
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 91744,
+              "q1": 91744,
+              "median": 91744.0,
+              "q3": 91744,
+              "p90": 91744,
+              "p99": 91744,
+              "max": 91744
+            }
+          }
+        },
+        "current_vs_original_c_cpu_us_percent": -32.55372945638433,
+        "current_vs_original_c_wall_us_percent": -33.61422073285241,
+        "current_vs_original_c_maxrss_kib_percent": -46.954813359528494,
+        "current_vs_prior_rust_cpu_us_percent": -2.3787740164684323,
+        "current_vs_prior_rust_wall_us_percent": -2.526874041834426,
+        "current_vs_prior_rust_maxrss_kib_percent": -10.66997518610422
+      },
+      {
+        "scenario": "full64_256",
+        "mode": "warm",
+        "variants": {
+          "original_c": {
+            "wall_us": {
+              "n": 36,
+              "min": 1845.348,
+              "q1": 1968.39,
+              "median": 2067.9935,
+              "q3": 2204.616,
+              "p90": 2271.553,
+              "p99": 2317.79,
+              "max": 2317.79
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 1694.0,
+              "q1": 1760.0,
+              "median": 1903.0,
+              "q3": 1987.0,
+              "p90": 2075.0,
+              "p99": 2115.0,
+              "max": 2115.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 4812,
+              "q1": 4968,
+              "median": 5020.0,
+              "q3": 5076,
+              "p90": 5076,
+              "p99": 5076,
+              "max": 5076
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 182,
+              "q1": 187,
+              "median": 187.0,
+              "q3": 188,
+              "p90": 191,
+              "p99": 193,
+              "max": 193
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 183328,
+              "q1": 183328,
+              "median": 183328.0,
+              "q3": 183328,
+              "p90": 183328,
+              "p99": 183328,
+              "max": 183328
+            }
+          },
+          "prior_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 1503.472,
+              "q1": 1545.781,
+              "median": 1619.3654999999999,
+              "q3": 1798.358,
+              "p90": 1890.984,
+              "p99": 2241.025,
+              "max": 2241.025
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 1407.0,
+              "q1": 1462.0,
+              "median": 1527.0,
+              "q3": 1660.0,
+              "p90": 1793.0,
+              "p99": 2054.0,
+              "max": 2054.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 2880,
+              "q1": 2920,
+              "median": 2938.0,
+              "q3": 2992,
+              "p90": 3164,
+              "p99": 3236,
+              "max": 3236
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 355,
+              "q1": 357,
+              "median": 358.0,
+              "q3": 359,
+              "p90": 359,
+              "p99": 360,
+              "max": 360
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 1467424,
+              "q1": 1467424,
+              "median": 1467424.0,
+              "q3": 1467424,
+              "p90": 1467424,
+              "p99": 1467424,
+              "max": 1467424
+            }
+          },
+          "current_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 1476.56,
+              "q1": 1572.582,
+              "median": 1643.5459999999998,
+              "q3": 1695.785,
+              "p90": 1785.074,
+              "p99": 1942.862,
+              "max": 1942.862
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 1383.0,
+              "q1": 1437.0,
+              "median": 1523.5,
+              "q3": 1595.0,
+              "p90": 1695.0,
+              "p99": 1849.0,
+              "max": 1849.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 2896,
+              "q1": 2928,
+              "median": 3030.0,
+              "q3": 3136,
+              "p90": 3180,
+              "p99": 3224,
+              "max": 3224
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 339,
+              "q1": 341,
+              "median": 342.0,
+              "q3": 343,
+              "p90": 343,
+              "p99": 344,
+              "max": 344
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 1467424,
+              "q1": 1467424,
+              "median": 1467424.0,
+              "q3": 1467424,
+              "p90": 1467424,
+              "p99": 1467424,
+              "max": 1467424
+            }
+          }
+        },
+        "current_vs_original_c_cpu_us_percent": -19.94219653179191,
+        "current_vs_original_c_wall_us_percent": -20.524605130528705,
+        "current_vs_original_c_maxrss_kib_percent": -39.6414342629482,
+        "current_vs_prior_rust_cpu_us_percent": -0.2292075965946272,
+        "current_vs_prior_rust_wall_us_percent": 1.4932082967063387,
+        "current_vs_prior_rust_maxrss_kib_percent": 3.131381892443841
+      },
+      {
+        "scenario": "nofp64_1024",
+        "mode": "warm",
+        "variants": {
+          "original_c": {
+            "wall_us": {
+              "n": 36,
+              "min": 4659.025,
+              "q1": 4866.487,
+              "median": 4983.5025000000005,
+              "q3": 5102.653,
+              "p90": 5156.124,
+              "p99": 5273.556,
+              "max": 5273.556
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 4359.0,
+              "q1": 4515.0,
+              "median": 4614.5,
+              "q3": 4708.0,
+              "p90": 4764.0,
+              "p99": 4854.0,
+              "max": 4854.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 4588,
+              "q1": 4672,
+              "median": 4716.0,
+              "q3": 4796,
+              "p90": 4852,
+              "p99": 4852,
+              "max": 4852
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 251,
+              "q1": 253,
+              "median": 254.0,
+              "q3": 254,
+              "p90": 255,
+              "p99": 256,
+              "max": 256
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 733216,
+              "q1": 733216,
+              "median": 733216.0,
+              "q3": 733216,
+              "p90": 733216,
+              "p99": 733216,
+              "max": 733216
+            }
+          },
+          "prior_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 942.952,
+              "q1": 970.524,
+              "median": 1001.422,
+              "q3": 1063.54,
+              "p90": 1159.801,
+              "p99": 1206.099,
+              "max": 1206.099
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 810.0,
+              "q1": 837.0,
+              "median": 870.5,
+              "q3": 894.0,
+              "p90": 923.0,
+              "p99": 987.0,
+              "max": 987.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 2624,
+              "q1": 2668,
+              "median": 2688.0,
+              "q3": 2732,
+              "p90": 2912,
+              "p99": 2964,
+              "max": 2964
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 296,
+              "q1": 298,
+              "median": 299.0,
+              "q3": 300,
+              "p90": 300,
+              "p99": 301,
+              "max": 301
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 188448,
+              "q1": 188448,
+              "median": 188448.0,
+              "q3": 188448,
+              "p90": 188448,
+              "p99": 188448,
+              "max": 188448
+            }
+          },
+          "current_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 915.71,
+              "q1": 960.946,
+              "median": 993.7275,
+              "q3": 1036.309,
+              "p90": 1153.41,
+              "p99": 1249.872,
+              "max": 1249.872
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 795.0,
+              "q1": 824.0,
+              "median": 849.5,
+              "q3": 882.0,
+              "p90": 906.0,
+              "p99": 1010.0,
+              "max": 1010.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 2644,
+              "q1": 2668,
+              "median": 2782.0,
+              "q3": 2908,
+              "p90": 2920,
+              "p99": 2972,
+              "max": 2972
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 282,
+              "q1": 284,
+              "median": 285.0,
+              "q3": 285,
+              "p90": 286,
+              "p99": 287,
+              "max": 287
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 188448,
+              "q1": 188448,
+              "median": 188448.0,
+              "q3": 188448,
+              "p90": 188448,
+              "p99": 188448,
+              "max": 188448
+            }
+          }
+        },
+        "current_vs_original_c_cpu_us_percent": -81.59063820565609,
+        "current_vs_original_c_wall_us_percent": -80.05965683773611,
+        "current_vs_original_c_maxrss_kib_percent": -41.00932994062765,
+        "current_vs_prior_rust_cpu_us_percent": -2.412406662837452,
+        "current_vs_prior_rust_wall_us_percent": -0.7683573957832035,
+        "current_vs_prior_rust_maxrss_kib_percent": 3.4970238095238138
+      },
+      {
+        "scenario": "mapped64_16_64MiB",
+        "mode": "warm",
+        "variants": {
+          "original_c": {
+            "wall_us": {
+              "n": 36,
+              "min": 12881.754,
+              "q1": 13492.297,
+              "median": 13737.0955,
+              "q3": 13995.218,
+              "p90": 14394.603,
+              "p99": 15147.726,
+              "max": 15147.726
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 9913.0,
+              "q1": 10407.0,
+              "median": 10570.0,
+              "q3": 10775.0,
+              "p90": 11005.0,
+              "p99": 11718.0,
+              "max": 11718.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 69308,
+              "q1": 69336,
+              "median": 69606.0,
+              "q3": 69608,
+              "p90": 69680,
+              "p99": 69736,
+              "max": 69736
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 1182,
+              "q1": 1185,
+              "median": 1187.0,
+              "q3": 1187,
+              "p90": 1188,
+              "p99": 1190,
+              "max": 1190
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 67120424,
+              "q1": 67120424,
+              "median": 67120424.0,
+              "q3": 67120424,
+              "p90": 67120424,
+              "p99": 67120424,
+              "max": 67120424
+            }
+          },
+          "prior_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 18080.468,
+              "q1": 18568.891,
+              "median": 18800.749,
+              "q3": 19395.133,
+              "p90": 20157.823,
+              "p99": 21299.1,
+              "max": 21299.1
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 14999.0,
+              "q1": 15367.0,
+              "median": 15591.5,
+              "q3": 16033.0,
+              "p90": 16611.0,
+              "p99": 17105.0,
+              "max": 17105.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 67484,
+              "q1": 67604,
+              "median": 67696.0,
+              "q3": 67752,
+              "p90": 67872,
+              "p99": 67984,
+              "max": 67984
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 177,
+              "q1": 687,
+              "median": 687.0,
+              "q3": 688,
+              "p90": 689,
+              "p99": 690,
+              "max": 690
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 67200680,
+              "q1": 67200680,
+              "median": 67200680.0,
+              "q3": 67200680,
+              "p90": 67200680,
+              "p99": 67200680,
+              "max": 67200680
+            }
+          },
+          "current_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 2659.385,
+              "q1": 2788.47,
+              "median": 2833.8455000000004,
+              "q3": 2868.3,
+              "p90": 2912.293,
+              "p99": 3013.415,
+              "max": 3013.415
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 2584.0,
+              "q1": 2679.0,
+              "median": 2739.5,
+              "q3": 2765.0,
+              "p90": 2823.0,
+              "p99": 2905.0,
+              "max": 2905.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 2176,
+              "q1": 2392,
+              "median": 2420.0,
+              "q3": 2448,
+              "p90": 2480,
+              "p99": 2660,
+              "max": 2660
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 140,
+              "q1": 142,
+              "median": 143.0,
+              "q3": 144,
+              "p90": 145,
+              "p99": 146,
+              "max": 146
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 67202176,
+              "q1": 67202176,
+              "median": 67202176.0,
+              "q3": 67202176,
+              "p90": 67202176,
+              "p99": 67202176,
+              "max": 67202176
+            }
+          }
+        },
+        "current_vs_original_c_cpu_us_percent": -74.08230842005676,
+        "current_vs_original_c_wall_us_percent": -79.37085390430603,
+        "current_vs_original_c_maxrss_kib_percent": -96.52328822227969,
+        "current_vs_prior_rust_cpu_us_percent": -82.429528909983,
+        "current_vs_prior_rust_wall_us_percent": -84.92695423996139,
+        "current_vs_prior_rust_maxrss_kib_percent": -96.42519498936421
+      },
+      {
+        "scenario": "mapped64_16_64MiB",
+        "mode": "owned_input_fadvise_cold",
+        "variants": {
+          "original_c": {
+            "wall_us": {
+              "n": 12,
+              "min": 16537.833,
+              "q1": 16920.546,
+              "median": 17097.309999999998,
+              "q3": 17535.368,
+              "p90": 17868.538,
+              "p99": 17902.692,
+              "max": 17902.692
+            },
+            "cpu_us": {
+              "n": 12,
+              "min": 12903.0,
+              "q1": 13318.0,
+              "median": 13490.5,
+              "q3": 13655.0,
+              "p90": 13839.0,
+              "p99": 13957.0,
+              "max": 13957.0
+            },
+            "maxrss_kib": {
+              "n": 12,
+              "min": 69412,
+              "q1": 69488,
+              "median": 69578.0,
+              "q3": 69608,
+              "p90": 69608,
+              "p99": 69608,
+              "max": 69608
+            },
+            "minor_faults": {
+              "n": 12,
+              "min": 543,
+              "q1": 544,
+              "median": 545.0,
+              "q3": 546,
+              "p90": 547,
+              "p99": 548,
+              "max": 548
+            },
+            "major_faults": {
+              "n": 12,
+              "min": 17,
+              "q1": 17,
+              "median": 17.0,
+              "q3": 17,
+              "p90": 17,
+              "p99": 17,
+              "max": 17
+            },
+            "output_bytes": {
+              "n": 12,
+              "min": 67120424,
+              "q1": 67120424,
+              "median": 67120424.0,
+              "q3": 67120424,
+              "p90": 67120424,
+              "p99": 67120424,
+              "max": 67120424
+            }
+          },
+          "prior_rust": {
+            "wall_us": {
+              "n": 12,
+              "min": 21912.259,
+              "q1": 22256.229,
+              "median": 22494.4845,
+              "q3": 22877.123,
+              "p90": 23465.835,
+              "p99": 23756.304,
+              "max": 23756.304
+            },
+            "cpu_us": {
+              "n": 12,
+              "min": 18259.0,
+              "q1": 18650.0,
+              "median": 18816.0,
+              "q3": 19180.0,
+              "p90": 19633.0,
+              "p99": 19815.0,
+              "max": 19815.0
+            },
+            "maxrss_kib": {
+              "n": 12,
+              "min": 67580,
+              "q1": 67664,
+              "median": 67702.0,
+              "q3": 67872,
+              "p90": 67936,
+              "p99": 67948,
+              "max": 67948
+            },
+            "minor_faults": {
+              "n": 12,
+              "min": 686,
+              "q1": 687,
+              "median": 688.0,
+              "q3": 688,
+              "p90": 688,
+              "p99": 689,
+              "max": 689
+            },
+            "major_faults": {
+              "n": 12,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 12,
+              "min": 67200680,
+              "q1": 67200680,
+              "median": 67200680.0,
+              "q3": 67200680,
+              "p90": 67200680,
+              "p99": 67200680,
+              "max": 67200680
+            }
+          },
+          "current_rust": {
+            "wall_us": {
+              "n": 12,
+              "min": 2992.786,
+              "q1": 3043.02,
+              "median": 3058.6705,
+              "q3": 3091.282,
+              "p90": 3144.092,
+              "p99": 3239.242,
+              "max": 3239.242
+            },
+            "cpu_us": {
+              "n": 12,
+              "min": 2835.0,
+              "q1": 2875.0,
+              "median": 2899.5,
+              "q3": 2919.0,
+              "p90": 2960.0,
+              "p99": 3075.0,
+              "max": 3075.0
+            },
+            "maxrss_kib": {
+              "n": 12,
+              "min": 2348,
+              "q1": 2388,
+              "median": 2406.0,
+              "q3": 2416,
+              "p90": 2424,
+              "p99": 2464,
+              "max": 2464
+            },
+            "minor_faults": {
+              "n": 12,
+              "min": 141,
+              "q1": 142,
+              "median": 142.5,
+              "q3": 144,
+              "p90": 144,
+              "p99": 144,
+              "max": 144
+            },
+            "major_faults": {
+              "n": 12,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 12,
+              "min": 67202176,
+              "q1": 67202176,
+              "median": 67202176.0,
+              "q3": 67202176,
+              "p90": 67202176,
+              "p99": 67202176,
+              "max": 67202176
+            }
+          }
+        },
+        "current_vs_original_c_cpu_us_percent": -78.50709758719098,
+        "current_vs_original_c_wall_us_percent": -82.11022377204367,
+        "current_vs_original_c_maxrss_kib_percent": -96.54201040558797,
+        "current_vs_prior_rust_cpu_us_percent": -84.59024234693877,
+        "current_vs_prior_rust_wall_us_percent": -86.40257570694718,
+        "current_vs_prior_rust_maxrss_kib_percent": -96.44619065906473
+      },
+      {
+        "scenario": "zerofill64_64MiB",
+        "mode": "warm",
+        "variants": {
+          "original_c": {
+            "wall_us": {
+              "n": 36,
+              "min": 122615.596,
+              "q1": 127552.126,
+              "median": 128424.144,
+              "q3": 130609.113,
+              "p90": 133910.071,
+              "p99": 136759.165,
+              "max": 136759.165
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 116817.0,
+              "q1": 121592.0,
+              "median": 122112.0,
+              "q3": 122832.0,
+              "p90": 123445.0,
+              "p99": 124526.0,
+              "max": 124526.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 3708,
+              "q1": 3800,
+              "median": 3952.0,
+              "q3": 4072,
+              "p90": 4092,
+              "p99": 4148,
+              "max": 4148
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 158,
+              "q1": 162,
+              "median": 163.0,
+              "q3": 164,
+              "p90": 165,
+              "p99": 166,
+              "max": 166
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 67109684,
+              "q1": 67109684,
+              "median": 67109684.0,
+              "q3": 67109684,
+              "p90": 67109684,
+              "p99": 67109684,
+              "max": 67109684
+            }
+          },
+          "prior_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 28038.226,
+              "q1": 29090.384,
+              "median": 29504.557,
+              "q3": 31091.767,
+              "p90": 32071.598,
+              "p99": 34076.197,
+              "max": 34076.197
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 24465.0,
+              "q1": 24918.0,
+              "median": 25624.0,
+              "q3": 25978.0,
+              "p90": 26217.0,
+              "p99": 27173.0,
+              "max": 27173.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1864,
+              "q1": 1948,
+              "median": 2132.0,
+              "q3": 2180,
+              "p90": 2212,
+              "p99": 2264,
+              "max": 2264
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 115,
+              "q1": 117,
+              "median": 118.0,
+              "q3": 118,
+              "p90": 120,
+              "p99": 121,
+              "max": 121
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 67109152,
+              "q1": 67109152,
+              "median": 67109152.0,
+              "q3": 67109152,
+              "p90": 67109152,
+              "p99": 67109152,
+              "max": 67109152
+            }
+          },
+          "current_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 593.331,
+              "q1": 639.769,
+              "median": 659.0105,
+              "q3": 680.656,
+              "p90": 803.539,
+              "p99": 1180.28,
+              "max": 1180.28
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 533.0,
+              "q1": 569.0,
+              "median": 585.0,
+              "q3": 596.0,
+              "p90": 625.0,
+              "p99": 752.0,
+              "max": 752.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1916,
+              "q1": 2140,
+              "median": 2160.0,
+              "q3": 2188,
+              "p90": 2224,
+              "p99": 2380,
+              "max": 2380
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 113,
+              "q1": 116,
+              "median": 117.0,
+              "q3": 117,
+              "p90": 119,
+              "p99": 121,
+              "max": 121
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 67109152,
+              "q1": 67109152,
+              "median": 67109152.0,
+              "q3": 67109152,
+              "p90": 67109152,
+              "p99": 67109152,
+              "max": 67109152
+            }
+          }
+        },
+        "current_vs_original_c_cpu_us_percent": -99.52093160377359,
+        "current_vs_original_c_wall_us_percent": -99.48684843871726,
+        "current_vs_original_c_maxrss_kib_percent": -45.344129554655865,
+        "current_vs_prior_rust_cpu_us_percent": -97.71698407742741,
+        "current_vs_prior_rust_wall_us_percent": -97.76641113438849,
+        "current_vs_prior_rust_maxrss_kib_percent": 1.31332082551594
+      },
+      {
+        "scenario": "actual_capture32",
+        "mode": "warm",
+        "variants": {
+          "original_c": {
+            "wall_us": {
+              "n": 36,
+              "min": 748.825,
+              "q1": 758.353,
+              "median": 766.6234999999999,
+              "q3": 787.468,
+              "p90": 844.686,
+              "p99": 901.333,
+              "max": 901.333
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 688.0,
+              "q1": 696.0,
+              "median": 702.0,
+              "q3": 714.0,
+              "p90": 760.0,
+              "p99": 782.0,
+              "max": 782.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 3712,
+              "q1": 3800,
+              "median": 4044.0,
+              "q3": 4092,
+              "p90": 4100,
+              "p99": 4148,
+              "max": 4148
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 157,
+              "q1": 160,
+              "median": 161.5,
+              "q3": 162,
+              "p90": 163,
+              "p99": 165,
+              "max": 165
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 640,
+              "q1": 640,
+              "median": 640.0,
+              "q3": 640,
+              "p90": 640,
+              "p99": 640,
+              "max": 640
+            }
+          },
+          "prior_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 499.474,
+              "q1": 504.393,
+              "median": 508.32550000000003,
+              "q3": 517.638,
+              "p90": 582.29,
+              "p99": 653.214,
+              "max": 653.214
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 449.0,
+              "q1": 455.0,
+              "median": 458.0,
+              "q3": 462.0,
+              "p90": 478.0,
+              "p99": 508.0,
+              "max": 508.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1868,
+              "q1": 2124,
+              "median": 2180.0,
+              "q3": 2212,
+              "p90": 2252,
+              "p99": 2264,
+              "max": 2264
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 116,
+              "q1": 118,
+              "median": 119.0,
+              "q3": 120,
+              "p90": 120,
+              "p99": 121,
+              "max": 121
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 3844,
+              "q1": 3844,
+              "median": 3844.0,
+              "q3": 3844,
+              "p90": 3844,
+              "p99": 3844,
+              "max": 3844
+            }
+          },
+          "current_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 484.345,
+              "q1": 494.614,
+              "median": 499.414,
+              "q3": 502.509,
+              "p90": 514.412,
+              "p99": 561.191,
+              "max": 561.191
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 437.0,
+              "q1": 443.0,
+              "median": 445.5,
+              "q3": 448.0,
+              "p90": 453.0,
+              "p99": 473.0,
+              "max": 473.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1916,
+              "q1": 2144,
+              "median": 2164.0,
+              "q3": 2204,
+              "p90": 2212,
+              "p99": 2380,
+              "max": 2380
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 100,
+              "q1": 102,
+              "median": 103.0,
+              "q3": 103,
+              "p90": 104,
+              "p99": 105,
+              "max": 105
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 3844,
+              "q1": 3844,
+              "median": 3844.0,
+              "q3": 3844,
+              "p90": 3844,
+              "p99": 3844,
+              "max": 3844
+            }
+          }
+        },
+        "current_vs_original_c_cpu_us_percent": -36.53846153846154,
+        "current_vs_original_c_wall_us_percent": -34.85537555266698,
+        "current_vs_original_c_maxrss_kib_percent": -46.48862512363996,
+        "current_vs_prior_rust_cpu_us_percent": -2.729257641921401,
+        "current_vs_prior_rust_wall_us_percent": -1.7531089823351498,
+        "current_vs_prior_rust_maxrss_kib_percent": -0.7339449541284404
+      },
+      {
+        "scenario": "actual_capture64",
+        "mode": "warm",
+        "variants": {
+          "original_c": {
+            "wall_us": {
+              "n": 36,
+              "min": 761.951,
+              "q1": 771.268,
+              "median": 773.6175000000001,
+              "q3": 799.891,
+              "p90": 861.078,
+              "p99": 932.322,
+              "max": 932.322
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 677.0,
+              "q1": 707.0,
+              "median": 710.5,
+              "q3": 718.0,
+              "p90": 757.0,
+              "p99": 814.0,
+              "max": 814.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 3728,
+              "q1": 3804,
+              "median": 3968.0,
+              "q3": 4080,
+              "p90": 4100,
+              "p99": 4104,
+              "max": 4104
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 156,
+              "q1": 160,
+              "median": 161.0,
+              "q3": 162,
+              "p90": 163,
+              "p99": 165,
+              "max": 165
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 2180,
+              "q1": 2180,
+              "median": 2180.0,
+              "q3": 2180,
+              "p90": 2180,
+              "p99": 2180,
+              "max": 2180
+            }
+          },
+          "prior_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 529.861,
+              "q1": 540.501,
+              "median": 548.7925,
+              "q3": 572.302,
+              "p90": 628.999,
+              "p99": 636.403,
+              "max": 636.403
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 453.0,
+              "q1": 458.0,
+              "median": 461.0,
+              "q3": 465.0,
+              "p90": 480.0,
+              "p99": 498.0,
+              "max": 498.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1864,
+              "q1": 1964,
+              "median": 2144.0,
+              "q3": 2220,
+              "p90": 2260,
+              "p99": 2300,
+              "max": 2300
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 121,
+              "q1": 123,
+              "median": 124.0,
+              "q3": 125,
+              "p90": 125,
+              "p99": 126,
+              "max": 126
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 17228,
+              "q1": 17228,
+              "median": 17228.0,
+              "q3": 17228,
+              "p90": 17228,
+              "p99": 17228,
+              "max": 17228
+            }
+          },
+          "current_rust": {
+            "wall_us": {
+              "n": 36,
+              "min": 523.389,
+              "q1": 530.984,
+              "median": 538.027,
+              "q3": 543.948,
+              "p90": 571.199,
+              "p99": 685.465,
+              "max": 685.465
+            },
+            "cpu_us": {
+              "n": 36,
+              "min": 442.0,
+              "q1": 445.0,
+              "median": 450.0,
+              "q3": 453.0,
+              "p90": 459.0,
+              "p99": 493.0,
+              "max": 493.0
+            },
+            "maxrss_kib": {
+              "n": 36,
+              "min": 1912,
+              "q1": 2128,
+              "median": 2160.0,
+              "q3": 2208,
+              "p90": 2304,
+              "p99": 2384,
+              "max": 2384
+            },
+            "minor_faults": {
+              "n": 36,
+              "min": 105,
+              "q1": 107,
+              "median": 108.0,
+              "q3": 109,
+              "p90": 109,
+              "p99": 110,
+              "max": 110
+            },
+            "major_faults": {
+              "n": 36,
+              "min": 0,
+              "q1": 0,
+              "median": 0.0,
+              "q3": 0,
+              "p90": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "output_bytes": {
+              "n": 36,
+              "min": 17228,
+              "q1": 17228,
+              "median": 17228.0,
+              "q3": 17228,
+              "p90": 17228,
+              "p99": 17228,
+              "max": 17228
+            }
+          }
+        },
+        "current_vs_original_c_cpu_us_percent": -36.66432090077411,
+        "current_vs_original_c_wall_us_percent": -30.453098592004444,
+        "current_vs_original_c_maxrss_kib_percent": -45.56451612903226,
+        "current_vs_prior_rust_cpu_us_percent": -2.386117136659438,
+        "current_vs_prior_rust_wall_us_percent": -1.9616703945480207,
+        "current_vs_prior_rust_maxrss_kib_percent": 0.746268656716409
+      }
+    ],
+    "same_inode_dumped": {
+      "original_c": {
+        "cpu_us": {
+          "n": 36,
+          "min": 8155.0,
+          "q1": 8576.0,
+          "median": 8714.5,
+          "q3": 9124.0,
+          "p90": 9611.0,
+          "p99": 11349.0,
+          "max": 11349.0
+        },
+        "wall_us": {
+          "n": 36,
+          "min": 11314.512,
+          "q1": 11658.622,
+          "median": 11922.621,
+          "q3": 12304.503,
+          "p90": 13197.18,
+          "p99": 16049.55,
+          "max": 16049.55
+        },
+        "maxrss_kib": {
+          "n": 36,
+          "min": 69316,
+          "q1": 69472,
+          "median": 69578.0,
+          "q3": 69608,
+          "p90": 69608,
+          "p99": 69608,
+          "max": 69608
+        },
+        "minor_faults": {
+          "n": 36,
+          "min": 504,
+          "q1": 506,
+          "median": 507.0,
+          "q3": 509,
+          "p90": 509,
+          "p99": 510,
+          "max": 510
+        },
+        "major_faults": {
+          "n": 36,
+          "min": 0,
+          "q1": 0,
+          "median": 0.0,
+          "q3": 0,
+          "p90": 0,
+          "p99": 0,
+          "max": 0
+        },
+        "output_bytes": {
+          "n": 36,
+          "min": 67120424,
+          "q1": 67120424,
+          "median": 67120424.0,
+          "q3": 67120424,
+          "p90": 67120424,
+          "p99": 67120424,
+          "max": 67120424
+        }
+      },
+      "prior_rust": {
+        "cpu_us": {
+          "n": 36,
+          "min": 14035.0,
+          "q1": 14471.0,
+          "median": 14645.0,
+          "q3": 15346.0,
+          "p90": 16805.0,
+          "p99": 17768.0,
+          "max": 17768.0
+        },
+        "wall_us": {
+          "n": 36,
+          "min": 17024.162,
+          "q1": 17609.198,
+          "median": 18058.6015,
+          "q3": 18581.415,
+          "p90": 19526.51,
+          "p99": 21661.555,
+          "max": 21661.555
+        },
+        "maxrss_kib": {
+          "n": 36,
+          "min": 67496,
+          "q1": 67580,
+          "median": 67650.0,
+          "q3": 67740,
+          "p90": 67920,
+          "p99": 67976,
+          "max": 67976
+        },
+        "minor_faults": {
+          "n": 36,
+          "min": 178,
+          "q1": 687,
+          "median": 688.0,
+          "q3": 689,
+          "p90": 689,
+          "p99": 690,
+          "max": 690
+        },
+        "major_faults": {
+          "n": 36,
+          "min": 0,
+          "q1": 0,
+          "median": 0.0,
+          "q3": 0,
+          "p90": 0,
+          "p99": 0,
+          "max": 0
+        },
+        "output_bytes": {
+          "n": 36,
+          "min": 67200680,
+          "q1": 67200680,
+          "median": 67200680.0,
+          "q3": 67200680,
+          "p90": 67200680,
+          "p99": 67200680,
+          "max": 67200680
+        }
+      },
+      "current_rust": {
+        "cpu_us": {
+          "n": 36,
+          "min": 2827.0,
+          "q1": 2945.0,
+          "median": 2985.0,
+          "q3": 3053.0,
+          "p90": 3136.0,
+          "p99": 4034.0,
+          "max": 4034.0
+        },
+        "wall_us": {
+          "n": 36,
+          "min": 2903.588,
+          "q1": 3038.292,
+          "median": 3080.1055,
+          "q3": 3146.095,
+          "p90": 3224.123,
+          "p99": 4195.829,
+          "max": 4195.829
+        },
+        "maxrss_kib": {
+          "n": 36,
+          "min": 2188,
+          "q1": 2400,
+          "median": 2418.0,
+          "q3": 2460,
+          "p90": 2512,
+          "p99": 2576,
+          "max": 2576
+        },
+        "minor_faults": {
+          "n": 36,
+          "min": 141,
+          "q1": 142,
+          "median": 143.0,
+          "q3": 143,
+          "p90": 144,
+          "p99": 145,
+          "max": 145
+        },
+        "major_faults": {
+          "n": 36,
+          "min": 0,
+          "q1": 0,
+          "median": 0.0,
+          "q3": 0,
+          "p90": 0,
+          "p99": 0,
+          "max": 0
+        },
+        "output_bytes": {
+          "n": 36,
+          "min": 67202176,
+          "q1": 67202176,
+          "median": 67202176.0,
+          "q3": 67202176,
+          "p90": 67202176,
+          "p99": 67202176,
+          "max": 67202176
+        }
+      }
+    },
+    "cross_filesystem": {
+      "original_c": {
+        "cpu_us": {
+          "n": 36,
+          "min": 12581.0,
+          "q1": 13122.0,
+          "median": 13949.5,
+          "q3": 14361.0,
+          "p90": 14947.0,
+          "p99": 15259.0,
+          "max": 15259.0
+        },
+        "wall_us": {
+          "n": 36,
+          "min": 15490.825,
+          "q1": 16111.668,
+          "median": 17074.1165,
+          "q3": 17628.073,
+          "p90": 18138.678,
+          "p99": 19130.733,
+          "max": 19130.733
+        },
+        "maxrss_kib": {
+          "n": 36,
+          "min": 69252,
+          "q1": 69336,
+          "median": 69596.0,
+          "q3": 69624,
+          "p90": 69628,
+          "p99": 69680,
+          "max": 69680
+        },
+        "minor_faults": {
+          "n": 36,
+          "min": 1183,
+          "q1": 1185,
+          "median": 1187.0,
+          "q3": 1188,
+          "p90": 1188,
+          "p99": 1190,
+          "max": 1190
+        },
+        "major_faults": {
+          "n": 36,
+          "min": 0,
+          "q1": 0,
+          "median": 0.0,
+          "q3": 0,
+          "p90": 0,
+          "p99": 0,
+          "max": 0
+        },
+        "output_bytes": {
+          "n": 36,
+          "min": 67120424,
+          "q1": 67120424,
+          "median": 67120424.0,
+          "q3": 67120424,
+          "p90": 67120424,
+          "p99": 67120424,
+          "max": 67120424
+        }
+      },
+      "prior_rust": {
+        "cpu_us": {
+          "n": 36,
+          "min": 17887.0,
+          "q1": 18690.0,
+          "median": 18942.5,
+          "q3": 19533.0,
+          "p90": 20226.0,
+          "p99": 25311.0,
+          "max": 25311.0
+        },
+        "wall_us": {
+          "n": 36,
+          "min": 20660.103,
+          "q1": 21716.379,
+          "median": 22255.5985,
+          "q3": 22757.467,
+          "p90": 23931.145,
+          "p99": 29029.37,
+          "max": 29029.37
+        },
+        "maxrss_kib": {
+          "n": 36,
+          "min": 67504,
+          "q1": 67576,
+          "median": 67638.0,
+          "q3": 67732,
+          "p90": 67796,
+          "p99": 67984,
+          "max": 67984
+        },
+        "minor_faults": {
+          "n": 36,
+          "min": 685,
+          "q1": 688,
+          "median": 688.0,
+          "q3": 689,
+          "p90": 690,
+          "p99": 691,
+          "max": 691
+        },
+        "major_faults": {
+          "n": 36,
+          "min": 0,
+          "q1": 0,
+          "median": 0.0,
+          "q3": 0,
+          "p90": 0,
+          "p99": 0,
+          "max": 0
+        },
+        "output_bytes": {
+          "n": 36,
+          "min": 67200680,
+          "q1": 67200680,
+          "median": 67200680.0,
+          "q3": 67200680,
+          "p90": 67200680,
+          "p99": 67200680,
+          "max": 67200680
+        }
+      },
+      "current_rust": {
+        "cpu_us": {
+          "n": 36,
+          "min": 11034.0,
+          "q1": 12076.0,
+          "median": 12459.5,
+          "q3": 12814.0,
+          "p90": 13191.0,
+          "p99": 13806.0,
+          "max": 13806.0
+        },
+        "wall_us": {
+          "n": 36,
+          "min": 13890.02,
+          "q1": 15105.336,
+          "median": 15413.724,
+          "q3": 16111.467,
+          "p90": 16531.481,
+          "p99": 18757.487,
+          "max": 18757.487
+        },
+        "maxrss_kib": {
+          "n": 36,
+          "min": 2168,
+          "q1": 2396,
+          "median": 2450.0,
+          "q3": 2472,
+          "p90": 2624,
+          "p99": 2636,
+          "max": 2636
+        },
+        "minor_faults": {
+          "n": 36,
+          "min": 141,
+          "q1": 142,
+          "median": 143.0,
+          "q3": 144,
+          "p90": 145,
+          "p99": 146,
+          "max": 146
+        },
+        "major_faults": {
+          "n": 36,
+          "min": 0,
+          "q1": 0,
+          "median": 0.0,
+          "q3": 0,
+          "p90": 0,
+          "p99": 0,
+          "max": 0
+        },
+        "output_bytes": {
+          "n": 36,
+          "min": 67202176,
+          "q1": 67202176,
+          "median": 67202176.0,
+          "q3": 67202176,
+          "p90": 67202176,
+          "p99": 67202176,
+          "max": 67202176
+        }
+      }
+    },
+    "same_inode_zero": {
+      "original_c": {
+        "cpu_us": {
+          "n": 36,
+          "min": 103322.0,
+          "q1": 105192.0,
+          "median": 108847.5,
+          "q3": 113783.0,
+          "p90": 120880.0,
+          "p99": 125390.0,
+          "max": 125390.0
+        },
+        "wall_us": {
+          "n": 36,
+          "min": 105376.399,
+          "q1": 110350.258,
+          "median": 114453.286,
+          "q3": 119055.789,
+          "p90": 126131.27,
+          "p99": 130957.642,
+          "max": 130957.642
+        },
+        "maxrss_kib": {
+          "n": 36,
+          "min": 3720,
+          "q1": 3736,
+          "median": 3844.0,
+          "q3": 4064,
+          "p90": 4092,
+          "p99": 4092,
+          "max": 4092
+        },
+        "minor_faults": {
+          "n": 36,
+          "min": 159,
+          "q1": 162,
+          "median": 163.0,
+          "q3": 163,
+          "p90": 164,
+          "p99": 165,
+          "max": 165
+        },
+        "major_faults": {
+          "n": 36,
+          "min": 0,
+          "q1": 0,
+          "median": 0.0,
+          "q3": 0,
+          "p90": 0,
+          "p99": 0,
+          "max": 0
+        },
+        "output_bytes": {
+          "n": 36,
+          "min": 67109684,
+          "q1": 67109684,
+          "median": 67109684.0,
+          "q3": 67109684,
+          "p90": 67109684,
+          "p99": 67109684,
+          "max": 67109684
+        }
+      },
+      "prior_rust": {
+        "cpu_us": {
+          "n": 36,
+          "min": 19718.0,
+          "q1": 20441.0,
+          "median": 25050.5,
+          "q3": 29857.0,
+          "p90": 30788.0,
+          "p99": 33092.0,
+          "max": 33092.0
+        },
+        "wall_us": {
+          "n": 36,
+          "min": 23481.686,
+          "q1": 24954.308,
+          "median": 28821.301,
+          "q3": 33636.125,
+          "p90": 35472.615,
+          "p99": 37260.014,
+          "max": 37260.014
+        },
+        "maxrss_kib": {
+          "n": 36,
+          "min": 1868,
+          "q1": 1952,
+          "median": 2132.0,
+          "q3": 2196,
+          "p90": 2224,
+          "p99": 2280,
+          "max": 2280
+        },
+        "minor_faults": {
+          "n": 36,
+          "min": 116,
+          "q1": 118,
+          "median": 119.0,
+          "q3": 119,
+          "p90": 120,
+          "p99": 120,
+          "max": 120
+        },
+        "major_faults": {
+          "n": 36,
+          "min": 0,
+          "q1": 0,
+          "median": 0.0,
+          "q3": 0,
+          "p90": 0,
+          "p99": 0,
+          "max": 0
+        },
+        "output_bytes": {
+          "n": 36,
+          "min": 67109152,
+          "q1": 67109152,
+          "median": 67109152.0,
+          "q3": 67109152,
+          "p90": 67109152,
+          "p99": 67109152,
+          "max": 67109152
+        }
+      },
+      "current_rust": {
+        "cpu_us": {
+          "n": 36,
+          "min": 5455.0,
+          "q1": 5957.0,
+          "median": 8040.0,
+          "q3": 9717.0,
+          "p90": 10129.0,
+          "p99": 11004.0,
+          "max": 11004.0
+        },
+        "wall_us": {
+          "n": 36,
+          "min": 5540.33,
+          "q1": 6052.969,
+          "median": 8152.587,
+          "q3": 9868.899,
+          "p90": 10274.166,
+          "p99": 11301.357,
+          "max": 11301.357
+        },
+        "maxrss_kib": {
+          "n": 36,
+          "min": 1916,
+          "q1": 2148,
+          "median": 2170.0,
+          "q3": 2212,
+          "p90": 2380,
+          "p99": 2384,
+          "max": 2384
+        },
+        "minor_faults": {
+          "n": 36,
+          "min": 115,
+          "q1": 116,
+          "median": 118.0,
+          "q3": 118,
+          "p90": 119,
+          "p99": 120,
+          "max": 120
+        },
+        "major_faults": {
+          "n": 36,
+          "min": 0,
+          "q1": 0,
+          "median": 0.0,
+          "q3": 0,
+          "p90": 0,
+          "p99": 0,
+          "max": 0
+        },
+        "output_bytes": {
+          "n": 36,
+          "min": 67109152,
+          "q1": 67109152,
+          "median": 67109152.0,
+          "q3": 67109152,
+          "p90": 67109152,
+          "p99": 67109152,
+          "max": 67109152
+        }
+      }
+    },
+    "backings": [
+      {
+        "bits": 32,
+        "nofile": "inherited",
+        "variants": {
+          "prior": {
+            "cpu_us": {
+              "median": 2639.5,
+              "q1": 2613.0,
+              "q3": 2684.0,
+              "min": 2565.0,
+              "max": 2805.0
+            },
+            "wall_us": {
+              "median": 4290.844499999999,
+              "q1": 4144.072,
+              "q3": 4456.582,
+              "min": 4012.863,
+              "max": 5351.604
+            },
+            "maxrss_kib": {
+              "median": 2432.0,
+              "q1": 2288,
+              "q3": 2476,
+              "min": 2108,
+              "max": 2512
+            }
+          },
+          "current": {
+            "cpu_us": {
+              "median": 2348.0,
+              "q1": 2326.0,
+              "q3": 2382.0,
+              "min": 2308.0,
+              "max": 2492.0
+            },
+            "wall_us": {
+              "median": 2458.7664999999997,
+              "q1": 2436.805,
+              "q3": 2493.883,
+              "min": 2402.46,
+              "max": 2608.048
+            },
+            "maxrss_kib": {
+              "median": 2468.0,
+              "q1": 2448,
+              "q3": 2576,
+              "min": 2384,
+              "max": 2700
+            }
+          }
+        },
+        "current_vs_prior_cpu_percent": -11.04375828755446
+      },
+      {
+        "bits": 32,
+        "nofile": 16,
+        "variants": {
+          "prior": {
+            "cpu_us": {
+              "median": 2591.0,
+              "q1": 2570.0,
+              "q3": 2611.0,
+              "min": 2523.0,
+              "max": 2801.0
+            },
+            "wall_us": {
+              "median": 4225.079,
+              "q1": 4110.588,
+              "q3": 4321.637,
+              "min": 3901.142,
+              "max": 4829.106
+            },
+            "maxrss_kib": {
+              "median": 2404.0,
+              "q1": 2204,
+              "q3": 2468,
+              "min": 2108,
+              "max": 2520
+            }
+          },
+          "current": {
+            "cpu_us": {
+              "median": 2309.0,
+              "q1": 2300.0,
+              "q3": 2327.0,
+              "min": 2260.0,
+              "max": 2470.0
+            },
+            "wall_us": {
+              "median": 2417.5385,
+              "q1": 2401.178,
+              "q3": 2464.006,
+              "min": 2354.139,
+              "max": 2869.042
+            },
+            "maxrss_kib": {
+              "median": 2460.0,
+              "q1": 2400,
+              "q3": 2480,
+              "min": 2364,
+              "max": 2700
+            }
+          }
+        },
+        "current_vs_prior_cpu_percent": -10.883828637591664
+      },
+      {
+        "bits": 64,
+        "nofile": "inherited",
+        "variants": {
+          "prior": {
+            "cpu_us": {
+              "median": 2620.5,
+              "q1": 2590.0,
+              "q3": 2660.0,
+              "min": 2529.0,
+              "max": 3019.0
+            },
+            "wall_us": {
+              "median": 4256.053,
+              "q1": 4158.128,
+              "q3": 4503.54,
+              "min": 3992.916,
+              "max": 6280.849
+            },
+            "maxrss_kib": {
+              "median": 2448.0,
+              "q1": 2404,
+              "q3": 2476,
+              "min": 2140,
+              "max": 2520
+            }
+          },
+          "current": {
+            "cpu_us": {
+              "median": 2341.0,
+              "q1": 2326.0,
+              "q3": 2380.0,
+              "min": 2272.0,
+              "max": 2708.0
+            },
+            "wall_us": {
+              "median": 2453.5564999999997,
+              "q1": 2439.48,
+              "q3": 2508.25,
+              "min": 2365.35,
+              "max": 2935.688
+            },
+            "maxrss_kib": {
+              "median": 2464.0,
+              "q1": 2404,
+              "q3": 2468,
+              "min": 2372,
+              "max": 2712
+            }
+          }
+        },
+        "current_vs_prior_cpu_percent": -10.665903453539405
+      },
+      {
+        "bits": 64,
+        "nofile": 16,
+        "variants": {
+          "prior": {
+            "cpu_us": {
+              "median": 2594.5,
+              "q1": 2585.0,
+              "q3": 2607.0,
+              "min": 2525.0,
+              "max": 2709.0
+            },
+            "wall_us": {
+              "median": 4218.011,
+              "q1": 4099.066,
+              "q3": 4287.572,
+              "min": 3965.964,
+              "max": 4964.382
+            },
+            "maxrss_kib": {
+              "median": 2452.0,
+              "q1": 2400,
+              "q3": 2480,
+              "min": 2144,
+              "max": 2552
+            }
+          },
+          "current": {
+            "cpu_us": {
+              "median": 2311.0,
+              "q1": 2299.0,
+              "q3": 2324.0,
+              "min": 2273.0,
+              "max": 2374.0
+            },
+            "wall_us": {
+              "median": 2418.9260000000004,
+              "q1": 2398.783,
+              "q3": 2449.941,
+              "min": 2376.12,
+              "max": 2503.772
+            },
+            "maxrss_kib": {
+              "median": 2456.0,
+              "q1": 2400,
+              "q3": 2484,
+              "min": 2376,
+              "max": 2700
+            }
+          }
+        },
+        "current_vs_prior_cpu_percent": -10.926960878782044
+      }
+    ],
+    "interpretation": "Large dumped input CPU/RSS improved on measured btrfs and tmpfs-to-btrfs cases. Zero output CPU depends on extent history. Original C omits actual FP/raw state. No universal conversion or runtime speedup; process RSS excludes bounded kernel pipe storage."
+  },
+  "preservation": {
+    "workspace_packages": 11,
+    "partial_dependency_leaves": 49,
+    "pending_dependency_leaves": 265754,
+    "target_slices": 7,
+    "targets_pending": 1622,
+    "targets_retired": 0,
+    "installed_runtime_changed": false,
+    "runtime_hashes": [
+      {
+        "path": "/usr/local/libexec/darling/usr/lib/system/libsystem_kernel.dylib",
+        "expected_sha256": "e473a4bcafbcc09a740ef6a82b656b18039db270b1cbed7b930e654a538aa052",
+        "actual_sha256": "e473a4bcafbcc09a740ef6a82b656b18039db270b1cbed7b930e654a538aa052",
+        "unchanged": true
+      },
+      {
+        "path": "/usr/local/bin/darlingserver",
+        "expected_sha256": "6c792a7b1ef80284be0291bc5b51e71d6947193e864b332e073b7fe8f5a6bf69",
+        "actual_sha256": "6c792a7b1ef80284be0291bc5b51e71d6947193e864b332e073b7fe8f5a6bf69",
+        "unchanged": true
+      },
+      {
+        "path": "/home/radud/Documents/Codex/2026-10-18/darling-rust-continuation/work/server-lockset-release/darlingserver",
+        "expected_sha256": "ca8eeb990c574f337edf307559bd11ce4a47636a88417affccbd8d92e6df64fb",
+        "actual_sha256": "ca8eeb990c574f337edf307559bd11ce4a47636a88417affccbd8d92e6df64fb",
+        "unchanged": true
+      }
+    ],
+    "reference_checks": {
+      "trees": [
+        {
+          "path": "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline",
+          "status": {
+            "exit_code": 0,
+            "stdout": "",
+            "stderr": ""
+          },
+          "head": {
+            "exit_code": 0,
+            "stdout": "60ba801decee7a00782f74f6be4c8ffb013f79ff\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/home/radud/Documents/Codex/2026-10-18/re/work/upstream",
+          "status": {
+            "exit_code": 0,
+            "stdout": " M src/bsdln/CMakeLists.txt\n D src/bsdln/ln.c\n M src/buildtools/CMakeLists.txt\n D src/buildtools/elfdep.c\n D src/buildtools/getuuid.c\n A src/buildtools/rust/.cargo/config.toml\n A src/buildtools/rust/.gitignore\n A src/buildtools/rust/BUILDING.txt\n A src/buildtools/rust/Cargo.lock\n A src/buildtools/rust/Cargo.toml\n A src/buildtools/rust/LICENSE\n A src/buildtools/rust/LICENSE-BSDLN\n A src/buildtools/rust/README.txt\n A src/buildtools/rust/benches/metadata.rs\n A src/buildtools/rust/src/bin/bsdln.rs\n A src/buildtools/rust/src/bin/elfdep.rs\n A src/buildtools/rust/src/bin/getuuid.rs\n A src/buildtools/rust/src/lib.rs\n A src/buildtools/rust/xtask/Cargo.toml\n A src/buildtools/rust/xtask/src/main.rs\n",
+            "stderr": ""
+          },
+          "head": {
+            "exit_code": 0,
+            "stdout": "60ba801decee7a00782f74f6be4c8ffb013f79ff\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline-build",
+          "status": {
+            "exit_code": 128,
+            "stdout": "",
+            "stderr": "fatal: not a git repository (or any parent up to mount point /)\nStopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).\n"
+          },
+          "head": {
+            "exit_code": 128,
+            "stdout": "",
+            "stderr": "fatal: not a git repository (or any parent up to mount point /)\nStopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).\n"
+          }
+        }
+      ],
+      "original_c": {
+        "path": "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline-build/src/hosttools/darling-coredump",
+        "expected_sha256": "4d9df378b440af2a2e23043c4ea500ccf6ec90cdd7c71b56c9760cdb9686be78",
+        "actual_sha256": "4d9df378b440af2a2e23043c4ea500ccf6ec90cdd7c71b56c9760cdb9686be78",
+        "unchanged": true
+      },
+      "original_source": {
+        "path": "/home/radud/Documents/Codex/2026-10-18/re/work/full-baseline/src/hosttools/src/coredump/main.cpp",
+        "expected_sha256": "801984b7881a1d0f62a52429e73726a5b119795d99c0399f0b7779954226904b",
+        "actual_sha256": "801984b7881a1d0f62a52429e73726a5b119795d99c0399f0b7779954226904b",
+        "unchanged": true
+      },
+      "build_tree_note": "CMake output directory is not a Git repository; frozen C executable hash checked against previous batch baseline.",
+      "passed": true
+    }
+  },
+  "reports": {
+    "gates": {
+      "local": "work/core-input-next/validation/summary-final9.json",
+      "export": "reports/gates.json",
+      "sha256": "87222936be1d91dd28919774bd5d7adaae188163bff672bcfe6391db47aee1c4"
+    },
+    "independent_review": {
+      "local": "work/core-input-next/independent-input-review.json",
+      "export": "reports/independent_review.json",
+      "sha256": "e54c243eeff342fb914d060034993217cb809487ff761d637253690331cae352"
+    },
+    "independent_faults": {
+      "local": "work/core-input-next/input-adversarial-final9/verification.json",
+      "export": "reports/independent_faults.json",
+      "sha256": "973d08caf5eef8c0947124203b441424191424735669de1dd1addb543c3b91e2"
+    },
+    "captured_states": {
+      "local": "work/core-input-next/real-core-final9/verification.json",
+      "export": "reports/captured_states.json",
+      "sha256": "3649d74f17e3a577d7073e926259ea9eead953aec5d2b6a97e4a58993e7dcf44"
+    },
+    "reference_preservation": {
+      "local": "work/core-input-next/validation/reference-preservation-final2.json",
+      "export": "reports/reference_preservation.json",
+      "sha256": "cb246a611e371f0c473d42d1414442f50b80ce7181ae9724aee4c14317257a0a"
+    },
+    "main_performance": {
+      "local": "work/core-input-next/performance-final9/benchmark-report.json",
+      "export": "reports/main_performance.json",
+      "sha256": "c232f088fdfcb42b97d173ce4c71a7c6ef46aa7360593ec28b2b72838be88afc"
+    },
+    "same_inode_dumped": {
+      "local": "work/core-input-next/mapped-same-inode-final9/benchmark-report.json",
+      "export": "reports/same_inode_dumped.json",
+      "sha256": "c802e7f45f55388a0aa51dd4dae348e2a30207ffd0cd6bca9832f7941431bf4c"
+    },
+    "cross_filesystem": {
+      "local": "work/core-input-next/crossfs-final9/benchmark-report.json",
+      "export": "reports/cross_filesystem.json",
+      "sha256": "a9b460fcc8db7eb107cec7af057d67f24e06a8cc095f7fca6f715b066a97dbdb"
+    },
+    "same_inode_zero": {
+      "local": "work/core-input-next/zero-same-inode-final9/benchmark-report.json",
+      "export": "reports/same_inode_zero.json",
+      "sha256": "dd151c17509950e4e99641393f2c073608017e7139a6580af5d4312d337ed95b"
+    },
+    "backing_performance": {
+      "local": "work/core-input-next/backing-performance-final9/benchmark-report.json",
+      "export": "reports/backing_performance.json",
+      "sha256": "2ad128f7f37bee97a2fba99ee8688b269a437215e97b9696485270167b129d0c"
+    }
+  },
+  "evidence_export": "/home/radud/Documents/Codex/2026-10-18/dearust-next-batch/outputs/core-input-verification",
+  "reproduction": "CORE-INPUT.txt and committed tools/check_core_input.py, tools/check_core_states.py, tools/benchmark_core_input.py, tools/benchmark_core_states.py",
+  "unfinished_outside_this_batch": "Full migration and timestamp/wiring/resource/positioned-vector-I/O/credential/descriptor-lifecycle audits remain open; no runtime install or broad application claim."
+}

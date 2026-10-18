@@ -150,8 +150,9 @@ It does not execute input library constructors. Prefer explicit paths.
 Core conversion supports x86 32/64 registers and overlay reconstruction. Actual
 floating/vector images and lossless raw notes supersede upstream's zero-state
 TODO; see CORE-REGISTERS.txt. Diagnostics differ. HOME-unset lookup
-uses procfs/passwd without NSS. CLI readers copy entire regular files with a
-snapshot size bound, so large real inputs can cost more memory than mmap.
+uses procfs/passwd without NSS. Other CLI readers copy entire regular files with
+a snapshot size bound. CORE-INPUT.txt supersedes the core converter snapshot
+with owned metadata and bounded payload transfer.
 
 Native Linux x86_64 libsimple static archive: 13 header synchronization functions
 plus the actually exported cmpxchg_wrapper_u32 helper (14 external symbols).
@@ -864,3 +865,55 @@ counts versus Linux boolean locks and failed-call partial effects; mmap/unmap/
 remap/fork lifecycle is required. Earlier resource, positioned/vector I/O and
 credential/descriptor-lifecycle audits also remain pending. Do not mechanically
 port those wrappers or report audit findings as completed fixes.
+
+
+Continuation: bounded core input and non-destructive file selection
+------------------------------------------------------------------
+Read CORE-INPUT.txt/core-input-verification.json. Existing dearust-coredump owns
+ELF/program-header/PT_NOTE metadata and borrows FP images from it, then transfers
+dumped PT_LOAD bytes without a full-file Vec or unsafe mmap. Shared parser still
+validates ALL load ranges/notes/state/layout before destination access, including
+inaccessible ELF32 virtual-range overflow. fp.rs and
+source CPU layout/raw-note contracts are unchanged. A concurrent rewrite is not
+an atomic snapshot; observed length changes/short dumped reads return errors.
+Late I/O errors may leave partial output, as before; never fabricate dumped data.
+
+Open actual destination without truncation, compare its fd identity with pinned
+input and selected backings, then truncate the SAME fd for regular output. Preserve /dev/null and connected
+FIFO stream destinations; only regular output uses sparse holes/final set_len.
+Input/backing opens are nonblocking then require regular types; reject FIFOs
+before reads. Check identity-only skipped device/zero ranges without spare fds. Pin unique backing
+selections including absence; never reopen after alias checks. At 64 pins/pressure,
+capture only requested ranges into safe rustix O_TMPFILE scratch before truncation.
+No named scratch payload or guessed fallback. Real open/read/resource errors now
+propagate; only NotFound/PermissionDenied mean unavailable. EMFILE may establish
+absence with metadata without an fd; existing sources retain resource errors.
+NOFILE5 missing-only and NOFILE16/32 hundred-file tests pass.
+
+Large dumped segment offsets match source modulo4096; exact prefix/tail reads
+surround aligned copy_file_range whole pages. Remaining large data may use an
+owned CLOEXEC pipe with safe splice and at most 1 MiB kernel capacity. Fully drain
+every batch before advancing, including unsupported write-side fallback. Optional
+pipe creation failure before transfer uses exact reads. Unsupported/zero transfers
+fall back to one lazy reusable initialized 1 MiB buffer. Kernel pipe memory is
+excluded from process RSS; preserve that distinction in measurements. Packed layout remains if padding
+would overflow. Zero padding is outside segments/notes, NOT extra fake state.
+Large zero area tails use sparse output after initial same-fd truncation; final
+seek/flush/set_len errors propagate and exact EOF is retained, including final
+holes and raw notes after holes. Never omit final length or input/backing checks.
+
+182 ordinary Rust/3 compile-fail/35 Python, all explicit differential/ABI gates,
+48 independent fault/pressure cases, 25 retained adversarial cases, four real
+captured-core variants (eight decoded thread states) and six staged/release byte
+comparisons pass. Preserved
+runtime/reference hashes unchanged. Workspace remains 11 packages; rustix 1.1.5 fs/pipe
+adds locked host dependencies only (linux_raw backend on measured Linux x64).
+No new runtime slice, source-port count, target retirement or installed change.
+Exact benchmarks, cross-filesystem fallback and sparse/same-inode repeats are in
+core-input-verification.json. Keep output-size and filesystem scopes visible;
+never claim every conversion or the runtime is faster. Final same-inode64MiB
+CPU C/prior/current is 8.715/14.645/2.985 ms on btrfs, and
+13.950/18.943/12.460 ms tmpfs-to-btrfs. Process peak RSS current is about2.4MiB;
+pipe kernel memory is additional. See raw tails and zero extent-history cohorts.
+Full migration and pending
+timestamp/wiring/resource/positioned-vector-I/O/credential/fd audits remain open.

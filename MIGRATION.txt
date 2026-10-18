@@ -11,6 +11,15 @@ The migration scope includes every upstream library, framework, executable,
 resource, SDK link and external dependency; existing stubs are not grounds for
 silently deleting an ABI. Performance improvements must be measured per workload.
 
+Latest core input continuation (2026-10-18)
+-------------------------------------------
+CORE-INPUT.txt/core-input-verification.json record owned ELF/note metadata,
+bounded dumped-payload transfer, descriptor-based alias rejection, pressure
+capture and sparse zero output in existing dearust-coredump. No new workspace
+package, runtime source slice or target retirement. rustix is a locked host-tool
+dependency; full runtime and deferred audits remain unfinished. Performance
+claims are confined to the recorded original-C/previous-Rust workloads.
+
 Latest process services continuation (2026-10-18)
 -----------------------------------------------
 RUNTIME-PROCESS-SERVICES.txt/runtime-process-services-verification.json record

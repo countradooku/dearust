@@ -1,0 +1,203 @@
+Core input ownership and bounded transfer
+========================================
+
+Scope and safety contract
+-------------------------
+The existing dearust-coredump Linux host tool now reads only the ELF header,
+program-header table and disjoint PT_NOTE segments into owned storage. It checks
+all declared PT_LOAD ranges against the observed regular-file length, including
+unused mappings, before destination access. The same parser validates note
+padding, thread identity, FP images, source CPU layout, mapping reconstruction
+and complete Mach-O arithmetic in both the file and borrowed-slice APIs.
+ELF32 virtual overflow is rejected even on inaccessible mappings. Input and
+backing opens use NONBLOCK before checking regular-file type, so a FIFO cannot
+hang metadata validation. Actual read errors, including procfs EIO, propagate.
+
+Notes remain immutable until output completes. Thread FP images and global
+layout metadata borrow that owned storage; fp.rs is unchanged. Dumped PT_LOAD
+bytes never become a file mapping or whole-input Vec. Memory scales with metadata
+and selected backing ranges/descriptors, rather than dumped bytes or file gaps.
+The exact-read fallback has one lazily allocated, initialized, reusable buffer
+of at most 1 MiB, plus the existing 64 KiB output buffer. The optional private
+pipe uses at most 1 MiB of kernel capacity; this is not included in process RSS.
+A write-side pipe fallback can also allocate the reusable read buffer. Tiny transfers allocate only their
+needed buffer. Allocation, read, copy, seek, write, final length and flush errors
+propagate. Short dumped-data reads fail; only unavailable/short reconstruction
+backing files retain the established zero-fill semantics.
+
+No atomic point-in-time snapshot is promised for a file another process rewrites;
+the previous read_to_end implementation did not provide one either. Metadata is
+frozen after capture. Length checks before truncating output and after conversion
+catch observed growth/truncation. Exact reads/copy counts catch missing payload.
+A concurrent truncate causes an ordinary error instead of SIGBUS or fabricated
+trailing data. As with previous late I/O failures, an error during output can
+leave a partial destination. Invalid metadata leaves an existing destination
+untouched. There is no unsafe code in this crate and no new guest ABI entry.
+
+File identity and descriptor pressure
+-------------------------------------
+Open the actual destination without truncation after metadata validation. Compare
+its descriptor's device/inode with the pinned input and every selected backing
+file, then truncate that same descriptor for regular-file output. Preserve
+existing output symlink, hardlink and stream-destination semantics. /dev/null
+and connected FIFOs receive sequential exact bytes; only regular destinations
+use truncation, sparse holes and final length extension. Pin unique backing selections, including unavailable choices,
+so later pathname replacement cannot redirect a read into a truncated output.
+Skipped devices and zero-length backings need only descriptor-free identity
+selection, using the same overlay order; they cannot become destructive aliases
+even when no descriptor is spare.
+This repairs the old check-then-open/truncate alias race and backing reopen race.
+
+At most 64 backing files remain pinned. On pressure or that bound, capture only
+requested ranges into a mode 0600 O_TMPFILE scratch inode before truncation, close
+the captured sources, and use the scratch ranges thereafter. Duplicate ranges
+are deduplicated, arbitrary offsets do not create huge scratch prefixes, short
+sources retain their actual lengths, and all I/O failures propagate. Scratch has
+no directory entry at any point, and closes on every return path. No named file
+can survive an unlink/path-replacement race. Ordinary conversions need no scratch
+or temporary-file creation. Scratch creation failures are reported before output
+truncation; they never turn real source data into zero pages.
+
+Overlay lookup shares one resolver for file opens and identity-only metadata,
+falling through only for NotFound/PermissionDenied. Resource
+exhaustion, symlink loops and actual I/O errors propagate rather than masquerading
+as absent files. Executable-flag probing accepts short files but propagates other
+read errors. Under Linux EMFILE, a descriptor-free metadata lookup may establish
+actual absence; an existing source still returns the resource error. Independent
+NOFILE=5 missing-only and NOFILE=16/32 hundred-file conversions verify both paths.
+
+Payload and output layout
+--------------------------
+For dumped ranges at least 64 KiB, Mach-O file offsets have the same modulo4096
+as their source. Zero padding lies outside every segment and raw-note range.
+Copy unaligned leading/trailing fragments with exact reads, and whole pages with
+safe rustix copy_file_range calls. Checked partial-copy offsets, EINTR retry and
+unsupported-operation fallback retain exact bytes. A zero kernel-copy result is
+verified by reads rather than treated as successful EOF. If large data remains,
+try a private CLOEXEC pipe with safe splice calls. Request 1 MiB capacity, use the
+actual capacity if resizing fails, and fully drain each bounded batch to the
+regular destination before reading another. Optional pipe creation/query failure
+before transfer falls back to exact reads, including under descriptor pressure.
+Unsupported write-side splice drains every queued byte through initialized
+storage before ordinary source reads resume; partial progress is never lost or
+duplicated. Actual read/write errors propagate. Only regular destinations use
+kernel-copy/pipe transfer; stream destinations use sequential buffered writes.
+Existing packed layout
+is validated first and remains the fallback if padding alone would overflow.
+
+Matching page offsets matters: the owned btrfs experiment found unaligned kernel
+copies substantially slower than aligned reflinks. XNU's own kern_core.c rounds
+the first payload to a page boundary. No debugger-visible register or mapping
+size changes. The measured 64 MiB/full16-thread output adds 1496 padding bytes:
+67,200,680 -> 67,202,176. Raw Linux note images and derived states stay identical.
+
+Large zero-filled area tails use sparse holes after initial destination
+truncation, with checked seek/flush and final set_len. The final length is set even
+when the last range is all zeros. Following segments/LC_NOTE data retain correct
+offsets. The borrowed writer API still emits actual zero bytes. Tests overwrite
+an existing nonzero destination and compare every logical byte, length and raw
+archive, including a final hole and notes after a hole. Physical sparseness is
+checked only where the test filesystem demonstrates hole support.
+
+Dependencies and target boundary
+---------------------------------
+rustix 1.1.5 (fs and pipe features) supplies safe Linux file-copy, private-pipe
+and unnamed-file operations.
+The measured x86_64 Linux build uses its linux_raw backend with bitflags 2.13.2 and
+linux-raw-sys 0.12.1; Cargo.lock pins versions/checksums. Their upstream licenses
+are Apache-2.0 WITH LLVM-exception/Apache-2.0/MIT, MIT/Apache-2.0 and
+Apache-2.0 WITH LLVM-exception/Apache-2.0/MIT respectively. crates/dearust-coredump/THIRD-PARTY.txt retains the selected MIT
+notices and contributor copyright statements. These are host-tool
+dependencies; they do not enter the no_std Darling runtime objects. Workspace
+packages remain 11, upstream migration/target counts and source pins unchanged.
+Both i386 and x64 input ABIs are independently decoded. This batch does not
+claim a 32-bit host build, macOS-host execution or a new runtime installation.
+
+Verification and measurements
+------------------------------
+core-input-verification.json records final frozen sources/binaries, full gates,
+independent reviews, original-C comparisons, distributions and exported evidence.
+The final gates pass 182 ordinary Rust tests, three compile-fail doctests and 35
+Python tests, plus all explicit pinned differential/ABI checks. Independent CLI
+coverage passes 48 fault/alias/pressure cases and 25 retained adversarial cases.
+Four actual captured-core variants contain eight independently decoded thread
+states; six staged/release conversions are byte-identical. Installed/runtime and
+reference hashes remain unchanged.
+tools/check_core_input.py exercises independent fault/alias/pressure fixtures;
+tools/check_core_states.py retains exact-XNU ABI and actual captured-state checks.
+The benchmark scripts retain every sample, first-process observation, CPU/wall/
+tail/RSS metrics, original output-size differences and semantic byte checks.
+
+Measured results (final release binary)
+---------------------------------------
+Linux x86_64 host; 36 fresh CLI samples per variant/workload, CPU affinity and
+balanced six-way order. The first two rows transfer 64 MiB plus full state for 16
+threads. The third reconstructs 64 MiB zeros. Each row shares one output inode
+across variants. Median CPU milliseconds (lower is better):
+
+    Workload                               Original C   Prior Rust   Current
+    64 MiB dumped, same btrfs inode            8.714       14.645     2.985
+    64 MiB dumped, tmpfs -> btrfs             13.950       18.942    12.460
+    64 MiB zero, same btrfs inode            108.847       25.050     8.040
+
+Same-inode dumped-data median wall milliseconds C/prior/current:
+    64 MiB dumped, same btrfs inode: 11.923/18.059/3.080
+    64 MiB dumped, tmpfs -> btrfs: 17.074/22.256/15.414
+Current p90/p99 CPU: same-filesystem 3.136/4.034 ms; cross-filesystem
+13.191/13.806 ms. With 36 samples, p99 is the observed maximum, not an estimated
+rare-event guarantee. Median process peak RSS for the same-filesystem dumped case
+is 69,578/67,650/2,418 KiB (C/prior/current); cross-filesystem is
+69,596/67,638/2,450 KiB. Kernel pipe capacity/referenced pages and filesystem cache
+are excluded from process RSS. Metadata storage still grows with notes/headers.
+
+The separate-output-inode cohort measured dumped CPU 10.570/15.592/2.740 ms.
+Twelve owned-input-only POSIX_FADV_DONTNEED samples measured
+13.491/18.816/2.900 ms. This is scoped cache advice on owned input, not a global
+cold-storage or durability benchmark; aligned btrfs clones need not read payload
+pages. No output fsync is included. Separate-inode zero CPU was
+122.112/25.624/0.585 ms versus 108.848/25.050/8.040 ms on the shared inode.
+Extent history matters: retain both cohorts, not a universal submillisecond claim.
+
+Actual captured i386/x64 median CPU prior -> current was 458 -> 445.5 us and
+461 -> 450 us. The 256-full-state-thread case was 1527 -> 1523.5 us; wall was
+1619.4 -> 1643.5 us with overlapping quartiles. Small-input RSS varies by tens of
+KiB with overlapping distributions; no universal RSS improvement is claimed.
+Hundred-backing-file cohorts (both ABIs, inherited NOFILE and NOFILE16, 36 reversed
+prior/current rounds) measured 10.7-11.0% less CPU; outputs are byte-identical.
+These include identical wrapper exec overhead and do not time original C.
+
+Original C omits actual FP/raw states, so its output differs: full256 outputs
+183,328 bytes versus 1,467,424 for prior/current; dumped64MiB/16 threads is
+67,120,424 / 67,200,680 / 67,202,176 bytes. Independently decoded GPRs and segments
+match C; all derived/raw state matches the prior register-preserving converter.
+The large-input improvement does not establish a whole-Darling speedup or that
+every workload/filesystem/kernel is faster.
+
+Rejected alternatives and intermediate regressions remain in the exported
+reports: unaligned kernel copying, sendfile, smaller buffered transfers, initial
+nonsparse zero output and pre-splice cross-filesystem buffering. The final exact
+binary resolves the measured CPU gaps rather than treating them as accepted costs.
+
+Reproduce with fresh exclusively owned directories:
+
+    cargo xtask check
+    python3 -m unittest discover -s tools -p 'test_*.py' -v
+    python3 tools/check_core_input.py --converter target/release/darling-coredump \
+      --output /owned/new-input-check
+    python3 tools/benchmark_core_states.py --output /owned/new-input-benchmark \
+      --original /exact/pinned/darling-coredump --prior /frozen/ae72078-converter \
+      --current target/release/darling-coredump --capture-root /owned/captured-check \
+      --rounds 36 --cold-rounds 12
+    python3 tools/benchmark_core_input.py --output /owned/new-crossfs-benchmark \
+      --input /owned/new-input-benchmark/mapped64_16_64MiB.elf \
+      --original /exact/pinned/darling-coredump --prior /frozen/ae72078-converter \
+      --current target/release/darling-coredump --input-filesystem-root /dev/shm \
+      --rounds 36
+
+Sparse /dev/shm fault fixtures are owned,
+bounded in physical allocation and removed. No reference tree, installed binary,
+existing user prefix, global page cache or system configuration is changed.
+
+Whole-Darling migration and the deferred timestamp, wiring, resource,
+positioned/vector-I/O and credential/descriptor-lifecycle audits remain unfinished.
+This host converter batch does not establish a whole-runtime performance result.

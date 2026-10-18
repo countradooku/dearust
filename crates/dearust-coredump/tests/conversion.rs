@@ -525,3 +525,485 @@ fn nonregular_core_input_is_rejected_before_destination_is_changed() {
     );
     assert_eq!(std::fs::read(destination).unwrap(), b"keep");
 }
+
+#[test]
+fn file_and_borrowed_conversion_match_for_both_architectures() {
+    let dir = Dir::new();
+    let input = dir.0.join("core");
+    let destination = dir.0.join("converted");
+    let image = dir.0.join("image");
+    std::fs::write(&image, b"mapped-data").unwrap();
+    for wide in [false, true] {
+        let data = fixture(wide, &[(0x2000, 0x200b, 0, image.to_str().unwrap())]);
+        let mut expected = Vec::new();
+        convert(&data, &mut expected, &Options::default()).unwrap();
+        std::fs::write(&input, &data).unwrap();
+        convert_file(&input, &destination, &Options::default()).unwrap();
+        assert_eq!(std::fs::read(&destination).unwrap(), expected);
+    }
+}
+
+#[test]
+fn every_truncated_file_prefix_preserves_existing_destination() {
+    let dir = Dir::new();
+    let input = dir.0.join("core");
+    let destination = dir.0.join("preserve");
+    std::fs::write(&destination, b"keep existing destination").unwrap();
+    for wide in [false, true] {
+        let data = fixture(wide, &[]);
+        for end in 0..data.len() {
+            std::fs::write(&input, &data[..end]).unwrap();
+            assert!(
+                convert_file(&input, &destination, &Options::default()).is_err(),
+                "wide={wide}, prefix={end}"
+            );
+            assert_eq!(
+                std::fs::read(&destination).unwrap(),
+                b"keep existing destination",
+                "wide={wide}, prefix={end}"
+            );
+        }
+    }
+}
+
+#[test]
+fn sparse_distant_program_headers_and_late_notes_follow_file_order() {
+    use std::os::unix::fs::FileExt;
+    let dir = Dir::new();
+    let input = dir.0.join("sparse-core");
+    let destination = dir.0.join("converted");
+    for wide in [false, true] {
+        let mut original = fixture(wide, &[]);
+        let hs = if wide { 64 } else { 52 };
+        let ps = if wide { 56 } else { 32 };
+        let w = if wide { 8 } else { 4 };
+        let original_notes = hs + 2 * ps;
+        let first_size = 20 + if wide { 336 } else { 144 };
+        let mut second_thread = original[original_notes..original_notes + first_size].to_vec();
+        put(&mut second_thread, 20 + if wide { 32 } else { 24 }, 123, 4);
+        put(
+            &mut second_thread,
+            20 + if wide { 112 } else { 72 },
+            0xabc,
+            w,
+        );
+        original.splice(
+            original_notes + first_size..original_notes + first_size,
+            second_thread,
+        );
+        let notes_length = (original.len() - 4 - original_notes) as u64;
+        put(
+            &mut original,
+            hs + if wide { 32 } else { 16 },
+            notes_length,
+            w,
+        );
+        put(
+            &mut original,
+            hs + if wide { 40 } else { 20 },
+            notes_length,
+            w,
+        );
+        let original_payload = original.len() - 4;
+        put(
+            &mut original,
+            hs + ps + if wide { 8 } else { 4 },
+            original_payload as u64,
+            w,
+        );
+        let mut expected = Vec::new();
+        convert(&original, &mut expected, &Options::default()).unwrap();
+        let phoff = 8 * 1024 * 1024;
+        let mut elf_header = original[..hs].to_vec();
+        put(&mut elf_header, if wide { 32 } else { 28 }, phoff, w);
+        put(&mut elf_header, if wide { 56 } else { 44 }, 3, 2);
+        let mut first = original[hs..hs + ps].to_vec();
+        put(&mut first, if wide { 8 } else { 4 }, 4096, w);
+        put(&mut first, if wide { 32 } else { 16 }, first_size as u64, w);
+        put(&mut first, if wide { 40 } else { 20 }, first_size as u64, w);
+        let mut second = original[hs..hs + ps].to_vec();
+        put(&mut second, if wide { 8 } else { 4 }, 8192, w);
+        let second_size = original_payload - original_notes - first_size;
+        put(
+            &mut second,
+            if wide { 32 } else { 16 },
+            second_size as u64,
+            w,
+        );
+        put(
+            &mut second,
+            if wide { 40 } else { 20 },
+            second_size as u64,
+            w,
+        );
+        let mut load = original[hs + ps..hs + 2 * ps].to_vec();
+        put(&mut load, if wide { 8 } else { 4 }, hs as u64, w);
+        let file = std::fs::File::create(&input).unwrap();
+        file.set_len(phoff + 3 * ps as u64).unwrap();
+        file.write_all_at(&elf_header, 0).unwrap();
+        file.write_all_at(b"CORE", hs as u64).unwrap();
+        file.write_all_at(&original[original_notes..original_notes + first_size], 4096)
+            .unwrap();
+        file.write_all_at(
+            &original[original_notes + first_size..original_payload],
+            8192,
+        )
+        .unwrap();
+        // Header order intentionally disagrees with the physical note order.
+        file.write_all_at(&second, phoff).unwrap();
+        file.write_all_at(&load, phoff + ps as u64).unwrap();
+        file.write_all_at(&first, phoff + 2 * ps as u64).unwrap();
+        drop(file);
+        let mut borrowed = Vec::new();
+        convert(
+            &std::fs::read(&input).unwrap(),
+            &mut borrowed,
+            &Options::default(),
+        )
+        .unwrap();
+        assert_eq!(borrowed, expected);
+        convert_file(&input, &destination, &Options::default()).unwrap();
+        assert_eq!(std::fs::read(&destination).unwrap(), borrowed);
+    }
+}
+
+#[test]
+fn invalid_file_ranges_and_overlapping_notes_preserve_destination() {
+    let dir = Dir::new();
+    let input = dir.0.join("core");
+    let destination = dir.0.join("preserve");
+    std::fs::write(&destination, b"keep").unwrap();
+    for wide in [false, true] {
+        let original = fixture(wide, &[]);
+        let hs = if wide { 64 } else { 52 };
+        let ps = if wide { 56 } else { 32 };
+        let w = if wide { 8 } else { 4 };
+        let offset = if wide { 8 } else { 4 };
+        let length = if wide { 32 } else { 16 };
+        let beyond = original.len() as u64 + 1;
+        let mut cases = Vec::new();
+        for (at, value, width) in [
+            (if wide { 32 } else { 28 }, beyond, w),
+            (hs + offset, beyond, w),
+            (hs + ps + offset, beyond, w),
+            (hs + length, u64::MAX, w),
+        ] {
+            let mut data = original.clone();
+            put(&mut data, at, value, width);
+            cases.push(data);
+        }
+        let mut overlap = original.clone();
+        let note_header = overlap[hs..hs + ps].to_vec();
+        overlap[hs + ps..hs + 2 * ps].copy_from_slice(&note_header);
+        cases.push(overlap);
+        // Corrupt the final note: all metadata must be validated before output.
+        let mut late = original.clone();
+        let second_note = hs + 2 * ps + 20 + if wide { 336 } else { 144 };
+        put(&mut late, second_note + 4, u32::MAX as u64, 4);
+        cases.push(late);
+        for (case, data) in cases.iter().enumerate() {
+            let mut borrowed = Vec::new();
+            assert!(convert(data, &mut borrowed, &Options::default()).is_err());
+            assert!(borrowed.is_empty());
+            std::fs::write(&input, data).unwrap();
+            assert!(
+                convert_file(&input, &destination, &Options::default()).is_err(),
+                "wide={wide}, case={case}"
+            );
+            assert_eq!(std::fs::read(&destination).unwrap(), b"keep");
+        }
+    }
+}
+
+#[test]
+fn zero_length_load_may_point_beyond_input_file() {
+    let dir = Dir::new();
+    let input = dir.0.join("core");
+    let destination = dir.0.join("converted");
+    for wide in [false, true] {
+        let mut data = fixture(wide, &[]);
+        let hs = if wide { 64 } else { 52 };
+        let ps = if wide { 56 } else { 32 };
+        let w = if wide { 8 } else { 4 };
+        put(&mut data, hs + ps + if wide { 8 } else { 4 }, u64::MAX, w);
+        put(&mut data, hs + ps + if wide { 32 } else { 16 }, 0, w);
+        let mut expected = Vec::new();
+        convert(&data, &mut expected, &Options::default()).unwrap();
+        assert_eq!(&expected[expected.len() - 8..], &[0; 8]);
+        std::fs::write(&input, data).unwrap();
+        convert_file(&input, &destination, &Options::default()).unwrap();
+        assert_eq!(std::fs::read(&destination).unwrap(), expected);
+    }
+}
+
+#[test]
+fn destination_symlink_and_hardlink_backing_aliases_preserve_image() {
+    use std::os::unix::fs::symlink;
+    let dir = Dir::new();
+    let input = dir.0.join("core");
+    let image = dir.0.join("image");
+    let hardlink = dir.0.join("hardlink");
+    let symlink_path = dir.0.join("symlink");
+    std::fs::write(&image, b"backing data").unwrap();
+    std::fs::hard_link(&image, &hardlink).unwrap();
+    symlink(&image, &symlink_path).unwrap();
+    for wide in [false, true] {
+        std::fs::write(
+            &input,
+            fixture(wide, &[(0x2000, 0x200c, 0, image.to_str().unwrap())]),
+        )
+        .unwrap();
+        for destination in [&hardlink, &symlink_path] {
+            assert!(convert_file(&input, destination, &Options::default()).is_err());
+            assert_eq!(std::fs::read(&image).unwrap(), b"backing data");
+            assert_eq!(std::fs::read(destination).unwrap(), b"backing data");
+        }
+    }
+}
+
+#[test]
+fn large_unaligned_dumped_payload_keeps_page_offsets_and_raw_note_locations() {
+    let dir = Dir::new();
+    let input = dir.0.join("core");
+    let destination = dir.0.join("converted");
+    for wide in [false, true] {
+        let hs = if wide { 64 } else { 52 };
+        let ps = if wide { 56 } else { 32 };
+        let w = if wide { 8 } else { 4 };
+        let mut data = fixture(wide, &[]);
+        let no = hs + 2 * ps;
+        let mut notes = data[no..data.len() - 4].to_vec();
+        let mut floating = vec![0; if wide { 512 } else { 108 }];
+        floating[50] = 0x7b;
+        note(&mut notes, 2, &floating);
+        let source_offset = 2 * 4096 + 123;
+        let length = 65536 + 2 * 4096 + 117;
+        let memory_size = length + 37;
+        let payload: Vec<_> = (0..length).map(|i| (i % 251) as u8).collect();
+        data.resize(source_offset, 0);
+        data[no..no + notes.len()].copy_from_slice(&notes);
+        data.extend_from_slice(&payload);
+        // A source tail before EOF must neither copy this sentinel nor use the
+        // EOF-only kernel-copy behavior as a substitute for the exact range.
+        data.extend_from_slice(b"unused input sentinel after selected payload");
+        put(
+            &mut data,
+            hs + if wide { 32 } else { 16 },
+            notes.len() as u64,
+            w,
+        );
+        put(
+            &mut data,
+            hs + if wide { 40 } else { 20 },
+            notes.len() as u64,
+            w,
+        );
+        put(
+            &mut data,
+            hs + ps + if wide { 8 } else { 4 },
+            source_offset as u64,
+            w,
+        );
+        put(
+            &mut data,
+            hs + ps + if wide { 32 } else { 16 },
+            length as u64,
+            w,
+        );
+        put(
+            &mut data,
+            hs + ps + if wide { 40 } else { 20 },
+            memory_size as u64,
+            w,
+        );
+        let mut borrowed = Vec::new();
+        convert(&data, &mut borrowed, &Options::default()).unwrap();
+        std::fs::write(&input, &data).unwrap();
+        convert_file(&input, &destination, &Options::default()).unwrap();
+        assert_eq!(std::fs::read(&destination).unwrap(), borrowed);
+        let h = header(wide);
+        let output_offset = n(&borrowed, h + 24 + 2 * w, w) as usize;
+        let commands_end = h + n(&borrowed, 20, 4) as usize;
+        assert_eq!(output_offset % 4096, source_offset % 4096);
+        assert!(output_offset >= commands_end);
+        assert!(
+            borrowed[commands_end..output_offset]
+                .iter()
+                .all(|byte| *byte == 0)
+        );
+        assert_eq!(&borrowed[output_offset..output_offset + length], payload);
+        assert!(
+            borrowed[output_offset + length..output_offset + memory_size]
+                .iter()
+                .all(|byte| *byte == 0)
+        );
+        let mut cursor = h;
+        let mut raw = None;
+        for _ in 0..n(&borrowed, 16, 4) {
+            if n(&borrowed, cursor, 4) == 0x31 {
+                assert!(raw.is_none());
+                raw = Some((
+                    n(&borrowed, cursor + 24, 8) as usize,
+                    n(&borrowed, cursor + 32, 8) as usize,
+                ));
+            }
+            cursor += n(&borrowed, cursor + 4, 4) as usize;
+        }
+        let (raw_offset, raw_length) = raw.expect("provided FP state has a raw archive");
+        assert_eq!(raw_offset, output_offset + memory_size);
+        assert_eq!(raw_length, 32 + floating.len());
+        assert_eq!(raw_offset + raw_length, borrowed.len());
+        assert_eq!(n(&borrowed, raw_offset, 4), 1);
+        assert_eq!(n(&borrowed, raw_offset + 4, 4), if wide { 2 } else { 1 });
+        assert_eq!(n(&borrowed, raw_offset + 16, 4), 2);
+        assert_eq!(&borrowed[raw_offset + 32..], floating);
+    }
+}
+
+#[test]
+fn i386_large_payload_uses_packed_layout_when_alignment_would_overflow() {
+    struct StopAtFirstWrite;
+    impl std::io::Write for StopAtFirstWrite {
+        fn write(&mut self, _: &[u8]) -> std::io::Result<usize> {
+            Err(std::io::Error::new(
+                std::io::ErrorKind::BrokenPipe,
+                "stop after layout validation",
+            ))
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let mut data = fixture(false, &[]);
+    let source_offset = data.len() - 4;
+    data.resize(source_offset + 65536, 0x7b);
+    let load = 52 + 32;
+    put(&mut data, load + 8, 0, 4);
+    put(&mut data, load + 16, 65536, 4);
+    let packed_header = 28 + 56 + 80;
+    put(&mut data, load + 20, u32::MAX as u64 - packed_header, 4);
+    let error = convert(&data, &mut StopAtFirstWrite, &Options::default()).unwrap_err();
+    assert_eq!(error.kind(), std::io::ErrorKind::BrokenPipe);
+    assert_eq!(error.to_string(), "stop after layout validation");
+}
+
+#[test]
+fn large_zero_tails_clear_reused_destination_and_preserve_following_raw_notes() {
+    use std::os::unix::fs::MetadataExt;
+    let dir = Dir::new();
+    let input = dir.0.join("core");
+    let destination = dir.0.join("converted");
+    let memory_size = 1024 * 1024 + 4;
+    let probe = std::fs::File::create(dir.0.join("sparse-probe")).unwrap();
+    probe.set_len(memory_size as u64).unwrap();
+    let probe_meta = probe.metadata().unwrap();
+    let supports_holes = probe_meta.blocks() * 512 < probe_meta.len();
+    for wide in [false, true] {
+        for with_floating in [false, true] {
+            let hs = if wide { 64 } else { 52 };
+            let ps = if wide { 56 } else { 32 };
+            let w = if wide { 8 } else { 4 };
+            let mut data = fixture(wide, &[]);
+            let floating = vec![0x5a; if wide { 512 } else { 108 }];
+            if with_floating {
+                let no = hs + 2 * ps;
+                let mut notes = data[no..data.len() - 4].to_vec();
+                note(&mut notes, 2, &floating);
+                data.truncate(no);
+                data.extend_from_slice(&notes);
+                let payload_offset = data.len();
+                data.extend_from_slice(b"CORE");
+                put(
+                    &mut data,
+                    hs + if wide { 32 } else { 16 },
+                    notes.len() as u64,
+                    w,
+                );
+                put(
+                    &mut data,
+                    hs + if wide { 40 } else { 20 },
+                    notes.len() as u64,
+                    w,
+                );
+                put(
+                    &mut data,
+                    hs + ps + if wide { 8 } else { 4 },
+                    payload_offset as u64,
+                    w,
+                );
+            }
+            put(
+                &mut data,
+                hs + ps + if wide { 40 } else { 20 },
+                memory_size as u64,
+                w,
+            );
+            let mut expected = Vec::new();
+            convert(&data, &mut expected, &Options::default()).unwrap();
+            std::fs::write(&input, &data).unwrap();
+            // Old nonzero bytes must not survive either the hole or the end of
+            // the newly converted output when reusing an existing destination.
+            std::fs::write(&destination, vec![0xa5; memory_size * 2]).unwrap();
+            convert_file(&input, &destination, &Options::default()).unwrap();
+            let actual = std::fs::read(&destination).unwrap();
+            assert_eq!(actual, expected, "wide={wide}, FP={with_floating}");
+            let metadata = std::fs::metadata(&destination).unwrap();
+            assert_eq!(metadata.len(), expected.len() as u64);
+            let offset = n(&actual, header(wide) + 24 + 2 * w, w) as usize;
+            assert_eq!(&actual[offset..offset + 4], b"CORE");
+            assert!(
+                actual[offset + 4..offset + memory_size]
+                    .iter()
+                    .all(|byte| *byte == 0)
+            );
+            if with_floating {
+                let mut cursor = header(wide);
+                let mut raw = None;
+                for _ in 0..n(&actual, 16, 4) {
+                    if n(&actual, cursor, 4) == 0x31 {
+                        raw = Some((
+                            n(&actual, cursor + 24, 8) as usize,
+                            n(&actual, cursor + 32, 8) as usize,
+                        ));
+                    }
+                    cursor += n(&actual, cursor + 4, 4) as usize;
+                }
+                let (raw_offset, raw_length) = raw.unwrap();
+                assert_eq!(raw_offset, offset + memory_size);
+                assert_eq!(raw_length, 32 + floating.len());
+                assert_eq!(n(&actual, raw_offset + 24, 8), floating.len() as u64);
+                assert_eq!(&actual[raw_offset + 32..], floating);
+            } else {
+                assert_eq!(actual.len(), offset + memory_size);
+            }
+            if supports_holes {
+                assert!(
+                    metadata.blocks() * 512 < metadata.len() / 2,
+                    "large zero tail should retain a sparse hole"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn inaccessible_elf32_segment_still_requires_a_valid_virtual_range() {
+    let dir = Dir::new();
+    let mut data = fixture(false, &[]);
+    put(&mut data, 52 + 32 + 8, u32::MAX as u64, 4);
+    put(&mut data, 52 + 32 + 24, 0, 4);
+    let mut output = Vec::new();
+    assert_eq!(
+        convert(&data, &mut output, &Options::default())
+            .unwrap_err()
+            .kind(),
+        std::io::ErrorKind::InvalidData
+    );
+    assert!(output.is_empty());
+    let input = dir.0.join("invalid-inaccessible.core");
+    let destination = dir.0.join("preserve");
+    std::fs::write(&input, data).unwrap();
+    std::fs::write(&destination, b"keep").unwrap();
+    assert!(convert_file(&input, &destination, &Options::default()).is_err());
+    assert_eq!(std::fs::read(destination).unwrap(), b"keep");
+}

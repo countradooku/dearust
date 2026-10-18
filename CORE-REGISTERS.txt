@@ -58,12 +58,13 @@ are rejected. Existing mapping reconstruction and destination-alias protections
 remain. ELF32 virtual ranges must fit the 32-bit address space.
 
 Thread GPRs use fixed arrays; FP images and layout metadata borrow the bounded
-input snapshot. There is no per-thread register heap allocation or raw-image
+owned note metadata. There is no per-thread register heap allocation or raw-image
 copy during parsing. Layout validation occurs once per process. Encoding uses a
 bounded 2444-byte stack buffer and writes only the selected Darwin flavor. Raw
 preservation necessarily increases output by the retained images and headers.
-Regular-file snapshots reserve their checked size once; the output writer has
-one 64 KiB buffer. Small padding uses 64 bytes of stack scratch instead of repeatedly
+The output writer has one 64 KiB buffer. CORE-INPUT.txt supersedes the earlier
+full-file snapshot with owned metadata and bounded payload transfer. Small padding
+uses 64 bytes of stack scratch instead of repeatedly
 initializing 64 KiB. This retains protection against concurrent input truncation.
 
 Verification
@@ -88,9 +89,9 @@ integer threads but cannot read their Mach-core floating state. Its i386 reader
 crashes for original C, prior Rust and current Rust alike, including GPR-only
 output. These external reader failures are retained in the evidence.
 
-Measured performance
---------------------
-Final native CLI CPU medians in microseconds (24 balanced fresh-process samples,
+Register batch performance (historical ae72078)
+---------------------------------------------
+That batch's native CLI CPU medians in microseconds (24 balanced fresh-process samples,
 warm filesystem, one selected CPU, cached writes without durability fsync):
 
     Input                              Original C   Prior Rust   Current Rust
@@ -113,7 +114,9 @@ Preallocation reduces avoidable input-read/growth cost, but large dumped inputs
 still cost more CPU than original C's mmap approach. The 64 MiB warm workload is
 about 18.7% cheaper than prior Rust and 50.6% costlier than C; 12 owned-input
 POSIX_FADV_DONTNEED rounds retain the same direction. This pre-existing safe
-snapshot-versus-mmap gap remains an unfinished optimization gate. No unsafe
+snapshot-versus-mmap gap was that batch's unfinished optimization gate;
+CORE-INPUT.txt/core-input-verification.json record the subsequent implementation
+and its measured scope. No unsafe
 mapping vulnerable to input truncation is introduced to hide it. Peak RSS is
 recorded separately; no broad memory-reduction claim follows from these timings.
 

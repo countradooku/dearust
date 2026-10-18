@@ -1,7 +1,7 @@
 {
   "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
   "rust_toolchain": "rustc 1.99.0 (b940084d7 2026-09-28)",
-  "normal_tests_passed": 97,
+  "normal_tests_passed": 182,
   "optional_upstream_differential_tests_explicitly_run_and_passed": 5,
   "checks": [
     "cargo xtask check",
@@ -62,7 +62,6 @@
     "minimum Rust 1.85 toolchain",
     "Completion of the 265803 dependency entries (two errno/futex source slices partial, 265801 pending)",
     "Complete dynamic loader policy for wrapgen bare library-name lookup",
-    "Coredump floating-point extraction (zero states match upstream TODO)",
     "Full upstream CMake graph replacement and macOS target ABI",
     "Clean pinned full runtime startup, cancellation semantics and i386 Rust backend; selected installed locally modified x86_64 startup/TLS and GUI workloads execute",
     "44 Swift LFS binary payloads and their runtime/packaging use",
@@ -227,5 +226,18 @@
     "darwin_runtime_staging": "passed",
     "matching_kernel_link": "passed, 1370 public definitions and unchanged imports",
     "compatibility": "Exported C ABI, upstream executable names and original install interfaces retained. Historical execution records retain their original paths and names."
+  },
+  "core_input_continuation": {
+    "record": "core-input-verification.json",
+    "scope": "Linux host core converter: owned metadata, bounded exact payload transfer, pinned/captured backings, alias and error handling; no runtime installation or target-count change",
+    "ordinary_rust_tests": 182,
+    "compile_fail_doctests": 3,
+    "python_tests": 35,
+    "independent_fault_cases": 48,
+    "retained_adversarial_cases": 25,
+    "captured_core_variants": 4,
+    "decoded_thread_states": 8,
+    "staged_release_comparisons": 6,
+    "historical_records": "Other fields retain their original execution scope and counts; CORE-REGISTERS.txt covers actual FP extraction."
   }
 }

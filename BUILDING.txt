@@ -5,9 +5,11 @@ Requirements for this Rust workspace
 ------------------------------------
 Rust 1.85 or later, Cargo, and a host linker are required. Native object staging
 also requires llvm-objcopy; integration checks use cc, ar, nm and readelf. `cargo xtask check`
-also requires the rustfmt and Clippy toolchain components. There are no
-third-party Rust dependencies, build scripts, CMake calls, network downloads,
-or generated-code prerequisites in the migrated workspace. Optional differential
+also requires the rustfmt and Clippy toolchain components. The Linux core
+converter uses locked rustix filesystem/pipe dependencies; run `cargo fetch --locked`
+once before offline builds on a fresh machine. rustix has its own backend-selection
+build script. Migrated runtime objects do not gain these dependencies. Workspace
+builds do not invoke CMake or require generated upstream code. Optional differential
 and linked-artifact checks require the pinned references and named native tools.
 
 Run commands from this checkout, or a directory inside it:
@@ -58,9 +60,12 @@ Malformed inputs fail before output. This intentionally rejects corrupt files
 which the C readers may accept or read out of bounds. bsdln also refuses a
 forced hard link onto the same inode, preserving a source upstream can delete.
 
-The CLI readers currently copy file contents with std::fs::read, while the old
-C tools use mmap. This avoids an unsafe mapping boundary and concurrent-file
-mapping faults, but can increase memory use and I/O for large inputs. No general
+Other CLI readers copy file contents while the old C tools use mmap. The core
+converter instead owns only checked metadata and streams dumped payload, using
+safe kernel copies, a bounded private pipe or a bounded buffer. CORE-INPUT.txt
+records its alias,
+truncation, sparse-output and performance contract. Other readers' snapshots
+avoid mapping faults but can increase memory use and I/O for large inputs. No general
 performance improvement over upstream has been established. Parser benchmarks
 exclude file reading, command startup, and the rest of Darling.
 
