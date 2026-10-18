@@ -1,0 +1,33 @@
+Descriptor operations: bounded ABI-only x86_64 runtime subsystem
+===============================================================
+Original GPL-3.0-or-later Darling/upstream attribution and licenses apply.
+Sources at xnu fa29287aa2f0115271e091f1031f53c9e024005d under
+ darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/:
+ fchmod.c     96792ed46be4c12b15f98122d19398dd241df8ec6c6f01062b1457a278b06402
+ ftruncate.c  89163fcf0555dbfdb29d1029d0ef63628cdebf4b6d2f39b508a72cb77a828b85
+ fsync.c      d46aca82b13bd76168b7366d60842ce80d96b3a994f1eeac47acdda586400803
+ fdatasync.c  d184236948a7eefc95e113b12be0991d5b4f289c407e5f3fc2a15ce4d7275314
+ lseek.c      a73429892377736e10411e47d8028e32ed5e7639978d039104bfff01e38fea40
+ flock.c      f59872b99eedcb5718388af71be338e84dda9f990a1be39c7788c285a0132a4c
+Hashes are SHA256; exact pinned/matching C files are byte-identical.
+
+Seven public ABI entries retain six original source implementations. Only the
+original seven-argument raw linux_syscall foreign boundary is imported. Its ABI
+must be preserved and it must not unwind. Rust reads no caller pointers. The
+unsafe region is confined to ABI exports and raw calls in abi.rs. Signed 32-bit
+fd, mode, whence and flock operation are sign-extended; signed 64-bit length and
+offset are preserved. Unused raw slots are zero. Linux x86_64 syscall numbers:
+fchmod91, ftruncate77, fsync74, fdatasync75, lseek8, flock73.
+
+All except lseek narrow raw results to C int before sign checking/one errno
+conversion. lseek retains every nonnegative signed 64-bit result; only negative
+results narrow to original errno converter int. sys_fsync delegates directly to
+sys_fsync_nocancel. No cancellation hooks, EINTR retry, credential changes or lock
+emulation are added. Kernel permission, lock ownership, shared open-file-description
+and sparse-file policy remain kernel decisions.
+
+No std, allocator, heap/path storage, cache, mutex, or panic runtime is introduced.
+Scope is x86_64 only; i386 ftruncate64/_llseek splitting is not implemented.
+Native fixture checks exact arguments, synthetic return widths and EINTR once,
+plus real descriptor behavior. Guest fixtures independently exercise actual
+Darling lseek/flock. Sparse >4GiB files require only small fixed user buffers.

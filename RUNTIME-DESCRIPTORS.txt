@@ -1,0 +1,104 @@
+Dearust continuation: grouped descriptor subsystem
+=================================================
+
+Project owner: @countradooku. AI assistance: OpenAI Codex. Migration remains
+INCOMPLETE. Exact evidence is in runtime-descriptors-verification.json.
+
+Grouping and behavior
+---------------------
+One no_std dearust-fd crate now owns fchmod, ftruncate, fsync, fdatasync, lseek
+and flock. It replaces the four previous single-operation crates and ports the
+two additional original C sources. The workspace has 20 packages, down from 23.
+All seven original C exports remain, including sys_fsync_nocancel. Logical
+subsystem grouping is the direction for future batches; one crate per syscall
+is not a migration requirement. Historical records refer to their original commits.
+
+Native and Mach-O staging now emit one private fd.o object. --fd-object replaces
+six unique original C inputs, inserts the grouped object once, and verifies
+symbol provenance for all seven exports. Original input ordering/duplicates
+are preserved outside replacements. Historical individual-object CLI options
+remain accepted, but combining them with --fd-object is rejected.
+
+The crate shares raw ABI declarations and errno conversion. It allocates no heap,
+uses no pathname buffers, TLS, caches, locks or new runtime dependencies beyond
+the existing errno crate. Unsafe stays at exports/raw foreign calls; Linux
+validates integer arguments. Original GPL attribution and exact-pin source/header
+provenance are retained in SAFETY.txt and the verification record.
+
+lseek uses raw Linux 8 with signed 64-bit offset and preserves full 64-bit positive
+results. Only negative results narrow to the original C errno-converter int.
+flock uses raw 73 with signed fd/op and original C int result narrowing. Existing
+mode/truncate/sync widths, error conversion, both fsync entries, raw EINTR
+propagation and generated cancellation stubs are retained. No thread cancellation
+correctness or new original-source defect is claimed for this batch.
+
+CPU and memory evidence
+-----------------------
+Native original six C sources versus grouped Rust, warm actual scratch-file
+fchmod -> ftruncate -> lseek -> flock(EX|NB) -> flock(UN) -> fsync -> fdatasync:
+median CPU 2431.854 -> 2430.140 ns/roundtrip (-0.07%, essentially unchanged).
+Quartiles 2402.2895..2457.047 vs 2407.609..2455.958 overlap. Twenty-one alternating
+samples, 2000 rounds/sample on one eligible CPU; original sources, native header
+and raw-syscall adapters and raw samples are preserved. This native comparison
+excludes the matching C raw entry's tracing wrapper.
+
+Actual matching guest comparison uses previous four Rust + two C versus grouped six Rust,
+old/new/new/old process order, 42 samples/variant, 200 rounds/sample. Median CPU
+3.400 -> 3.260 us/roundtrip (4.12% lower); quartiles 3.35375..3.430 vs 3.24375..3.290.
+Wall medians 3.405 -> 3.2775 us. This is evidence for this warm local workload,
+not a general application speedup or durable-write throughput result. No new
+contents are written between timed rounds. Grouping and the two new ports
+jointly change the comparison; do not attribute the whole result to crate layout.
+
+Each native original/new wrapper body uses one eight-byte syscall argument/
+alignment push and no explicit local stack subtraction; return addresses and
+callees are excluded. Both Rust fsync exports share one body. No heap/path
+storage is introduced. The native previous four Rust + two C aggregate object is 4856 bytes
+versus 3392 bytes grouped, including metadata; read-only errno data falls from
+504 to 126 bytes through sharing. The complete matching dylib shrinks 632 bytes,
+874592 -> 873960. These are object/file measurements, not process-RSS claims.
+
+Verification
+------------
+131 existing Rust tests, 29 Python tests, formatting, strict Clippy and explicit
+Darwin object ABI/staging checks pass. One new comprehensive native fixture
+checks all seven exports, signed widths, full 64-bit lseek results, original
+narrowing, errno conversion, single-call EINTR and actual file/lock operations.
+Independent review and ASan/UBSan adapter execution pass; Rust objects themselves
+were not sanitizer-instrumented. Review verifies both link response files include
+fd.o exactly once while retaining original guest syscall wrappers.
+
+All 20 guest regression probes pass against previous/new Rust kernels, including
+old mode/truncate/sync/nocancel checks and new seek/lock probes. New coverage
+includes sparse offsets above 4 GiB without large memory allocation, unchanged
+file content, shared offsets through dup, invalid whence/negative offsets,
+ESPIPE, EBADF, lock conflict between independent opens, shared lock ownership
+through dup, shared/exclusive conversion and invalid operations.
+Sixteen utilities, 29 app checks (28 exact plus explicit cfbridge log
+normalization) and three GUI samples pass within existing fixture limits.
+
+Matching link preserves 1370 public definitions/40 imports; pinned preserves
+1362/18 and original i386 bytes. Matching process integration remains separate
+from pinned linking; clean pinned boot/i386 Rust remain unverified. All execution
+uses owned prefixes and the isolated Rust-lockset server. Installed binaries
+and existing user prefix remain unchanged; owned hidden X is shut down. Copied
+repaired CGShadingCreate nib and sample-only GUI scope remain explicit.
+
+Reproduction and scope
+----------------------
+Follow RUNTIME-FDOPS.txt but replace its four individual descriptor options with:
+
+    --fd-object "$WORK/runtime/objects/fd.o"
+
+Keep all earlier unrelated runtime options and matching/pinned fork/TLS bridges.
+Native staging executes fd-native.c. Build lseek-regression.c, flock-regression.c
+and descriptors-guest-bench.c with build_runtime_probes.py; reuse unchanged prior
+guest probes and supply stdout goldens independently. Guest timings are on stderr.
+
+    python3 tools/benchmark_fileops.py --family descriptors --source EXACT_PIN_SOURCE --runtime NATIVE_STAGE --output NEW_DIRECTORY
+
+Latest artifacts: dearust-continuation/work/descriptors-next/
+{final-stage,matching-final,pinned-final}. Twenty-one dependency slices partial,
+265782 entries pending; seven Cargo target slices, 1622 pending targets, zero
+retired. Most runtime/framework/build implementation remains C/C++/assembly;
+arbitrary commercial application compatibility is unverified.

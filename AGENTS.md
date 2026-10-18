@@ -426,3 +426,20 @@ app/GUI checks pass. New relinker options --fchmod-object, --ftruncate-object,
 dearust-continuation/work/fdops-next/{final-stage,matching-final,pinned-final}.
 Nineteen dependency slices partial, 265784 pending; seven target slices/1622
 pending/zero retired. Installed binaries/user prefix remain untouched.
+
+Continuation: grouped descriptor subsystem
+------------------------------------------
+User explicitly requests grouping related operations into subsystem crates,
+rather than continuing one crate per syscall; preserve this direction for future
+batches. CPU and memory performance remain priorities. Latest evidence:
+RUNTIME-DESCRIPTORS.txt and runtime-descriptors-verification.json. dearust-fd
+replaces four prior fd crates and adds lseek/flock (six sources/seven exports).
+Stage fd.o and pass --fd-object instead of previous four descriptor switches.
+Do not mix grouped/individual options. Preserve lseek full 64-bit success, error-
+only narrowing, original guest cancellation stubs and single-call EINTR. No
+heap/path/cache/TLS storage. Workspace packages 23 -> 20; native CPU unchanged,
+guest workload median 4.12% lower; matching dylib 632 bytes smaller, no RSS/general
+app claim. 131 existing Rust tests, 29 Python tests, 20 probes and existing utility/
+app/GUI checks pass. Final artifacts: dearust-continuation/work/descriptors-next/
+{final-stage,matching-final,pinned-final}. Twenty-one dependency slices partial,
+265782 pending; target counts seven/1622/zero retired. Installed/user prefix intact.

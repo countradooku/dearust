@@ -64,10 +64,7 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                         | "dearust-mkdirat"
                         | "dearust-faccessat"
                         | "dearust-fchmodat"
-                        | "dearust-fchmod"
-                        | "dearust-ftruncate"
-                        | "dearust-fsync"
-                        | "dearust-fdatasync"
+                        | "dearust-fd"
                 )
             {
                 return Err(invalid("unknown runtime private-symbol policy"));
@@ -85,11 +82,16 @@ fn graph() -> io::Result<Vec<Spec<'static>>> {
                     destination: f[5],
                     hidden_symbols: if f[4] == "private" {
                         match f[2] {
+                            "dearust-fd" => vec![
+                                "sys_fchmod",
+                                "sys_ftruncate",
+                                "sys_fsync",
+                                "sys_fdatasync",
+                                "sys_lseek",
+                                "sys_flock",
+                                "sys_fsync_nocancel",
+                            ],
                             "dearust-process" => vec!["sys_proc_info"],
-                            "dearust-fchmod" => vec!["sys_fchmod"],
-                            "dearust-ftruncate" => vec!["sys_ftruncate"],
-                            "dearust-fsync" => vec!["sys_fsync", "sys_fsync_nocancel"],
-                            "dearust-fdatasync" => vec!["sys_fdatasync"],
                             "dearust-unlinkat" => vec!["sys_unlinkat"],
                             "dearust-linkat" => vec!["sys_linkat"],
                             "dearust-renameat" => vec!["sys_renameat"],

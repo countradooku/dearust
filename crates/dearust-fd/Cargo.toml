@@ -1,11 +1,11 @@
 [package]
-name = "dearust-fchmod"
+name = "dearust-fd"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
 publish = false
 license = "GPL-3.0-or-later"
-description = "Allocation-free descriptor fchmod for Darling's x86_64 runtime"
+description = "Allocation-free descriptor operations for Darling's x86_64 runtime"
 
 [dependencies]
 dearust-errno = { path = "../dearust-errno" }

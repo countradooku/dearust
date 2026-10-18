@@ -1,0 +1,460 @@
+{
+  "date": "2026-10-18",
+  "base_commit": "bbc3b60",
+  "project_owner": "@countradooku",
+  "ai_assistance": "OpenAI Codex",
+  "scope": "Grouped descriptor subsystem replacing four crates and adding lseek/flock. No new original defect claimed; migration incomplete.",
+  "checks": {
+    "rust_tests": 131,
+    "new_rust_unit_tests": 0,
+    "new_native_fixtures": 1,
+    "new_guest_fixtures": 2,
+    "workspace_packages_before": 23,
+    "workspace_packages_after": 20,
+    "python_tests": 29,
+    "formatting": "passed",
+    "strict_clippy": "passed",
+    "explicit_darwin_artifact_check": "passed",
+    "independent_review": "No actionable defect. Grouped native fixture independently passed with ASan/UBSan on adapters; Rust objects not instrumented.",
+    "source_target_inventory_repeat": "byte-identical"
+  },
+  "sources": {
+    "crates/dearust-fd/Cargo.toml": "56232824b95598adfb9487c2e225274e82e4c3c32e6b55f68c1f91808bed8927",
+    "crates/dearust-fd/SAFETY.txt": "7ead8cec9ed9a0dfcb79f04c72735ab9f4f0b17fe7572ea7df96c2ace78d876c",
+    "crates/dearust-fd/src/abi.rs": "f2fc3e38448838b761ef07b9037e22e55cd2ee31d634238a43cf78ed1e55a14b",
+    "crates/dearust-fd/src/lib.rs": "c101f3bfaf822b5dc6eb83e695dfe9c6c7d3de626b9bf19e1e31f76b72235125",
+    "tools/fixtures/fd-native.c": "cbee4787630fe75d360650f5066fbf248fb5121c999d25db574b7cc0dabe1582",
+    "tools/fixtures/fchmod-regression.c": "012b11719c76a7158c1c00d62e8c05a27f78d79603e4d0295f63a72f0acf8a5d",
+    "tools/fixtures/ftruncate-regression.c": "e8b2a33b232c322fad7fcf7b83b47b24df9e2ae7be3097580d65a5dee0e949bc",
+    "tools/fixtures/fsync-regression.c": "9fe783e1850d5a11e7017e1d6baabda13abfe172971ad0e9335d607c522366b3",
+    "tools/fixtures/fdatasync-regression.c": "17ba097b9870043ce7c2d0ddb6ae9e6ae69f0052300efade10982662b5340ef7",
+    "tools/fixtures/lseek-regression.c": "d559b3e9e993fdd6bf0a133df453741c7abb8f0f6c181da4183d4b638a7e35bb",
+    "tools/fixtures/flock-regression.c": "00fce374c5e4b9bc3f116c7eebdae17d47d28794a8e082ec7c623fb8eef7b315",
+    "tools/benchmark_fileops.py": "c30f75084a442213448fa00bbd7e8dcaaf14266a756202b6ef5873c429504c51",
+    "tools/fixtures/descriptors-bench.c": "baa9ad5eddc400ec0c04e690954f6408ec353a6295c28cc696dcc5c3ce18d280",
+    "tools/fixtures/descriptors-guest-bench.c": "768720d93f404053bc32b071dc3d686ddb0106ef0abe93a8134698eaaf4481b8",
+    "tools/inspect_path_frames.py": "7e2bf454bc5b3f84e7364438f432d4b3a8b2a33bde439b21e2669d829193b254"
+  },
+  "evidence": {
+    "apps.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/apps.json",
+      "sha256": "a44d1bd6f9be7cf6beb3ebe96f8ed7c65cfa199b46a1a76d90690f3820a8faca"
+    },
+    "utilities.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/utilities.json",
+      "sha256": "03d2e3998ecb2729e63392dcaeb05b0e41dc6bfbad20d0e3f406f55cf2d74bd7"
+    },
+    "probes.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/probes.json",
+      "sha256": "5e6559136553a2689b5cab7bea31232523421db6b622f49437c3cbd21ad27598"
+    },
+    "gui.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/gui.json",
+      "sha256": "babdcd3e52df087973665eb757ad26d07c45597497c2606052bfcdba705b0e2d"
+    },
+    "gui-cleanup.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/gui-cleanup.json",
+      "sha256": "6ba949dfbd1becd541c0db78a1279c5c6031833c66ef68c283fcf6010642a822"
+    },
+    "matching-link.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/matching-link.json",
+      "sha256": "c80fab8cf4dab397d025e2b56ab7266df07fe2dd3f7864e410c9e282347f318e"
+    },
+    "pinned-link.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/pinned-link.json",
+      "sha256": "fa3984708d87fb4677e308123e6f9809c305f882c75de4395d40f348fb5d47b3"
+    },
+    "probe-build.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/probe-build.json",
+      "sha256": "0a9190c662f7c51aa44b37478948a271ba73690a386faa22bacafa43c46554a8"
+    },
+    "previous-probe-build.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/previous-probe-build.json",
+      "sha256": "732e7bdcf4421be21f37473e689e7c086a5a33b9a755c718f70c55f0545d8053"
+    },
+    "previous-fsync-build.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/previous-fsync-build.json",
+      "sha256": "8406dd44711d79fb38ae3f3b54f13725b150c769c86e9fa0c6ca9bbbdcdf2ee1"
+    },
+    "native-benchmark.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/native-benchmark.json",
+      "sha256": "62f0e837406e55fa3bdb8e3f22d0114345d167f53256165e3b9cf65100a39bfb"
+    },
+    "guest-benchmark.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/guest-benchmark.json",
+      "sha256": "7f7ae34a3671e4df28ff51a8d64623f37c2af51a68000af3967a0107578f158e"
+    },
+    "guest-forward.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/guest-forward.json",
+      "sha256": "c845d4ece3be137bb6f1c47fc6d72dce91497f0c751d66d39ef74879d24ba7ea"
+    },
+    "guest-reverse.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/guest-reverse.json",
+      "sha256": "3e4823a6f8d42ff7d586660a94eadc2619451f1a8c37b2b831ef6fbf2b261206"
+    },
+    "guest-benchmark-build.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/guest-benchmark-build.json",
+      "sha256": "a1e7d642c931673b79e4048f5949879c351f4c8acf1a0de4697d5e3f810845c6"
+    },
+    "frames.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/frames.json",
+      "sha256": "f9dee60c4517da16970f54a8d52f5d7a6ff933121b84804fd922843f2eb7945a"
+    },
+    "cargo-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/cargo-check.log",
+      "sha256": "34a2c5203c7fa4c55ed3fd245a4902365f0b30ca862bfd0c7d4a4998c2bd1812"
+    },
+    "python-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/python-check.log",
+      "sha256": "2ddd3f6c7c6e4ae68bdf1d71917e1d4c5e454f95873a71f966145c7b8bc555a9"
+    },
+    "darwin-check.log": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/darwin-check.log",
+      "sha256": "3ffb917d223eeee20a489a86607dd887931842fe43a4324cd04dabbf42085430"
+    },
+    "inventory-check.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/inventory-check.json",
+      "sha256": "1ee4fdd628235eb0b5aa909ad8ce64273f93a7070eb8ee37805405e58cede4cf"
+    },
+    "independent-native-sanitizer.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/independent-native-sanitizer.json",
+      "sha256": "97d0efeef71955a2ead0c52deb253d942f8023204c59c8ddc5085c0e8e73ef09"
+    },
+    "source-abi-review.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/source-abi-review.json",
+      "sha256": "2906e2217ad937ce51f4ec20bd978bc5dfc8e742224e1dbaec9ca296cad545d9"
+    },
+    "link-input-check.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/link-input-check.json",
+      "sha256": "413c087d5397cd5f033a99527613aca6843196851dfce52afb1dffff61946013"
+    },
+    "grouping-sections.json": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/grouping-sections.json",
+      "sha256": "fc7a4455eb1d2e68121ebc44534e351e16e7cc00e9dff66e5e317699c6589e6b"
+    },
+    "original-Calculator.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/original-Calculator.png",
+      "sha256": "639cdd1f0781f6e4d195109902aa43a3e9c6d6614e29a8f628912df3b6820182"
+    },
+    "original-TextEditor.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/original-TextEditor.png",
+      "sha256": "211220a7fa0094aedf00e37cee2697b6a3bcc0c74b6410c2e7c871ec908a6809"
+    },
+    "original-CGShadingCreate.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/original-CGShadingCreate.png",
+      "sha256": "213ba91b0d9454fa28d4543e022f3f5cd8482eb3c72574060c4076df07052a9d"
+    },
+    "rust-Calculator.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/rust-Calculator.png",
+      "sha256": "639cdd1f0781f6e4d195109902aa43a3e9c6d6614e29a8f628912df3b6820182"
+    },
+    "rust-TextEditor.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/rust-TextEditor.png",
+      "sha256": "211220a7fa0094aedf00e37cee2697b6a3bcc0c74b6410c2e7c871ec908a6809"
+    },
+    "rust-CGShadingCreate.png": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/rust-CGShadingCreate.png",
+      "sha256": "213ba91b0d9454fa28d4543e022f3f5cd8482eb3c72574060c4076df07052a9d"
+    },
+    "fd-baseline.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/fd-baseline.asm",
+      "sha256": "e6b20ba6777bafc81e50531511db702c52ad7f8f56c5e855c3ee0f58b90a0751"
+    },
+    "fd-optimized.asm": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/outputs/runtime-descriptors-verification/fd-optimized.asm",
+      "sha256": "c1fb636d5ca162261d835ddc70bb10ba32e596fa92ad6155fe141e826cd18ced"
+    }
+  },
+  "suites": {
+    "apps": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 29,
+        "strict_passes": 27,
+        "normalized_passes": 28
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 29,
+        "strict_passes": 28,
+        "normalized_passes": 29
+      }
+    ],
+    "utilities": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 16,
+        "strict_passes": 14,
+        "normalized_passes": 14
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 16,
+        "strict_passes": 16,
+        "normalized_passes": 16
+      }
+    ],
+    "probes": [
+      {
+        "variant": "original",
+        "meaning": "previous Rust kernel",
+        "cases": 20,
+        "strict_passes": 20,
+        "normalized_passes": 20
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 20,
+        "strict_passes": 20,
+        "normalized_passes": 20
+      }
+    ],
+    "gui": [
+      {
+        "variant": "original",
+        "meaning": "original C kernel",
+        "cases": 3,
+        "strict_passes": 3,
+        "normalized_passes": 3
+      },
+      {
+        "variant": "rust",
+        "meaning": "new Rust kernel",
+        "cases": 3,
+        "strict_passes": 3,
+        "normalized_passes": 3
+      }
+    ]
+  },
+  "gui_visual_review": "All six current captures are byte-identical to previous fdops-next captures, transitively matching manually inspected perf-next captures. Calculator initial19 screenshot/action42 check; TextEditor and axial gradient unchanged.",
+  "performance": {
+    "native": {
+      "original": {
+        "median_cpu_ns_per_roundtrip": 2431.854,
+        "cpu_q1_ns_per_roundtrip": 2402.2895,
+        "cpu_q3_ns_per_roundtrip": 2457.047,
+        "median_wall_ns_per_roundtrip": 2437.812
+      },
+      "rust": {
+        "median_cpu_ns_per_roundtrip": 2430.14,
+        "cpu_q1_ns_per_roundtrip": 2407.609,
+        "cpu_q3_ns_per_roundtrip": 2455.958,
+        "median_wall_ns_per_roundtrip": 2444.8955
+      },
+      "cpu_change_percent": -0.07048120487496146
+    },
+    "guest": {
+      "baseline": {
+        "samples": 42,
+        "median_cpu_us_per_roundtrip": 3.4,
+        "cpu_q1_us_per_roundtrip": 3.35375,
+        "cpu_q3_us_per_roundtrip": 3.43,
+        "median_wall_us_per_roundtrip": 3.405
+      },
+      "rust": {
+        "samples": 42,
+        "median_cpu_us_per_roundtrip": 3.26,
+        "cpu_q1_us_per_roundtrip": 3.24375,
+        "cpu_q3_us_per_roundtrip": 3.29,
+        "median_wall_us_per_roundtrip": 3.2775
+      },
+      "cpu_change_percent": -4.117647058823537
+    },
+    "objects": {
+      "fd": {
+        "baseline": {
+          "object_sha256": "64827550fd8aaae85aa0652962644ccfbf00896c61d32576e2fd57d4fec6c4b3",
+          "object_bytes": 3032,
+          "max_local_stack_subtraction_bytes": 0,
+          "imports": [
+            "errno_linux_to_bsd",
+            "linux_syscall"
+          ]
+        },
+        "optimized": {
+          "object_sha256": "5a5cedecd4d58c3f5ca277f7c19fda2bd117fa62b494bd9d8810eec4cee85e71",
+          "object_bytes": 3392,
+          "max_local_stack_subtraction_bytes": 0,
+          "imports": [
+            "linux_syscall"
+          ]
+        }
+      }
+    },
+    "native_local_stack": "Each original/new function has zero explicit subtraction and one8-byte argument/alignment push; return address/callees excluded. Both fsync symbols share Rust body. Grouped error table data shares one126-byte native constant.",
+    "matching_dylib_file_bytes": {
+      "previous": 874592,
+      "new": 873960,
+      "delta": -632
+    },
+    "interpretation": "Native CPU-0.07% essentially unchanged; guest median CPU-4.12% in recorded local workload. No broad speedup, durable-write throughput or RSS claim. Warm repeatedly same-size file, no newly written content between rounds. No heap/path storage."
+  },
+  "artifacts": {
+    "matching-final/libsystem_kernel-original.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/descriptors-next/matching-final/libsystem_kernel-original.dylib",
+      "sha256": "bf3eab90a91cd0bf4af7f57d13bcd45d0b8ad12087592edf09d825accad8cf9f"
+    },
+    "matching-final/libsystem_kernel-rust.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/descriptors-next/matching-final/libsystem_kernel-rust.dylib",
+      "sha256": "96af9d60ed9790d37cc5f2138cb003c7c1c3ff1046849b719c8b0e65e71e11c6"
+    },
+    "pinned-final/libsystem_kernel.dylib": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/descriptors-next/pinned-final/libsystem_kernel.dylib",
+      "sha256": "716794fa9e50337fc70ac83f49f2ffd6ff869736ade472e1ed84eb099f0ab8e4"
+    },
+    "final-stage/objects/fd.o": {
+      "path": "/home/radud/Documents/Codex/2026-10-18/dearust-continuation/work/descriptors-next/final-stage/objects/fd.o",
+      "sha256": "8c4aa9ea7981a80e028d4c0d7b8ed2a077129ba6f71dc5508d12b67d1fd87832"
+    }
+  },
+  "source_provenance": {
+    "fchmod.c": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fchmod.c",
+      "sha256": "96792ed46be4c12b15f98122d19398dd241df8ec6c6f01062b1457a278b06402",
+      "pinned_and_matching_files_identical": true
+    },
+    "fchmod.h": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/include/xnu_syscall/bsd/impl/unistd/fchmod.h",
+      "sha256": "0839e58169a78c5ce0dbda54da69affa0d0d2936bcd4f537e19ce8d434e74401",
+      "pinned_and_matching_files_identical": true
+    },
+    "ftruncate.c": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/ftruncate.c",
+      "sha256": "89163fcf0555dbfdb29d1029d0ef63628cdebf4b6d2f39b508a72cb77a828b85",
+      "pinned_and_matching_files_identical": true
+    },
+    "ftruncate.h": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/include/xnu_syscall/bsd/impl/unistd/ftruncate.h",
+      "sha256": "d089c57f7a3cb4865bd6f6307c57d43d9b2abb0d668968c1e30a731eda005aa1",
+      "pinned_and_matching_files_identical": true
+    },
+    "fsync.c": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fsync.c",
+      "sha256": "d46aca82b13bd76168b7366d60842ce80d96b3a994f1eeac47acdda586400803",
+      "pinned_and_matching_files_identical": true
+    },
+    "fsync.h": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/include/xnu_syscall/bsd/impl/unistd/fsync.h",
+      "sha256": "fbadda4241ba17bd2bdb820250c92313087e7cd0badb22239a2837e15a7f3ff1",
+      "pinned_and_matching_files_identical": true
+    },
+    "fdatasync.c": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fdatasync.c",
+      "sha256": "d184236948a7eefc95e113b12be0991d5b4f289c407e5f3fc2a15ce4d7275314",
+      "pinned_and_matching_files_identical": true
+    },
+    "fdatasync.h": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/include/xnu_syscall/bsd/impl/unistd/fdatasync.h",
+      "sha256": "e92c07c5739270fc1a0c0956894a5f9640d219ba424b5db15e87aff8d90d9654",
+      "pinned_and_matching_files_identical": true
+    },
+    "lseek.c": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/lseek.c",
+      "sha256": "a73429892377736e10411e47d8028e32ed5e7639978d039104bfff01e38fea40",
+      "pinned_and_matching_files_identical": true
+    },
+    "lseek.h": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/include/xnu_syscall/bsd/impl/unistd/lseek.h",
+      "sha256": "f8dfb531d3d89cee1fadec0d0212c80ad186620e80ff66cb42afe4bc212d7906",
+      "pinned_and_matching_files_identical": true
+    },
+    "flock.c": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/flock.c",
+      "sha256": "f59872b99eedcb5718388af71be338e84dda9f990a1be39c7788c285a0132a4c",
+      "pinned_and_matching_files_identical": true
+    },
+    "flock.h": {
+      "xnu_pin": "fa29287aa2f0115271e091f1031f53c9e024005d",
+      "source": "darling/src/libsystem_kernel/emulation/include/xnu_syscall/bsd/impl/unistd/flock.h",
+      "sha256": "3d179b43e5fb68adca99afa7d47f2829679544a1f701a0957a5c241b647f3db1",
+      "pinned_and_matching_files_identical": true
+    }
+  },
+  "installation_preserved": {
+    "/usr/local/libexec/darling/usr/lib/system/libsystem_kernel.dylib": "e473a4bcafbcc09a740ef6a82b656b18039db270b1cbed7b930e654a538aa052",
+    "/usr/local/bin/darlingserver": "6c792a7b1ef80284be0291bc5b51e71d6947193e864b332e073b7fe8f5a6bf69"
+  },
+  "migration_counts": {
+    "partial_dependency_sources": 21,
+    "pending_dependency_entries": 265782,
+    "cargo_target_slices": 7,
+    "pending_targets": 1622,
+    "retired_targets": 0
+  },
+  "preserved_exports": [
+    "sys_fchmod",
+    "sys_ftruncate",
+    "sys_fsync",
+    "sys_fsync_nocancel",
+    "sys_fdatasync",
+    "sys_lseek",
+    "sys_flock"
+  ],
+  "grouping_sections": {
+    "scope": "Native previous4Rust+original2C versus grouped6Rust relocatable object; not loaded or resident memory. Previous raw sources and flags match native benchmark. Grouping and newports jointly change code.",
+    "records": {
+      "previous": {
+        "object_file_bytes": 4856,
+        "sections": {
+          ".text": 96,
+          ".eh_frame": 320,
+          ".comment": 270,
+          ".text.sys_fchmod": 79,
+          ".rodata..Lanon.f1da7aeb6569731a65d3371e3b4b2992.0": 126,
+          ".note.GNU-stack": 0,
+          ".text.sys_ftruncate": 76,
+          ".rodata..Lanon.f6801814770c5b162cbcf8e1dc5f35e5.0": 126,
+          ".text.sys_fsync": 67,
+          ".rodata..Lanon.323a2fe6e0e201a3f9ae9136954f5536.0": 126,
+          ".text.sys_fdatasync": 67,
+          ".rodata..Lanon.da697b250b550c8b084552fdae3f3859.0": 126,
+          ".llvm_addrsig": 0
+        },
+        "read_only_data_bytes": 504
+      },
+      "grouped": {
+        "object_file_bytes": 3392,
+        "sections": {
+          ".text": 0,
+          ".text.sys_fchmod": 68,
+          ".text.sys_fdatasync": 67,
+          ".text.sys_flock": 68,
+          ".text.sys_fsync": 67,
+          ".text.sys_ftruncate": 65,
+          ".text.sys_lseek": 77,
+          ".rodata..Lanon.2c990c509df5e72f265a2858187e4703.0": 126,
+          ".comment": 45,
+          ".note.GNU-stack": 0,
+          ".eh_frame": 176
+        },
+        "read_only_data_bytes": 126
+      }
+    }
+  },
+  "limitations": [
+    "Most runtime/framework/build work remains C/C++/assembly.",
+    "Original generated guest stub cancellation boundaries retained; actual thread cancellation not verified.",
+    "Explicit guest syscall408 fsync_nocancel success/closedfd/pipe tests pass; synthetic native EINTR propagation is not full guest cancellation coverage.",
+    "Native benchmark uses explicit headers/raw-syscall adapter and excludes matching C tracing raw-entry wrapper.",
+    "Warm synchronization workload does not measure durable write throughput or device failure guarantees.",
+    "Twenty-probe original label means previous Rust kernel; app/utility/GUI original label means original C kernel.",
+    "Known cfbridge log normalization and repaired copied CGShadingCreate nib remain explicit.",
+    "Pinned link excludes process dispatcher port; clean pinned boot and i386 Rust are unverified."
+  ]
+}

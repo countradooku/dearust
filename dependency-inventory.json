@@ -10,8 +10,8 @@
     },
     "inventoried_entries": 265803,
     "entries_by_status": {
-      "partial": 19,
-      "pending": 265784
+      "partial": 21,
+      "pending": 265782
     },
     "license_candidates": 341
   },
@@ -2327175,7 +2327175,7 @@
           "size": 386,
           "category": "source",
           "status": "partial",
-          "replacement": "crates/dearust-fchmod/src/lib.rs",
+          "replacement": "crates/dearust-fd/src/lib.rs",
           "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
           "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
@@ -2327226,7 +2327226,7 @@
           "size": 379,
           "category": "source",
           "status": "partial",
-          "replacement": "crates/dearust-fdatasync/src/lib.rs",
+          "replacement": "crates/dearust-fd/src/lib.rs",
           "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
           "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
@@ -2327237,7 +2327237,10 @@
           "object_id": "4d483d4770ee1a36a9286742db9465ed3ad6648b",
           "size": 378,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-fd/src/lib.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/fsync.c",
@@ -2327247,7 +2327250,7 @@
           "size": 436,
           "category": "source",
           "status": "partial",
-          "replacement": "crates/dearust-fsync/src/lib.rs",
+          "replacement": "crates/dearust-fd/src/lib.rs",
           "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
           "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
@@ -2327259,7 +2327262,7 @@
           "size": 509,
           "category": "source",
           "status": "partial",
-          "replacement": "crates/dearust-ftruncate/src/lib.rs",
+          "replacement": "crates/dearust-fd/src/lib.rs",
           "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
           "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
@@ -2327426,7 +2327429,10 @@
           "object_id": "741a6cdf542d21745c1d0cbad44ed4f2c3fc6d4b",
           "size": 610,
           "category": "source",
-          "status": "pending"
+          "status": "partial",
+          "replacement": "crates/dearust-fd/src/lib.rs",
+          "scope": "no_std native execution and x86_64 Mach-O system_kernel consumer integration verified; original public ABI retained",
+          "limitation": "i386 Rust replacement pending; process-query slice retains legacy fallback flavors. Selected matching locally modified runtime checks do not establish general application compatibility; no target retirement"
         },
         {
           "path": "darling/src/libsystem_kernel/emulation/src/xnu_syscall/bsd/impl/unistd/mknod.c",

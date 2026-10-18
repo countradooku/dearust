@@ -34,7 +34,7 @@ def main():
         parser.add_argument('--'+name,type=Path,required=True)
     parser.add_argument('--samples',type=int,default=21)
     parser.add_argument('--iterations',type=int,default=2000)
-    parser.add_argument('--family', choices=['mutation','permissions','fdops'], default='mutation')
+    parser.add_argument('--family', choices=['mutation','permissions','fdops','descriptors'], default='mutation')
     args=parser.parse_args()
     if args.samples<3 or args.iterations<1:
         parser.error('at least three samples and positive iterations required')
@@ -46,8 +46,11 @@ def main():
     headers=args.output/'headers';headers.mkdir()
     base=source/'src/external/xnu/darling/src/libsystem_kernel/emulation'
     paths = {'unlinkat':'unistd/unlinkat.c', 'linkat':'unistd/linkat.c', 'renameat':'unistd/renameat.c'} if args.family=='mutation' else {'mkdirat':'stat/mkdirat.c', 'faccessat':'unistd/faccessat.c', 'fchmodat':'unistd/fchmodat.c'}
-    if args.family=='fdops':
-        paths={n:'unistd/'+n+'.c' for n in ['fchmod','ftruncate','fsync','fdatasync']}
+    if args.family in ('fdops','descriptors'):
+        descriptor_names=['fchmod','ftruncate','fsync','fdatasync']
+        if args.family=='descriptors':
+            descriptor_names += ['lseek','flock']
+        paths={n:'unistd/'+n+'.c' for n in descriptor_names}
     names=tuple(paths)
     sources=[base/'src/xnu_syscall/bsd/impl'/path for path in paths.values()]
     inputs=pinned_hashes(source,[*sources,base/'include/conversion/common_at.h'])
@@ -78,7 +81,7 @@ extern long linux_syscall(long,long,long,long,long,long,int);
 _Static_assert(sizeof(struct linux_stat)==144,"Linux stat size");
 _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode offset");
 ''')
-    if args.family=='fdops':
+    if args.family in ('fdops','descriptors'):
         original_header=base/'include/xnu_syscall/bsd/impl/unistd/fsync.h'
         inputs.update(pinned_hashes(source,[original_header]))
         header('xnu_syscall/bsd/impl/unistd/fsync.h',original_header.read_text())
@@ -89,9 +92,14 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
     driver=Path(__file__).parent/'fixtures'/('fileops-bench.c' if args.family=='mutation' else 'permissions-bench.c')
     if args.family=='fdops':
         driver=Path(__file__).parent/'fixtures/fdops-bench.c'
+    if args.family=='descriptors':
+        driver=Path(__file__).parent/'fixtures/descriptors-bench.c'
+    rust_objects=[runtime/'objects'/(n+'.o') for n in names]
+    if args.family=='descriptors':
+        rust_objects=[runtime/'objects/fd.o']
     binaries={}
     for variant in ('original','rust'):
-        objects=[args.output/(n+'.o') if variant=='original' else runtime/'objects'/(n+'.o') for n in names]
+        objects=[args.output/(n+'.o') for n in names] if variant=='original' else rust_objects
         if variant=='original':objects.append(runtime/'objects/errno.o')
         command=['clang','-O2','-Wall','-Wextra','-Werror',str(driver),*[str(p) for p in objects],'-o',str(args.output/variant)]
         subprocess.run(command,check=True);commands.append(command);binaries[variant]=args.output/variant
@@ -107,9 +115,12 @@ _Static_assert(__builtin_offsetof(struct linux_stat,st_mode)==24,"Linux mode off
         summary[variant]={'median_cpu_ns_per_roundtrip':statistics.median(times),'cpu_q1_ns_per_roundtrip':q[0],'cpu_q3_ns_per_roundtrip':q[2],
                           'median_wall_ns_per_roundtrip':statistics.median(r['wall_ns']/r['roundtrips'] for r in matching)}
     summary['cpu_change_percent']=100*(summary['rust']['median_cpu_ns_per_roundtrip']/summary['original']['median_cpu_ns_per_roundtrip']-1)
-    report={'scope':__doc__,'roundtrip':('linkat -> renameat -> unlinkat' if args.family=='mutation' else ('mkdirat -> fchmodat -> faccessat -> unlinkat' if args.family=='permissions' else 'fchmod -> ftruncate -> fsync -> fdatasync'))+'; actual temporary native files','samples':args.samples,'iterations':args.iterations,'cpu':cpu,'commands':commands,
+    roundtrip = ('linkat -> renameat -> unlinkat' if args.family=='mutation' else ('mkdirat -> fchmodat -> faccessat -> unlinkat' if args.family=='permissions' else 'fchmod -> ftruncate -> fsync -> fdatasync'))
+    if args.family=='descriptors':
+        roundtrip='fchmod(0600) -> ftruncate(128) -> lseek(64, SEEK_SET) -> flock(EX|NB) -> flock(UN) -> fsync -> fdatasync; warmed same file without new contents'
+    report={'scope':__doc__,'roundtrip':roundtrip+'; actual temporary native files','samples':args.samples,'iterations':args.iterations,'cpu':cpu,'commands':commands,
             'source_pin':XNU_PIN,'source_sha256':inputs,'native_adapters':{str(p.relative_to(headers)):p.read_text() for p in headers.rglob('*') if p.is_file()},
-            'rust_objects_sha256':{str(runtime/'objects'/(n+'.o')):hashlib.sha256((runtime/'objects'/(n+'.o')).read_bytes()).hexdigest() for n in names},
+            'rust_objects_sha256':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in rust_objects},
             'records':records,'summary':summary}
     (args.output/'benchmark.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(summary,indent=2))
 

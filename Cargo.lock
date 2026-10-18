@@ -22,13 +22,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dearust-fchmod"
-version = "0.1.0"
-dependencies = [
- "dearust-errno",
-]
-
-[[package]]
 name = "dearust-fchmodat"
 version = "0.1.0"
 dependencies = [
@@ -36,7 +29,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dearust-fdatasync"
+name = "dearust-fd"
 version = "0.1.0"
 dependencies = [
  "dearust-errno",
@@ -44,20 +37,6 @@ dependencies = [
 
 [[package]]
 name = "dearust-fstatat"
-version = "0.1.0"
-dependencies = [
- "dearust-errno",
-]
-
-[[package]]
-name = "dearust-fsync"
-version = "0.1.0"
-dependencies = [
- "dearust-errno",
-]
-
-[[package]]
-name = "dearust-ftruncate"
 version = "0.1.0"
 dependencies = [
  "dearust-errno",

@@ -25,6 +25,8 @@ FCHMOD = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fch
 FTRUNCATE = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/ftruncate.c.o'
 FSYNC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fsync.c.o'
 FDATASYNC = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/fdatasync.c.o'
+LSEEK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/lseek.c.o'
+FLOCK = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/flock.c.o'
 READLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/readlinkat.c.o'
 SYMLINKAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/unistd/symlinkat.c.o'
 FSTATAT = 'emulation/CMakeFiles/emulation.dir/src/xnu_syscall/bsd/impl/stat/fstatat.c.o'
@@ -144,6 +146,15 @@ def integrate(args):
         if inputs.count(FCHMODAT) != 1 or not args.fchmodat_object.is_file():
             raise ValueError('missing unique fchmodat input')
         replacements[FCHMODAT] = args.fchmodat_object.resolve(strict=True)
+    if args.fd_object:
+        if any([args.fchmod_object, args.ftruncate_object, args.fsync_object, args.fdatasync_object]):
+            raise ValueError('grouped fd object conflicts with individual descriptor objects')
+        if not args.fd_object.is_file():
+            raise ValueError('missing grouped descriptor object')
+        for name in (FCHMOD, FTRUNCATE, FSYNC, FDATASYNC, LSEEK, FLOCK):
+            if inputs.count(name) != 1:
+                raise ValueError('missing unique grouped descriptor input: ' + name)
+            replacements[name] = args.fd_object.resolve(strict=True)
     if args.fchmod_object:
         if inputs.count(FCHMOD) != 1 or not args.fchmod_object.is_file():
             raise ValueError('missing unique fchmod input')
@@ -180,7 +191,17 @@ def integrate(args):
     archive = (build/'src/libsimple-darling/liblibsimple_darling.a').resolve(strict=True)
     # Compile/link commands are executed directly as argv, never as shell text.
     # Every original production input remains, except the declared source slices.
-    new_inputs = [str(replacements.get(name, (kernel/name).resolve(strict=True))) for name in inputs]
+    new_inputs = []
+    used_replacements = set()
+    for name in inputs:
+        if name in replacements:
+            path = str(replacements[name])
+            if path in used_replacements:
+                continue
+            used_replacements.add(path)
+        else:
+            path = str((kernel/name).resolve(strict=True))
+        new_inputs.append(path)
     if args.lstat_bridge:
         new_inputs.append(str(args.lstat_bridge.resolve(strict=True)))
     for name in new_inputs:
@@ -254,6 +275,14 @@ def integrate(args):
     if args.fchmodat_object:
         wanted['_sys_fchmodat'] = args.fchmodat_object.name
         wanted['_do_linux_fchmodat'] = args.fchmodat_object.name
+    if args.fd_object:
+        wanted['_sys_fchmod'] = args.fd_object.name
+        wanted['_sys_ftruncate'] = args.fd_object.name
+        wanted['_sys_fsync'] = args.fd_object.name
+        wanted['_sys_fdatasync'] = args.fd_object.name
+        wanted['_sys_lseek'] = args.fd_object.name
+        wanted['_sys_flock'] = args.fd_object.name
+        wanted['_sys_fsync_nocancel'] = args.fd_object.name
     if args.fchmod_object:
         wanted['_sys_fchmod'] = args.fchmod_object.name
     if args.ftruncate_object:
@@ -321,6 +350,7 @@ def main():
     parser.add_argument('--mkdirat-object', type=Path)
     parser.add_argument('--faccessat-object', type=Path)
     parser.add_argument('--fchmodat-object', type=Path)
+    parser.add_argument('--fd-object', type=Path)
     parser.add_argument('--fchmod-object', type=Path)
     parser.add_argument('--ftruncate-object', type=Path)
     parser.add_argument('--fsync-object', type=Path)

@@ -322,3 +322,13 @@ retry: original generated guest stub behavior remains. 131 existing Rust tests,
 essentially unchanged; guest median is 1.97% lower with overlapping quartiles.
 No heap/path buffers; eight-byte native syscall argument stack slot. Nineteen
 dependency slices partial, 265784 pending; target counts remain seven/1622/zero.
+
+Grouped descriptor continuation: RUNTIME-DESCRIPTORS.txt supersedes the four
+individual descriptor runtime artifacts with fd.o (dearust-fd), also porting
+lseek/flock. Use --fd-object instead of the four previous descriptor options;
+old CLI inputs remain supported separately. Both links deduplicate only shared
+replacement object paths and verify all seven exports. 20 workspace packages;
+131 existing Rust tests, 29 Python tests and 20 guest probes pass. Native CPU
+essentially unchanged; actual guest workload CPU median 4.12% lower, no broad
+performance/RSS claim. Matching dylib file 632 bytes smaller. Twenty-one partial
+dependency slices/265782 pending; seven target slices/1622 pending/zero retired.
