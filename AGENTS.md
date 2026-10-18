@@ -147,8 +147,9 @@ Safe lookup supports explicit paths, LD_LIBRARY_PATH, ldconfig cache and common
 Linux directories; caller RPATH/RUNPATH, audit and full hardware policy differ.
 It does not execute input library constructors. Prefer explicit paths.
 
-Core conversion supports x86 32/64 registers and overlay reconstruction. Zero
-floating states match upstream's TODO. Diagnostics differ. HOME-unset lookup
+Core conversion supports x86 32/64 registers and overlay reconstruction. Actual
+floating/vector images and lossless raw notes supersede upstream's zero-state
+TODO; see CORE-REGISTERS.txt. Diagnostics differ. HOME-unset lookup
 uses procfs/passwd without NSS. CLI readers copy entire regular files with a
 snapshot size bound, so large real inputs can cost more memory than mmap.
 
@@ -803,3 +804,63 @@ performance claim is tested Linux 7.2.9 direct-query scope. Installed/reference
 runtime and existing user prefix intact.49 partial/265754 pending, 7 target slices/
 1622 pending/0 retired. Full migration and prior deferred resource/positioned/vector
 I/O/credential/dup lifecycle audits remain unfinished; do not claim those fixed.
+
+
+Continuation: truthful core register state and host-tool I/O costs
+----------------------------------------------------------------
+Read CORE-REGISTERS.txt/core-registers-verification.json. Existing dearust-coredump
+now preserves actual x86/i386 FP, FXSR and standard XSAVE, with exact Darwin
+FLOAT/AVX/AVX512 encoding and per-thread lossless LC_NOTE archives. No new crate,
+source-port count or runtime object. Missing/partial state must never be invented
+as a complete zero-filled register set. Keep FSAVE-only raw; it lacks SSE/MXCSR.
+
+Source CPU metadata is process-wide and may follow all thread notes. Validate
+once, borrow it, and never decode using converter-host CPUID. The finite historical
+mask/size domains support known Intel/AMD cores; unknown features require explicit
+layout metadata. Linux exports uncompacted XSAVE even from compacted internal
+storage. Preserve inactive-state initialization, full x64 pointers, raw software
+bytes, unknown metadata-backed components, owner namespaces and unique TIDs.
+Reject malformed input before touching the destination. All disjoint PT_NOTE
+segments are processed in file order. Do not add four-byte padding to core x64
+LC_THREAD; XNU emits its legitimate size modulo 8 = 4, and readers accommodate it.
+
+Use fixed GPR arrays and borrowed FP images. CLI snapshot reads reserve their
+checked size once, retaining length-change safety. Small zero padding uses 64-byte
+scratch, output has one 64 KiB buffer. Profiling removed repeated 64 KiB clears and
+214 small writes for 256 full-state threads; final 23 writes. No unsafe mmap or
+per-thread raw-image heap allocation. The extra raw/derived state is real output,
+so comparisons must show byte counts and additional work, not claim equivalence.
+
+158 ordinary Rust checks, 3 compile-fail checks, 35 Python checks, strict fmt/Clippy,
+pinned C differential, 8 independently decoded actual captured states, 25 separate
+adversarial CLI cases and staged/release output equality pass. tools/check_core_states.py
+reproduces exact SDK ABI probes, owned x64/i386 ptrace captures and reader checks.
+LLDB 22 x64 loads GPRs but cannot read Mach-core FP; its i386 reader crashes for
+original C/prior Rust/current Rust/GPR-only alike. These are recorded external
+reader defects, not passed application gates or new format regressions.
+
+Final performance has 24 balanced fresh-process samples/variant/input, 12 scoped
+owned-input fadvise samples and 36 same-output-inode zero-fill repeats. Actual
+captured i386/x64 CPU 452.5/457 us vs prior 468/481.5 us. Full 256-thread CPU 1486.5 us vs
+C 1639.5/prior 1143 us while output grows 183328->1467424 bytes. Added output cost
+remains visible. Zero-fill difference does not repeat in the same-inode cohort.
+Large 64 MiB input CPU improves 19998.5->16253 us vs prior but C 10795.5 us remains
+faster. The broader safe streaming/input architecture optimization is UNFINISHED;
+full-file input storage and its CPU cost are not fixed by this register batch.
+Do not claim universal faster-than-Darling behavior or complete that gate on docs.
+
+Evidence is dearust-continuation/work/core-state-next and outputs/core-registers-verification.
+Installed kernel/server and previous owned server hashes remain unchanged. Prior
+runtime/app checks retain their historical scope; no runtime change was installed.
+Still 11 packages, 49 partial dependency leaves/265754 pending, 7 target slices/
+1622 pending/0 retired. Full migration remains unfinished.
+
+Additional read-only audits from this batch are preserved, not implemented:
+work/timestamps-next covers original futimes NULL crash, usec/ns error, object
+semantics, XNU copy ordering and null-time authorization. A correct strategy must
+handle descriptor exhaustion and owner-or-write authorization without timestamp
+precision or lifetime mistakes. work/memory-locks-next covers nested XNU wiring
+counts versus Linux boolean locks and failed-call partial effects; mmap/unmap/
+remap/fork lifecycle is required. Earlier resource, positioned/vector I/O and
+credential/descriptor-lifecycle audits also remain pending. Do not mechanically
+port those wrappers or report audit findings as completed fixes.

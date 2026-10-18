@@ -17,12 +17,13 @@ Dearust is a project by [@countradooku](https://github.com/countradooku), develo
 
 These results reflect a locally modified, matching `x86_64` runtime environment. They do **not** claim arbitrary macOS app compatibility. Full reproduction boundaries and verification details are documented in [`LOCKSET-PROCESS.txt`](LOCKSET-PROCESS.txt) and [`lockset-process-verification.json`](lockset-process-verification.json).
 
-* **6 Host Utilities:** Fully ported to Rust, handling Mach-O/ELF metadata parsing and core file conversion.
+* **6 Host Utilities:** Five ported tools and one partial wrapper generator handle Mach-O/ELF metadata parsing and core file conversion.
 * **Low-Level Synchronization:** Safe Rust synchronization primitives, Linux `futex` backends, and Darwin/Linux `errno` translation layers.
 * **Mach Locksets:** Real Mach ports, lock handoff mechanisms, and thread/task lifecycle dispatching implemented in Rust.
 * **Runtime Queries:** Rust BSD/task process information, descriptor guard tables, bounded pathname metadata and `readlinkat` wrappers, descriptor `fstat`, directory-relative symlink, deletion, hard-link, rename, directory creation, access and permission operations, plus descriptor-only mode, truncation and synchronization calls, and partial vnode and mapped-file queries. Fixes include the original `bsdtar` null-path crash and guarded-table memory corruption.
-* **Test Coverage:** **126** Rust tests, **3** compile-fail safety checks, and **35** Python tests pass in the baseline environment.
+* **Test Coverage:** **158** Rust tests, **3** compile-fail safety checks, and **35** Python tests pass in the baseline environment.
 * **Filesystem Queries:** Four `statfs`/`fstatfs` entries share `dearust-path`, with initialized outputs, mount identity, fault protection, and descriptor-pressure handling. The tested four-call guest workload uses **84.75% less CPU** than exact original C; private memory is unchanged. [Implementation and measurements](RUNTIME-FILESYSTEM.txt).
+* **Core Registers:** The existing `dearust-coredump` subsystem preserves actual x86 floating-point, AVX and AVX512 state, including source CPU layout metadata and lossless raw images. Missing state is no longer fabricated as zeros. [Format and verification](CORE-REGISTERS.txt).
 * **Traditional Pathnames:** Six more operations share the path subsystem, with corrected `readlinkat` sizes and zero-length reads. The paired guest workload uses **4.04% less CPU** than original C. [Evidence](RUNTIME-PATH-FRONTENDS.txt).
 * **Stream I/O:** Read/write join the existing descriptor subsystem. Full-width byte counts and terminal EOF/EIO bugs are fixed; the paired guest workload uses **5.73% less CPU** than exact original C, with native performance effectively unchanged. [Stream evidence](RUNTIME-STREAMS.txt).
 * **Guest Copy Performance:** The corrected matching x86_64 kernel uses **4.4% less metadata CPU** and **6.8% less permissions CPU** than the original C implementation on the same guest workloads. Pointer and signal/fork protections remain enabled. [Scope, latency, memory and correctness evidence](RUNTIME-COPY-PERFORMANCE.txt) describes the paired baseline and tested boundaries.
@@ -117,7 +118,7 @@ cargo xtask runtime --target x86_64-apple-darwin --destdir /path/to/runtime
 
 These benchmarks demonstrate isolated, workload-specific behavior only. **They do not claim a general Darling runtime speedup.**
 
-* **Core Conversion (`darling-coredump`):** A synthetic 64 MiB zero-fill conversion measured **~22 ms (Rust)** vs. **~32 ms (Upstream C)** median runtime with bit-identical normalized output.
+* **Core Conversion (`darling-coredump`):** An earlier synthetic 64 MiB zero-fill conversion measured **~22 ms (Rust)** vs. **~32 ms (Upstream C)**. [Current register-preserving measurements](CORE-REGISTERS.txt) compare original C, prior Rust and current Rust; output now also preserves register state omitted by both predecessors.
 * **Errno Translation:** Microbenchmarks recorded **2.803 ns/call (Rust branchless/table)** vs. **3.042 ns/call (Upstream C)** over mixed signed values.
 * **Runtime Path/Region Costs:** In-place path copying reduces generated local stack allocation from ~12 KiB to ~4 KiB. A specific guest region-query benchmark uses ~56% less CPU; see [measurement scope and raw evidence](RUNTIME-PERFORMANCE.txt).
 * **`wrapgen`:** Full CLI runs over complex inputs like `libm` are currently slightly slower in Rust due to complete buffered I/O rather than memory-mapped reads.

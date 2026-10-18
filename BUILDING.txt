@@ -69,6 +69,10 @@ Cargo host artifact staging
 
 `cargo xtask install --destdir PATH` builds declared host binaries with an
 explicit Linux host target and stages the graph in xtask/host-artifacts.tsv.
+Core register conversion: see CORE-REGISTERS.txt and the reproducible fixture
+tools recorded in core-registers-verification.json. This host-only batch does
+not replace a guest runtime object or change the Cargo artifact graph.
+
 Build-only tools retain their original build-tree executable paths; the core
 converter uses its upstream bin/darling-coredump install rule. See
 xtask/README.md for publication semantics and filesystem regression coverage.

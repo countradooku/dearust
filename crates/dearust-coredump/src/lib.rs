@@ -4,6 +4,8 @@
 //! Integer fields are decoded explicitly; core bytes never become native structs.
 #![forbid(unsafe_code)]
 
+mod fp;
+
 use std::collections::BTreeSet;
 use std::ffi::OsStr;
 use std::fs::File;
@@ -40,6 +42,11 @@ fn emit(out: &mut impl Write, n: u64, width: usize) -> io::Result<()> {
     out.write_all(&n.to_le_bytes()[..width])
 }
 fn zero(out: &mut impl Write, mut n: u64) -> io::Result<()> {
+    // Most calls pad a name or a reserved word. Do not initialize a 64KiB
+    // buffer for each small padding field, or for an empty segment tail.
+    if n <= 64 {
+        return out.write_all(&[0; 64][..n as usize]);
+    }
     let zeros = [0; 65536];
     while n != 0 {
         let take = n.min(zeros.len() as u64) as usize;
@@ -172,15 +179,56 @@ fn covering_mappings(areas: &[Area], mappings: &[Mapping]) -> Vec<Option<usize>>
     matches
 }
 
-#[derive(Debug)]
-struct Plan {
+struct Thread<'a> {
+    registers: [u64; 21],
+    tid: u32,
+    floating: fp::State<'a>,
+}
+impl Thread<'_> {
+    fn command_size(&self, wide: bool) -> u64 {
+        16 + if wide { 168 } else { 64 }
+            + self
+                .floating
+                .flavor_size()
+                .map_or(0, |(_, size)| 8 + size as u64)
+    }
+}
+
+struct Plan<'a> {
     wide: bool,
     areas: Vec<Area>,
-    threads: Vec<Vec<u64>>,
+    threads: Vec<Thread<'a>>,
+    floating_layout: Option<&'a [u8]>,
     flags: u64,
 }
-impl Plan {
-    fn parse(data: &[u8], options: &Options) -> io::Result<Self> {
+
+fn visit_notes<'a>(
+    segments: &[(u64, &'a [u8])],
+    mut visit: impl FnMut(&'a [u8], u64, &'a [u8]) -> io::Result<()>,
+) -> io::Result<()> {
+    for &(_, notes) in segments {
+        let mut cursor = 0;
+        while cursor < notes.len() as u64 {
+            let name_size = number(notes, cursor, 4)?;
+            let size = number(notes, add(cursor, 4)?, 4)?;
+            let kind = number(notes, add(cursor, 8)?, 4)?;
+            let name_start = add(cursor, 12)?;
+            let name = bytes(notes, name_start, name_size)?;
+            let desc = add(name_start, align4(name_size)?)?;
+            let payload = bytes(notes, desc, size)?;
+            cursor = add(desc, align4(size)?)?;
+            bytes(notes, 0, cursor)?;
+            visit(name, kind, payload)?;
+        }
+    }
+    Ok(())
+}
+fn owner(name: &[u8], expected: &[u8]) -> bool {
+    name.strip_suffix(&[0]).unwrap_or(name) == expected
+}
+
+impl<'a> Plan<'a> {
+    fn parse(data: &'a [u8], options: &Options) -> io::Result<Self> {
         if bytes(data, 0, 4)? != b"\x7fELF"
             || number(data, 5, 1)? != 1
             || number(data, 6, 1)? != 1
@@ -207,7 +255,7 @@ impl Plan {
         }
         bytes(data, phoff, entsize * count)?;
         let mut areas = Vec::new();
-        let mut notes = None;
+        let mut notes = Vec::new();
         for i in 0..count {
             let ph = bytes(data, add(phoff, i * entsize)?, entsize)?;
             let kind = number(ph, 0, 4)?;
@@ -228,8 +276,8 @@ impl Plan {
                     number(ph, 24, 4)?,
                 )
             };
-            if kind == 4 && notes.is_none() {
-                notes = Some(bytes(data, offset, length)?);
+            if kind == 4 && length != 0 {
+                notes.push((offset, bytes(data, offset, length)?));
             }
             if kind == 1 {
                 if length > size {
@@ -249,22 +297,39 @@ impl Plan {
                 });
             }
         }
-        let notes = notes.ok_or_else(|| invalid("missing PT_NOTE segment"))?;
-        let mut cursor = 0;
-        let mut files = None;
-        let mut threads = Vec::new();
-        while cursor < notes.len() as u64 {
-            let name = number(notes, cursor, 4)?;
-            let size = number(notes, add(cursor, 4)?, 4)?;
-            let kind = number(notes, add(cursor, 8)?, 4)?;
-            let desc = add(add(cursor, 12)?, align4(name)?)?;
-            let payload = bytes(notes, desc, size)?;
-            cursor = add(desc, align4(size)?)?;
-            bytes(notes, 0, cursor)?;
-            if kind == 0x46494c45 {
-                files = Some(payload);
+        if notes.is_empty() {
+            return Err(invalid("missing PT_NOTE segment"));
+        }
+        // Aliased note segments could multiply parsing work and attach one
+        // register image repeatedly. Validate disjoint ranges before any scan.
+        notes.sort_unstable_by_key(|(offset, _)| *offset);
+        let mut previous_end = 0;
+        for &(offset, payload) in &notes {
+            if offset < previous_end {
+                return Err(invalid("overlapping PT_NOTE segments"));
             }
-            if kind == 1 {
+            previous_end = add(offset, payload.len() as u64)?;
+        }
+        // Linux emits process-wide XSAVE layout metadata after thread regsets.
+        // Pre-scan all segments, so foreign cores never depend on host CPUID.
+        let mut floating_layout = None;
+        let mut validated_layout = None;
+        visit_notes(&notes, |name, kind, payload| {
+            if owner(name, b"LINUX") && kind == 0x205 {
+                validated_layout = Some(fp::validate_layout(payload)?);
+                if floating_layout.replace(payload).is_some() {
+                    return Err(invalid("duplicate XSAVE layout note"));
+                }
+            }
+            Ok(())
+        })?;
+        let mut files = None;
+        let mut threads: Vec<Thread<'a>> = Vec::new();
+        visit_notes(&notes, |name, kind, payload| {
+            if owner(name, b"CORE") && kind == 0x46494c45 && files.replace(payload).is_some() {
+                return Err(invalid("duplicate NT_FILE note"));
+            }
+            if owner(name, b"CORE") && kind == 1 {
                 let start = if wide { 112 } else { 72 };
                 let indices: &[u64] = if wide {
                     &[
@@ -274,16 +339,43 @@ impl Plan {
                     &[6, 0, 1, 2, 4, 3, 5, 15, 16, 14, 12, 13, 7, 8, 9, 10]
                 };
                 bytes(payload, start, if wide { 216 } else { 68 })?;
-                let mut registers = Vec::new();
-                for &index in indices {
+                let mut registers = [0; 21];
+                for (output, &index) in registers.iter_mut().zip(indices) {
                     let mut value = number(payload, start + index * width, width)?;
                     if !wide && matches!(index, 7 | 8 | 9 | 10 | 13 | 16) {
                         value &= 0xffff;
                     }
-                    registers.push(value);
+                    *output = value;
                 }
-                threads.push(registers);
+                threads.push(Thread {
+                    registers,
+                    tid: number(payload, if wide { 32 } else { 24 }, 4)? as u32,
+                    floating: fp::State::new(wide),
+                });
+            } else if (owner(name, b"CORE") && kind == 2)
+                || (owner(name, b"LINUX") && matches!(kind, 0x202 | 0x46e62b7f))
+            {
+                threads
+                    .last_mut()
+                    .ok_or_else(|| invalid("orphan floating-point note"))?
+                    .floating
+                    .note(kind as u32, payload)?;
             }
+            Ok(())
+        })?;
+        // One compact temporary index makes raw note TIDs unambiguous without
+        // an allocator call for every thread's register vector or tree node.
+        let mut tids: Vec<_> = threads.iter().map(|thread| thread.tid).collect();
+        tids.sort_unstable();
+        if tids.windows(2).any(|pair| pair[0] == pair[1]) {
+            return Err(invalid("duplicate PRSTATUS thread ID"));
+        }
+        drop(tids);
+        for thread in &mut threads {
+            if let Some(layout) = validated_layout {
+                thread.floating.set_validated_layout(layout)?;
+            }
+            thread.floating.validate()?;
         }
         let files = files.ok_or_else(|| invalid("missing NT_FILE note"))?;
         let count = number(files, 0, width)?;
@@ -363,19 +455,38 @@ impl Plan {
             wide,
             areas,
             threads,
+            floating_layout,
             flags: main_flags.unwrap_or(0),
         };
         plan.layout()?;
         Ok(plan)
     }
-    fn layout(&self) -> io::Result<(u64, u64)> {
+    fn note_count(&self) -> u64 {
+        u64::from(self.floating_layout.is_some())
+            + self
+                .threads
+                .iter()
+                .map(|thread| thread.floating.raw_notes().count() as u64)
+                .sum::<u64>()
+    }
+    fn layout(&self) -> io::Result<u64> {
         let header_size = if self.wide { 32 } else { 28 };
         let segment_size = if self.wide { 72 } else { 56 };
-        let thread_size = 8 + 8 + if self.wide { 168 } else { 64 } + 8 + 524;
-        let commands =
-            self.areas.len() as u64 * segment_size + self.threads.len() as u64 * thread_size;
+        let mut commands = (self.areas.len() as u64)
+            .checked_mul(segment_size)
+            .ok_or_else(|| invalid("Mach-O command size overflow"))?;
+        for thread in &self.threads {
+            commands = add(commands, thread.command_size(self.wide))?;
+        }
+        commands = add(
+            commands,
+            self.note_count()
+                .checked_mul(40)
+                .ok_or_else(|| invalid("Mach-O note command size overflow"))?,
+        )?;
         let mut offset = add(header_size, commands)?;
-        if commands > u32::MAX as u64 || self.areas.len() + self.threads.len() > u32::MAX as usize {
+        let count = add(self.areas.len() as u64, self.threads.len() as u64)?;
+        if commands > u32::MAX as u64 || add(count, self.note_count())? > u32::MAX as u64 {
             return Err(invalid("too many Mach-O commands"));
         }
         for area in &self.areas {
@@ -383,26 +494,35 @@ impl Plan {
             if !self.wide
                 && (offset > u32::MAX as u64
                     || area.address > u32::MAX as u64
-                    || area.size > u32::MAX as u64)
+                    || area.size > u32::MAX as u64
+                    || add(area.address, area.size)? > (1_u64 << 32))
             {
                 return Err(invalid("32-bit Mach-O overflow"));
             }
         }
-        Ok((commands, thread_size))
+        // LC_NOTE uses64-bit file offsets even in32-bit Mach-O.
+        for thread in &self.threads {
+            for (_, payload) in thread.floating.raw_notes() {
+                offset = add(offset, add(32, payload.len() as u64)?)?;
+            }
+        }
+        if let Some(layout) = self.floating_layout {
+            add(offset, layout.len() as u64)?;
+        }
+        Ok(commands)
     }
     fn write(self, data: &[u8], options: &Options, out: &mut impl Write) -> io::Result<()> {
         let width = if self.wide { 8 } else { 4 };
         let header_size = if self.wide { 32 } else { 28 };
         let segment_size = if self.wide { 72 } else { 56 };
-        // Upstream emits a zeroed 524-byte floating-point state (its own TODO).
-        let (commands, thread_size) = self.layout()?;
+        let commands = self.layout()?;
         let mut offset = add(header_size, commands)?;
         for n in [
             if self.wide { 0xfeedfacf } else { 0xfeedface },
             if self.wide { 0x1000007 } else { 7 },
             3,
             4,
-            self.areas.len() as u64 + self.threads.len() as u64,
+            self.areas.len() as u64 + self.threads.len() as u64 + self.note_count(),
             commands,
             self.flags,
         ] {
@@ -423,21 +543,36 @@ impl Plan {
             }
             offset = add(offset, area.size)?;
         }
-        for registers in self.threads {
+        let mut note_offset = offset;
+        for thread in &self.threads {
             for n in [
                 4,
-                thread_size,
+                thread.command_size(self.wide),
                 if self.wide { 4 } else { 1 },
                 if self.wide { 42 } else { 16 },
             ] {
                 emit(out, n, 4)?;
             }
-            for n in registers {
+            for &n in thread
+                .registers
+                .iter()
+                .take(if self.wide { 21 } else { 16 })
+            {
                 emit(out, n, width)?;
             }
-            emit(out, if self.wide { 5 } else { 2 }, 4)?;
-            emit(out, 131, 4)?;
-            zero(out, 524)?;
+            if let Some((flavor, size)) = thread.floating.flavor_size() {
+                emit(out, u64::from(flavor), 4)?;
+                emit(out, (size / 4) as u64, 4)?;
+                thread.floating.write(out)?;
+            }
+            for (_, payload) in thread.floating.raw_notes() {
+                let size = add(32, payload.len() as u64)?;
+                emit_note_command(out, b"DEARUST.XSTATE", note_offset, size)?;
+                note_offset = add(note_offset, size)?;
+            }
+        }
+        if let Some(layout) = self.floating_layout {
+            emit_note_command(out, b"DEARUST.XLAYOUT", note_offset, layout.len() as u64)?;
         }
         for area in self.areas {
             let written = if area.length == 0 {
@@ -457,13 +592,37 @@ impl Plan {
             };
             zero(out, area.size - written)?;
         }
+        for thread in &self.threads {
+            for (kind, payload) in thread.floating.raw_notes() {
+                emit(out, 1, 4)?; // extension schema version
+                emit(out, if self.wide { 2 } else { 1 }, 4)?; // ELF class
+                emit(out, u64::from(thread.tid), 8)?;
+                emit(out, u64::from(kind), 4)?;
+                emit(out, 0, 4)?;
+                emit(out, payload.len() as u64, 8)?;
+                out.write_all(payload)?;
+            }
+        }
+        if let Some(layout) = self.floating_layout {
+            out.write_all(layout)?;
+        }
         Ok(())
     }
 }
 
+fn emit_note_command(out: &mut impl Write, owner: &[u8], offset: u64, size: u64) -> io::Result<()> {
+    emit(out, 0x31, 4)?; // LC_NOTE
+    emit(out, 40, 4)?;
+    out.write_all(owner)?;
+    zero(out, 16 - owner.len() as u64)?;
+    emit(out, offset, 8)?;
+    emit(out, size, 8)
+}
+
 /// Validate the complete ELF metadata before emitting any output. Mappings whose
 /// backing file is unavailable or shorter than the mapping are zero filled.
-/// Floating-point states remain zero, matching the pinned upstream converter.
+/// Only provided register state is emitted; raw Linux images are retained in
+/// per-thread LC_NOTE records, including components without a Darwin flavor.
 pub fn convert(data: &[u8], output: &mut impl Write, options: &Options) -> io::Result<()> {
     Plan::parse(data, options)?.write(data, options, output)
 }
@@ -493,6 +652,10 @@ pub fn convert_file(input: &Path, output: &Path, options: &Options) -> io::Resul
         .len()
         .checked_add(1)
         .ok_or_else(|| invalid("input length overflow"))?;
+    // A regular file already supplies the bound. Avoid geometric growth and
+    // repeated prefix copies while keeping the checked, immutable snapshot.
+    data.try_reserve_exact(usize::try_from(limit).map_err(|_| invalid("input too large"))?)
+        .map_err(io::Error::other)?;
     input_file.take(limit).read_to_end(&mut data)?;
     if data.len() as u64 != input_meta.len() {
         return Err(invalid("input file changed length while reading"));
@@ -513,7 +676,7 @@ pub fn convert_file(input: &Path, output: &Path, options: &Options) -> io::Resul
             }
         }
     }
-    let mut output = io::BufWriter::new(File::create(output)?);
+    let mut output = io::BufWriter::with_capacity(65536, File::create(output)?);
     plan.write(&data, options, &mut output)?;
     output.flush()
 }

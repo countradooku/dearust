@@ -91,7 +91,8 @@ New regressions cover DT_SONAME at nonzero load addresses, dropped extra core
 mappings, deterministic segment padding, short backing-file zero fill, destructive
 output aliases and adversarial parser/mapping work. Core mapping lookup is bounded
 by an ordered O((areas + mappings) log mappings) algorithm. Floating-point core
-states remain zero, matching upstream's TODO; no FP extraction port is claimed.
+states now come from actual source images, with Darwin FP/AVX/AVX512 encoding
+and lossless raw notes. See CORE-REGISTERS.txt for source layouts and validation.
 
 All 149 first-level submodules and 11 nested gitlinks are now expanded at their
 exact pinned commits in dependency-inventory.json. The 160 dependency trees

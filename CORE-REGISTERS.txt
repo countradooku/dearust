@@ -1,0 +1,130 @@
+Core register preservation
+==========================
+
+The existing dearust-coredump subsystem now converts actual Linux x86 floating
+and vector register images instead of emitting Darling's all-zero placeholder.
+No Cargo package or runtime ABI entry is added. All conversion code remains safe
+Rust. This is a Linux host-tool improvement, not another guest syscall port.
+
+Input and Darwin representation
+-------------------------------
+CORE/NT_PRSTATUS starts a thread. CORE/NT_FPREGSET supplies 512-byte FXSAVE on
+x86_64 or 108-byte FSAVE on i386. i386 LINUX/NT_PRXFPREG supplies 512-byte FXSR.
+LINUX/NT_X86_XSTATE supplies standard, uncompacted XSAVE. Its active bits control
+architectural initialization; inactive state must not expose stale saved bytes.
+When several images exist, XSAVE takes precedence over FXSR and FPREGSET.
+
+The converter emits Darwin FLOAT, AVX or AVX512 leaf state of the appropriate
+architecture and exact XNU-defined size. It preserves full x64 instruction/data
+pointers and clears Darwin reserved fields. Missing state does not become fake
+zero registers. FSAVE alone contains no SSE/MXCSR state, so it is preserved as a
+raw image rather than presented as a complete Darwin floating register set.
+
+XSAVE offsets belong to the source CPU. A process-wide LINUX/NT_X86_XSAVE_LAYOUT
+note (0x205) provides bounded, nonoverlapping component records; its placement
+after thread notes is supported. Without metadata, recognized historical Linux
+Intel and AMD layouts are distinguished by source mask and size. The converter
+never consults its own CPU to decode a foreign core. Ambiguous source layouts,
+compacted XSAVE, malformed sizes, masks or metadata fail explicitly before any
+destination is truncated. They are not silently guessed.
+
+Lossless extensions
+-------------------
+Every recognized FPREGSET, PRXFPREG and XSTATE payload is also retained exactly
+in an LC_NOTE (0x31, command size 40), owner DEARUST.XSTATE, zero-padded to 16 bytes.
+Its data starts with this little-endian 32-byte version 1 header:
+
+    u32 version = 1
+    u32 source ELF class (1 = i386, 2 = x86_64)
+    u64 Linux thread ID from PRSTATUS
+    u32 source note kind
+    u32 reserved = 0
+    u64 original payload length
+    u8  original payload[length]
+
+The optional DEARUST.XLAYOUT LC_NOTE contains the exact original layout array,
+without a wrapper. Each record is four little-endian u32 fields: component type,
+size, standard offset, flags 0. These extensions preserve partial x87 images and
+components without a Darwin leaf representation, including source software
+metadata. They do not claim that a debugger understands every Linux component.
+Note offsets/sizes are 64-bit even in a 32-bit Mach-O. Payloads follow mapped data.
+
+Validation and cost
+-------------------
+All disjoint PT_NOTE segments are parsed in file order. Recognized owners must
+match exactly (with an optional terminal NUL). Duplicate thread IDs, duplicate
+images of one kind, orphan FP images, aliased note segments and malformed layouts
+are rejected. Existing mapping reconstruction and destination-alias protections
+remain. ELF32 virtual ranges must fit the 32-bit address space.
+
+Thread GPRs use fixed arrays; FP images and layout metadata borrow the bounded
+input snapshot. There is no per-thread register heap allocation or raw-image
+copy during parsing. Layout validation occurs once per process. Encoding uses a
+bounded 2444-byte stack buffer and writes only the selected Darwin flavor. Raw
+preservation necessarily increases output by the retained images and headers.
+Regular-file snapshots reserve their checked size once; the output writer has
+one 64 KiB buffer. Small padding uses 64 bytes of stack scratch instead of repeatedly
+initializing 64 KiB. This retains protection against concurrent input truncation.
+
+Verification
+------------
+See core-registers-verification.json for exact commands, fixture/source hashes,
+independent XNU checks, real kernel-captured register images, reader behavior,
+and original-C/prior-Rust/current-Rust performance measurements. Conversion tests
+keep the pinned-C comparison, explicitly removing only its fabricated zero FP
+flavor and normalizing segment names. Registers and mapped bytes still compare.
+The original C placeholder is never used as the oracle for newly preserved FP.
+
+Reproduce captured-state checks with a fresh, exclusively owned output directory:
+
+    cargo build -p dearust-coredump --release --offline --locked
+    python3 tools/check_core_states.py --output /owned/new-core-check \
+      --source /exact/pinned/darling --build /matching/configured/build \
+      --converter target/release/darling-coredump
+
+Optional --lldb records reader behavior. The C-compiled XNU ABI oracle and
+independent state decoder are the FP/vector oracle: native LLDB 22 loads x64
+integer threads but cannot read their Mach-core floating state. Its i386 reader
+crashes for original C, prior Rust and current Rust alike, including GPR-only
+output. These external reader failures are retained in the evidence.
+
+Measured performance
+--------------------
+Final native CLI CPU medians in microseconds (24 balanced fresh-process samples,
+warm filesystem, one selected CPU, cached writes without durability fsync):
+
+    Input                              Original C   Prior Rust   Current Rust
+    actual captured i386 thread             703.0        468.0          452.5
+    actual captured three x64 threads       743.0        481.5          457.0
+    256 x64 threads with full state        1639.5       1143.0         1486.5
+    1024 x64 threads without FP notes      3886.5       2108.5          831.5
+    64 MiB dumped data +16 full threads   10795.5      19998.5        16253.0
+
+Use the machine-readable report for exact large-input medians, resource samples,
+quartiles, tails, first-process observations, input hashes and source scope.
+The 256-thread output grows from 183,328 to 1,467,424 bytes because it now contains
+real Darwin state and raw images. Its added cost versus prior Rust is visible;
+this is not an equal-output benchmark or a claim that every conversion is faster.
+An initial separate-output zero-fill difference did not repeat with one shared
+output inode: 36 balanced rounds give 24.282 ms current vs 24.3275 ms prior CPU, with
+overlapping quartiles. Both cohorts remain recorded.
+
+Preallocation reduces avoidable input-read/growth cost, but large dumped inputs
+still cost more CPU than original C's mmap approach. The 64 MiB warm workload is
+about 18.7% cheaper than prior Rust and 50.6% costlier than C; 12 owned-input
+POSIX_FADV_DONTNEED rounds retain the same direction. This pre-existing safe
+snapshot-versus-mmap gap remains an unfinished optimization gate. No unsafe
+mapping vulnerable to input truncation is introduced to hide it. Peak RSS is
+recorded separately; no broad memory-reduction claim follows from these timings.
+
+Reproduce the benchmark with the capture-check output and frozen converter paths:
+
+    python3 tools/benchmark_core_states.py --output /owned/new-core-benchmark \
+      --original /exact/pinned/darling-coredump --prior /saved/prior-rust \
+      --current target/release/darling-coredump \
+      --capture-root /owned/new-core-check
+
+Its fresh owned output holds all raw samples and byte-preservation checks.
+
+The full Darling migration remains unfinished. This batch changes only the host
+core converter; previous runtime/application results retain their recorded scope.
