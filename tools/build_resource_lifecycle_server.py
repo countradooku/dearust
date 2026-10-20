@@ -29,6 +29,7 @@ from patch_prepared_resource_replies import patch_prepared_replies
 from patch_resource_generation_resume import patch_generation_resume
 from patch_resource_worker_ownership import patch_worker_ownership_files
 from patch_resource_work_handoff import patch_work_handoff
+from patch_resource_mutex_interlock import patch_mutex_interlock_files
 
 
 def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c_flags=(), checked_generation=False, prepared_exec=False):
@@ -48,7 +49,8 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
         'resource-cpu-timer.inc': candidate / 'tools/resource-cpu-timer.inc',
     }
     checked_extras = ('xnu/osfmk/kern/ipc_tt.c', 'xnu/osfmk/kern/ipc_kobject.c', 'pthread/kern_synch.c') if checked_generation else ()
-    c_keys = tuple(dict.fromkeys(('src/task.c', 'src/thread.c', 'xnu/osfmk/kern/turnstile.c', 'src/kqchan.c', *checked_extras, *extra_c)))
+    c_keys = tuple(dict.fromkeys(('src/task.c', 'src/thread.c', 'src/locks.c', 'src/misc.c',
+        'xnu/osfmk/kern/turnstile.c', 'src/kqchan.c', *checked_extras, *extra_c)))
     c_inputs = {key: builder.selected_duct_source(previous, source, key) for key in c_keys}
     builder.EXTRA_TRANSFORM_INPUTS = [Path(__file__).resolve(), *c_inputs.values(), *[
         tools / name for name in (
@@ -58,7 +60,8 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
             'patch_prepared_resource_kq_ownership.py', 'patch_prepared_resource_mach_notifications.py',
             'prepared-resource-mach-notifications.inc', 'patch_prepared_resource_mach_waiter.py',
             'patch_resource_death_work.py', 'patch_resource_worker_ownership.py',
-            'patch_resource_death_lifecycle.py', 'patch_resource_work_handoff.py')]]
+            'patch_resource_death_lifecycle.py', 'patch_resource_work_handoff.py',
+            'patch_resource_mutex_interlock.py')]]
     if checked_generation:
         builder.EXTRA_TRANSFORM_INPUTS += [tools / 'patch_prepared_resource_checked_ipc.py',
             tools / 'patch_resource_kernel_contexts.py', tools / 'patch_resource_generation_resume.py',
@@ -104,6 +107,7 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
         # builder from the selected lockset bridge, before further C transforms.
         sources['src/task.c'] = (output / 'task.c').read_text()
         sources = patch_inner_dtape(sources)
+        sources = patch_mutex_interlock_files(sources)
         sources['src/task.c'] = patch_task_dispose_identity(sources['src/task.c'])
         sources['src/kqchan.c'] = patch_machport_c(sources['src/kqchan.c'])
         sources['src/kqchan.c'] = patch_mach_waiter(sources['src/kqchan.c'])

@@ -66,9 +66,12 @@ tools/build_resource_lifecycle_server.py. It requires the preserved matching
 server-build12 inputs and an absent owned output directory; it rebuilds all12
 server translation units and selected C bridges without installation/activation.
 tools/RESOURCE-LIFECYCLE-CANDIDATE.txt and resource-lifecycle-current-index.json
-record final88 ordinary guest executions,94 Python tests, separately scoped
+record88 single-worker ordinary guest executions,94 Python tests, separately scoped
 native evidence and unverified/stopped gates. These counts describe identified
 runs, not additional Rust replacements or complete resource acceptance.
+tools/build_resource_workqueue_configuration.py selects an explicit single/multi
+worker configuration for all12 owned server TUs. The current multiworker guest
+run still fails; see the index rather than inferring acceptance from compilation.
 
 Functioning executables: elfdep, getuuid, bsdln, print_wrapped_elf,
 darling-coredump and wrapgen (partial loader-name resolution; see README.md). No libbsd

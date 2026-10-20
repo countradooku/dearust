@@ -1,0 +1,197 @@
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+#include <stdatomic.h>
+#include <pthread.h>
+#include <sched.h>
+#include <darlingserver/duct-tape/locks.h>
+
+#define TRUE true
+#define FALSE false
+#define __container_of(pointer, type, field) ((type*)((char*)(pointer) - offsetof(type, field)))
+#define dtape_log_warning(...) ((void)0)
+typedef void lck_grp_t;
+struct ModelThread {
+    dtape_mutex_link_t mutex_link;
+    void* context;
+    pthread_mutex_t wait_lock;
+    pthread_cond_t changed;
+    bool resumed;
+};
+typedef struct ModelThread dtape_thread_t;
+typedef dtape_thread_t* thread_t;
+static _Thread_local thread_t activeThread;
+static thread_t current_thread(void) { return activeThread; }
+static dtape_thread_t* dtape_thread_for_xnu_thread(thread_t thread) { return thread; }
+static void panic(const char* message) { fprintf(stderr, "%s\n", message); abort(); }
+static atomic_uint suspensions;
+static void modeled_suspend(void* raw, void (*continuation)(void*), void* context,
+        libsimple_lock_t* unlock) {
+    (void)context;
+    assert(!continuation && unlock);
+    dtape_thread_t* thread = raw;
+    assert(pthread_mutex_lock(&thread->wait_lock) == 0);
+    thread->resumed = false;
+    ++suspensions;
+    libsimple_lock_unlock(unlock);
+    while (!thread->resumed) assert(pthread_cond_wait(&thread->changed, &thread->wait_lock) == 0);
+    assert(pthread_mutex_unlock(&thread->wait_lock) == 0);
+}
+static void modeled_resume(void* raw) {
+    dtape_thread_t* thread = raw;
+    assert(pthread_mutex_lock(&thread->wait_lock) == 0);
+    thread->resumed = true;
+    assert(pthread_cond_signal(&thread->changed) == 0);
+    assert(pthread_mutex_unlock(&thread->wait_lock) == 0);
+}
+static struct {
+    void (*thread_suspend)(void*, void (*)(void*), void*, libsimple_lock_t*);
+    void (*thread_resume)(void*);
+} model_hooks = {modeled_suspend, modeled_resume};
+static typeof(model_hooks)* dtape_hooks = &model_hooks;
+struct waitq {
+    struct { struct { lck_mtx_t dtape_interlock; } dtape_interlock; } dtape_waitq_interlock;
+};
+
+@MUTEX@
+@DESTROY@
+@WAITQ@
+
+static void initialize_thread(dtape_thread_t* thread) {
+    *thread = (dtape_thread_t){.context = thread,
+        .wait_lock = PTHREAD_MUTEX_INITIALIZER, .changed = PTHREAD_COND_INITIALIZER};
+}
+static void destroy_thread(dtape_thread_t* thread) {
+    assert(pthread_mutex_destroy(&thread->wait_lock) == 0);
+    assert(pthread_cond_destroy(&thread->changed) == 0);
+}
+static dtape_mutex_t heldMutex;
+static atomic_bool queueHeld, releaseHolder;
+static void* hold_native_queue(void* raw) {
+    activeThread = raw;
+    libsimple_lock_lock(&heldMutex.dtape_queue_lock);
+    atomic_store(&queueHeld, true);
+    while (!atomic_load(&releaseHolder)) sched_yield();
+    libsimple_lock_unlock(&heldMutex.dtape_queue_lock);
+    return NULL;
+}
+
+#ifndef OLD_MUTEX_BASELINE
+static struct waitq sharedWaitq;
+static atomic_uint inside, overlaps;
+static atomic_bool startWorkers, observerDone;
+static unsigned long counter;
+static dtape_mutex_t* shared_mutex(void) {
+    return &sharedWaitq.dtape_waitq_interlock.dtape_interlock.dtape_interlock.dtape_mutex;
+}
+static void enter_critical(void) {
+    if (atomic_fetch_add(&inside, 1) != 0) ++overlaps;
+    ++counter;
+    assert(waitq_held(&sharedWaitq));
+    dtape_mutex_assert(shared_mutex(), true);
+    assert(atomic_fetch_sub(&inside, 1) == 1);
+}
+static void* try_worker(void* raw) {
+    activeThread = raw;
+    while (!atomic_load(&startWorkers)) sched_yield();
+    for (unsigned index = 0; index != 10000; ++index) {
+        while (!dtape_mutex_try_lock(shared_mutex())) sched_yield();
+        enter_critical();
+        dtape_mutex_unlock(shared_mutex());
+    }
+    return NULL;
+}
+static void* blocking_worker(void* raw) {
+    activeThread = raw;
+    while (!atomic_load(&startWorkers)) sched_yield();
+    for (unsigned index = 0; index != 2000; ++index) {
+        dtape_mutex_lock(shared_mutex());
+        enter_critical();
+        // Allow a real peer to contend at the modeled suspend/resume boundary.
+        if (index % 16 == 0) sched_yield();
+        dtape_mutex_unlock(shared_mutex());
+    }
+    return NULL;
+}
+static void* diagnostic_observer(void* raw) {
+    activeThread = raw;
+    while (!atomic_load(&observerDone)) {
+        dtape_mutex_assert(shared_mutex(), false);
+        assert(!waitq_held(&sharedWaitq));
+    }
+    return NULL;
+}
+#endif
+
+int main(void) {
+    dtape_thread_t first, second;
+    initialize_thread(&first); initialize_thread(&second);
+    dtape_mutex_init(&heldMutex);
+    pthread_t holder;
+    assert(pthread_create(&holder, NULL, hold_native_queue, &first) == 0);
+    while (!atomic_load(&queueHeld)) sched_yield();
+    activeThread = &second;
+    const bool acquired = dtape_mutex_try_lock(&heldMutex);
+    const bool queueStolen = libsimple_lock_try_lock(&heldMutex.dtape_queue_lock);
+    if (queueStolen) libsimple_lock_unlock(&heldMutex.dtape_queue_lock);
+    atomic_store(&releaseHolder, true);
+    assert(pthread_join(holder, NULL) == 0);
+#ifdef OLD_MUTEX_BASELINE
+    assert(acquired && queueStolen);
+    destroy_thread(&first); destroy_thread(&second);
+    puts("{\"try_lock_unlocked_another_native_worker_interlock\":true}");
+    return 0;
+#else
+    assert(!acquired && !queueStolen);
+    assert(__atomic_load_n(&heldMutex.dtape_owner, __ATOMIC_RELAXED) == 0);
+    assert(libsimple_lock_try_lock(&heldMutex.dtape_queue_lock));
+    libsimple_lock_unlock(&heldMutex.dtape_queue_lock);
+
+    activeThread = &first; dtape_mutex_lock(&heldMutex);
+    activeThread = &second;
+    assert(!dtape_mutex_try_lock(&heldMutex));
+    assert(libsimple_lock_try_lock(&heldMutex.dtape_queue_lock));
+    libsimple_lock_unlock(&heldMutex.dtape_queue_lock);
+    assert(__atomic_load_n(&heldMutex.dtape_owner, __ATOMIC_RELAXED) == (uintptr_t)&first);
+    activeThread = &first; dtape_mutex_unlock(&heldMutex);
+
+    // Native fallback still owns the real queue interlock without setting a
+    // microthread owner. Active try-lock must respect that held interlock too.
+    activeThread = NULL; assert(dtape_mutex_try_lock(&heldMutex));
+    activeThread = &second; assert(!dtape_mutex_try_lock(&heldMutex));
+    activeThread = NULL; dtape_mutex_unlock(&heldMutex);
+    activeThread = &second; assert(dtape_mutex_try_lock(&heldMutex));
+    dtape_mutex_unlock(&heldMutex);
+
+    dtape_thread_t workers[4], observer;
+    pthread_t native[4], observerNative;
+    initialize_thread(&observer);
+    dtape_mutex_init(shared_mutex());
+    assert(pthread_create(&observerNative, NULL, diagnostic_observer, &observer) == 0);
+    for (unsigned index = 0; index != 4; ++index) {
+        initialize_thread(&workers[index]);
+        assert(pthread_create(&native[index], NULL, try_worker, &workers[index]) == 0);
+    }
+    atomic_store(&startWorkers, true);
+    for (unsigned index = 0; index != 4; ++index) assert(pthread_join(native[index], NULL) == 0);
+    assert(counter == 40000 && overlaps == 0);
+    atomic_store(&startWorkers, false);
+    for (unsigned index = 0; index != 4; ++index)
+        assert(pthread_create(&native[index], NULL, blocking_worker, &workers[index]) == 0);
+    atomic_store(&startWorkers, true);
+    for (unsigned index = 0; index != 4; ++index) assert(pthread_join(native[index], NULL) == 0);
+    atomic_store(&observerDone, true);
+    assert(pthread_join(observerNative, NULL) == 0);
+    assert(counter == 48000 && overlaps == 0 && suspensions > 0);
+    lck_mtx_destroy(&sharedWaitq.dtape_waitq_interlock.dtape_interlock.dtape_interlock, NULL);
+    for (unsigned index = 0; index != 4; ++index) destroy_thread(&workers[index]);
+    destroy_thread(&observer); destroy_thread(&first); destroy_thread(&second);
+    printf("{\"no_spurious_interlock_unlock\":true,\"other_owner_failure_releases_interlock\":true,"
+        "\"native_fallback_interlock_preserved\":true,\"try_lock_critical_sections\":40000,"
+        "\"blocking_critical_sections\":8000,\"overlaps\":0,\"modeled_suspensions\":%u,"
+        "\"concurrent_atomic_owner_diagnostics\":true}\n", atomic_load(&suspensions));
+#endif
+}

@@ -273,13 +273,14 @@
         "Checked ordinary acquisition and generation lifetime have scoped native proofs; final combined exec/initial-call failure, generic/lazy IPC, bootstrap, active-call cancellation and full shutdown remain open.",
         "Additional exec-notification/extra-guest/cleanup-lane follow-up and direct native Checkin fault proof stopped by automatic cybersecurity review; do not retry/rephrase/transfer.",
         "Additional native cleanup pthread/default stack and broader performance acceptance remain open.",
-        "Multiworker ordinary guest timeout remains unresolved; deterministic handoff fixes pass scoped native/sanitized methods and default88 guests."
+        "Multiworker ordinary guest timeout remains unresolved; deterministic handoff fixes pass scoped native/sanitized methods and default88 guests.",
+        "Continuation closure lifetime validation stopped by automatic cybersecurity review; inactive WIP must not be retried/rephrased/transferred."
       ],
       "rust_foundations": [
         "crates/dearust-process/src/resource_policy.rs",
         "crates/dearust-process/src/resource_view.rs"
       ],
-      "scope": "Owned resource lifecycle prerequisites including worker startup/shutdown ownership, with scoped ordinary guest/native derivatives; resource ownership inactive. Final88 ordinary guest executions use SAME candidate in both slots, not C versus Rust. Component/native failure proofs retain their own exact binaries."
+      "scope": "Owned resource lifecycle prerequisites including worker startup/shutdown, handoff and C mutex interlock fixes. The default single-worker candidate passes88 same-candidate guests; multiworker ordinary guests still time out. Component native proofs retain exact binaries. Resource ownership inactive, no Rust replacement/retirement."
     }
   ],
   "cargo_packages": [
@@ -1569,8 +1570,8 @@
       "id": "resource-lifecycle-current-index",
       "kind": "current-evidence-index",
       "path": "resource-lifecycle-current-index.json",
-      "scope": "Owned C/C++ prerequisites only. Single-worker server12 passes88 ordinary guests; exact native/sanitized handoff and worker ownership fixtures pass. Multiworker server13 times out in ordinary process control; concurrency investigation remains open. Component proofs retain their own binaries; ownership inactive and full fault/shutdown/performance/stopped gates open.",
-      "sha256": "39e36bdbb490ce2a9ea272e7efbbce94cafe855a22ed99a24fc07714a91e3f9c"
+      "scope": "Owned C/C++ prerequisites only. Single-worker server16 passes88 ordinary guests; exact native/sanitized worker/handoff/mutex fixtures pass. Multiworker server17 times out in ordinary fsync. Continuation validation stopped and inactive. Component proofs retain their own binaries; ownership inactive and full fault/shutdown/performance/stopped gates open.",
+      "sha256": "918666f6f55d692072e23d2bc97e7a06c51027d6e38a95a85dd930c58321e56d"
     }
   ],
   "execution_observations": [
@@ -3614,7 +3615,7 @@
   "generator_inputs_sha256": {
     "dependency-inventory.json": "b93144bf7276349f8423a85be3a0180caf2e78b876520a5cd7720c307ac44fcd",
     "migration-inventory.json": "308426bdb469e38a8aceec78bed3d5350a92750528874abbc46bad9f4aec13d5",
-    "migration-ledger.json": "e1175187c7c31a30d3721b25ae2c07e7cabc0df6ba58f577b8dbff89d7674b92",
+    "migration-ledger.json": "ae7a10f6767beb32cb482ceef409138c4e36310d38985777a07f692daafcf7dd",
     "tools/migration-packages.json": "657a4900cc97b75579caead0afacabf71816d5fdff46064caaaf951c4363b8bc",
     "tools/target_inventory.py": "0db5b20841711375eff9e88cb4638491c60ea9525e770468382f88f9aa03c40a",
     "upstream-cmake-graph.json": "736ebae1cb52161a7d63d14638c93b1f3f5a703b809f7fd4c05defa15dba0dbd",

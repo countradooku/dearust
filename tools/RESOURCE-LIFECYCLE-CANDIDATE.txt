@@ -35,6 +35,12 @@ Death and rollback defer C handle cleanup until that worker finishes; the kernel
 suspend interlock is released before publishing _running=false. Native-worker
 TLS is cleared while the Thread lock still prevents another worker's entry.
 
+Active C mutex try-lock now acquires its queue interlock before examining the
+owner and releases only an interlock it owns. Assertions/destroy and waitq owner
+diagnostics use atomic observations without changing the ABI layout. Both
+locks.c and misc.c are rebuilt. The native no-active-thread busy-spin fallback
+is unchanged and remains outside performance acceptance.
+
 Process death marks ResourceState synchronously and stops timer rearming. Owned
 channels are destroyed outside the Process lock; exit fanout and foreign cleanup
 use reserved events/jobs. ResourceState's embedded job precedes its real gate
@@ -57,8 +63,8 @@ queue allocation. Terminal exec errors queue their reserved reply before death.
 
 Recorded evidence and limits
 ------------------------------
-Owned single-worker server12 SHA256:
-b64f83f8486499a50f18788c859fc0690743b292df9b690144690537bc0b25c4
+Owned single-worker server16 SHA256:
+9f9c97b36ab08a104d982d023c2b5a1ea6bdfdefd7b5c138b5a52b2e143fbc83
 Its88 ordinary guest executions pass: guards2, filesystem1, retained30,
 applications10 and resource1 in each of two same-candidate slots. Actual kernel
 mapping and paired loader/kernel hashes remain recorded. Earlier server4 also
@@ -89,14 +95,24 @@ checks dead active continuations, interrupt/request combination, running death
 and kernel unlock ordering with zero denied allocations. Its ucontext body and
 foreign objects are modeled; actual guest evidence is recorded separately.
 
+The mutex native/sanitized fixture uses exact pinned/selected mutex functions,
+the real internal mutex type and actual Linux libsimple interlock implementation.
+It reproduces the original try-lock succeeding and unlocking another worker's
+held interlock. Fixed variants preserve that interlock and execute40000 try-lock
+plus8000 blocking critical sections each with zero overlaps. Current-thread
+identity and suspend/resume callbacks are modeled; full XNU/ucontext execution
+and native-fallback performance are not established by this fixture.
+
 All12 server TUs were also rebuilt with DSERVER_SINGLE_THREADED=0. The actual
 multiworker run observed the selected executable inode and multiple native
 workers, but timed out in process-control-regression.c after54 executions.
 Earlier server11 timed out in linkat-regression.c; both failures are preserved.
 A traced diagnostic and a subsequent plain retained cohort passed60 ordinary
 cases each, which does not resolve the intermittent failure. Multiworker
-validation remains failing; C mutex interlock and continuation ownership review
-is ongoing. No comparative performance claim follows from these runs.
+server17 includes the mutex fix and still timed out in fsync-regression.c after44
+executions. Multiworker validation remains failing. The separate continuation
+ownership candidate stopped during automatic review and remains inactive,
+unverified WIP. No comparative performance claim follows from these runs.
 
 The earlier29-failure exec proof predates the later owner-lock fix and remains
 historical evidence. Final combined fault validation is NOT passed. All23 old
@@ -127,6 +143,11 @@ stopped an exec-notification/extra-guest/cleanup-lane redesign follow-up and a
 direct native Checkin fault test, citing possible cybersecurity risk. These
 actions were not retried, rephrased or transferred. Their WIP remains separate;
 verification is unclaimed. Reproduction commands for stopped work are omitted.
+
+Automatic review also stopped native continuation-lifetime validation, citing
+possible cybersecurity risk. The suspected closure lifetime gap across logical
+microthread suspension/native-worker reuse remains an open gate. Its new module,
+checker and fixture are preserved outside the active build and Git commit.
 
 Latest combined exec fault behavior, initial-call failure, active-call
 cancellation, full shutdown, generic/lazy IPC allocation, bootstrap exhaustion,

@@ -21,6 +21,7 @@ SOURCES = [
     'prepared-resource-reply-send.inc',
     'patch_resource_worker_ownership.py',
     'patch_resource_work_handoff.py', 'build_resource_workqueue_configuration.py',
+    'patch_resource_mutex_interlock.py',
 ]
 
 EVIDENCE = {
@@ -37,6 +38,7 @@ EVIDENCE = {
     'earlier_ordinary_process_kqueue': 'work/resource-death-continuation/process-kqueue-guest4/comparison.json',
     'worker_ownership': 'work/prepared-registration/worker-ownership/proof3/verification.json',
     'work_handoff': 'work/resource-death-continuation/work-handoff/proof1/verification.json',
+    'mutex_interlock': 'work/resource-death-continuation/mutex-interlock/proof1/verification.json',
 }
 
 
@@ -61,11 +63,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=Path('.'))
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--build-report', default='work/resource-death-continuation/server12-single/build.json')
-    parser.add_argument('--guest-run', default='work/resource-death-continuation/guests12-single/run.json')
-    parser.add_argument('--multi-build-report', default='work/resource-death-continuation/server13-multi/build.json')
-    parser.add_argument('--multi-guest-run', default='work/resource-death-continuation/guests13-multi/run.json')
-    parser.add_argument('--multi-observation', default='work/resource-death-continuation/multiworker-observation13/verification.json')
+    parser.add_argument('--build-report', default='work/resource-death-continuation/server16-single/build.json')
+    parser.add_argument('--guest-run', default='work/resource-death-continuation/guests16-single/run.json')
+    parser.add_argument('--multi-build-report', default='work/resource-death-continuation/server17-multi/build.json')
+    parser.add_argument('--multi-guest-run', default='work/resource-death-continuation/guests17-multi/run.json')
+    parser.add_argument('--multi-observation', default='work/resource-death-continuation/multiworker-observation17/verification.json')
     args = parser.parse_args()
     root = args.root.resolve(strict=True)
     load = lambda name: json.loads((root/name).read_text())
@@ -75,6 +77,14 @@ def main():
     preserved = load('work/resource-death-continuation/preserved-candidates.json')
     if any(digest(root/path) != value for path,value in preserved.items()):
         raise ValueError('original dirty candidate changed')
+    base_path = 'work/resources-complete/server-build12/build.json'
+    frozen_base = load(base_path)
+    if any(digest(Path(path)) != value for path,value in frozen_base['sha256'].items()):
+        raise ValueError('frozen preceding candidate changed')
+    stopped_path = 'work/resource-death-continuation/stopped-wip-preservation3.json'
+    stopped = load(stopped_path)
+    if any(digest(root/path) != value for path,value in stopped['sha256'].items()):
+        raise ValueError('stopped WIP changed since checkpoint')
     build_path = args.build_report
     build = checked_build(root, build_path)
     guest_path = args.guest_run
@@ -113,7 +123,7 @@ def main():
                 if not case['normalized_pass']:
                     multi_failures.append(dict(group=run['group'], slot=variant['variant'], case=case['name'],
                         timed_out=case['launcher']['timed_out']))
-    python_log = root/'work/resource-death-continuation/python-tests-handoff.log'
+    python_log = root/'work/resource-death-continuation/python-tests-mutex.log'
     if not python_log.read_text().rstrip().endswith('OK'): raise ValueError('Python checks failed')
     python_count = int(re.search(r'Ran (\d+) tests', python_log.read_text()).group(1))
     worker = load(EVIDENCE['worker_ownership'])
@@ -122,8 +132,12 @@ def main():
     handoff = load(EVIDENCE['work_handoff'])
     if not handoff['passed'] or not handoff['inputs_unchanged']:
         raise ValueError('work handoff validation failed')
+    mutex = load(EVIDENCE['mutex_interlock'])
+    if not mutex['passed'] or not mutex['inputs_unchanged']:
+        raise ValueError('mutex interlock validation failed')
     open_gates = [
-        'Multiworker owned guests still expose a timeout; deterministic lost-request and running-cleanup fixes pass, but do not establish the remaining concurrency behavior.',
+        'Historical multiworker ordinary guest timeouts remain preserved. Scoped fresh cohort results and deterministic handoff/mutex regressions do not establish complete concurrency acceptance.',
+        'Executing continuation closure ownership across suspension/native-worker reuse remains unverified; its attempted native validation was stopped by automatic cybersecurity review and was not retried or activated.',
         'Latest prepared exec lock-scope changes pass ordinary guest execution; the earlier29-failure exec proof is historical and does not validate those later changes.',
         'Direct native Checkin fault proof and further exec-notification validation stopped by automatic cybersecurity review; do not retry, rephrase or transfer those actions.',
         'Original adversarial RPC verification remains externally blocked and was not retried.',
@@ -154,9 +168,20 @@ def main():
         historical_exec_failure_cases=load(EVIDENCE['historical_exec_core'])['results']['exec']['actual_allocation_failures'],
         native_results_scope='Each native derivative retains its own exact input hashes and binary; do not combine historical component proofs into a claim that the final binary passed the complete fault matrix.',
         python_check=dict(log=str(python_log), sha256=digest(python_log), command="python3 -m unittest discover -s tools -p 'test_*.py' -v", count=python_count),
-        preservation=dict(count=len(preserved), sha256=preserved),
+        historical_multiworker_failures=[dict(
+            build_report='work/resource-death-continuation/'+build_name+'/build.json',
+            build_report_sha256=digest(root/'work/resource-death-continuation'/build_name/'build.json'),
+            guest_run='work/resource-death-continuation/'+guest_name+'/run.json',
+            guest_run_sha256=digest(root/'work/resource-death-continuation'/guest_name/'run.json'),
+            status='failed; immutable earlier run') for build_name,guest_name in (
+                ('server11-multiworker','guests11-multiworker'),('server13-multi','guests13-multi'))],
+        preservation=dict(count=len(preserved), sha256=preserved,
+            preceding_candidate=dict(report=base_path, sha256=digest(root/base_path),
+                                     input_count=len(frozen_base['sha256']), inputs_unchanged=True),
+            stopped_wip=dict(record=stopped_path, sha256=digest(root/stopped_path), count=len(stopped['sha256']))),
         automatic_review_stops=[dict(action='Exec-notification regressions/extra guest and cleanup-lane redesign follow-up', reason='Possible cybersecurity risk', status='stopped; unverified; not retried'),
-                                dict(action='Direct native Checkin allocation/terminal-reply fault proof', reason='Possible cybersecurity risk', status='stopped; unverified; not retried')],
+                                dict(action='Direct native Checkin allocation/terminal-reply fault proof', reason='Possible cybersecurity risk', status='stopped; unverified; not retried'),
+                                dict(action='Microthread continuation-lifetime ownership validation', reason='Possible cybersecurity risk', status='stopped; unverified; inactive WIP; not retried')],
         open_gates=open_gates)
     args.output.write_text(json.dumps(record, indent=2, sort_keys=True)+'\n')
     print(json.dumps(dict(guest_executions=guest_count, historical_checked_failures=failures,

@@ -9,6 +9,11 @@
       "action": "Direct native Checkin allocation/terminal-reply fault proof",
       "reason": "Possible cybersecurity risk",
       "status": "stopped; unverified; not retried"
+    },
+    {
+      "action": "Microthread continuation-lifetime ownership validation",
+      "reason": "Possible cybersecurity risk",
+      "status": "stopped; unverified; inactive WIP; not retried"
     }
   ],
   "blocked_rpc_checks_retried": false,
@@ -16,81 +21,97 @@
     "cohorts": [
       {
         "group": "guards",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests12-single/guards/comparison.json",
-        "sha256": "51e55736b8ada68cd75320567868e779c9fe72d7bf5db46c5a0936691acf4864"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests16-single/guards/comparison.json",
+        "sha256": "10ea9e4b6ffbbd5bcdea92ef8e2152f25e603f5eece56071d1ef562ec8afff42"
       },
       {
         "group": "filesystem",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests12-single/filesystem/comparison.json",
-        "sha256": "d6babdc62573db7655e5f8f5ec5f1de7035d0cb138bf4788aa027c58674fb336"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests16-single/filesystem/comparison.json",
+        "sha256": "1616c0aa07fc9181e6796b9d24de97aeb8090a086e98ce41fc22d96c286cbc76"
       },
       {
         "group": "existing",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests12-single/existing/comparison.json",
-        "sha256": "b59771ef92cf4a6b41f322caabb4cc4fcd2109b793155bfe1d28ceca37f32a8b"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests16-single/existing/comparison.json",
+        "sha256": "6f573646cdf7ca7c88e116b22e52085ef7aa90c7bae29c81361a4e75fd20c545"
       },
       {
         "group": "apps",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests12-single/apps/comparison.json",
-        "sha256": "34738ec04772646b4d77506ee0d3f1f780340fe8b516c20c640de082620fd11a"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests16-single/apps/comparison.json",
+        "sha256": "7ae6233ed098583776a26953868bb6255c62107ffda46f446a51a2a7924fe4e9"
       },
       {
         "group": "resources",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests12-single/resources/comparison.json",
-        "sha256": "9fe2c85892f6d80d2881ddf6e9bf868e1305ef9cdfb34d670a0a34082977cca4"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests16-single/resources/comparison.json",
+        "sha256": "733550d1ca7a84cb85e70c0c57f38c2b8e41855e7932da194e3a4d23a7054c31"
       }
     ],
     "count": 88,
-    "run": "work/resource-death-continuation/guests12-single/run.json",
-    "run_sha256": "fac155fba33483fda1d9531bada6c6c4fa55bd14d8e8e03063c3a820599a6789",
+    "run": "work/resource-death-continuation/guests16-single/run.json",
+    "run_sha256": "c46fe9e8f9320ed186d602fb0a9d7da009e86b539d944ca296b241b8c4f5c574",
     "slots": "same owned server/loader/kernel in both slots; not original-C versus Rust"
   },
   "historical_checked_failure_cases": 79,
   "historical_exec_failure_cases": 29,
+  "historical_multiworker_failures": [
+    {
+      "build_report": "work/resource-death-continuation/server11-multiworker/build.json",
+      "build_report_sha256": "780ecc71ac79cba13536bfcf71661c6cc14ae7391c7047b6c3047b9be70cb2f8",
+      "guest_run": "work/resource-death-continuation/guests11-multiworker/run.json",
+      "guest_run_sha256": "141f0ed37b2eced84ebe56e49a07980227552bdfaf445ee1c2a166a1cea7dc45",
+      "status": "failed; immutable earlier run"
+    },
+    {
+      "build_report": "work/resource-death-continuation/server13-multi/build.json",
+      "build_report_sha256": "a54d37f8e6adf09588f7ad1519e794f4a0c17ce0bb0c2107d7ea8a4017653e59",
+      "guest_run": "work/resource-death-continuation/guests13-multi/run.json",
+      "guest_run_sha256": "996e9e18a477ba25a5c57194ebb1486d2474d72a73a398b41ec8792089debc84",
+      "status": "failed; immutable earlier run"
+    }
+  ],
   "multiworker": {
-    "build_report": "work/resource-death-continuation/server13-multi/build.json",
-    "build_report_sha256": "a54d37f8e6adf09588f7ad1519e794f4a0c17ce0bb0c2107d7ea8a4017653e59",
-    "cases_executed": 54,
+    "build_report": "work/resource-death-continuation/server17-multi/build.json",
+    "build_report_sha256": "7218b651934121e67e23886ecd112a8497c6474db06e081e450b95146ba93de2",
+    "cases_executed": 44,
     "cohorts": [
       {
         "exit_code": 0,
         "group": "guards",
-        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests13-multi/guards/comparison.json",
-        "sha256": "34e356f13b76e8a29e33517f2153113a07d4d6457304177007e0fea2d916d947"
+        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests17-multi/guards/comparison.json",
+        "sha256": "d5deb91d5454d55c72e37dbfdcbc4c5245c05712699bc1ca684c8ee80dfdb607"
       },
       {
         "exit_code": 0,
         "group": "filesystem",
-        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests13-multi/filesystem/comparison.json",
-        "sha256": "183245b454043eb818892134f83198506e8c412f8462d7ea1a6750e2fb2af6a4"
+        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests17-multi/filesystem/comparison.json",
+        "sha256": "b156cf45c4e5f206497f0f684947337ebbebbcfd88530155cffc755c4bd30243"
       },
       {
         "exit_code": 1,
         "group": "existing",
-        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests13-multi/existing/comparison.json",
-        "sha256": "53d23c3ee8a4240fca1cfbf595553ad87350bd9a3f69db02f5f79cb75126c7d9"
+        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests17-multi/existing/comparison.json",
+        "sha256": "9153070d672c09bab2623c93b5970b3ed725374cf7049ee5c46807a2cda6e3ea"
       }
     ],
     "configuration": {
-      "path": "work/resource-death-continuation/server13-multi/workqueue-configuration.json",
-      "sha256": "8b5a95249ed746a8b6c7f00d7d37bd57e1033b2af9ce8d26ae9f756a03123c94"
+      "path": "work/resource-death-continuation/server17-multi/workqueue-configuration.json",
+      "sha256": "1cdeeb8074a1432b231bddbb6bdaf2dbce01f9f6d7a69973ef5be395eda06073"
     },
     "failures": [
       {
-        "case": "process-control-regression.c",
+        "case": "fsync-regression.c",
         "group": "existing",
         "slot": "rust",
         "timed_out": true
       }
     ],
-    "guest_run": "work/resource-death-continuation/guests13-multi/run.json",
-    "guest_run_sha256": "996e9e18a477ba25a5c57194ebb1486d2474d72a73a398b41ec8792089debc84",
+    "guest_run": "work/resource-death-continuation/guests17-multi/run.json",
+    "guest_run_sha256": "e9b06c4276d9855fdea26615b5e2f8a7afaf03e6a72af1b5ca0aa428a963934b",
     "inputs_unchanged": true,
     "observation": {
-      "path": "work/resource-death-continuation/multiworker-observation13/verification.json",
-      "sha256": "79f9449638f6b9a203871e8f0d41ff7a2226249dc3a7e06fd006deac433f6e0c"
+      "path": "work/resource-death-continuation/multiworker-observation17/verification.json",
+      "sha256": "46463dfc14554edc255f3854d54000307fc958565f4e8741e4ea4630a9f9ce73"
     },
-    "server_sha256": "e24349e1f910ad99e1db9774d8a758abfaac8845b71527a0f64635263b082410",
+    "server_sha256": "dbdc25d06b530602172dfd602247447a6b04260b46892ac98fa17f6c688880c3",
     "status": "failing"
   },
   "native_component_evidence": {
@@ -122,6 +143,10 @@
       "path": "work/resource-death-continuation/actual-machport8/verification.json",
       "sha256": "2394f9e8bd3f739f5e4e6b8ca24d82d33d87f967f560b58566766af28ace332e"
     },
+    "mutex_interlock": {
+      "path": "work/resource-death-continuation/mutex-interlock/proof1/verification.json",
+      "sha256": "da0461cade2986bd42540ab6e5b40fe41ffdc21d40482e307e99cacaf19d13d2"
+    },
     "reply_queue": {
       "path": "work/resource-death-continuation/replies8/verification.json",
       "sha256": "d9ce7c30d7382a9675952f1452efc6c659703aae7f487993400bf49e01216f85"
@@ -149,7 +174,8 @@
   },
   "native_results_scope": "Each native derivative retains its own exact input hashes and binary; do not combine historical component proofs into a claim that the final binary passed the complete fault matrix.",
   "open_gates": [
-    "Multiworker owned guests still expose a timeout; deterministic lost-request and running-cleanup fixes pass, but do not establish the remaining concurrency behavior.",
+    "Historical multiworker ordinary guest timeouts remain preserved. Scoped fresh cohort results and deterministic handoff/mutex regressions do not establish complete concurrency acceptance.",
+    "Executing continuation closure ownership across suspension/native-worker reuse remains unverified; its attempted native validation was stopped by automatic cybersecurity review and was not retried or activated.",
     "Latest prepared exec lock-scope changes pass ordinary guest execution; the earlier29-failure exec proof is historical and does not validate those later changes.",
     "Direct native Checkin fault proof and further exec-notification validation stopped by automatic cybersecurity review; do not retry, rephrase or transfer those actions.",
     "Original adversarial RPC verification remains externally blocked and was not retried.",
@@ -163,13 +189,19 @@
   "owned_build": {
     "complete_combined_fault_validation": false,
     "inputs_unchanged": true,
-    "report": "work/resource-death-continuation/server12-single/build.json",
-    "report_sha256": "55d9f25171cab384064b6d789381d97e8f2a6b9bd7fb345f047c234d2afc143d",
-    "server": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/server12-single/linked/darlingserver",
-    "server_sha256": "b64f83f8486499a50f18788c859fc0690743b292df9b690144690537bc0b25c4"
+    "report": "work/resource-death-continuation/server16-single/build.json",
+    "report_sha256": "e4ab1bbec086a6dbe0c681a0be71c780a840ad767c981bfa796434b3bad619e9",
+    "server": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/server16-single/linked/darlingserver",
+    "server_sha256": "9f9c97b36ab08a104d982d023c2b5a1ea6bdfdefd7b5c138b5a52b2e143fbc83"
   },
   "preservation": {
     "count": 23,
+    "preceding_candidate": {
+      "input_count": 70,
+      "inputs_unchanged": true,
+      "report": "work/resources-complete/server-build12/build.json",
+      "sha256": "db39207ae08604212d20217a0caa03c59990e681aaf093930da13ee93b22d0c5"
+    },
     "sha256": {
       "tools/build_resource_exec_bridge.py": "82c50ecaf214be718517623361dafcb048bad762335cf9bf7874d1487df09f70",
       "tools/build_resource_loader.py": "7da926806fdfbd6ea3ed3dbbc4013c983164894bb8f931400b869b8096cf96b6",
@@ -194,20 +226,25 @@
       "tools/resource-server-state.inc": "04b855ea22b683c1076917384d38d14e8d26c4a795ee23a644c9644884956f86",
       "tools/resource-server-thread.inc": "7c205ff2ad103d550a284123e9126dfa2af9d0e5e517ee5de451e55d226d5f09",
       "tools/test_resource_server.py": "b1720c1234a50efe152401b504881ff458d4f164cedbb28eb4146d6ecaf881a4"
+    },
+    "stopped_wip": {
+      "count": 8,
+      "record": "work/resource-death-continuation/stopped-wip-preservation3.json",
+      "sha256": "e9e2cd1f59d52c8d14290b35c46e464631307254a7b1db73ab7e3e09eca1c910"
     }
   },
   "python_check": {
     "command": "python3 -m unittest discover -s tools -p 'test_*.py' -v",
     "count": 94,
-    "log": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/python-tests-handoff.log",
-    "sha256": "60e7b7055e39f1ed15b5080f123343b3b228248159cff81e8bd0c5ec4eb01c86"
+    "log": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/python-tests-mutex.log",
+    "sha256": "cdcf3935abb642a689f4d860854ca8916b1b773b447ec315dffa02638f8d19cc"
   },
   "resource_complete": false,
   "resource_ownership_activated": false,
   "schema_version": 1,
   "scope": "Owned resource lifecycle prerequisite candidate; scoped evidence index, not a full Rust port or whole-runtime OOM/performance acceptance.",
   "source_sha256": {
-    "tools/build_resource_lifecycle_server.py": "27394b58f3c02f155d9a7bf4c970cbb89ebbe28542074f2fb9d0b880a38b697d",
+    "tools/build_resource_lifecycle_server.py": "b62b4f1b0f493e8afdec813026f6360a70645f0589ce87152193b4179a9c69bb",
     "tools/build_resource_workqueue_configuration.py": "898b229fd33cbf0c972b427c33bbe3c77fad068c5d090d3b20930febcf151b10",
     "tools/patch_prepared_resource_checked_ipc.py": "bb54107ded1e322ea2afacaeb856d4d06489b8f9075dd999e3c514712b20e4c9",
     "tools/patch_prepared_resource_inner_dtape.py": "bba0ae00f5fcc5bd0acbad3a8623bdcd7c7aec1a84c5afea7b71f744f38ab6ff",
@@ -222,6 +259,7 @@
     "tools/patch_resource_death_work.py": "b80d9ae910a36b7b0eb41990d1417c102021672e81e705a838d84f84c112a458",
     "tools/patch_resource_generation_resume.py": "d5c9287dbc69abcf395786a6a0f9d899c93359b047b686a55f41c3b2dd901ba2",
     "tools/patch_resource_kernel_contexts.py": "b6546523c67c2ebf1c399c901b55d7578bc851a77532221d239939a9a9363e10",
+    "tools/patch_resource_mutex_interlock.py": "20bc6799ac4f1a7e4930142bd4bb69c2a5d8b868560421b813769d5231a59daa",
     "tools/patch_resource_prepared_exec.py": "190074c7e6df8b515c4eea1230c1ed6c801c47dda923cb88ad5d7740bfe120eb",
     "tools/patch_resource_state_death.py": "fb1a97e87b3575dc893d1a11ca79acae0e3054f4893e58779f91b4b57f551bc2",
     "tools/patch_resource_work_handoff.py": "998b433addf9cb8b9850c394e55792cf990091c48d7e27ae26584bbf1c6faa46",

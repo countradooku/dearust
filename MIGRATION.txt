@@ -46,9 +46,12 @@ open inner-XNU OOM, bootstrap, published-death, shutdown and performance gates.
 The later owned lifecycle continuation adds checked partial acquisition,
 generation-owned contexts and reserved dispatch/reply cleanup. Its current index
 is resource-lifecycle-current-index.json; tools/RESOURCE-LIFECYCLE-CANDIDATE.txt
-separates final88 ordinary guest executions from historical native derivatives,
+separates88 single-worker ordinary guest executions from historical native derivatives,
 later lock-scope fixes and stopped verification. Ownership remains inactive;
 the final combined fault matrix, full shutdown and performance are unfinished.
+The owned multiworker configuration still times out after worker-handoff and
+mutex-interlock fixes. Continuation closure ownership validation was stopped by
+automatic cybersecurity review; that WIP remains inactive and unverified.
 These C/C++ prerequisites change no Rust source replacement or retirement count.
 
 Packages01-09 follow the user-supplied porting-prompts pack, with hashed scopes,
