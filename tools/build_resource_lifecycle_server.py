@@ -38,6 +38,7 @@ from patch_resource_resume_consumption import patch_resume_consumption
 from patch_resource_registration_lock_scope import patch_registration_lock_scope
 from patch_resource_xnu_wait_state import patch_xnu_wait_state
 from patch_resource_bootstrap_thread_storage import patch_bootstrap_thread_storage
+from patch_resource_wait_result import patch_wait_result
 
 
 def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c_flags=(), checked_generation=False, prepared_exec=False):
@@ -73,7 +74,7 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
             'patch_resource_impersonation_handoff.py', 'patch_resource_fork_signal.py',
             'patch_resource_kernel_async_submission.py', 'patch_resource_resume_consumption.py',
             'patch_resource_registration_lock_scope.py', 'patch_resource_xnu_wait_state.py',
-            'patch_resource_bootstrap_thread_storage.py')]]
+            'patch_resource_bootstrap_thread_storage.py', 'patch_resource_wait_result.py')]]
     if checked_generation:
         builder.EXTRA_TRANSFORM_INPUTS += [tools / 'patch_prepared_resource_checked_ipc.py',
             tools / 'patch_resource_kernel_contexts.py', tools / 'patch_resource_generation_resume.py',
@@ -136,6 +137,7 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
         if checked_generation:
             sources = patch_kernel_context_c(patch_checked_c(sources))
         sources = patch_xnu_wait_state(sources)
+        sources['src/thread.c'] = patch_wait_result(sources['src/thread.c'])
         if instrument_c:
             sources = instrument_c(sources)
         commands = []
