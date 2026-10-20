@@ -98,6 +98,17 @@ An earlier startup2 cohort ran alongside functional guests and is retained as a
 diagnostic; startup3 is the quiet matched run. First revisions/failed diagnostics
 are preserved, including their less efficient rearm implementation.
 
+A subsequent disjoint128KiB guarded-stack experiment remains unselected; see
+resource-cpu-stack-experiment.json. Its28 native/raw/sanitizer build/run records
+cover real contention, final pinned-FD release, stack guards, mask failure and
+allocation rollback. Post-paint observed depth is8208bytes native/7520sanitized,
+excluding earlier startup and overwritten interrupted frames; this is no bound
+for libc, loader or internal signal paths. A real192KiB initial-exec TLS binary
+rejects the small stack with EINVAL while the unchanged default-stack baseline
+succeeds. Current helper/build/guest evidence stays unchanged; reducing the stack
+requires a sizing strategy that preserves those valid configurations. All prior
+experiment sources/reports are retained with matching reconstructed snapshots.
+
 Open gates and preservation
 ----------------------------
 All23 original dirty candidates,11 stopped WIP files,70 frozen server12 inputs,

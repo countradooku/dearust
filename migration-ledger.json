@@ -2342,6 +2342,43 @@
       "path": "cmake-command-effects.json",
       "scope": "518 static direct command-name rows with pinned raw arguments/conditions/definition/template context; 24,158 declarations remain outside this catalogue and15 original inputs unparsed. No evaluation, expansion, execution, target or implementation completion inferred.",
       "sha256": "44c537c3bcd04dd0c1b2aab0c52d127839abe5c97af954212a9239df16565c90"
+    },
+    {
+      "assertions": [
+        {
+          "equals": true,
+          "pointer": "/tests_passed"
+        },
+        {
+          "equals": 28,
+          "pointer": "/build_run_records"
+        },
+        {
+          "equals": false,
+          "pointer": "/selected"
+        },
+        {
+          "equals": false,
+          "pointer": "/resource_complete"
+        },
+        {
+          "equals": false,
+          "pointer": "/resource_ownership_activated"
+        },
+        {
+          "equals": false,
+          "pointer": "/blocked_checks_retried"
+        },
+        {
+          "equals": false,
+          "pointer": "/performance_gate_passed"
+        }
+      ],
+      "id": "resource-cpu-stack-experiment",
+      "kind": "nonselected-native-stack-experiment",
+      "path": "resource-cpu-stack-experiment.json",
+      "scope": "Disjoint guarded128KiB receiver stack:28 build/run records, native/raw/sanitized plus failure checks; real192KiB staticTLS rejects small stack while selected default succeeds. Nonselected; observed post-paint depth does not establish safe lifetime bound.",
+      "sha256": "dadc4f7f71517274339692a6f1625fcf48a7c1897d9d797e45b5d11e490b1280"
     }
   ],
   "execution_observations": [
@@ -4165,9 +4202,9 @@
     {
       "kind": "candidate-support-evidence",
       "path": "RUNTIME-RESOURCE-CPU.txt",
-      "provenance": "resource-cpu-current-index.json",
-      "scope": "Owned CPU-only prerequisite evidence; no production activation or new Rust artifact count.",
-      "sha256": "00b9d6235f97f9a7af42e19b9ba4c7991067010e6ddcb86ab07754cb78df2ed0"
+      "provenance": "resource-cpu-stack-experiment.json",
+      "scope": "Current CPU prerequisite documentation plus nonselected stack findings; no production activation or Rust artifact count.",
+      "sha256": "604613aa6114233068510df8c69fc063c31c8cd168ae9785e96fa87f16fcdcf2"
     },
     {
       "kind": "candidate-support-evidence",
@@ -4209,10 +4246,11 @@
         "work/resources-complete/continuation-20261019/guest-summary-final6.json",
         "resource-copy-current-index.json",
         "resource-cpu-current-index.json",
-        "resource-lifecycle-current-index.json"
+        "resource-lifecycle-current-index.json",
+        "resource-cpu-stack-experiment.json"
       ],
       "id": "resources",
-      "missing": "CPU-delivery allocation loss and bound-timer rearm prerequisites have scoped native/owned guest evidence; exact unsigned ownership, XNU physical enforcement, VM/credential/lifecycle, multiworker, architecture and measured whole/generic-copy CPU gates remain unfinished before post-resource packages.",
+      "missing": "CPU-delivery allocation loss and bound-timer rearm prerequisites have scoped native/owned guest evidence; exact unsigned ownership, XNU physical enforcement, VM/credential/lifecycle, multiworker, architecture and measured whole/generic-copy CPU gates remain unfinished before post-resource packages. A nonselected128KiB stack experiment reproduces a valid large-static-TLS regression; default stack remains selected and memory/performance acceptance remains open.",
       "status": "unfinished"
     },
     {

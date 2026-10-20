@@ -1,0 +1,63 @@
+{
+  "blocked_checks_retried": false,
+  "build_run_records": 28,
+  "evidence_root": "work/resource-cpu-stack-next",
+  "experiment": {
+    "path": "work/resource-cpu-stack-next/verification.json",
+    "sha256": "ead7eb7b4fa8172e144b7accfb3d5d4f3ada37c379a25c959736644085b53c48"
+  },
+  "files_manifest": {
+    "path": "work/resource-cpu-stack-next/FINAL-MANIFEST.json",
+    "sha256": "554d4050a4e196f79d66090d8be37e09e4595e0b8c2f0be243dbb37f29b7b551"
+  },
+  "measurement_limit": "Post-paint observed writes only, inspected after join. Includes conservatively unpainted live/TLS top bytes; excludes startup before paint and completed interrupted frames overwritten during painting. Not a maximum proof or performance benchmark.",
+  "native_mapping": {
+    "duplicated_pidfds": 0,
+    "guard_lower": 4096,
+    "guard_upper": 4096,
+    "service_fds": 2,
+    "worker_threads": 1,
+    "writable_stack": 131072
+  },
+  "notes": {
+    "path": "work/resource-cpu-stack-next/NOTES.txt",
+    "sha256": "b5e16359be648c95a650845974b5a407c5cf409a2474521e52a6579f42a84219"
+  },
+  "observed": {
+    "asan_ubsan_post_paint_depth": 7520,
+    "native_post_paint_depth": 8208,
+    "public_min_signal": 3376,
+    "public_recommended_signal": 13504,
+    "public_thread_min": 16384,
+    "raw_native_post_paint_depth": 8208
+  },
+  "performance_gate_passed": false,
+  "preservation": "No current repository source/index, installed/reference runtime, ownership activation, or preserved candidate mutation; no blocked checks executed.",
+  "producer": {
+    "path": "work/resource-cpu-stack-next/root-record.py",
+    "sha256": "92fb7783d7fcbe3af43ac73586c0085eec630b6713e89812b6f4a7d5fa0539ff"
+  },
+  "proof": {
+    "path": "work/resource-cpu-stack-next/proof5/verification.json",
+    "sha256": "acc3f366aa6d28371c3977031a586577bdb03b063be5eba70b0f93caa255ce7d"
+  },
+  "resource_complete": false,
+  "resource_ownership_activated": false,
+  "schema_version": 1,
+  "scope": "Disjoint nonselected CPU receiver bounded-stack experiment only",
+  "selected": false,
+  "selected_helper": {
+    "path": "tools/resource_cpu_dispatch.inc",
+    "sha256": "b40add078d43705f86041e4d1ba6216073bc568201c802b63ad25fa64a2eaf51"
+  },
+  "selection_blockers": [
+    "Actual 192KiB initial-exec TLS binary: 128KiB supplied stack fails EINVAL, unchanged v2 default stack succeeds.",
+    "64KiB available-space reserve is an explicit experiment threshold without a proved complete native/libc/allocator/internal-signal maximum. Entry measurement cannot prove the stack used before entry/paint.",
+    "BIND_NOW experiment closes lazy PLT binding here, but this is not an audited bound for arbitrary runtime link/interposer configurations."
+  ],
+  "source_manifest": {
+    "path": "work/resource-cpu-stack-next/proof5/reconstructed-source-manifest.json",
+    "sha256": "011566bbdd354c3b46595507e10e6db108dc440f657cfcfbb9da676f10fa5004"
+  },
+  "tests_passed": true
+}
