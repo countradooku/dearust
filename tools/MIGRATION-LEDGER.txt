@@ -169,3 +169,10 @@ unknowns. Continue resource-critical prepared registration/rollback and no-fail
 kernel-context cleanup before unrelated package expansion. The candidate server
 must reserve its eternal identity before dtape construction; its OOM audit and
 handoffs retain the remaining acquisition/publication/callback/death defects.
+
+The 2026-10-20 prepared-registration candidate is now indexed separately in
+resource-prepared-registration-verification.json. Reserved EIDs, publication,
+intrusive cleanup and scoped native/guest checks are implemented in an owned
+derivative. Its startup/thread cost, deeper XNU OOM, bootstrap, whole published
+lifecycle/shutdown and ownership gates remain open; continue those resource
+prerequisites before unrelated packages. No source/target retirement count changed.

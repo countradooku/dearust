@@ -1,0 +1,258 @@
+// Exact transformed registration boundary, pending-reply methods and inbox
+// dispatch block. Process/Thread adapters throw only ordinary injected failures.
+#include <cassert>
+#include <cerrno>
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <memory>
+#include <new>
+#include <optional>
+#include <system_error>
+#include <vector>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+#include @PROTOCOL@
+
+static bool exhausted = false;
+void* operator new(size_t size) {
+    if (exhausted) throw std::bad_alloc();
+    if (auto p = std::malloc(size ? size : 1)) return p;
+    throw std::bad_alloc();
+}
+void operator delete(void* p) noexcept { std::free(p); }
+void operator delete(void* p, size_t) noexcept { std::free(p); }
+
+static int failureStage = 0, failureCode = 0;
+static bool failureFired = false;
+static std::system_error transientError(EAGAIN, std::generic_category());
+static std::system_error goneError(ESRCH, std::generic_category());
+static void failAt(int stage) {
+    if (failureFired || stage != failureStage) return;
+    failureFired = true;
+    exhausted = true;
+    if (failureCode == ENOMEM) throw std::bad_alloc();
+    if (failureCode == EAGAIN) throw transientError;
+    throw goneError;
+}
+
+namespace DarlingServer {
+struct Address {
+    sockaddr_un value = {};
+    socklen_t size = 0;
+    explicit Address(const char* label = nullptr) {
+        value.sun_family = AF_UNIX;
+        if (label) {
+            const int length = snprintf(value.sun_path + 1, sizeof(value.sun_path) - 1,
+                "dearust-checkin-%ld-%s", static_cast<long>(getpid()), label);
+            size = offsetof(sockaddr_un, sun_path) + 1 + length;
+        }
+    }
+};
+class Message {
+    std::vector<unsigned char> _data;
+    Address _address;
+    msghdr _header = {};
+    iovec _iov = {};
+public:
+    explicit Message(size_t size = sizeof(dserver_rpc_call_checkin_t), size_t = 0): _data(size) {}
+    auto& data() { return _data; }
+    Address address() const { return _address; }
+    void setAddress(Address address) { _address = address; }
+    int pid() const { return 120; }
+    int extractDescriptorAtIndex(int) { std::abort(); }
+    msghdr& rawHeader() {
+        _iov = {_data.data(), _data.size()};
+        _header.msg_iov = &_iov; _header.msg_iovlen = 1;
+        _header.msg_name = _address.size ? &_address.value : nullptr;
+        _header.msg_namelen = _address.size;
+        return _header;
+    }
+};
+struct FD { explicit FD(int = -1) {} };
+using EternalID = uint64_t;
+class Process {
+public:
+    enum class Architecture { x86_64 };
+    Process(int, int, Architecture, EternalID, FD) { failAt(1); }
+    int id() const { return 120; }
+};
+class Thread {
+    std::shared_ptr<Process> _process;
+public:
+    Thread(std::shared_ptr<Process> process, int, EternalID, void*): _process(process) { failAt(3); }
+    auto process() const { return _process; }
+    void setAddress(Address) {}
+};
+template<class Entry> struct Registry {
+    int stage;
+    std::shared_ptr<Entry> entry;
+    template<class Factory> std::shared_ptr<Entry> registerPreparedIfAbsent(int, Factory factory) {
+        if (entry) return entry;
+        auto candidate = factory(1);
+        if (!candidate) return nullptr;
+        failAt(stage);
+        entry = candidate;
+        return entry;
+    }
+};
+static Registry<Process> processes{2, nullptr};
+static Registry<Thread> threads{4, nullptr};
+static auto& processRegistry() { return processes; }
+static auto& threadRegistry() { return threads; }
+struct Logger {
+    Logger& error() { return *this; }
+    template<class T> Logger& operator<<(const T&) { return *this; }
+    int endLog = 0;
+};
+static Logger callLog;
+class Call {
+public:
+    static std::shared_ptr<Call> callFromMessage(Message&& requestMessage);
+    std::shared_ptr<Thread> thread() const { return threads.entry; }
+};
+static auto successfulCall = std::make_shared<Call>();
+struct Inbox {
+    std::vector<Message> messages;
+    size_t index = 0;
+    bool empty() const { return index == messages.size(); }
+    bool receiveMany(int) { std::abort(); }
+    std::optional<Message> pop() {
+        if (empty()) return std::nullopt;
+        return std::move(messages[index++]);
+    }
+};
+struct Outbox { bool empty() const { return true; } };
+struct WorkQueue { unsigned pushes = 0; void push(std::shared_ptr<Thread>) { ++pushes; } };
+static void m58wq_log(const char*, std::shared_ptr<Thread>) {}
+class Server {
+public:
+    int _listenerSocket = -1;
+    bool _canRead = false;
+    Inbox _inbox;
+    Outbox _outbox;
+    WorkQueue _workQueue;
+    // SERVER_FIELDS
+    static Server& sharedInstance() { static Server instance; return instance; }
+    void queuePreparedCheckinFailure(Address address, int error) noexcept;
+    void dispatchInbox() {
+        // INBOX_DISPATCH
+    }
+    bool bufferedContinuation() {
+        // BUFFERED_CONTINUATION
+        return false;
+    }
+};
+}
+
+// SERVER_METHODS
+
+std::shared_ptr<DarlingServer::Call> DarlingServer::Call::callFromMessage(Message&& requestMessage) {
+    auto* header = reinterpret_cast<dserver_rpc_callhdr_t*>(requestMessage.data().data());
+    std::shared_ptr<Process> process;
+    std::shared_ptr<Thread> thread;
+    // MANAGED_BOUNDARY
+    return successfulCall;
+}
+
+static DarlingServer::Message request(DarlingServer::Address address, bool checkin = true) {
+    DarlingServer::Message message;
+    auto* call = reinterpret_cast<dserver_rpc_call_checkin_t*>(message.data().data());
+    *call = {};
+    call->header.number = checkin ? dserver_callnum_checkin : dserver_callnum_checkout;
+    call->header.pid = 120; call->header.tid = 121;
+    call->body.lifetime_listener_pipe = -1;
+    message.setAddress(address);
+    return message;
+}
+
+int main() {
+    using namespace DarlingServer;
+    assert(dserver_callnum_to_string(dserver_callnum_checkin));
+    auto& server = Server::sharedInstance();
+    Address destination("receiver"), sender("sender");
+    int receiver = socket(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+    server._listenerSocket = socket(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+    assert(receiver >= 0 && server._listenerSocket >= 0);
+    assert(bind(receiver, reinterpret_cast<sockaddr*>(&destination.value), destination.size) == 0);
+    assert(bind(server._listenerSocket, reinterpret_cast<sockaddr*>(&sender.value), sender.size) == 0);
+    unsigned cases = 0;
+    for (int stage = 1; stage <= 4; ++stage) for (int code: {ENOMEM, EAGAIN, ESRCH}) {
+        processes.entry.reset(); threads.entry.reset();
+        failureStage = stage; failureCode = code; failureFired = false;
+        auto message = request(destination);
+        assert(!Call::callFromMessage(std::move(message)));
+        assert(exhausted && server._preparedCheckinFailurePending);
+        assert(server._flushPreparedCheckinFailure());
+        exhausted = false;
+        dserver_rpc_reply_checkin_t reply = {};
+        assert(recv(receiver, &reply, sizeof(reply), 0) == sizeof(reply));
+        assert(reply.header.number == dserver_callnum_checkin && reply.header.code == -code);
+        ++cases;
+    }
+    // Other call preparation failures keep their original propagation behavior.
+    processes.entry.reset(); threads.entry.reset();
+    failureStage = 2; failureCode = ENOMEM; failureFired = false;
+    auto ordinary = request(destination, false);
+    bool propagated = false;
+    try { Call::callFromMessage(std::move(ordinary)); }
+    catch (const std::bad_alloc&) { propagated = true; }
+    exhausted = false;
+    assert(propagated && !server._preparedCheckinFailurePending);
+
+    // Actual nonblocking Unix datagram backpressure: retain slot at EAGAIN,
+    // then retry on EPOLLOUT after draining the peer, with no allocation.
+    int epoll = epoll_create1(EPOLL_CLOEXEC);
+    epoll_event setting = {}; setting.events = EPOLLOUT | EPOLLET;
+    assert(epoll_ctl(epoll, EPOLL_CTL_ADD, server._listenerSocket, &setting) == 0);
+    epoll_event event;
+    dserver_rpc_reply_checkin_t reply = {};
+    for (int sendBuffer: {4096, 4 * 1024 * 1024}) {
+        // Exercise both sender-buffer and peer-queue pressure on this host.
+        assert(setsockopt(server._listenerSocket, SOL_SOCKET, SO_SNDBUF, &sendBuffer, sizeof(sendBuffer)) == 0);
+        assert(epoll_ctl(epoll, EPOLL_CTL_MOD, server._listenerSocket, &setting) == 0);
+        assert(epoll_wait(epoll, &event, 1, 1000) == 1);
+        char byte = 'x'; unsigned queued = 0;
+        while (sendto(server._listenerSocket, &byte, 1, MSG_DONTWAIT,
+                      reinterpret_cast<sockaddr*>(&destination.value), destination.size) == 1) ++queued;
+        assert(queued && errno == EAGAIN);
+        server.queuePreparedCheckinFailure(destination, ENOMEM);
+        exhausted = true;
+        assert(!server._flushPreparedCheckinFailure() && server._preparedCheckinFailurePending);
+        // Discard any already-pending readiness: the following wait must observe
+        // a fresh edge after peer drain, not stale initial EPOLLOUT readiness.
+        while (epoll_wait(epoll, &event, 1, 0) == 1) {}
+        for (unsigned i = 0; i < queued; ++i) assert(recv(receiver, &byte, 1, 0) == 1);
+        assert(epoll_wait(epoll, &event, 1, 1000) == 1 && (event.events & EPOLLOUT));
+        assert(server._flushPreparedCheckinFailure() && !server._preparedCheckinFailurePending);
+        exhausted = false;
+        assert(recv(receiver, &reply, sizeof(reply), 0) == sizeof(reply) && reply.header.code == -ENOMEM);
+        std::printf("nonblocking datagram pressure: requested sndbuf=%d queued=%u\n", sendBuffer, queued);
+    }
+
+    // A buffered later call resumes after slot delivery without new socket bytes.
+    processes.entry.reset(); threads.entry.reset();
+    failureStage = 2; failureCode = EAGAIN; failureFired = false;
+    server._inbox.messages.push_back(request(destination));
+    server._inbox.messages.push_back(request(destination));
+    server.dispatchInbox();
+    assert(exhausted && server._inbox.index == 1 && server._preparedCheckinFailurePending);
+    assert(server._flushPreparedCheckinFailure());
+    exhausted = false;
+    assert(server.bufferedContinuation());
+    server.dispatchInbox();
+    assert(server._inbox.empty() && server._workQueue.pushes == 1);
+    assert(recv(receiver, &reply, sizeof(reply), 0) == sizeof(reply) && reply.header.code == -EAGAIN);
+
+    // A departed peer follows the existing queue's explicit message retirement.
+    close(receiver);
+    server.queuePreparedCheckinFailure(destination, ENOMEM);
+    exhausted = true;
+    assert(server._flushPreparedCheckinFailure() && !server._preparedCheckinFailurePending);
+    exhausted = false;
+    close(epoll); close(server._listenerSocket);
+    std::printf("%u constructor/preparation error replies passed; noncheckin propagation, EAGAIN retention/EPOLLOUT retry, buffered inbox continuation and dead-peer retirement passed\n", cases);
+}

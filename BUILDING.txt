@@ -588,3 +588,11 @@ Resource copy follow-up: RUNTIME-RESOURCE-COPIES.txt records the default runtime
 anchor/SSE2 path, negative-case contracts and fresh all-layout measurements.
 Resource owner/server/loader candidates are not selected by the default runtime
 artifact graph; full unsigned/XNU enforcement and generic CPU gates remain open.
+
+Prepared resource server derivative (2026-10-20; candidate only)
+--------------------------------------------------------------
+Use tools/build_prepared_resource_server.py with a frozen --candidate and absent,
+owned --output. See tools/PREPARED-RESOURCE-REGISTRATION.txt for lifecycle,
+reproduction and unfinished gates, and resource-prepared-registration-verification.json
+for actual input/artifact hashes and scoped native/guest results. No install
+or resource-owner activation is performed. Preserve all prior candidates.

@@ -36,6 +36,13 @@ startup supersedes the older startup hypothesis, without closing ownership,
 physical enforcement, credentials, lifecycle/OOM or generic-copy CPU gates.
 Previously blocked adversarial RPC validation remains unverified; no retry.
 
+A separate owned prepared-registration derivative reserves EIDs before handles,
+stages publication and uses intrusive kernel-context cleanup. This is a server
+lifecycle prerequisite, not additional Rust source replacement or target
+retirement. tools/PREPARED-RESOURCE-REGISTRATION.txt and
+resource-prepared-registration-verification.json retain its exact evidence and
+open inner-XNU OOM, bootstrap, published-death, shutdown and performance gates.
+
 Packages01-09 follow the user-supplied porting-prompts pack, with hashed scopes,
 missing work, interface dependencies and explicit unknowns in
 tools/migration-packages.json and tools/MIGRATION-PACKAGES.txt. Resource-critical

@@ -1,0 +1,129 @@
+#include <atomic>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <memory>
+#include <initializer_list>
+#include <mutex>
+#include <new>
+#include <shared_mutex>
+#include <thread>
+
+static thread_local bool exhausted = false;
+void* operator new(size_t size) {
+    if (exhausted) throw std::bad_alloc();
+    if (auto result = std::malloc(size ? size : 1)) return result;
+    throw std::bad_alloc();
+}
+void operator delete(void* p) noexcept { std::free(p); }
+void operator delete(void* p, size_t) noexcept { std::free(p); }
+
+struct Handle { std::atomic<bool> released{false}; };
+static std::atomic<bool> dyingEntered{false}, dyingMayReturn{false};
+static void dtape_thread_dying(Handle* handle) {
+    assert(handle && !handle->released);
+    dyingEntered = true;
+    while (!dyingMayReturn) std::this_thread::yield();
+    assert(!handle->released);
+}
+
+namespace DarlingServer {
+struct Job { void (*run)(void*) noexcept = nullptr; void* context = nullptr; };
+class Thread;
+struct Registry {
+    std::atomic<unsigned> removals{0};
+    void unregisterEntry(std::shared_ptr<Thread>) { ++removals; }
+};
+static Registry registry;
+static Registry& threadRegistry() { return registry; }
+class Thread: public std::enable_shared_from_this<Thread> {
+public:
+    std::shared_mutex _rwlock;
+    bool _dead = false;
+    bool _preparedDeathInProgress = false;
+    bool _activeCall = true;
+    bool _terminating = false;
+    bool _resourceCleanupQueued = false;
+    std::shared_ptr<Thread> _selfReference;
+    Handle* _dtapeThread;
+    Job _resourceCleanupJob;
+    std::atomic<unsigned> releases{0}, resumes{0};
+    explicit Thread(Handle& handle): _dtapeThread(&handle) {}
+    void notifyDead();
+    void abortKernelHandles() noexcept;
+    void _scheduleRelease() { abortKernelHandles(); }
+    void resume() { ++resumes; }
+    static void _resourceCleanupRun(void*) noexcept {}
+    static void enqueueResourceCleanup(Job& job) noexcept {
+        auto* self = static_cast<Thread*>(job.context);
+        assert(!self->_preparedDeathInProgress);
+        assert(dyingMayReturn);
+        self->_dtapeThread->released = true;
+        ++self->releases;
+    }
+    void workerComplete(bool premarkedTerminating = false) {
+        std::unique_lock lock(_rwlock);
+        _activeCall = false;
+        if (premarkedTerminating) _terminating = true;
+        // WORKER_RELEASE_DECISION
+        lock.unlock();
+        if (canRelease) _scheduleRelease();
+    }
+};
+}
+
+// NOTIFY_DEAD
+// ABORT_KERNEL_HANDLES
+
+int main() {
+    using namespace DarlingServer;
+    unsigned cases = 0;
+    // A worker can complete normally or have taken doWork's early dead/no-call
+    // branch, which marks terminating before reaching its release decision.
+    for (bool premarked: {false, true}) {
+        Handle handle;
+        auto thread = std::make_shared<Thread>(handle);
+        dyingEntered = false;
+        dyingMayReturn = false;
+        std::thread dying([&] {
+            exhausted = true;
+            thread->notifyDead();
+            exhausted = false;
+        });
+        while (!dyingEntered) std::this_thread::yield();
+        exhausted = true;
+        thread->workerComplete(premarked);
+        thread->abortKernelHandles();
+        thread->notifyDead(); // duplicate observer cannot consume the barrier
+        exhausted = false;
+        assert(thread->releases == 0 && !handle.released);
+        dyingMayReturn = true;
+        dying.join();
+        assert(thread->releases == 1 && handle.released && thread->resumes == 0);
+        exhausted = true;
+        thread->abortKernelHandles();
+        exhausted = false;
+        assert(thread->releases == 1);
+        thread->_selfReference.reset();
+        ++cases;
+    }
+    // If the call is still active after dying, the worker owns final scheduling.
+    {
+        Handle handle;
+        auto thread = std::make_shared<Thread>(handle);
+        dyingEntered = false;
+        dyingMayReturn = true;
+        exhausted = true;
+        thread->notifyDead();
+        exhausted = false;
+        assert(thread->releases == 0 && thread->resumes == 1);
+        exhausted = true;
+        thread->workerComplete();
+        exhausted = false;
+        assert(thread->releases == 1 && handle.released);
+        thread->_selfReference.reset();
+        ++cases;
+    }
+    assert(registry.removals == cases);
+    std::printf("%u deterministic death/worker cases passed with allocator exhausted; no early or lost cleanup\n", cases);
+}

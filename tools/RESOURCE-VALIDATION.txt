@@ -82,3 +82,13 @@ The namespace-validation adapter is nonallocating; the dtape constructor tail,
 process/thread publication, external monitor ownership and kernel cleanup do not
 run in this fixture. Those OOM/lifecycle and eternal-ID initialization gates remain
 open. Local proof3 preserves commands, hashes and earlier failed compile evidence.
+
+Prepared-registration continuation (2026-10-20; unfinished candidate)
+-------------------------------------------------------------------
+The Registry behavior described earlier is the older map-only API. The new
+prepared API consumes reserved EIDs even on failure, constructs guest handles
+only after staging map storage, and prepares monitor/thread publication with
+nonallocating commit/abort. It uses a preinitialized intrusive cleanup lane.
+See tools/PREPARED-RESOURCE-REGISTRATION.txt and the separately scoped
+resource-prepared-registration-verification.json. Older reports remain immutable;
+no ownership activation, target retirement or blocked RPC validation is claimed.

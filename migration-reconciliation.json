@@ -251,18 +251,20 @@
       "build_tools": [
         "tools/build_resource_exec_bridge.py",
         "tools/build_resource_loader.py",
-        "tools/build_resource_server.py"
+        "tools/build_resource_server.py",
+        "tools/build_prepared_resource_server.py"
       ],
       "evidence": [
         "work/resources-complete/continuation-20261019/guest-summary-final6.json",
-        "work/resources-complete/continuation-20261019/wip-sources.json"
+        "work/resources-complete/continuation-20261019/wip-sources.json",
+        "resource-prepared-registration-verification.json"
       ],
       "name": "resource-ownership",
       "open_gates": [
         "Client owner lifecycle/fork/exec/signal/cancellation",
         "Host hard-limit concurrency/partial mprotect and coherent VM/wiring lifecycle",
         "Guest credential/NPROC authority",
-        "Registration EID/OOM/callback/kernel cleanup defects",
+        "Prepared registration passes scoped native/guest checks; inner-XNU OOM, bootstrap failure, full published-death/shutdown and added cleanup-lane performance cost remain open",
         "Old-kernel and queued message-lifetime identity",
         "Native generic-copy CPU regressions",
         "Adversarial RPC validation externally blocked; do not retry."
@@ -1527,6 +1529,15 @@
       "path": "work/resources-complete/utilities-default-final/comparison.json",
       "scope": "default ordinary historical guest execution; preserve per-variant verdicts and mapping scope.",
       "sha256": "7655766106432b30a55750071e476cb801747a64762821c619e15a131f4fd7c2"
+    },
+    {
+      "availability": "hash-matched",
+      "date": "2026-10-20",
+      "id": "resource-prepared-registration-20261020",
+      "kind": "scoped-candidate-report",
+      "path": "resource-prepared-registration-verification.json",
+      "scope": "Owned prepared registration with reserved EIDs and intrusive cleanup; native/sanitized/real-dtape and same-candidate guest scope only. Ownership unactivated, resources unfinished, performance and deeper OOM gates open.",
+      "sha256": "aa9772515726ccd46fb8a7b7da072d03fb6a9fe4922dc2c4e0937cabb237999b"
     }
   ],
   "execution_observations": [
@@ -3570,7 +3581,7 @@
   "generator_inputs_sha256": {
     "dependency-inventory.json": "b93144bf7276349f8423a85be3a0180caf2e78b876520a5cd7720c307ac44fcd",
     "migration-inventory.json": "308426bdb469e38a8aceec78bed3d5350a92750528874abbc46bad9f4aec13d5",
-    "migration-ledger.json": "52544463429205b5e9e3aea957a84efcb9953993ca8b19a51b6f667bf6fb29c7",
+    "migration-ledger.json": "524337f5ef0e574ae58c0569a20176755137f95f186687d1ce16bf92336b6e0d",
     "tools/migration-packages.json": "5417236fdfc1738c6ecdaeb04ff87a087e7c60b1956a6de49b42c5f5430c6190",
     "tools/target_inventory.py": "0db5b20841711375eff9e88cb4638491c60ea9525e770468382f88f9aa03c40a",
     "upstream-cmake-graph.json": "736ebae1cb52161a7d63d14638c93b1f3f5a703b809f7fd4c05defa15dba0dbd",

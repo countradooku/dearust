@@ -1,0 +1,127 @@
+Prepared resource registration candidate (unfinished)
+======================================================
+
+This is an owned derivative of the frozen server-build12 resource candidate.
+It implements a resource-critical server lifecycle prerequisite; it does not
+activate unsigned resource ownership/enforcement or replace the whole server.
+The existing dirty loader/server/exec candidates remain separate and preserved.
+See resource-prepared-registration-verification.json for actual run evidence.
+
+Preparation and publication
+----------------------------
+The Registry reserves an eternal identity before invoking a factory. Every
+attempt consumes that identity, including factory or preparation failure; an
+identity already passed into C must never be reused. All three integer-key map
+nodes are allocated before ordinary guest task/thread/semaphore acquisition.
+Null staging nodes are hidden from lookup/copy APIs. The constructor receives
+its reserved identity, and the owned C task bridge checks the cached identity.
+Kernel-task adoption updates the C cached identity as well as its context.
+
+Process monitoring allocates its token, callback and active/retirement vector
+capacity before epoll ADD. The monitor lock remains held until all Registry
+indexes commit. Abort removes the epoll registration and retains any raw event
+pointer until the event-loop retirement boundary. Thread attachment prepares its
+weak Process-map slot while holding the Process lock through Registry commit;
+abort restores the exact previous control-block identity. Destruction neither
+throws for a missing attachment nor invents Process death on failed registration.
+The required real pidfd monitor remains the Process death authority.
+
+Pointer-aware retirement removes each index only if it still belongs to that
+exact object. A replaced kernel thread can retire its historical EID without
+erasing the current numeric-ID owner or retaining its stack forever.
+
+Checkin preparation failures use one reply Message allocated at Server startup.
+The serial inbox boundary catches ENOMEM/system errors and preserves the EAGAIN
+retry code. A nonblocking send retains the slot on backpressure; inbox dispatch
+pauses while it is pending, while monitor/timer and reply processing continue.
+EPOLLOUT retries the send and buffered inbox work resumes without a new socket
+edge. This contains the preparation boundary; arbitrary later call/message
+allocation failure is not a whole-server OOM safety claim.
+
+Cleanup
+---------
+Ordinary guest handles are acquired only after shared ownership is established.
+Each handle is initialized to null and each top-level C return is checked.
+A preexisting self-reference owns each intrusive cleanup job through final C
+context disposal, including deferred disposal after outstanding C references.
+Retired parent/Process handles are rejected under their shared lifecycle lock.
+
+Submission and the C++ cleanup adapters use no fresh allocation: embedded jobs,
+a pthread queue, and a dedicated initialized native/kernel execution lane replace
+allocating kernelAsync submissions. The microthread stack is established before
+readiness and before guest calls are accepted. Lock-contention resumes wake this
+lane without growing WorkQueue. Cleanup captures/nulls raw handles under the
+object lock and releases them outside it. Thread destruction directly unmaps its
+remaining guarded stack instead of allocating StackPool cache storage.
+
+The Thread death barrier prevents worker completion from releasing its raw C
+handle while notifyDead is still using it. Dying is called outside the C++ lock
+because its resume callback may acquire that lock. After it returns, the worker
+state is re-evaluated so a deferred release is not lost.
+
+Reproduction and ownership
+---------------------------
+All build outputs must be absent and disjoint from candidates/reference trees.
+The builder verifies the frozen source, selected original/replacement objects
+and archives, then rechecks them after compilation. A mutation prevents a success
+manifest. It rebuilds every server translation unit against the owned headers,
+retaining strong signal/fork/RPC/vchroot/TLS bridges and existing mixed-language
+archives. It compiles the owned C task adoption fix and records commands/hashes.
+It does not install anything.
+
+  python3 tools/build_prepared_resource_server.py \
+    --candidate work/resources-complete/server-build12 \
+    --output /fresh/owned/prepared-server
+
+Focused checkers cover the actual Registry template, publication methods,
+cleanup adapters and concurrent death barrier. Their fixtures explicitly adapt
+surrounding Entry/dtape/worker state. Sanitizing those fixtures does not sanitize
+the whole linked XNU/Rust/assembly runtime. Actual linked native lifecycle and
+private-namespace guest runs are separately scoped in the verification record.
+
+Unfinished gates
+------------------
+The allocation-free claim is scoped to the new C++ queue, preparation rollback
+and cleanup adapters. Inner dtape/XNU allocation failures and eventual final C
+release on other execution lanes remain unaudited: VM/IPC/importance/turnstile
+initialization still has unchecked/panic paths. Kernel bootstrap construction
+still acquires its handle before the cleanup lane is ready; startup exhaustion
+is fatal and is not represented as successful guest-registration rollback.
+Published-death kqueue notifications, resourceDying/kernelAsync and ordinary
+active-call scheduling still allocate. A throwing dying/resume callback is not
+covered by the nonthrowing death-barrier model. Full shutdown draining is open.
+The permanent native/kernel cleanup lane adds thread/stack/memory cost; scoped
+observations do not establish an acceptable whole-runtime performance result.
+
+Client owner fork/exec/signal/cancellation, coherent host hard-limit/VM effects,
+credentials/NPROC authority, old-kernel/message-lifetime identity and measured
+generic-copy CPU gates remain open. The previously blocked adversarial RPC
+validation remains blocked and must not be retried or counted as passed.
+Resources and packages01-09 remain unfinished. Same-candidate harness slots are
+never described as an original-C-versus-Rust comparison.
+
+Recorded native startup cost (20 balanced fresh-process samples)
+----------------------------------------------------------------
+Baseline is the frozen preceding server12 candidate, not exact original C.
+Final server3 adds one native thread. Median main initialization increases from
+258.679us to 319.063us; whole-process wall increases 1.250423ms to 1.327113ms.
+Process CPU increases 928us to 1053.5us. VmData increases 8328KiB and VmSize
+73744KiB; resident RSS medians 5428/5420KiB vary with residency and establish no
+memory saving. These are real added startup/thread/address-space costs. They
+remain an open performance gate; no steady-state or guest acceptance is claimed.
+
+Final scoped validation
+-------------------------
+The owned server3 linked with the saved-C-EID assertion and all twelve server TUs
+rebuilt. All88 selected ordinary guest executions passed across guard/fork,
+filesystem, retained process/path, ten application and resource cohorts. Both
+harness slots used this same final candidate. The real native dtape variant
+passed three Process and six Thread rollback stages plus successful lifecycle,
+with four task/seven thread final C context disposals on its cleanup lane.
+Public glibc allocation interposition was calibrated with ten deliberate denied
+attempts; actual cleanup then made zero intercepted allocation attempts. Hidden
+libc-internal calls and inner-XNU allocation failure remain outside that proof.
+Native/sanitized focused Registry, publication, cleanup, death-barrier and Checkin
+fixtures passed. Cargo formatting/Clippy/202ordinary+11compile-fail checks and
+88Python checks passed. Existing23dirty candidates and70frozen build inputs
+remained unchanged. Every earlier failed iteration is preserved in work/.

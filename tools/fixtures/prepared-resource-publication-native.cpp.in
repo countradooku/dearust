@@ -1,0 +1,243 @@
+// Exercises exact publication-transform method bodies, with only surrounding
+// Process/Thread dtape-independent state adapted for ordinary native testing.
+#include <algorithm>
+#include <atomic>
+#include <cassert>
+#include <cerrno>
+#include <cstdlib>
+#include <cstdio>
+#include <memory>
+#include <mutex>
+#include <new>
+#include <shared_mutex>
+#include <system_error>
+#include <thread>
+#include <unordered_map>
+#include <vector>
+#include <sys/epoll.h>
+#include <sys/eventfd.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+static thread_local long failAfter = -1;
+static thread_local unsigned injected = 0;
+void* operator new(size_t n) {
+    if (failAfter == 0) { ++injected; throw std::bad_alloc(); }
+    if (failAfter > 0) --failAfter;
+    if (auto p = std::malloc(n ? n : 1)) return p;
+    throw std::bad_alloc();
+}
+void operator delete(void* p) noexcept { std::free(p); }
+void operator delete(void* p, size_t) noexcept { std::free(p); }
+
+#include <darlingserver/monitor.hpp>
+
+namespace DarlingServer {
+class PreparedProcessMonitor;
+class Thread;
+class Process: public std::enable_shared_from_this<Process> {
+public:
+    int _pid = 1;
+    std::shared_ptr<FD> _pidfd;
+    std::shared_mutex _rwlock;
+    std::unordered_map<uint64_t, std::weak_ptr<Thread>> _threads;
+    bool _dead = false;
+    std::atomic<unsigned> deathCalls{0};
+    Process(): _pidfd(std::make_shared<FD>(eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK))) { assert(_pidfd->fd() >= 0); }
+    void notifyDead() { ++deathCalls; }
+    // PROCESS_DECLARATIONS
+};
+class Thread: public std::enable_shared_from_this<Thread> {
+public:
+    std::shared_ptr<Process> _process;
+    uint64_t _nstid;
+    struct StackPool { struct Stack {
+        void* base = nullptr; size_t size = 0; bool usesGuardPages = false;
+        bool isValid() const { return base && size; }
+    }; };
+    StackPool::Stack _stack;
+    Thread(std::shared_ptr<Process> process, uint64_t nsid): _process(process), _nstid(nsid) {}
+    ~Thread() noexcept;
+    void registerWithProcess();
+    // THREAD_DECLARATIONS
+};
+class Server {
+    friend class PreparedProcessMonitor;
+public:
+    int _epollFD = epoll_create1(EPOLL_CLOEXEC);
+    int _wakeupFD = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
+    std::mutex _monitorsLock;
+    std::vector<std::shared_ptr<Monitor>> _monitors;
+    std::vector<std::shared_ptr<Monitor>> _monitorsWaitingToDie;
+    static Server& sharedInstance() { static Server instance; return instance; }
+    std::unique_ptr<PreparedProcessMonitor> prepareProcessMonitor(std::shared_ptr<Process> process);
+    void _commitPreparedProcessMonitor(PreparedProcessMonitor&) noexcept;
+    void _abortPreparedProcessMonitor(PreparedProcessMonitor&) noexcept;
+    void addMonitor(std::shared_ptr<Monitor> monitor);
+    void removeMonitor(std::shared_ptr<Monitor> monitor);
+    void dispatch(std::shared_ptr<Monitor> monitor) { monitor->_callback(monitor, Monitor::Event::Readable); }
+    ~Server() { close(_epollFD); close(_wakeupFD); }
+};
+// MONITOR_DECLARATION
+}
+
+// PROCESS_METHODS
+// THREAD_METHODS
+// THREAD_DESTRUCTOR
+// MONITOR_METHODS
+// ADD_REMOVE_MONITOR_METHODS
+// MONITOR_CONSTRUCTOR
+
+static void assertNoMonitors() {
+    auto& server = DarlingServer::Server::sharedInstance();
+    std::lock_guard lock(server._monitorsLock);
+    assert(server._monitors.empty());
+    server._monitorsWaitingToDie.clear();
+}
+
+int main() {
+    using namespace DarlingServer;
+    unsigned monitorFailures = 0, threadFailures = 0;
+    bool monitorSuccess = false, threadSuccess = false;
+    for (long point = 0; point < 32; ++point) {
+        auto process = std::make_shared<Process>();
+        bool succeeded = false;
+        failAfter = point;
+        try { process->preparePublication(); succeeded = true; }
+        catch (const std::bad_alloc&) { ++monitorFailures; }
+        failAfter = 0;
+        process->abortPublication();
+        failAfter = -1;
+        assert(process->deathCalls == 0);
+        assertNoMonitors();
+        assert(process->_pidfd.use_count() == 1);
+        if (succeeded) { monitorSuccess = true; break; }
+    }
+    // Actual epoll ADD failure rolls back vectors and releases both locks.
+    {
+        auto process = std::make_shared<Process>();
+        const int fd = process->_pidfd->fd();
+        close(fd);
+        bool failed = false;
+        try { process->preparePublication(); }
+        catch (const std::system_error& e) { failed = e.code().value() == EBADF; }
+        assert(failed);
+        process->_pidfd->release();
+        assertNoMonitors();
+    }
+    for (long point = 0; point < 16; ++point) {
+        auto process = std::make_shared<Process>();
+        auto thread = std::make_shared<Thread>(process, 12);
+        bool succeeded = false;
+        failAfter = point;
+        try { thread->preparePublication(); succeeded = true; }
+        catch (const std::bad_alloc&) { ++threadFailures; }
+        failAfter = 0;
+        thread->abortPublication();
+        thread.reset();
+        failAfter = -1;
+        assert(process->_threads.empty() && process->deathCalls == 0);
+        if (succeeded) { threadSuccess = true; break; }
+    }
+    // Replacement rollback restores the previous control block; old destruction
+    // cannot remove a subsequently committed replacement with the same NSID.
+    {
+        auto process = std::make_shared<Process>();
+        auto old = std::make_shared<Thread>(process, 7);
+        old->registerWithProcess();
+        auto replacement = std::make_shared<Thread>(process, 7);
+        replacement->preparePublication();
+        failAfter = 0;
+        replacement->abortPublication();
+        failAfter = -1;
+        assert(process->_threads.at(7).lock() == old);
+        replacement->preparePublication();
+        failAfter = 0;
+        replacement->commitPublication();
+        old.reset();
+        failAfter = -1;
+        assert(process->_threads.at(7).lock() == replacement);
+        failAfter = 0;
+        replacement.reset();
+        failAfter = -1;
+        assert(process->_threads.empty() && process->deathCalls == 0);
+    }
+    // Failed prepare on a dead process leaves no weak entry and no throwing
+    // destructor. No constructor/kernel-handles stand-in is exercised here.
+    {
+        auto process = std::make_shared<Process>();
+        process->_dead = true;
+        auto thread = std::make_shared<Thread>(process, 1);
+        bool failed = false;
+        try { thread->preparePublication(); }
+        catch (const std::system_error& e) { failed = e.code().value() == ESRCH; }
+        assert(failed && process->_threads.empty());
+        failAfter = 0;
+        thread.reset();
+        failAfter = -1;
+    }
+    // Real epoll readiness fetched before commit cannot promote/dispatch the
+    // monitor until commit releases the monitor registry lock.
+    {
+        auto process = std::make_shared<Process>();
+        process->preparePublication();
+        eventfd_write(process->_pidfd->fd(), 1);
+        std::atomic<bool> fetched{false}, dispatched{false};
+        auto& server = Server::sharedInstance();
+        std::thread eventLoop([&] {
+            epoll_event event = {};
+            assert(epoll_wait(server._epollFD, &event, 1, 1000) == 1);
+            fetched = true;
+            std::shared_ptr<Monitor> alive;
+            {
+                std::lock_guard lock(server._monitorsLock);
+                for (auto& monitor: server._monitors)
+                    if (monitor.get() == event.data.ptr) alive = monitor;
+            }
+            if (alive) server.dispatch(alive);
+            dispatched = true;
+        });
+        while (!fetched) std::this_thread::yield();
+        assert(!dispatched && process->deathCalls == 0);
+        failAfter = 0;
+        process->commitPublication();
+        failAfter = -1;
+        eventLoop.join();
+        assert(dispatched && process->deathCalls == 1);
+        assertNoMonitors();
+    }
+    // Abort after epoll has fetched an event retains the old address; callback
+    // promotion fails and no false guest death occurs under allocator exhaustion.
+    {
+        auto process = std::make_shared<Process>();
+        process->preparePublication();
+        eventfd_write(process->_pidfd->fd(), 1);
+        epoll_event event = {};
+        auto& server = Server::sharedInstance();
+        assert(epoll_wait(server._epollFD, &event, 1, 1000) == 1);
+        failAfter = 0;
+        process->abortPublication();
+        failAfter = -1;
+        assert(process->deathCalls == 0 && server._monitors.empty());
+        assert(server._monitorsWaitingToDie.size() == 1);
+        assert(server._monitorsWaitingToDie.front().get() == event.data.ptr);
+        assertNoMonitors();
+    }
+    // Remaining guarded/unguarded stack ownership is released without pool growth.
+    for (bool guarded: {false, true}) {
+        auto process = std::make_shared<Process>();
+        auto thread = std::make_shared<Thread>(process, 3);
+        const size_t page = getpagesize(), length = page * (guarded ? 3 : 1);
+        auto mapping = static_cast<char*>(mmap(nullptr, length, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
+        assert(mapping != MAP_FAILED);
+        thread->_stack = {mapping + (guarded ? page : 0), page, guarded};
+        failAfter = 0;
+        thread.reset();
+        failAfter = -1;
+        unsigned char residency;
+        errno = 0;
+        assert(mincore(mapping, page, &residency) == -1 && errno == ENOMEM);
+    }
+    assert(monitorSuccess && threadSuccess && monitorFailures > 0 && threadFailures > 0);
+    std::printf("monitor allocation failures=%u, thread attachment failures=%u; commit/abort, replacement, dead process, readiness races, no-allocation destruction passed\n", monitorFailures, threadFailures);
+}

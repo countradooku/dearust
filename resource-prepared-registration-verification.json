@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-20",
+  "base_commit": "715a6536ad01f5fa460668188e9b8ab609b4a06d",
+  "scope": "Owned prepared-registration derivative; resource-critical lifecycle prerequisite, no new Rust replacement/target retirement. Resources unfinished.",
+  "scoped_checks_passed": true,
+  "resource_complete": false,
+  "resource_ownership_activated": false,
+  "blocked_rpc_checks_retried": false,
+  "server": {
+    "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/prepared-registration/server3/linked/darlingserver",
+    "sha256": "2d207f47e71a2b9269f872222d731a45abc44bd13453522e43bb380363b82b65",
+    "build_report": "work/prepared-registration/server3/build.json",
+    "build_report_sha256": "b80de29f1f7cdb89b96c9f1a57b774c5f997fbb959b3b65a20382a2644a3708a"
+  },
+  "loader": {
+    "path": "work/resources-complete/loader12/mldr",
+    "sha256": "60046ab06fe63360b819233e64cec40612010c20392b322a7b21e8340ff85b78"
+  },
+  "kernel": {
+    "path": "work/resources-complete/matching-exec-fixed/libsystem_kernel-rust.dylib",
+    "sha256": "1914e257be34c877f7ab266378b195b538840b0881a4f6a0c93bf4a333242854"
+  },
+  "focused_checks": {
+    "registry": {
+      "path": "work/prepared-registration/registry-proof2/verification.json",
+      "sha256": "9e6d0a86e7d1b909e72d21e349bf9f09c14ecdf6efd2b370acd8245d98f46847",
+      "scope": "actual prepared Registry template; modeled Entry handles/monitor/thread-slot hooks and callbacks only; no dtape, RPC, guest, or runtime activation claim"
+    },
+    "publication": {
+      "path": "work/prepared-registration/publication-proof5/verification.json",
+      "sha256": "f37f3f525e49193c2ebb6676395fb8585af3f13624d0143d9a171c3364c01143",
+      "scope": "exact monitor/attachment publication methods with adapted surrounding state; no dtape handle, RPC, guest or resource-enforcement claim"
+    },
+    "cleanup_adapters": {
+      "path": "work/resources-complete/prepared-cleanup-proof7/verification.json",
+      "sha256": "44553491f88b3e012b69e64a00c7554660e3f4195da8a5697d726d27be80ab5c",
+      "scope": "ordinary native intrusive queue and actual preparation/release adapters; instrumented dtape handles and doWork; not inner-XNU-OOM or real-ucontext proof"
+    },
+    "death_barrier": {
+      "path": "work/prepared-registration/death-barrier-proof2/verification.json",
+      "sha256": "8f67c7477349e049f4b6a52589a1964e87866ea7153f203ac3cf47138a06bf23",
+      "scope": "exact transformed notifyDead/abort/worker release decision with controlled dying adapter; full published-death notification/OOM, dtape internals, RPC and guest gates remain separate"
+    },
+    "checkin_boundary": {
+      "path": "work/prepared-registration/checkin-proof3/verification.json",
+      "sha256": "2a3bb34e6075168fea4cf4e6e143739e65b5ba828a48a919be16ad54196c196a",
+      "scope": "exact registration boundary/error-slot/inbox dispatch with adapted identity/registration/Message state and ordinary native datagram replies; no adversarial RPC, live sender authentication, dtape or guest claim"
+    },
+    "actual_dtape": {
+      "path": "work/resources-complete/prepared-actual-cleanup-proof5/verification.json",
+      "sha256": "5aead4248ed6b6562bffd7030585ac9c95c3037fdce87d79cf99891d528ceb5f",
+      "scope": "Build/run a fresh native server derivative with actual dtape lifecycle hooks.\n\nNo guest bootstrap, RPC or received messages. Failure hooks throw after successful\nreal acquisitions/publication preparation; they do not simulate inner-XNU malloc\nfailure or establish allocation-exhaustion safety of all C teardown internals.\nPublic glibc allocation entry points are denied on the cleanup lane after startup;\nhidden direct libc-internal allocations are outside this interposition scope.\n"
+    },
+    "startup": {
+      "path": "work/prepared-registration/startup-proof4/verification.json",
+      "sha256": "c78ef5cdcb482dc30008c4de2a19e345387671f1663e5c7af426491e121d586a",
+      "scope": "Fresh owned native Server startup through dtape kernel initialization; prepared includes cleanup lane readiness. No RPC, guest workload, steady-state performance or acceptance claim. RSS includes loader/library residency; kernel microthread stacks may be largely unresident. Raw ru_maxrss may retain pre-exec inherited high water and is excluded from summaries."
+    }
+  },
+  "actual_dtape_result": {
+    "process_rollback_stages": 3,
+    "thread_rollback_stages": 6,
+    "task_context_disposals": 4,
+    "thread_context_disposals": 7,
+    "ordinary_successful_lifecycles": 1,
+    "descriptor_and_epoll_restored": true,
+    "saved_reserved_eid_checked": true,
+    "interposed_cleanup_allocations_denied": true,
+    "cleanup_allocation_attempts": 0,
+    "allocation_interposition_calibration_attempts": 10
+  },
+  "guests": {
+    "scope": "Same final candidate in both slots; no C/Rust differential comparison. Ordinary retained checks only. Private user/mount/PID namespaces, own prefixes; both bootstrap and guest kernels replaced only within owned namespace/overlay.",
+    "executions": 88,
+    "groups": [
+      {
+        "group": "guards",
+        "executions": 4,
+        "strict_passes": 4,
+        "report": "work/prepared-registration/guests3/guards/comparison.json",
+        "sha256": "0ca5032c20c40830092354491058468a2de7e7bc1b863960057c58ec4ba59e9f"
+      },
+      {
+        "group": "filesystem",
+        "executions": 2,
+        "strict_passes": 2,
+        "report": "work/prepared-registration/guests3/filesystem/comparison.json",
+        "sha256": "29135a670844da73072173d433bc21d5bc5d26ab12e7a1926e6b67f6411381fb"
+      },
+      {
+        "group": "existing",
+        "executions": 60,
+        "strict_passes": 60,
+        "report": "work/prepared-registration/guests3/existing/comparison.json",
+        "sha256": "f4539473f65d008e480d3de034d79e8e0154c774f6c8712fb18ba4d4eb4cf8f8"
+      },
+      {
+        "group": "apps",
+        "executions": 20,
+        "strict_passes": 20,
+        "report": "work/prepared-registration/guests3/apps/comparison.json",
+        "sha256": "2ca69c0f2378bf2abe6490dacdd43480d482787dc33cead4954b5d22c4a91dd5"
+      },
+      {
+        "group": "resources",
+        "executions": 2,
+        "strict_passes": 2,
+        "report": "work/prepared-registration/guests3/resources/comparison.json",
+        "sha256": "b9eaf9baaa4e1cd249920fd24907d4695421b9ccc221dbbd2441cdac0759b7b7"
+      }
+    ],
+    "run_command": "python3 tools/run_isolated_server.py --server work/prepared-registration/server3/linked/darlingserver --loader work/resources-complete/loader12/mldr --kernel work/resources-complete/matching-exec-fixed/libsystem_kernel-rust.dylib -- python3 work/prepared-registration/run_guests.py work/prepared-registration/guests3"
+  },
+  "checks": {
+    "cargo": {
+      "command": [
+        "cargo",
+        "xtask",
+        "check"
+      ],
+      "ordinary_tests": 202,
+      "compile_fail": 11,
+      "exit_code": 0,
+      "log": "work/prepared-registration/cargo-check.log",
+      "sha256": "f7f893cf1e09c3e577cbc545f179912899233f5f8517b83e31bb1e2bf3fd7780"
+    },
+    "python": {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools",
+        "-p",
+        "test_*.py"
+      ],
+      "tests": 88,
+      "exit_code": 0,
+      "log": "work/prepared-registration/python-tests-final.log",
+      "sha256": "100021f269835ca5d53b982d1f311072e92fe5817fcf36cd6318ac2123aa023b"
+    }
+  },
+  "preservation": {
+    "existing_dirty_candidates": 23,
+    "all_unchanged": true,
+    "sha256": {
+      "tools/relink_matching_kernel.py": "6a174a5e3e31549a8328d1c8a7987bc377efb296a9571b7046e7d71d265c723c",
+      "tools/relink_system_kernel.py": "1384f6e77699714cfa2b121e3b00b9db0b96f4e07d834a591d9432f99e44359b",
+      "tools/build_resource_exec_bridge.py": "82c50ecaf214be718517623361dafcb048bad762335cf9bf7874d1487df09f70",
+      "tools/build_resource_loader.py": "7da926806fdfbd6ea3ed3dbbc4013c983164894bb8f931400b869b8096cf96b6",
+      "tools/build_resource_server.py": "31a759aba961312576f603e2750603397c4a5a002a80e07cf50aa67978564ba2",
+      "tools/check_resource_checkin.py": "243c7dde11735b5a6e851b22dd3b720b6cf009c233e1c6da9154ff93896e8918",
+      "tools/check_resource_cpu.py": "f9463c2b75ba515720630e6aa9a4217401fa31e06f491462cc888f1b11a053d5",
+      "tools/check_resource_loader.py": "ef5273b516e43d1488860b5b712748aa5a352cdfb8f5685c7dcaafdcaae83308",
+      "tools/check_resource_policy.py": "bc24874fbde3ecba2c7d51d2f3f794a28d97d74a2de5fd5e1cbb4b69837f2124",
+      "tools/check_resource_threads.py": "dd1d6bd3b52bb25ec25e11f085e8a80f36cb1faca81c3262e130d72b69815316",
+      "tools/fixtures/resource-checkin-native.c.in": "faf24c67f29c4f16dffed916eac869653f3a429f20752e20d956b594be4e3d2c",
+      "tools/fixtures/resource-cpu-timer-native.cpp": "16c653cc0cdae3a0c1b061500c86a88c292671c96b4258bbd49a4f093bc536b4",
+      "tools/fixtures/resource-effect-wire.h": "8947907e2bd4f5019832ff9db46458edf96298044395502adb7a3ea319e5a5b1",
+      "tools/fixtures/resource-loader-native.c.in": "84a2ed0a310ac70556bb81f63d6a7358dabb3a353a67bdf538b4f7245c6f1dc7",
+      "tools/fixtures/resource-monitor-native.cpp.in": "7b006be86f796c4914d9df8e7f4f69fb55c51767cbe3e22b71d20ed6d823c8cb",
+      "tools/fixtures/resource-threads-native.cpp.in": "424ee9541d068024eb33a8db1dfe655f05961e06fa7e7a8f4b6571889ba87c13",
+      "tools/resource-cpu-timer.inc": "669b8a75962d816cdae617e19cde6dbcdeb9fb7249e6b16af42dba72d3ea9d26",
+      "tools/resource-policy-host.rs.in": "2ca051a6d9287f2cfbcefefa91fcffcc584358659b762da5a583c50eea27d34a",
+      "tools/resource-server-call.inc": "b978e0928223a4b02e0b4aa6783a2d065fa31731b3c4fb430f1b90a0033e8bc5",
+      "tools/resource-server-declarations.inc": "f490ff0f8c2e9bf0f448e941b3b3c63450b871304c6dd37c0a9beef7fd52875a",
+      "tools/resource-server-state.inc": "04b855ea22b683c1076917384d38d14e8d26c4a795ee23a644c9644884956f86",
+      "tools/resource-server-thread.inc": "7c205ff2ad103d550a284123e9126dfa2af9d0e5e517ee5de451e55d226d5f09",
+      "tools/test_resource_server.py": "b1720c1234a50efe152401b504881ff458d4f164cedbb28eb4146d6ecaf881a4"
+    },
+    "frozen_candidate_inputs": 70,
+    "frozen_candidate_inputs_unchanged": true,
+    "installed_runtime_writes": false,
+    "reference_writes": false
+  },
+  "startup": {
+    "scope": "Fresh owned native Server startup through dtape kernel initialization; prepared includes cleanup lane readiness. No RPC, guest workload, steady-state performance or acceptance claim. RSS includes loader/library residency; kernel microthread stacks may be largely unresident. Raw ru_maxrss may retain pre-exec inherited high water and is excluded from summaries.",
+    "samples_per_variant": 20,
+    "medians": {
+      "baseline": {
+        "wall_ns": 258679.0,
+        "cpu_us": 928.0,
+        "rss_kib": 5428.0,
+        "vmsize_kib": 82448.0,
+        "vmdata_kib": 9468.0,
+        "threads": 2.0,
+        "process_wall_ns": 1250423.0
+      },
+      "prepared": {
+        "wall_ns": 319063.0,
+        "cpu_us": 1053.5,
+        "rss_kib": 5420.0,
+        "vmsize_kib": 156192.0,
+        "vmdata_kib": 17796.0,
+        "threads": 3.0,
+        "process_wall_ns": 1327113.0
+      }
+    },
+    "accepted": false,
+    "open_gate": "Added one native thread, 60.384us median main initialization, 8328KiB VmData and 73744KiB VmSize. RSS residency noise is not a memory saving; steady-state/guest performance remains unmeasured."
+  },
+  "open_gates": [
+    "Inner dtape/XNU initialization OOM: unchecked VM/IPC/importance/turnstile allocations and panic paths; top-level hooks do not exhaust inner allocators.",
+    "Bootstrap handle acquisition precedes cleanup readiness; startup exhaustion remains fatal.",
+    "Full published-death OOM: resourceDying/kernelAsync, kqueue notifications and ordinary active-call scheduling allocate; throwing dying/resume can prevent barrier clear.",
+    "Final C destruction after outstanding references on other execution lanes; hidden libc allocation calls outside public ABI interposition.",
+    "Shutdown draining and whole-lifecycle concurrency/pressure beyond the controlled native fixtures and ordinary guests.",
+    "Measured startup/thread/virtual memory added cost; representative steady-state and guest performance acceptance remains open.",
+    "Client owner fork/exec/signal/cancellation; host hard-limit races and partial VM/wiring effects; credentials/NPROC authority.",
+    "Old kernels and queued message-lifetime identity; generic-copy CPU regressions.",
+    "Adversarial RPC validation externally blocked; not retried and not passed."
+  ],
+  "source_sha256": {
+    "tools/PREPARED-RESOURCE-REGISTRATION.txt": "b5146a83a0671403df055afb969b10e4f051fba8932fc6ec3fe71425bc3a2c59",
+    "tools/benchmark_prepared_resource_startup.py": "134901b7f29ee7cb2b4d3ca7853a2c3b1deba6b352ce0e4c462e7397d08c9de4",
+    "tools/build_prepared_resource_server.py": "decb68e5fb53308c3385680f17dc70e35080b757ae2a5a6fcf3eb9903bc63e9e",
+    "tools/check_prepared_resource_actual_cleanup.py": "c24d2d9219f821cd15e25b3757b8c448edaa7ebd73b04c5e55a19f2b121eb60a",
+    "tools/check_prepared_resource_checkin.py": "85b35ed93774d5903b17d9937f7cae50c97ba0ebc6e9cba825dbc8104bb84052",
+    "tools/check_prepared_resource_cleanup.py": "a66fd109d6d7572067cff3cd549232dfbfda5fb7b31550d91edf540aa35a0d96",
+    "tools/check_prepared_resource_death_barrier.py": "56ebdeae0930fd7736fe7a7a78066b4265db17d5597803f24ae1ddb08219b13e",
+    "tools/check_prepared_resource_publication.py": "c87b878ad0b9b8638fd0b57ee3a39f27d855977f1548233bdddbb060c6ea10d4",
+    "tools/check_prepared_resource_registry.py": "2e91b2db5b3816fb6b253132eadf622ddc39d610e400e76883dd44d79f864da9",
+    "tools/fixtures/prepared-resource-checkin-native.cpp.in": "45a21ad5eb5e0f72101b8702338036a80e51ae2f9e1c3ddcf24f86ac44d5686a",
+    "tools/fixtures/prepared-resource-death-barrier-native.cpp.in": "616776fa959a2cd4d1d80632ccd2756d1edffc3768b4039f7a6dbde1395269cb",
+    "tools/fixtures/prepared-resource-publication-native.cpp.in": "61d41bba451cf730588d98e678ee218a5406282d8343ec05a671c63f75f00e6e",
+    "tools/fixtures/prepared-resource-registry-native.cpp": "0565f49be103c17e5f7a1fc4c5290f4d9f8bb53aa5b5846e239e7954f903914a",
+    "tools/patch_prepared_resource_actual_cleanup.py": "80590f245b5c11aad9de2a7bf6ee512e93210c157f7360bbf1613898ea85fe35",
+    "tools/patch_prepared_resource_checkin.py": "e2b3298275fd665ec2b0a21b38702a575d71d4575ecbba4ad80a0a44daf7a3ab",
+    "tools/patch_prepared_resource_cleanup.py": "32d202247ecba83fe9e4b15b3b067fb5708a4416764a86bdf499ad534fdf1219",
+    "tools/patch_prepared_resource_death_barrier.py": "84856ac324dbc02a387a1ea50ca88b4aaa02137554928d3e2557acf35b6ce004",
+    "tools/patch_prepared_resource_publication.py": "ee40008965029b5e6344d776e2806fccbb74fbe82666cfb9c8276422135aa9ff",
+    "tools/patch_prepared_resource_registration.py": "8c053a7197bd82c529e8334e63ca9ca4e8d06c59b30b981f10a56e71db9b7f47",
+    "tools/prepared-resource-actual-allocations.inc": "b40e4dd8dc4bca1285cb1f2e457d53557d1ac33460f2693dd50eb514cb7c57e7",
+    "tools/prepared-resource-actual-cleanup.inc": "87e7b1a36b62c22b14a8cfd193f49e1ffa1993bbdd59b995d7aa48dff7440639",
+    "tools/prepared-resource-cleanup-fixture.cpp": "66db305f38db5f0d46a35542c3a973ba2af9a09006873ea02eb5dfcf4bd6c43b",
+    "tools/prepared-resource-cleanup-process.inc": "38cb64305a463023758a40d3fb64fcc776b96fb552d5423335d7dc32411a8096",
+    "tools/prepared-resource-cleanup-thread.inc": "d0ce1bbad08b685a21cd53ba478283933996099f4401f08d7852e3e2b194d442",
+    "tools/prepared-resource-cleanup.hpp": "b1205234940c661974d4d87b5fa92b36b1b47c320ddcefac81074e7483a9d444",
+    "tools/test_prepared_resource_builder.py": "26d870bed227614f6c1f70cbcf4629bd6f2626a187ce110541b678cd7fcb2343"
+  }
+}
