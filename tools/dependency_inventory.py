@@ -16,7 +16,7 @@ import posixpath
 import subprocess
 from urllib.parse import urlsplit, urlunsplit
 
-from inventory import UPSTREAM_COMMIT, category
+from inventory import UPSTREAM_COMMIT, capture_symlink_targets, category
 
 UPSTREAM_URL = "https://github.com/darlinghq/darling.git"
 
@@ -79,7 +79,7 @@ LOCKSET_PIN = "89751e64bc6c2082f7725061824ee0e33395b0de"
 
 
 def git(gitdir, *args):
-    return subprocess.check_output(["git", "--git-dir", str(gitdir), *args], stderr=subprocess.DEVNULL)
+    return subprocess.check_output(["git", "--no-replace-objects", "--git-dir", str(gitdir), *args], stderr=subprocess.DEVNULL)
 
 
 def resolve_url(parent, child):
@@ -117,6 +117,7 @@ def tree(gitdir, commit):
         result.append({"path": path.decode("utf-8"), "mode": mode,
                        "object_type": kind, "object_id": oid,
                        "size": None if size == "-" else int(size)})
+    capture_symlink_targets(gitdir, result, gitdir=True)
     return sorted(result, key=lambda item: item["path"])
 
 
@@ -188,8 +189,8 @@ class Inventory:
                         entry["scope"] = "Grouped no_std x86_64 process services in existing process-ids.o; native and actual matching guest verification in runtime-process-services-verification.json; public thread_selfid ABI retained."
                         entry["limitation"] = "i386 Rust replacement pending. Selected matching runtime checks do not establish arbitrary application compatibility or full migration completion; no target retirement."
                     if entry["path"] in {GETRLIMIT_SOURCE, SETRLIMIT_SOURCE, GETRUSAGE_SOURCE}:
-                        entry["scope"] = "Grouped no_std x86_64 resource limits/accounting in existing process-ids.o; original entry and rlimit_bsd_to_linux helper ABI retained, native/Darwin object and owned consumer links checked."
-                        entry["limitation"] = "UNFINISHED completion gates: full Darwin limit-domain strategy and representative native/guest correctness/performance validation; i386 replacement and target retirement remain pending."
+                        entry["scope"] = "Grouped no_std x86_64 resource limits/accounting in default process-ids.o; original entry and rlimit_bsd_to_linux helper ABI retained. Native/Darwin objects, owned consumer links and selected actual matching-runtime guest ABI/fault/pressure execution recorded in runtime-resources-verification.json and runtime-resource-copies-verification.json; historical reports retain their original scope."
+                        entry["limitation"] = "UNFINISHED completion gates: full Darwin limit-domain ownership, XNU physical enforcement and generic heap/cross-page CPU regressions; representative validation remains scoped to recorded workloads. Candidate ownership is not default production activation; i386 replacement and target retirement remain pending."
                     dep["migration_status"] = "partial"
                 if path == "src/external/darlingserver" and entry["path"] == LOCKSET_SOURCE:
                     if commit != LOCKSET_PIN:
@@ -197,9 +198,6 @@ class Inventory:
                     entry.update(status="partial", replacement="crates/dearust-lockset/src/lib.rs",
                                  scope="Rust lockset state and ownership with minimal XNU port/scheduler/lifecycle bridge; matching server relink",
                                  limitation="Original server and most duct-tape sources retained; clean pinned full-runtime integration and other architectures pending")
-                    if entry["path"] in {GETRLIMIT_SOURCE, SETRLIMIT_SOURCE, GETRUSAGE_SOURCE}:
-                        entry["scope"] = "Grouped no_std x86_64 resource limits/accounting in existing process-ids.o; original entry and rlimit_bsd_to_linux helper ABI retained, native/Darwin object and owned consumer links checked."
-                        entry["limitation"] = "UNFINISHED completion gates: full Darwin limit-domain strategy and representative native/guest correctness/performance validation; i386 replacement and target retirement remain pending."
                     dep["migration_status"] = "partial"
                 if entry["mode"] in {"100644", "100755"} and is_license(entry["path"]):
                     blob = git(gitdir, "cat-file", "blob", entry["object_id"])

@@ -86,16 +86,18 @@ required for these native checks. The object has no panic handler and does not
 introduce another Rust runtime into that combined C executable.
 
 `cargo xtask runtime --target x86_64-apple-darwin --destdir PATH` builds the graph
-in `runtime-artifacts.tsv`, staging `objects/libsimple.o`, `objects/futex.o`,
-`objects/errno.o`, and `lib/liblibsimple_darling.a` with a deterministic target
-manifest. Target `x86_64-unknown-linux-gnu` emits the same Darling ABI chain in
-native ELF for execution tests. Other targets are rejected explicitly.
+in `runtime-artifacts.tsv`, staging eight objects (`objects/libsimple.o`,
+`objects/futex.o`, `objects/errno.o`, `objects/process.o`, `objects/guarded.o`,
+`objects/fd.o`, `objects/process-ids.o`, `objects/paths.o`) and the archive
+`lib/liblibsimple_darling.a` with a deterministic target manifest. Target
+`x86_64-unknown-linux-gnu` emits the same Darling ABI chain in native ELF for
+execution tests. Other targets are rejected explicitly.
 
 Both modes use fresh Cargo output directories, rlib-only object emission with
 panic=abort, no default/std features and no bundled panic/allocator runtime.
 The archive contains just libsimple's runtime object. LLVM ar is required;
 LLVM objcopy applies native errno visibility. For Mach-O, a bounds-checked safe
-nlist edit sets only N_PEXT for the two defined errno globals; LLVM objcopy's
+nlist edit sets only N_PEXT for the declared private globals; LLVM objcopy's
 ELF visibility option does not currently apply that Mach-O flag. Tests verify
 actual object formats, exact exports/imports, private extern flags, archive
 members and byte-identical repeat staging. The Mach-O test is explicitly ignored
@@ -107,19 +109,32 @@ not an i386/fat target or a complete runtime install. Actual system_kernel consu
 integration using the original link graph is described in tools/DARWIN-RUNTIME.txt.
 
 
-The grouped `dearust-process` identifiers feature now also provides entropy and
-thread identity through the existing `process-ids.o` graph entry. Runtime tests
-assert nine definitions, eight private symbols, public `sys_thread_selfid`, and
-only the `linux_syscall` import; native staging executes `services-native.c`.
-The separate queries-only `process.o` and production integration boundaries stay
-as documented in BUILDING.txt/RUNTIME-PROCESS-SERVICES.txt.
+The grouped `dearust-process` identifiers/resources features provide thirteen C
+globals through `process-ids.o`: twelve private and public `sys_thread_selfid`.
+The queries-only `process.o` stays separate and has matching-runtime integration
+requirements. The resource ABI uses the current host-backed conversion, including
+explicit EOVERFLOW containment. The safe `resource_policy` and `resource_view`
+modules are separately tested foundations; authoritative ownership and XNU policy
+are not activated.
+See BUILDING.txt, RUNTIME-PROCESS-SERVICES.txt and RUNTIME-RESOURCE-COPIES.txt.
 
+The path artifact explicitly selects `runtime` and contains 45 private globals,
+including four filesystem-statistics ABI entries and the strong guarded-copy
+boundaries. Runtime integration needs the strong signal/RPC/fork/vchroot/TLS
+bridges and the paired filesystem RPC adapter. The separate `host-filesystem`
+feature is Linux-only and builds the shared backend for the paired server.
+It is not a Mach-O artifact feature. See RUNTIME-FILESYSTEM.txt and
+crates/dearust-path/SAFETY-MEMORY.txt.
 
-The existing path artifact now explicitly selects the `runtime` feature and
-contains39 private globals, including four filesystem-statistics ABI entries.
-The native ABI suite executes filesystem-native.c and deterministic
-filesystem-fallback-native.c; the latter supplies its own kernel-copy readiness
-boundary. Runtime imports additionally require the paired filesystem RPC
-adapter. The separate `host-filesystem` feature is Linux-only and builds the
-shared parser/backend for the paired server; it is not a Mach-O artifact feature.
-See RUNTIME-FILESYSTEM.txt for integration, pressure tests and measurements.
+Staging proves compilation/publication only. Consumer linking, runtime execution,
+architecture/configuration coverage and activation are separate ledger fields in
+migration-targets.json schema v2 and migration-reconciliation.json. Original i386
+slices retained by a relinker are not Rust ports. Owner server/loader/exec-bridge
+candidates under tools/ and work/ are outside this default manifest and remain
+unfinished; their ordinary guest results cannot establish production activation.
+
+The default validation committed as 7975b5c on 2026-10-18 recorded 202 ordinary Rust
+tests, 11 compile-fail checks and 35 Python tests. The identifiable report is
+runtime-resource-copies-verification.json and its hashed default-validation
+summary. This documents that historical run; it does not assert a fresh run or
+completion of unsigned ownership, XNU enforcement or generic-copy CPU gates.

@@ -24,12 +24,67 @@ REPLACEMENTS = {
     "src/libsimple/src/lock.c": "crates/dearust-libsimple/src/lib.rs",
 }
 PARTIAL_REPLACEMENTS = {"src/libelfloader/wrapgen/wrapgen.cpp", "src/libsimple/src/lock.c"}
-SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".s", ".asm", ".rs"}
+# Suffix hints only: these include tests and generated code, and do not prove
+# hand-written implementation, production participation, or migration effort.
+SOURCE_SUFFIXES = {
+    ".c", ".cc", ".cp", ".cpp", ".cxx", ".m", ".mm", ".s", ".asm", ".rs",
+    ".swift", ".java", ".f", ".for", ".f77", ".f90", ".f95", ".f03", ".f08",
+    ".l", ".lex", ".y", ".yacc",
+}
 HEADER_SUFFIXES = {".h", ".hh", ".hpp", ".hxx", ".inc", ".defs"}
 
 
 def git(repo, *args):
-    return subprocess.check_output(["git", "-C", str(repo), *args])
+    return subprocess.check_output(["git", "--no-replace-objects", "-C", str(repo), *args])
+
+
+def committed_blobs(repo, object_ids, *, gitdir=False):
+    """Read exact blobs in one Git batch, without opening any working paths.
+
+    Returned bytes include no batch framing. Callers decoding symlink contents
+    use UTF-8 with surrogateescape so arbitrary committed bytes survive JSON
+    serialization with ensure_ascii=True and encode(..., 'surrogateescape').
+    """
+    ids = sorted(set(object_ids))
+    if not ids:
+        return {}
+    if any(len(oid) not in {40, 64} or any(c not in "0123456789abcdef" for c in oid)
+           for oid in ids):
+        raise ValueError("expected full Git object IDs for committed blob batch")
+    command = ["git", "--no-replace-objects", "--git-dir" if gitdir else "-C",
+               str(repo), "cat-file", "--batch"]
+    output = subprocess.check_output(command, input=("\n".join(ids) + "\n").encode("ascii"))
+    position = 0
+    blobs = {}
+    for oid in ids:
+        end = output.find(b"\n", position)
+        if end == -1:
+            raise ValueError("truncated committed blob batch header")
+        header = output[position:end].split()
+        if len(header) != 3 or header[:2] != [oid.encode("ascii"), b"blob"]:
+            raise ValueError("missing or non-blob committed object: " + oid)
+        try:
+            size = int(header[2])
+        except ValueError as exc:
+            raise ValueError("invalid committed blob batch size") from exc
+        position = end + 1
+        end = position + size
+        if size < 0 or end >= len(output) or output[end:end + 1] != b"\n":
+            raise ValueError("truncated committed blob batch content")
+        blobs[oid] = output[position:end]
+        position = end + 1
+    if position != len(output):
+        raise ValueError("unexpected trailing committed blob batch content")
+    return blobs
+
+
+def capture_symlink_targets(repo, entries, *, gitdir=False):
+    """Add literal committed link content; never resolve or follow a target."""
+    blobs = committed_blobs(repo, (e["object_id"] for e in entries if e["mode"] == "120000"),
+                            gitdir=gitdir)
+    for entry in entries:
+        if entry["mode"] == "120000":
+            entry["symlink_target"] = blobs[entry["object_id"]].decode("utf-8", "surrogateescape")
 
 
 def component(path):
@@ -60,9 +115,11 @@ def category(path, mode):
 
 
 def inventory(repo):
-    actual = git(repo, "rev-parse", "HEAD").decode().strip()
-    if actual != UPSTREAM_COMMIT:
-        raise ValueError(f"expected upstream HEAD {UPSTREAM_COMMIT}, found {actual}")
+    # A reference checkout may carry valuable candidate work or another HEAD.
+    # Only the exact committed pin supplies inventory input.
+    kind = git(repo, "cat-file", "-t", UPSTREAM_COMMIT).decode().strip()
+    if kind != "commit":
+        raise ValueError(f"expected upstream pin {UPSTREAM_COMMIT} to name a commit, found {kind}")
     config = configparser.RawConfigParser()
     config.read_string(git(repo, "show", f"{UPSTREAM_COMMIT}:.gitmodules").decode())
     modules = {
@@ -94,11 +151,12 @@ def inventory(repo):
                 entry["limitation"] = "ELF64 parsing/generation ported; safe library lookup covers explicit paths, LD_LIBRARY_PATH, ldconfig cache and common Linux directories, not arbitrary caller RPATH/RUNPATH or loader audit/hardware policy"
             if path == "src/libsimple/src/lock.c":
                 entry["scope"] = "Native Linux x86_64 synchronization C ABI with safe atomic core and documented unavoidable FFI/futex unsafe boundary"
-                entry["limitation"] = "Linux native and Darling x86_64 backends verified, including Mach-O system_kernel consumer link; i386/other architectures and actual Darwin startup remain unported/unverified; no target retirement"
+                entry["limitation"] = "Linux native and Darling x86_64 backends verified, including Mach-O system_kernel consumer link and selected matching-runtime guest startup/execution; i386/other Rust architectures and clean pinned-runtime startup remain unported/unverified; no target retirement"
         if kind == "submodule":
             entry["upstream_url"] = modules.get(path, "")
             entry["scope"] = "pinned gitlink only; contents and nested dependencies need separate inventory"
         entries.append(entry)
+    capture_symlink_targets(repo, entries)
     entries.sort(key=lambda entry: entry["path"])
     seen = {entry["path"] for entry in entries}
     if len(seen) != len(entries):
@@ -130,7 +188,8 @@ def inventory(repo):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("upstream", type=Path, help="local checkout at the required upstream commit")
+    parser.add_argument("upstream", type=Path,
+                        help="local repository containing the exact upstream commit; HEAD and working files are ignored")
     parser.add_argument("--output", type=Path, default=Path("migration-inventory.json"))
     args = parser.parse_args()
     try:

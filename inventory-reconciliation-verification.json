@@ -1,0 +1,129 @@
+{
+  "accounting_checks_passed": true,
+  "base_commit": "6245da168dd2ca75c668d2d7cf2d58f14dbe2f51",
+  "checks": {
+    "actual_union_assertions": true,
+    "cargo": {
+      "command": [
+        "cargo",
+        "xtask",
+        "check"
+      ],
+      "compile_fail": 11,
+      "exit_code": 0,
+      "log": "work/inventory-reconciliation/cargo-xtask-check.log",
+      "ordinary_tests": 202,
+      "scope": "Formatting, strict Clippy, all workspace ordinary tests/doctests and staged native integration. Explicit ignored runtime/differential gates retain prior historical runs; Rust implementation unchanged.",
+      "sha256": "da35d2ba1e59182cbf8ae96cd2b048db29d1774ac4496ceaa34870c463395cb7"
+    },
+    "deterministic_reproduction": {
+      "dependency-inventory.json": true,
+      "migration-gap-matrix.txt": true,
+      "migration-inventory.json": true,
+      "migration-reconciliation.json": true,
+      "migration-targets.json": true,
+      "upstream-cmake-graph.json": true
+    },
+    "python": {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "log": "work/inventory-reconciliation/python-tests.log",
+      "sha256": "6152abd62315b61a4f9acc613b2a4a9016c3348b45555adec6fd9f6294d348a6",
+      "tests": 81
+    }
+  },
+  "counts": {
+    "candidate_artifacts": 1,
+    "legacy_targets_retired": 0,
+    "manifest_artifacts": 17,
+    "observed_default_targets": 1629,
+    "optional_artifact_bindings": 1,
+    "pending_targets": 1629,
+    "production_active_targets": 0,
+    "source_target_participations": 110,
+    "unique_artifacts": 20,
+    "unique_ported_upstream_sources": 59,
+    "unique_sources_participating_in_captured_graph": 58,
+    "unique_sources_with_rust_work": 59,
+    "unretired_targets": 1629,
+    "whole_target_replacements_verified": 0,
+    "with_cargo_artifact_slice": 11,
+    "with_compiled_unlinked_scopes": 3,
+    "with_consumer_link_evidence": 9,
+    "with_execution_evidence": 9,
+    "with_rust_work": 12,
+    "with_source_port_participation": 10
+  },
+  "date": "2026-10-20",
+  "file_evidence_status": {
+    "changed": 3,
+    "hash-matched": 202
+  },
+  "full_migration_complete": false,
+  "historical_evidence_status": {
+    "hash-matched": 67
+  },
+  "next_action": "Resource-critical prepared EID/Process/Thread/monitor/Registry publication and allocation-free kernel cleanup per registration-oom-audit; build only in fresh owned candidate outputs, never activate unfinished ownership.",
+  "not_run": [
+    "No new guest/application/performance run for this accounting change.",
+    "Previously blocked adversarial RPC validation remains unverified; not retried.",
+    "Optional configurations/custom-command/API closure incomplete."
+  ],
+  "outputs_sha256": {
+    "migration-gap-matrix.txt": "21d86cb6b4610042e465f54159126d5fdfeb6ff1337e0ee3ea0a480a8d674c2b",
+    "migration-ledger.json": "52544463429205b5e9e3aea957a84efcb9953993ca8b19a51b6f667bf6fb29c7",
+    "migration-reconciliation.json": "02171a2152136810ff816a818006c3d1d6b797cf3b387b410063f166cd43460b",
+    "migration-targets.json": "e3a8f0cca8df02643b9865e21091d0d5f28e8cbef874a78b88ecc7c3c9b3519a",
+    "tools/MIGRATION-PACKAGES.txt": "6b1e1ee423884e585f1529e9fc08dd48092431fa817df4028139d7ab5abbff18",
+    "tools/migration-packages.json": "5417236fdfc1738c6ecdaeb04ff87a087e7c60b1956a6de49b42c5f5430c6190"
+  },
+  "package00_complete": false,
+  "preserved_candidate_files": {
+    "tools/build_resource_exec_bridge.py": true,
+    "tools/build_resource_loader.py": true,
+    "tools/build_resource_server.py": true,
+    "tools/check_resource_checkin.py": true,
+    "tools/check_resource_cpu.py": true,
+    "tools/check_resource_loader.py": true,
+    "tools/check_resource_policy.py": true,
+    "tools/check_resource_threads.py": true,
+    "tools/fixtures/resource-checkin-native.c.in": true,
+    "tools/fixtures/resource-cpu-timer-native.cpp": true,
+    "tools/fixtures/resource-effect-wire.h": true,
+    "tools/fixtures/resource-loader-native.c.in": true,
+    "tools/fixtures/resource-monitor-native.cpp.in": true,
+    "tools/fixtures/resource-threads-native.cpp.in": true,
+    "tools/relink_matching_kernel.py": true,
+    "tools/relink_system_kernel.py": true,
+    "tools/resource-cpu-timer.inc": true,
+    "tools/resource-policy-host.rs.in": true,
+    "tools/resource-server-call.inc": true,
+    "tools/resource-server-declarations.inc": true,
+    "tools/resource-server-state.inc": true,
+    "tools/resource-server-thread.inc": true,
+    "tools/test_resource_server.py": true
+  },
+  "remaining_scope": "Optional/custom-command configurations and full per-API/ABI architecture/consumer ownership remain unresolved; resource gate remains unfinished.",
+  "scope": "Executable inventory/schema reconciliation only. No new runtime/guest/performance validation or owner activation.",
+  "source_sha256": {
+    "tools/dependency_inventory.py": "89d21785458e3e8f3da67e842ce9144d09dc23c5db6f78ed75f01fb904a99de8",
+    "tools/import_target_v1.py": "58ea28797570fce502268066b68c76753f33b461e7a8bd03fd3d03f20378f7cb",
+    "tools/inventory.py": "643bf089d5a8455ca8010cb06515f0166ff7d3d41486c1ad9312a16320d8bb17",
+    "tools/target_inventory.py": "0db5b20841711375eff9e88cb4638491c60ea9525e770468382f88f9aa03c40a",
+    "tools/test_inventory_categories.py": "51a312973c2b515c8e75b5b44dae1039042c34080fa7f2a2a3c73f7d3b562f14",
+    "tools/test_inventory_resolution.py": "362fd25194d4a7c0645f1914ccf96ab31b83158c771acaeee0ac32f2b513aac4",
+    "tools/test_inventory_symlinks.py": "ec48818ba8352fe60d18a311ab10226208bdd9a7dc108afa44a801b8dcba1bd9",
+    "tools/test_target_inventory.py": "e14f05f546307d7eac0d75f2f664504ab6a58eb00cb200a776ef382c4b937fb9",
+    "tools/test_target_inventory_stages.py": "8e88111bf14d5eed7360dc8dafbbec0a5605866694f145cb8f5d18d3c360d09d"
+  }
+}

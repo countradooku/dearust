@@ -1,0 +1,171 @@
+Reconciled migration ledger: schema v2
+======================================
+
+Scope and source of truth
+--------------------------
+This is executable accounting, not a runtime implementation completion gate.
+migration-ledger.json contains qualified upstream source/blob/commit identities,
+Rust implementation/artifact mappings, consumer bindings with individual stages,
+architecture/configuration scope, open semantic/performance gates, and frozen
+historical evidence references. It records candidate work separately. Source
+ports are annotated input records, not generated from crate/test/doc counts.
+
+Requires Python3.11 or later (standard-library tomllib).
+The generator reads migration-inventory.json, dependency-inventory.json,
+upstream-cmake-graph.json, both xtask TSV manifests, Cargo manifests, the ledger,
+and the explicitly named evidence files. It never consults reference working
+files, the current reference HEAD, network availability or the clock. Evidence
+availability and hashes are explicit inputs, so removing evidence changes the
+availability index; it never silently transfers a claim to new bytes.
+
+Regenerate from the repository root:
+  python3 tools/target_inventory.py
+
+Outputs:
+  migration-targets.json          every captured default target, including pending
+  migration-reconciliation.json   full participation/input/evidence/gap index
+  migration-gap-matrix.txt        readable summary with unknown/unfinished rows
+
+Inspect summary/count fields, not full large inventory JSON in terminal logs.
+The source inventories retain all committed leaves and exact pins, not just code.
+The captured graph is one default configuration. Optional configurations, custom
+command recipes, generated/shared inputs and semantic source classification need
+further work; they are not implicitly waived.
+
+States and cardinalities
+-------------------------
+A target's source_ports are graph participation associations. They establish that
+Rust source coverage exists for that upstream input; they do not claim its Rust
+artifact is linked or executed in every target sharing the source. For example,
+emulation_dyld shares51 input slices with emulation while only same-source object
+compilation is evidenced; its dyld/static consumer link remains unverified.
+
+each artifact_binding records compiled, linked, executed, activation and
+production_active independently, with exact scope, evidence references and
+retained original architecture slices. compiled without linked records staged
+or tested source with an unverified actual consumer. linked never implies
+executed. default staging never implies installed production activation. The
+integration links are mixed legacy/Rust code; their surrounding original runtime,
+bridges, frameworks and matching-local protocol dependencies remain essential.
+The libsimple object is an archive member, not an additional direct link input.
+
+whole_target_replacements can record verified complete scope before legacy
+build removal; retirement additionally requires legacy_build_removed. Both
+require complete configured consumer/architecture/semantic/performance gates,
+active verified consumer bindings, no mapped source gates, no remaining unknown
+or unported compiled implementation inputs and no original slices retained.
+These structural checks do not establish the truth of an authored verification
+record: reviewers still inspect its supported scope and independent evidence.
+All actual targets in this reconciliation remain incomplete and unretired.
+
+with_cargo_artifact_slice is now the union of default targets with explicit
+artifact bindings. with_source_port_participation is a different union.
+with_rust_work is their union, including source-only targets. Neither is the
+number of complete replacements. unique_sources_with_rust_work deduplicates
+qualified pinned upstream sources; source_target_participations retains every
+consumer association once even if that target lists the source repeatedly.
+unique_ported_upstream_sources is a compatibility spelling for that same partial
+source count, not a claim of complete ports. unique_artifacts counts catalog
+identities including supplemental/candidate outputs, never implementation units;
+manifest_artifacts and candidate_artifacts distinguish those inputs.
+pending_targets counts whole replacements not yet verified; unretired_targets
+also retains any future verified replacement whose legacy build still exists.
+No count is an implementation-effort percentage.
+
+Graph has_compile_group marks declared compilation participation, not an actual
+compiler execution. Committed relative symlink blobs resolve aliases with exact
+trace provenance; absolute SDK/host links, escapes, cycles and missing targets
+remain explicit unknowns. No host filesystem symlink is followed.
+
+Source category labels are suffix hints. Tests, generated material, SDK/header/
+symlink/data leaves require separate preservation/review; they are not additional
+Rust implementation replacements. Host filesystem support reuses the existing
+path crate and does not add another upstream source replacement. C bridge repair,
+new tests, crate consolidation and ownership foundation modules likewise cannot
+increase the upstream source count unless a genuine mapped source changes.
+
+Evidence and candidates
+------------------------
+evidence_index preserves original report hashes, scope and dates if the original
+report records them. Missing dates remain unknown; documentation edits never date
+a report as a new run. Hash matches mean the historical record is unchanged.
+Optional JSON-pointer assertions reject contradictory selected facts; they do not
+upgrade a scoped report to universal correctness. Missing/stale/contradictory
+records remain indexed and exclude bound verification aggregates, while source
+work and historical claimed stages remain visible.
+
+file_evidence_index compares recorded object/archive/link-map/generated-source
+and source hashes with currently available bytes. Source drift in an old report
+does not rewrite or erase that historical execution. The three changed relinker/
+namespace tools are visible there. input_index separately checks captured Cargo
+and implementation source inputs. generator_inputs_sha256 identifies exact graph,
+leaf-inventory, ledger, manifest and generator bytes for this regeneration.
+execution_observations retains historical per-variant kernel/staged hashes and
+mapped inode observations; current execution is never inferred from a former PID
+or a deleted prefix pathname. Raw reports remain the authority for setup, actual
+mapping verification, output normalization and per-variant outcomes.
+
+Host utility links/execution use their recorded host scope. libsimple host staging
+only proves the native C harness, not replacement of the full server consumer.
+Original i386 bytes are preserved in pinned fat links, not ported. Matching-local
+guest execution is distinct from clean-pinned standalone runtime boot.
+
+The frozen resource candidate has ordinary startup/lifecycle evidence. Its two
+harness slots use the SAME candidate; they are not original-C/Rust comparisons.
+resource_policy/resource_view are compiled/tested foundations, not activated
+client unsigned ownership. Candidate server/loader/exec support stays outside
+default runtime selection. Keep full resource enforcement/credential/VM/OOM/
+fork/exec/cancellation/old-kernel/message-identity and generic-copy performance
+gates open. Previously blocked adversarial RPC verification stays unverified;
+do not retry, rephrase, move or bypass it.
+
+Explicit v1 migration
+----------------------
+v2 changes count semantics and intentionally removes the false implication that
+seven direct artifact entries meant only seven targets contain Rust work. Identity
+fields name/id/type/graph_reference and legacy_target_retired remain available.
+status now describes whole replacement. Old specialized status strings and prose
+are preserved in the historical compatibility_v1 snapshot, never inferred as new
+stage booleans. v1 additional_optional_artifacts and source/consumer annotations
+are retained there with the original input SHA256 and upstream pin.
+
+To import another exact v1 snapshot without modifying it:
+  python3 tools/import_target_v1.py /path/to/v1.json /owned/v1-annotations.json
+
+Review that snapshot into compatibility_v1; explicitly author/verify source and
+artifact bindings against exact manifests and evidence. The importer does not
+invent execution, activation or retirement from old status prose. Tests cover
+scope/status/optional-artifact retention, input preservation, deterministic bytes,
+wrong versions, duplicate IDs and count disagreement. Historical verification
+JSON files are never regenerated or rewritten by this migration.
+
+Reproduce inventory and graph inputs separately:
+  python3 tools/inventory.py /path/to/pinned-upstream --output /owned/super.json
+  python3 tools/dependency_inventory.py /path/to/upstream \
+    --object-cache /path/to/exact-object-cache --output /owned/dependencies.json
+  python3 tools/cmake_graph.py /path/to/captured-build --output /owned/graph.json
+
+Use exact committed objects for source behavior; do not execute or copy locally
+modified reference working files as an original oracle. Graph capture reads its
+specified File API replies; unchanged replies must regenerate identically. Keep
+all160 dependency trees including nested gitlinks in the input snapshot.
+
+Validation and continuation
+----------------------------
+  python3 -m unittest discover -s tools -p 'test_*.py' -v
+  cargo xtask check
+
+Fixture tests cover unions/sharing, optional absence, source-only work, original
+slice retention, candidates, stale/contradictory records, missing/duplicate inputs,
+manifest features, exact pins and honest retirement criteria. Repeated actual
+regeneration compares output bytes and verifies preservation of original dirty
+candidate files. New checks validate accounting/staging; prior guest/performance
+runs retain their original scope. See inventory-reconciliation-verification.json.
+
+Package scopes and missing work: tools/migration-packages.json and
+ tools/MIGRATION-PACKAGES.txt. Every package01-09 remains unfinished. Full per-API/
+ABI/configuration ownership and optional/custom-command closure remain explicit
+unknowns. Continue resource-critical prepared registration/rollback and no-fail
+kernel-context cleanup before unrelated package expansion. The candidate server
+must reserve its eternal identity before dtape construction; its OOM audit and
+handoffs retain the remaining acquisition/publication/callback/death defects.

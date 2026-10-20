@@ -27,9 +27,10 @@ Relative URLs are resolved from the committed parent's repository URL using Git
 submodule rules. A nested dependency can be fetched after its parent in the same
 command by supplying parent first, then nested --fetch-path arguments.
 
-The committed dependency-inventory.json is an incremental snapshot, not a claim
-that all external sources are now inventoried or migrated. To reproduce its fetched
-set from an empty cache, take its dependencies with availability "inventoried",
+The committed dependency-inventory.json records all 160 pinned dependency trees
+in the captured available-object set. Expanding these trees inventories their
+committed leaves; it does not establish implementation coverage or migration.
+To reproduce its fetched set from an empty cache, take its dependencies with availability "inventoried",
 sort their paths by depth then name, and pass each as --fetch-path. cctools-port
 was already locally initialized for the recorded run; it can also be fetched at
 its recorded commit using the same option. New local object availability may
@@ -40,10 +41,22 @@ Each available tree includes every committed leaf with Git mode, type, object ID
 size and migration category/status. A dependency's path plus its entry path gives
 the qualified source path. Nested gitlinks remain entries in their parent tree;
 their full contents are separately inventoried when available. Counts therefore
-include parent gitlinks as well as expanded child entries. Symlinks are preserved
-as mode 120000 blobs, and never followed. Two exact-pin xnu errno/futex sources are partial with verified native execution
-and actual x86_64 system_kernel linkage; all other 265,801 entries remain pending. The original dependency and Darwin
-link/consumer gates remain incomplete.
+include parent gitlinks as well as expanded child entries. Symlinks are preserved as mode120000 blobs with literal committed
+symlink_target content. Inventory never follows them; reconciliation resolves
+relative aliases within the pinned leaf namespace and retains hop provenance. The resource-era snapshot records 52
+partial leaves and 265751 pending leaves of 265803; read the generated summary
+for regenerated counts. Partial-source records include later process, guarded,
+descriptor, pathname and resource work as well as errno/futex. One upstream source
+can contribute to several targets; deduplicate source coverage while retaining
+each target relationship. Source categories are suffix heuristics and many leaves
+are headers, generated material, SDK/data entries or symlinks. These counts do
+not measure implementation effort.
+
+Consumer link, actual execution and whole-target replacement remain distinct
+from a partial leaf status. See migration-targets.json schema v2 and
+migration-reconciliation.json for artifact relationships and current evidence
+scope. Historical verification reports keep their original hashes, test counts
+and dates; newer evidence does not rewrite an older source pin or result.
 
 License filename candidates include regular committed LICENSE, LICENCE, COPYING,
 COPYRIGHT, NOTICE and APSL prefixes, with Git blob IDs, byte sizes and SHA256 hashes

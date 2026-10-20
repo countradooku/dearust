@@ -173,6 +173,24 @@ a separate C stress harness links the staged archive. This does NOT replace all
 upstream generation, cross-linking, architecture or install rules. The optional
 upstream-rust-tools.patch remains an EARLIER THREE-tool adapter snapshot only.
 
+## Current accounting guidance (2026-10-20)
+
+Use migration-ledger.json and tools/target_inventory.py to regenerate
+migration-targets.json schema v2, migration-reconciliation.json and the readable
+migration-gap-matrix.txt. Source participation, staged artifacts, consumer links,
+actual execution, production activation, whole replacement and legacy retirement
+are separate. Historical seven-target totals below omit source-only work and
+mixed consumers; never use them as current Rust coverage or effort percentages.
+Historical verification records remain immutable, with source drift and evidence
+availability indexed separately. tools/MIGRATION-LEDGER.txt explains the tested
+v1 import and exact committed symlink provenance. All160 dependency pins remain.
+
+Package definitions/missing work/dependencies are in tools/migration-packages.json
+and tools/MIGRATION-PACKAGES.txt. Resources and every post-resource package remain
+unfinished; preserve the dirty owner/server/loader/exec candidates and blocked
+adversarial validation. The following scope/test descriptions are historical;
+newer scoped evidence and the current ledger supersede their aggregate counts.
+
 ## Scope tracking
 
 - Superproject: 27,274 entries; 5 implemented, 2 partial, 27,267 pending.

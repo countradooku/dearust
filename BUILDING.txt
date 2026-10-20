@@ -45,14 +45,24 @@ Ordinary Cargo commands also work without xtask:
     cargo build --offline --locked --release --package dearust
     cargo test --offline --locked --workspace
 
-This workspace currently migrates selected host utilities. It is not yet a
-complete Darling runtime. Its three Rust runtime slices have launched selected
-macOS command-line programs inside an existing locally modified installation. Cargo is the
-primary build system for the migrated Rust code; the existence of this
-workspace does not replace the remaining upstream build graph.
+This workspace builds selected host utilities and partial x86_64 runtime
+subsystems. Recorded matching-runtime executions include command-line and GUI
+workloads, but no standalone complete Darling runtime is built here. Cargo
+staging compiles declared artifacts; relinking and execution require the matching
+legacy inputs, strong bridges and paired server documented below. The workspace
+does not replace the remaining upstream build graph.
+
+Current accounting is generated in migration-targets.json schema v2 and
+migration-reconciliation.json. Source coverage, compiled artifacts, verified
+consumer links, actual executions, default artifact selection and retirement are
+separate facts. The default validation committed as 7975b5c on 2026-10-18 recorded
+202 ordinary Rust tests, 11 compile-fail checks and 35 Python tests; see
+runtime-resource-copies-verification.json and its hashed raw summary. These
+counts describe that run, not a rerun at the current checkout. No owner candidate
+was selected in that default validation.
 
 Functioning executables: elfdep, getuuid, bsdln, print_wrapped_elf,
-darling-coredump and wrapgen (partial loader-name resolution; see README.txt). No libbsd
+darling-coredump and wrapgen (partial loader-name resolution; see README.md). No libbsd
 dependency is needed for the Rust bsdln. Mach-O metadata supports 32/64-bit thin
 and fat containers in either byte order, including FAT64. UUID text and ELF
 dependency stdout/exit semantics match the supported valid upstream fixtures.
@@ -195,8 +205,13 @@ require an Apple SDK or a target linker just to emit the Rust runtime objects:
     cargo xtask runtime --target x86_64-unknown-linux-gnu --destdir /path/to/native
     cargo test -p xtask --test runtime --offline --locked -- --ignored
 
-The runtime graph in xtask/runtime-artifacts.tsv declares libsimple's Darling
-backend, both futex adapters, errno conversion and the thin libsimple archive.
+The runtime graph in xtask/runtime-artifacts.tsv declares nine outputs: eight
+objects (libsimple, futex, errno, process queries, guarded table, descriptor
+operations, process identifiers/resources and paths) and a thin libsimple archive.
+process.o selects queries; process-ids.o selects identifiers,resources; paths.o
+selects runtime. Resource policy/view modules supply tested foundations, while
+the exported resource ABI remains host-backed with EOVERFLOW containment.
+Staging neither activates owner enforcement nor installs a runtime.
 Every object disables std, LTO and final panic ownership. Mach-O errno globals
 retain private-extern visibility; the futex and 14 lock C exports match upstream.
 The native runtime command uses the Darling ABI too, not libsimple's libc shim.
@@ -227,8 +242,8 @@ system-kernel-integration.json records this pinned-baseline link gate; installed
 runtime execution is a separate check described below.
 
 
-Installed-runtime application checks
-------------------------------------
+Historical initial installed-runtime application checks
+-------------------------------------------------------
 Actual x86_64 execution uses the locally modified source/build at
 /home/radud/darling-lol/build/darling-src. Its existing server and kernel build
 artifacts match the installed binaries byte-for-byte. Relinking the same original
@@ -257,6 +272,13 @@ queries, and an extra timestamped cfbridge NSLog line despite a zero exit.
 No status/exit regression was observed between the matching variants in this suite.
 The record includes hashes and paths to raw execution and mapping evidence.
 
+
+Historical runtime continuation records
+---------------------------------------
+The following batch descriptions preserve their original test counts, artifact
+paths and integration switches. Later batches consolidate objects and supersede
+earlier scope claims. Use the manifests and reconciliation for current staging;
+do not sum these historical counts or treat old artifacts as current builds.
 
 Continuation: Rust locksets and process queries
 --------------------------------------------
@@ -403,7 +425,7 @@ no general app speedup/RSS claim. Read SAFETY-MEMORY.txt/SAFETY-PERMISSIONS.txt 
 current contracts superseding the historical descriptions. Artifacts:
 dearust-continuation/work/hardening-next/{final-stage,matching-final,pinned-final}.
 
-Guest-copy performance continuation (current)
+Guest-copy performance continuation (historical integration recipe)
 ---------------------------------------------
 Read RUNTIME-COPY-PERFORMANCE.txt and SAFETY-MEMORY.txt before integrating.
 Use owned output directories outside the reference source/build trees. Example
@@ -557,8 +579,9 @@ replaces the three resource C inputs and keeps rlimit_bsd_to_linux. paths.o must
 provide strong copyin/out helpers with the full existing signal/fork bridges.
 The native-only weak abort adapters are never production runtime inputs.
 getdtablesize now uses the actual16-byte Darwin rlimit ABI and actual NOFILE
-accounting.187 Rust/8 compile-fail/35 Python checks pass, but full unsigned-limit
-compatibility and CPU regression completion gates are open. This is partial
+accounting. The resource ABI batch recorded 187 Rust/8 compile-fail/35 Python
+checks; the later default-copy run recorded 202/11/35 as cited above. Full
+unsigned-limit compatibility and CPU regression completion gates are open. This is partial
 resource migration, not permission to skip those gates or claim full completion.
 
 Resource copy follow-up: RUNTIME-RESOURCE-COPIES.txt records the default runtime

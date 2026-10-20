@@ -1,0 +1,46 @@
+Dearust current reconciliation: partial implementation and open gates
+====================================================================
+
+Generated from exact ledger/graph/manifest inputs; evidence is historical.
+Entries, source leaves, artifacts and targets are cardinalities, never effort.
+No runtime/framework port or legacy retirement is completed by this ledger.
+
+Counts: {"candidate_artifacts": 1, "legacy_targets_retired": 0, "manifest_artifacts": 17, "observed_default_targets": 1629, "optional_artifact_bindings": 1, "pending_targets": 1629, "production_active_targets": 0, "source_target_participations": 110, "unique_artifacts": 20, "unique_ported_upstream_sources": 59, "unique_sources_participating_in_captured_graph": 58, "unique_sources_with_rust_work": 59, "unretired_targets": 1629, "whole_target_replacements_verified": 0, "with_cargo_artifact_slice": 11, "with_compiled_unlinked_scopes": 3, "with_consumer_link_evidence": 9, "with_execution_evidence": 9, "with_rust_work": 12, "with_source_port_participation": 10}
+
+Target | unique source ports | artifact bindings | consumer link | execution | whole replacement | retired
+-------|---------------------|-------------------|---------------|-----------|-------------------|--------
+bsdln | 1 | 1 | True | True | False | False
+darling-coredump | 1 | 1 | True | True | False | False
+darlingserver | 0 | 2 | True | True | False | False
+darlingserver_duct_tape | 1 | 0 | False | False | False | False
+elfdep | 1 | 1 | True | True | False | False
+emulation | 51 | 8 | True | True | False | False
+emulation_dyld | 51 | 2 | False | False | False | False
+getuuid | 1 | 1 | True | True | False | False
+libsimple_darling | 1 | 2 | True | True | False | False
+libsimple_darlingserver | 1 | 1 | False | False | False | False
+system_kernel | 0 | 9 | True | True | False | False
+wrapgen | 1 | 1 | True | True | False | False
+
+1617 additional default targets have no mapped Rust work; replacement remains pending.
+Source participation records are associations, not execution claims for every consumer.
+emulation_dyld has shared source coverage; its static consumer link/execution is unverified.
+Host staging/native harness execution does not prove full darlingserver consumer replacement.
+Production activation is separate from staging and owned mixed-runtime execution.
+Original i386 retained in fat links is original implementation, not Rust coverage.
+
+Unresolved / unknown rows
+-------------------------
+resources [unfinished]: Exact unsigned ownership, XNU enforcement and candidate lifecycle plus measured CPU gates; finish before post-resource packages.
+optional-configurations [unknown]: Additional component/architecture graph captures and custom-command bodies; default graph is not every supported configuration.
+unclassified-implementation [review-required]: Suffix labels are heuristics; every unobserved source, symlink alias, generated input, SDK/data and handwritten language needs explicit ownership review.
+blocked-validation [externally-blocked]: Previously rejected adversarial RPC validation remains unverified; ordinary functional work only.
+
+Captured graph reconciliation: {"canonical_non_generated_paths": 23783, "generated_records": 9593, "generated_unique_paths": 4042, "non_generated_unique_paths": 23790, "shared_source_paths": 888, "source_records": 34478, "symlink_resolved_records": 588, "unresolved_non_generated_paths": 0}
+84670 source-classified leaves absent by literal path from this graph need scope review; they may include tests, generated inputs or optional sources.
+Alias/external input rows and full participation edges remain in migration-reconciliation.json.
+SDK/header/symlink/data entries retain exact pins and require preservation/review, not automatic translation.
+
+Packages01-09: tools/MIGRATION-PACKAGES.txt and tools/migration-packages.json.
+Resource candidate work remains candidate-only; blocked adversarial RPC verification remains unverified.
+Next executable work: tools/MIGRATION-LEDGER.txt and tools/MIGRATION-PACKAGES.txt.

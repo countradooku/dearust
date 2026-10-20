@@ -1,0 +1,238 @@
+Migration packages01-09: evidenced missing work and dependencies
+================================================================
+
+Scope definitions: user-supplied porting-prompts pack,2026-10-19. Exact prompt
+SHA256 values and external handoff/audit provenance are preserved in
+tools/migration-packages.json. The package definitions are known; complete
+per-file/API/ABI/architecture/configuration acceptance matrices are not yet known.
+
+This reconciliation implements package00 preparation. Every package below
+remains UNFINISHED. Dependencies describe interface coordination and can be
+cyclic; they are not a runnable topological build schedule. Verification and
+architecture/build work accompany each implementation package. Unrelated
+post-resource expansion waits for the open resource gate. No target retirement
+or runtime/framework port completion follows from this document.
+
+01: Kernel compatibility — UNFINISHED
+-------------------------------------
+Definition: 01-kernel-compatibility.txt
+Dependencies/interfaces: 00, 02, 03, 04, 07, 08
+Resource-critical prerequisite scope: yes
+Known missing work:
+  - BSD syscall/Mach port-message-task-thread interface matrix and genuine Rust replacements
+  - Authoritative VM lifecycle, partial-protection reconciliation and off-stack guest-SP-safe stack enforcement
+  - Authoritative guest credential, signal/cancellation and process identity contracts
+Evidence:
+  - runtime-resource-copies-verification.json#/open_gates
+  - crates/dearust-process/SAFETY-RESOURCES.txt
+  - tools/target_inventory.py
+  - MIGRATION.txt
+Unresolved/unknown:
+  - VM/stack ownership with02; registration/process identities with03; cancellation/TLS with04
+  - Per-interface ABI/source/consumer enumeration is incomplete; graph target scope is not an API completeness proof
+
+02: Known unfinished runtime repairs — UNFINISHED
+-------------------------------------------------
+Definition: 02-unfinished-runtime.txt
+Dependencies/interfaces: 00, 01, 03, 04, 07, 08
+Resource-critical prerequisite scope: yes
+Known missing work:
+  - Timestamp variants with correct null-time authorization, precision and pinned-object lifetime
+  - Positioned/vector I/O, offset/append/packing/cancellation behavior and supported-kernel strategy
+  - Duplication/close/guard metadata publication and fd-generation lifecycle
+  - Nested Mach/BSD wiring across mappings/fork/exec; authoritative UID/GID/groups and serialized NPROC accounting
+Evidence:
+  - AGENTS.md
+  - RUNTIME-STREAMS.txt
+  - crates/dearust-process/SAFETY-RESOURCES.txt
+Unresolved/unknown:
+  - Wiring and credential work is resource-critical; VM state owner must be shared with01
+  - Historical audit directories establish findings, not proof that all current implementation paths are still identical; rederive exact per-API scope
+
+03: Server, RPC, lifecycle and clean startup — UNFINISHED
+---------------------------------------------------------
+Definition: 03-server-startup.txt
+Dependencies/interfaces: 00, 01, 02, 04, 07, 08
+Resource-critical prerequisite scope: yes
+Known missing work:
+  - Prepared Process/Thread/monitor/Registry publication with reserved eternal ID before dtape task construction
+  - NULL/partial dtape handle cleanup, noexcept rollback and nonallocating kernel-context cleanup; coherent notifyDead
+  - Resource client snapshots/setters/fork/exec/signal/cancellation integration and sender-message lifetime ownership
+  - Complete Rust server/scheduler/loader/dynamic-linking implementation and clean standalone bootstrap
+Evidence:
+  - work/resources-complete/continuation-20261019/guest-summary-final6.json
+  - work/resources-complete/continuation-20261019/wip-sources.json
+  - tools/build_resource_server.py
+  - tools/build_resource_loader.py
+  - tools/build_resource_exec_bridge.py
+  - HANDOFF-20261019
+  - REGISTRATION-OOM-AUDIT
+Unresolved/unknown:
+  - Candidate92 ordinary executions repeat the same candidate in both slots; no comparative performance or production owner activation
+  - Queued SCM sender-death/PID-reuse identity proof incomplete; blocked adversarial RPC validation remains unverified
+  - Actual bootstrap and guest-prefix overlay mappings both need source/hash/inode proof
+
+04: System libraries and language runtimes — UNFINISHED
+-------------------------------------------------------
+Definition: 04-system-libraries-runtimes.txt
+Dependencies/interfaces: 00, 01, 03, 06, 07, 08
+Resource-critical prerequisite scope: yes
+Known missing work:
+  - Complete libSystem/libc/pthread/TLS/atfork/cancellation contracts beyond present runtime slices
+  - Dispatch/XPC/allocator ownership and cross-process lifecycle
+  - Objective-C/blocks, C++ ABI/runtime/unwind and every required pinned runtime dependency
+Evidence:
+  - MIGRATION.txt
+  - BUILDING.txt
+  - crates/dearust-libsimple/SAFETY.txt
+  - xtask/runtime-artifacts.tsv
+Unresolved/unknown:
+  - 01/03/04 must resolve resource signal/fork/cancellation and bootstrap contracts together
+  - Full symbol/API/ABI ownership list and runtime dependency closure not yet established; no full library inferred from host-tool or selected guest checks
+
+05: Frameworks and services — UNFINISHED
+----------------------------------------
+Definition: 05-frameworks-services.txt
+Dependencies/interfaces: 00, 01, 03, 04, 06, 07, 08
+Resource-critical prerequisite scope: not established here; shared resource priority still applies
+Known missing work:
+  - Per-framework public/private API, Objective-C metadata, behavior, service and resource inventory
+  - CoreFoundation/Foundation, UI/text/graphics, networking/security, audio/media/IOKit and other actual pinned families
+  - Real async/ownership/backend/application behavior, resource preservation and measured full-family acceptance
+Evidence:
+  - migration-inventory.json
+  - dependency-inventory.json
+  - upstream-cmake-graph.json
+  - gui-verification.json
+  - GUI-VERIFICATION.txt
+Unresolved/unknown:
+  - Selected existing GUI/application checks run mixed legacy runtime and do not prove framework implementation replacement
+  - Concrete framework dependency closure, stub semantics, all resources and backend/architecture rows remain to be audited
+
+06: Tools and dependencies — UNFINISHED
+---------------------------------------
+Definition: 06-tools-dependencies.txt
+Dependencies/interfaces: 00, 04, 05, 07, 08
+Resource-critical prerequisite scope: not established here; shared resource priority still applies
+Known missing work:
+  - Remaining CLI/build/developer generators and dependency implementations with one shared owner per consumer contract
+  - Complete wrapgen loader search/audit/hardware context policy
+  - Review all implementation languages, source licenses/generated inputs and required binary/data payloads
+  - Preserve bounded core input, real FP/XSAVE state, alias safety and pressure/fallback behavior while completing tool scope
+Evidence:
+  - dependency-inventory.json
+  - tools/inventory.py
+  - tools/DEPENDENCY-INVENTORY.txt
+  - CORE-INPUT.txt
+  - CORE-REGISTERS.txt
+  - upstream-baseline-report.json
+  - xtask/host-artifacts.tsv
+Unresolved/unknown:
+  - 160 recorded trees inventoried is source accounting, not implementation completion
+  - 44 Swift LFS payloads were missing in recorded baseline; current payload availability/content acceptance has not been independently revalidated here
+  - All shared dependency ownership and per-tool CLI/ABI acceptance remain incomplete
+
+07: Architectures, ABI and host kernels — UNFINISHED
+----------------------------------------------------
+Definition: 07-architectures.txt
+Dependencies/interfaces: 00, 01, 02, 03, 04, 05, 06, 08
+Resource-critical prerequisite scope: yes
+Known missing work:
+  - Genuine Rust implementation and actual consumers for required i386/other scoped variants
+  - Per-architecture syscall/register/layout/TLS/loader/signal/FP contracts and execution/performance
+  - Minimum host-kernel semantic support including safe pidfd-less strategy where required; validate MSRV/backend scope
+Evidence:
+  - xtask/runtime-artifacts.tsv
+  - crates/dearust-libsimple/SAFETY.txt
+  - crates/dearust-process/SAFETY-RESOURCES.txt
+  - BUILDING.txt
+  - runtime-consumer-verification.json
+Unresolved/unknown:
+  - Original i386 retained in fat link is not Rust i386 coverage
+  - Required architecture/configuration/old-kernel support closure must be derived; no ARM or unlimited host-kernel support inferred
+  - Cross-compilation/native adapters/32-bit parser tests cannot establish32-bit guest execution
+
+08: Cargo-native build and distribution — UNFINISHED
+----------------------------------------------------
+Definition: 08-build-distribution.txt
+Dependencies/interfaces: 00, 01, 02, 03, 04, 05, 06, 07
+Resource-critical prerequisite scope: not established here; shared resource priority still applies
+Known missing work:
+  - Typed Cargo-native generation/compile/link/install/package graph covering required supported configurations
+  - All custom commands, architecture variants, generated inputs, SDK links, framework layouts and declared resources
+  - Independent clean reproducible builds and produced-only standalone prefix; install/uninstall/upgrade ownership
+  - Output/provenance/publication manifests and genuine legacy-target retirement
+Evidence:
+  - upstream-cmake-graph.json
+  - tools/BASELINE.txt
+  - xtask/README.md
+  - xtask/host-artifacts.tsv
+  - xtask/runtime-artifacts.tsv
+  - BUILDING.txt
+  - upstream-baseline-report.json
+Unresolved/unknown:
+  - Captured File API configuration omits full custom-command recipes and optional configurations
+  - Staging selected artifacts and relinking against legacy objects is not a complete Cargo-native build
+  - Installed/reference trees must remain preserved; no unfinished candidate activation authorized
+
+09: Independent whole-product acceptance — UNFINISHED
+-----------------------------------------------------
+Definition: 09-final-verification.txt
+Dependencies/interfaces: 00, 01, 02, 03, 04, 05, 06, 07, 08
+Resource-critical prerequisite scope: not established here; shared resource priority still applies
+Known missing work:
+  - Complete requirement-to-implementation/native/ABI/guest/safety/performance/artifact traceability
+  - Independent all-architecture/configuration clean-build and standalone application/service/GUI acceptance
+  - Matched original/previous/replacement measurements including generic/fallback/changed-state tails and process/kernel memory
+  - Repair/retest every known defect; explicit blocked/not-run/failed rows and honest retirement proof
+Evidence:
+  - verification.json
+  - runtime-resource-copies-verification.json
+  - work/resources-complete/continuation-20261019/guest-summary-final6.json
+  - HANDOFF-20261019
+  - REGISTRATION-OOM-AUDIT
+Unresolved/unknown:
+  - Final acceptance waits for actual resource and package01-08 implementation gates; verification accompanies every package now
+  - Previously blocked adversarial RPC validation stays unverified; no retry/rephrase/relocation
+  - Historical reports immutable; newer artifacts cannot inherit old executions merely by editing documentation
+
+Inventory and graph gaps shared by all packages
+----------------------------------------------
+Source categories are suffix hints, not a semantic inventory or effort metric.
+CCallbackMgr.cp participates in security_keychain but was previously labelled
+resource-or-metadata. Swift/Java/Fortran and lexer/parser inputs also need source
+hints and later content/consumer review. Tests, generated material and static
+assets must remain distinguishable from required hand-written implementation.
+
+Shared source participation is real: src/libsimple/src/lock.c serves two targets;
+emulation and emulation_dyld share sources; xcrun-shim.c serves many shim targets.
+Unique source ownership must coexist with all target/consumer edges.
+
+A literal graph-path mismatch is not automatically a missing file. Exact pinned
+CoreAudio AFPublic and AUPublic directory symlinks explain observed alias paths;
+migration-reconciliation.json resolves relative alias chains from committed blob
+objects and retains original graph names and symlink provenance.
+The captured graph includes generated object inputs and one default configuration.
+It does not settle custom-command bodies, generator-specific rules, all optional
+targets, SDK/header/data preservation or architecture variants.
+
+Pinned proof examples (read committed objects, never reference working files):
+  git -C UPSTREAM show 60ba801decee7a00782f74f6be4c8ffb013f79ff:CMakeLists.txt
+  git -C UPSTREAM show 60ba801decee7a00782f74f6be4c8ffb013f79ff:src/libelfloader/wrapgen/CMakeLists.txt
+  git -C UPSTREAM show 60ba801decee7a00782f74f6be4c8ffb013f79ff:src/CoreAudio/AFAVFormatComponent/AFPublic
+  git -C XNU show fa29287aa2f0115271e091f1031f53c9e024005d:bsd/kern/kern_resource.c
+
+Root CMake declares i386/x86_64 selection, tests, SDK regeneration and component
+options. print_wrapped_elf depends on DEFINED WITH_PRINT_WRAPPED_ELF and is absent
+from the captured default graph. XNU kern_resource.c supplies resource-specific
+CPU/DATA/STACK/NOFILE/NPROC/MEMLOCK policy; a Linux-limit conversion is not that port.
+
+Next executable resource prerequisite
+-------------------------------------
+Reconcile the frozen candidate registration adapters with the registration OOM
+audit; reserve the eternal ID before dtape construction and implement prepared
+publication/rollback with nonallocating kernel-context cleanup. Preserve candidate
+source and hashes. Then validate ordinary injected failures and real lifecycle
+consumers in owned builds/namespaces before production activation. VM/wiring,
+credentials, client ownership, host-hard-envelope races, old-kernel/message identity
+and generic-copy performance remain separate gates. Do not retry blocked RPC checks.

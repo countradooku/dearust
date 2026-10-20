@@ -1,0 +1,560 @@
+{
+  "schema_version": 1,
+  "assessment_scope": "Package prerequisite/gap reconciliation only; no package implementation or completion certification",
+  "baseline_dearust_commit": "6245da168dd2ca75c668d2d7cf2d58f14dbe2f51",
+  "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff",
+  "xnu_commit": "fa29287aa2f0115271e091f1031f53c9e024005d",
+  "definition_directory_origin": "/home/radud/Documents/Codex/2026-10-19/dearust-resource-continuation/outputs/porting-prompts",
+  "external_evidence": {
+    "HANDOFF-20261019": {
+      "path": "/home/radud/Documents/Codex/2026-10-19/dearust-resource-continuation/outputs/HANDOFF.txt",
+      "sha256": "cfdb252fa71e3d3c216b44a5c660737c650a122becb369aec885454a8416fe91"
+    },
+    "REGISTRATION-OOM-AUDIT": {
+      "path": "/home/radud/Documents/Codex/2026-10-19/dearust-resource-continuation/outputs/registration-oom-audit.txt",
+      "sha256": "6487c84c3a2b80132710bcd6c81cb79fba4b2d2e66c69204d23d6f9f1f17d006"
+    }
+  },
+  "global_gates": {
+    "resources": "unfinished; current default host-backed containment, candidate ownership not production-activated",
+    "resource_priority": "Implement required01/02/03/04/07 prerequisites first; defer unrelated expansion until resource gates pass",
+    "dependency_semantics": "Coordination edges can be cyclic; they are interface contracts, not a runnable topological build schedule",
+    "evidence_semantics": "Missing-work rows are evidenced lower bounds; a full per-file/API/ABI/architecture/configuration inventory remains unfinished",
+    "retirement": "No port or target is completed by this ledger; leaf or target counts are not weighted effort"
+  },
+  "packages": [
+    {
+      "id": "01",
+      "name": "Kernel compatibility",
+      "definition": {
+        "filename": "01-kernel-compatibility.txt",
+        "sha256": "02ef3f8f1df30aae5298af2466f4d149fe4f6a3e3d0dd669577537c3c3cc895a",
+        "origin": "user-supplied porting-prompts pack,2026-10-19"
+      },
+      "status": "unfinished",
+      "scope_inventory_status": "incomplete-per-API-ABI-configuration-matrix",
+      "resource_prerequisite": true,
+      "dependencies": [
+        {
+          "package": "00",
+          "relation": "scope-and-evidence-ledger"
+        },
+        {
+          "package": "02",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "03",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "04",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "07",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "08",
+          "relation": "interface-coordination"
+        }
+      ],
+      "known_missing_work": [
+        "BSD syscall/Mach port-message-task-thread interface matrix and genuine Rust replacements",
+        "Authoritative VM lifecycle, partial-protection reconciliation and off-stack guest-SP-safe stack enforcement",
+        "Authoritative guest credential, signal/cancellation and process identity contracts"
+      ],
+      "evidence": [
+        "runtime-resource-copies-verification.json#/open_gates",
+        "crates/dearust-process/SAFETY-RESOURCES.txt",
+        "tools/target_inventory.py",
+        "MIGRATION.txt"
+      ],
+      "unresolved_or_unknown": [
+        "VM/stack ownership with02; registration/process identities with03; cancellation/TLS with04",
+        "Per-interface ABI/source/consumer enumeration is incomplete; graph target scope is not an API completeness proof"
+      ]
+    },
+    {
+      "id": "02",
+      "name": "Known unfinished runtime repairs",
+      "definition": {
+        "filename": "02-unfinished-runtime.txt",
+        "sha256": "3e3c6003aeb88fde037dcd4776fab4f6a207401d1bb633a1d72e12699201a2db",
+        "origin": "user-supplied porting-prompts pack,2026-10-19"
+      },
+      "status": "unfinished",
+      "scope_inventory_status": "incomplete-per-API-ABI-configuration-matrix",
+      "resource_prerequisite": true,
+      "dependencies": [
+        {
+          "package": "00",
+          "relation": "scope-and-evidence-ledger"
+        },
+        {
+          "package": "01",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "03",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "04",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "07",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "08",
+          "relation": "interface-coordination"
+        }
+      ],
+      "known_missing_work": [
+        "Timestamp variants with correct null-time authorization, precision and pinned-object lifetime",
+        "Positioned/vector I/O, offset/append/packing/cancellation behavior and supported-kernel strategy",
+        "Duplication/close/guard metadata publication and fd-generation lifecycle",
+        "Nested Mach/BSD wiring across mappings/fork/exec; authoritative UID/GID/groups and serialized NPROC accounting"
+      ],
+      "evidence": [
+        "AGENTS.md",
+        "RUNTIME-STREAMS.txt",
+        "crates/dearust-process/SAFETY-RESOURCES.txt"
+      ],
+      "unresolved_or_unknown": [
+        "Wiring and credential work is resource-critical; VM state owner must be shared with01",
+        "Historical audit directories establish findings, not proof that all current implementation paths are still identical; rederive exact per-API scope"
+      ]
+    },
+    {
+      "id": "03",
+      "name": "Server, RPC, lifecycle and clean startup",
+      "definition": {
+        "filename": "03-server-startup.txt",
+        "sha256": "20fd8e12719827bde5910bc0256146f935744141fd8d11aef26861c5f3571eb4",
+        "origin": "user-supplied porting-prompts pack,2026-10-19"
+      },
+      "status": "unfinished",
+      "scope_inventory_status": "incomplete-per-API-ABI-configuration-matrix",
+      "resource_prerequisite": true,
+      "dependencies": [
+        {
+          "package": "00",
+          "relation": "scope-and-evidence-ledger"
+        },
+        {
+          "package": "01",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "02",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "04",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "07",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "08",
+          "relation": "interface-coordination"
+        }
+      ],
+      "known_missing_work": [
+        "Prepared Process/Thread/monitor/Registry publication with reserved eternal ID before dtape task construction",
+        "NULL/partial dtape handle cleanup, noexcept rollback and nonallocating kernel-context cleanup; coherent notifyDead",
+        "Resource client snapshots/setters/fork/exec/signal/cancellation integration and sender-message lifetime ownership",
+        "Complete Rust server/scheduler/loader/dynamic-linking implementation and clean standalone bootstrap"
+      ],
+      "evidence": [
+        "work/resources-complete/continuation-20261019/guest-summary-final6.json",
+        "work/resources-complete/continuation-20261019/wip-sources.json",
+        "tools/build_resource_server.py",
+        "tools/build_resource_loader.py",
+        "tools/build_resource_exec_bridge.py",
+        "HANDOFF-20261019",
+        "REGISTRATION-OOM-AUDIT"
+      ],
+      "unresolved_or_unknown": [
+        "Candidate92 ordinary executions repeat the same candidate in both slots; no comparative performance or production owner activation",
+        "Queued SCM sender-death/PID-reuse identity proof incomplete; blocked adversarial RPC validation remains unverified",
+        "Actual bootstrap and guest-prefix overlay mappings both need source/hash/inode proof"
+      ]
+    },
+    {
+      "id": "04",
+      "name": "System libraries and language runtimes",
+      "definition": {
+        "filename": "04-system-libraries-runtimes.txt",
+        "sha256": "3c3dd97189b4ce947de8caeb7725dd2c198755dca85f1617170ed06a589c035c",
+        "origin": "user-supplied porting-prompts pack,2026-10-19"
+      },
+      "status": "unfinished",
+      "scope_inventory_status": "incomplete-per-API-ABI-configuration-matrix",
+      "resource_prerequisite": true,
+      "dependencies": [
+        {
+          "package": "00",
+          "relation": "scope-and-evidence-ledger"
+        },
+        {
+          "package": "01",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "03",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "06",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "07",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "08",
+          "relation": "interface-coordination"
+        }
+      ],
+      "known_missing_work": [
+        "Complete libSystem/libc/pthread/TLS/atfork/cancellation contracts beyond present runtime slices",
+        "Dispatch/XPC/allocator ownership and cross-process lifecycle",
+        "Objective-C/blocks, C++ ABI/runtime/unwind and every required pinned runtime dependency"
+      ],
+      "evidence": [
+        "MIGRATION.txt",
+        "BUILDING.txt",
+        "crates/dearust-libsimple/SAFETY.txt",
+        "xtask/runtime-artifacts.tsv"
+      ],
+      "unresolved_or_unknown": [
+        "01/03/04 must resolve resource signal/fork/cancellation and bootstrap contracts together",
+        "Full symbol/API/ABI ownership list and runtime dependency closure not yet established; no full library inferred from host-tool or selected guest checks"
+      ]
+    },
+    {
+      "id": "05",
+      "name": "Frameworks and services",
+      "definition": {
+        "filename": "05-frameworks-services.txt",
+        "sha256": "6fa378b0448cc8604d0a3267bc363e3a76d9e24f47f6441cfb1ae56769e30104",
+        "origin": "user-supplied porting-prompts pack,2026-10-19"
+      },
+      "status": "unfinished",
+      "scope_inventory_status": "incomplete-per-API-ABI-configuration-matrix",
+      "resource_prerequisite": false,
+      "dependencies": [
+        {
+          "package": "00",
+          "relation": "scope-and-evidence-ledger"
+        },
+        {
+          "package": "01",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "03",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "04",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "06",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "07",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "08",
+          "relation": "interface-coordination"
+        }
+      ],
+      "known_missing_work": [
+        "Per-framework public/private API, Objective-C metadata, behavior, service and resource inventory",
+        "CoreFoundation/Foundation, UI/text/graphics, networking/security, audio/media/IOKit and other actual pinned families",
+        "Real async/ownership/backend/application behavior, resource preservation and measured full-family acceptance"
+      ],
+      "evidence": [
+        "migration-inventory.json",
+        "dependency-inventory.json",
+        "upstream-cmake-graph.json",
+        "gui-verification.json",
+        "GUI-VERIFICATION.txt"
+      ],
+      "unresolved_or_unknown": [
+        "Selected existing GUI/application checks run mixed legacy runtime and do not prove framework implementation replacement",
+        "Concrete framework dependency closure, stub semantics, all resources and backend/architecture rows remain to be audited"
+      ]
+    },
+    {
+      "id": "06",
+      "name": "Tools and dependencies",
+      "definition": {
+        "filename": "06-tools-dependencies.txt",
+        "sha256": "dd7dc27028d29aa7ff5a580dde2724f27390ae2435fcb5009dcccbd69fec58d3",
+        "origin": "user-supplied porting-prompts pack,2026-10-19"
+      },
+      "status": "unfinished",
+      "scope_inventory_status": "incomplete-per-API-ABI-configuration-matrix",
+      "resource_prerequisite": false,
+      "dependencies": [
+        {
+          "package": "00",
+          "relation": "scope-and-evidence-ledger"
+        },
+        {
+          "package": "04",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "05",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "07",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "08",
+          "relation": "interface-coordination"
+        }
+      ],
+      "known_missing_work": [
+        "Remaining CLI/build/developer generators and dependency implementations with one shared owner per consumer contract",
+        "Complete wrapgen loader search/audit/hardware context policy",
+        "Review all implementation languages, source licenses/generated inputs and required binary/data payloads",
+        "Preserve bounded core input, real FP/XSAVE state, alias safety and pressure/fallback behavior while completing tool scope"
+      ],
+      "evidence": [
+        "dependency-inventory.json",
+        "tools/inventory.py",
+        "tools/DEPENDENCY-INVENTORY.txt",
+        "CORE-INPUT.txt",
+        "CORE-REGISTERS.txt",
+        "upstream-baseline-report.json",
+        "xtask/host-artifacts.tsv"
+      ],
+      "unresolved_or_unknown": [
+        "160 recorded trees inventoried is source accounting, not implementation completion",
+        "44 Swift LFS payloads were missing in recorded baseline; current payload availability/content acceptance has not been independently revalidated here",
+        "All shared dependency ownership and per-tool CLI/ABI acceptance remain incomplete"
+      ]
+    },
+    {
+      "id": "07",
+      "name": "Architectures, ABI and host kernels",
+      "definition": {
+        "filename": "07-architectures.txt",
+        "sha256": "db2f8cd3bb8d47cd53ce025e8aaea5dddd760ed2a4e41a17ce6d4b67e2ff56ac",
+        "origin": "user-supplied porting-prompts pack,2026-10-19"
+      },
+      "status": "unfinished",
+      "scope_inventory_status": "incomplete-per-API-ABI-configuration-matrix",
+      "resource_prerequisite": true,
+      "dependencies": [
+        {
+          "package": "00",
+          "relation": "scope-and-evidence-ledger"
+        },
+        {
+          "package": "01",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "02",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "03",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "04",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "05",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "06",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "08",
+          "relation": "interface-coordination"
+        }
+      ],
+      "known_missing_work": [
+        "Genuine Rust implementation and actual consumers for required i386/other scoped variants",
+        "Per-architecture syscall/register/layout/TLS/loader/signal/FP contracts and execution/performance",
+        "Minimum host-kernel semantic support including safe pidfd-less strategy where required; validate MSRV/backend scope"
+      ],
+      "evidence": [
+        "xtask/runtime-artifacts.tsv",
+        "crates/dearust-libsimple/SAFETY.txt",
+        "crates/dearust-process/SAFETY-RESOURCES.txt",
+        "BUILDING.txt",
+        "runtime-consumer-verification.json"
+      ],
+      "unresolved_or_unknown": [
+        "Original i386 retained in fat link is not Rust i386 coverage",
+        "Required architecture/configuration/old-kernel support closure must be derived; no ARM or unlimited host-kernel support inferred",
+        "Cross-compilation/native adapters/32-bit parser tests cannot establish32-bit guest execution"
+      ]
+    },
+    {
+      "id": "08",
+      "name": "Cargo-native build and distribution",
+      "definition": {
+        "filename": "08-build-distribution.txt",
+        "sha256": "789af69470779c014e1d9730d0066b331bcdd6bfb86bdefee657772a9961e8c2",
+        "origin": "user-supplied porting-prompts pack,2026-10-19"
+      },
+      "status": "unfinished",
+      "scope_inventory_status": "incomplete-per-API-ABI-configuration-matrix",
+      "resource_prerequisite": false,
+      "dependencies": [
+        {
+          "package": "00",
+          "relation": "scope-and-evidence-ledger"
+        },
+        {
+          "package": "01",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "02",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "03",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "04",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "05",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "06",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "07",
+          "relation": "interface-coordination"
+        }
+      ],
+      "known_missing_work": [
+        "Typed Cargo-native generation/compile/link/install/package graph covering required supported configurations",
+        "All custom commands, architecture variants, generated inputs, SDK links, framework layouts and declared resources",
+        "Independent clean reproducible builds and produced-only standalone prefix; install/uninstall/upgrade ownership",
+        "Output/provenance/publication manifests and genuine legacy-target retirement"
+      ],
+      "evidence": [
+        "upstream-cmake-graph.json",
+        "tools/BASELINE.txt",
+        "xtask/README.md",
+        "xtask/host-artifacts.tsv",
+        "xtask/runtime-artifacts.tsv",
+        "BUILDING.txt",
+        "upstream-baseline-report.json"
+      ],
+      "unresolved_or_unknown": [
+        "Captured File API configuration omits full custom-command recipes and optional configurations",
+        "Staging selected artifacts and relinking against legacy objects is not a complete Cargo-native build",
+        "Installed/reference trees must remain preserved; no unfinished candidate activation authorized"
+      ]
+    },
+    {
+      "id": "09",
+      "name": "Independent whole-product acceptance",
+      "definition": {
+        "filename": "09-final-verification.txt",
+        "sha256": "987a890d60c8a4e5ae77a457c63394ecf9724562d4c0651264ed6f9f787c7992",
+        "origin": "user-supplied porting-prompts pack,2026-10-19"
+      },
+      "status": "unfinished",
+      "scope_inventory_status": "incomplete-per-API-ABI-configuration-matrix",
+      "resource_prerequisite": false,
+      "dependencies": [
+        {
+          "package": "00",
+          "relation": "scope-and-evidence-ledger"
+        },
+        {
+          "package": "01",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "02",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "03",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "04",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "05",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "06",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "07",
+          "relation": "interface-coordination"
+        },
+        {
+          "package": "08",
+          "relation": "interface-coordination"
+        }
+      ],
+      "known_missing_work": [
+        "Complete requirement-to-implementation/native/ABI/guest/safety/performance/artifact traceability",
+        "Independent all-architecture/configuration clean-build and standalone application/service/GUI acceptance",
+        "Matched original/previous/replacement measurements including generic/fallback/changed-state tails and process/kernel memory",
+        "Repair/retest every known defect; explicit blocked/not-run/failed rows and honest retirement proof"
+      ],
+      "evidence": [
+        "verification.json",
+        "runtime-resource-copies-verification.json",
+        "work/resources-complete/continuation-20261019/guest-summary-final6.json",
+        "HANDOFF-20261019",
+        "REGISTRATION-OOM-AUDIT"
+      ],
+      "unresolved_or_unknown": [
+        "Final acceptance waits for actual resource and package01-08 implementation gates; verification accompanies every package now",
+        "Previously blocked adversarial RPC validation stays unverified; no retry/rephrase/relocation",
+        "Historical reports immutable; newer artifacts cannot inherit old executions merely by editing documentation"
+      ]
+    }
+  ],
+  "scope_reconciliation_unknowns": [
+    "Hand-written versus generated/fixture/test/data classification requires content and consumer review; suffix labels are hints",
+    "Graph directory symlink aliases need exact pinned object resolution; unmatched literal paths do not establish missing source",
+    "Duplicate source contributions must retain all consumer edges but count source ownership once",
+    "Optional configurations/custom-command bodies and architecture-specific source/install rules remain incompletely captured",
+    "No complete file/API/ABI/consumer owner mapping exists for all nine packages"
+  ]
+}

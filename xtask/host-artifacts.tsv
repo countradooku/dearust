@@ -9,7 +9,7 @@ bin	getuuid	dearust	src/buildtools/getuuid	src/buildtools/CMakeLists.txt
 bin	wrapgen	dearust	src/libelfloader/wrapgen/wrapgen	src/libelfloader/wrapgen/CMakeLists.txt
 bin	print_wrapped_elf	dearust	src/libelfloader/wrapgen/print_wrapped_elf	src/libelfloader/wrapgen/CMakeLists.txt
 bin	darling-coredump	dearust-coredump	bin/darling-coredump	src/hosttools/CMakeLists.txt
-# Native Linux only; the Darwin libsimple backend remains unported.
+# Host staging emits the native Linux archive; runtime-artifacts.tsv separately declares the Darling x86_64 backend.
 staticlib	dearust_simple	dearust-libsimple	src/libsimple-linux/liblibsimple_darlingserver.a	src/libsimple/CMakeLists.txt
 # Native ELF validation slice of emulation; not a Darwin/Mach-O target replacement.
 object	dearust_errno	dearust-errno	lib/darling/native/dearust_errno.o	src/external/xnu/darling/src/libsystem_kernel/emulation/CMakeLists.txt	errno_linux_to_bsd,length_of_translation_array

@@ -13,15 +13,15 @@ Dearust is a project by [@countradooku](https://github.com/countradooku), develo
 
 ---
 
-## Current Status & Verified Work
+## Implementation & Recorded Verification
 
-These results reflect a locally modified, matching `x86_64` runtime environment. They do **not** claim arbitrary macOS app compatibility. Full reproduction boundaries and verification details are documented in [`LOCKSET-PROCESS.txt`](LOCKSET-PROCESS.txt) and [`lockset-process-verification.json`](lockset-process-verification.json).
+Runtime execution evidence uses a locally modified, matching `x86_64` environment. The current accounting index is [`migration-reconciliation.json`](migration-reconciliation.json); [`migration-targets.json`](migration-targets.json) schema v2 separates artifact mappings, source coverage, linking, execution and retirement. Historical verification retains its original scope; these records do not establish arbitrary macOS application compatibility.
 
 * **6 Host Utilities:** Five ported tools and one partial wrapper generator handle Mach-O/ELF metadata parsing and core file conversion.
 * **Low-Level Synchronization:** Safe Rust synchronization primitives, Linux `futex` backends, and Darwin/Linux `errno` translation layers.
-* **Mach Locksets:** Real Mach ports, lock handoff mechanisms, and thread/task lifecycle dispatching implemented in Rust.
+* **Mach Locksets:** Rust state and ownership handle real lock handoff through retained XNU port, scheduler and lifecycle bridges. Whole-server replacement remains pending.
 * **Runtime Queries:** Rust BSD/task process information, descriptor guard tables, bounded pathname metadata and `readlinkat` wrappers, descriptor `fstat`, directory-relative symlink, deletion, hard-link, rename, directory creation, access and permission operations, plus descriptor-only mode, truncation and synchronization calls, and partial vnode and mapped-file queries. Fixes include the original `bsdtar` null-path crash and guarded-table memory corruption.
-* **Test Coverage:** **187** Rust tests, **8** compile-fail safety checks, and **35** Python tests pass in the baseline environment.
+* **Recorded Test Coverage:** The accounting validation on **2026-10-20** passed **202** ordinary Rust tests, **11** compile-fail checks and **81** Python tests, plus deterministic inventory regeneration. [Exact commands and results](inventory-reconciliation-verification.json). Guest and performance results retain their earlier scope in [`runtime-resource-copies-verification.json`](runtime-resource-copies-verification.json); this accounting run does not validate resource ownership candidates.
 * **Filesystem Queries:** Four `statfs`/`fstatfs` entries share `dearust-path`, with initialized outputs, mount identity, fault protection, and descriptor-pressure handling. The tested four-call guest workload uses **84.75% less CPU** than exact original C; private memory is unchanged. [Implementation and measurements](RUNTIME-FILESYSTEM.txt).
 * **Resource ABI (unfinished):** Resource limits and usage now have guarded guest copies, correct Darwin layouts/units and coherent NOFILE accounting. Full unsigned-limit compatibility and measured CPU overhead remain open completion gates. [Implementation and failing gates](RUNTIME-RESOURCES.txt).
 * **Core Input:** The core converter owns checked metadata and streams dumped payload with safe kernel copies or a bounded buffer, descriptor-based alias checks, and sparse zero output. [Safety and measurements](CORE-INPUT.txt).
@@ -41,11 +41,11 @@ All utilities build via Cargo without requiring CMake. The parsers, conversion l
 
 | Utility | Description | Status |
 | --- | --- | --- |
-| `elfdep` | Bounds-checked thin/FAT Mach-O dependency reader | Full port |
-| `getuuid` | Mach-O UUID extractor | Full port |
-| `bsdln` | Hard & symbolic linking utility (removes `libbsd` dependency) | Full port |
-| `print_wrapped_elf` | Scans wrapped ELF library references in first Mach-O slice | Full port |
-| `darling-coredump` | 32/64-bit x86 ELF core to Mach-O core dump converter | Full port |
+| `elfdep` | Bounds-checked thin/FAT Mach-O dependency reader | Implemented host slice |
+| `getuuid` | Mach-O UUID extractor | Implemented host slice |
+| `bsdln` | Hard & symbolic linking utility (removes `libbsd` dependency) | Implemented host slice |
+| `print_wrapped_elf` | Scans wrapped ELF library references in first Mach-O slice | Implemented host slice |
+| `darling-coredump` | 32/64-bit x86 ELF core to Mach-O core dump converter | Implemented host slice |
 | `wrapgen` | ELF64 wrapper source/header generator | Partial port* |
 
 **Note on `wrapgen`:* Safe path resolution covers explicit file paths, `LD_LIBRARY_PATH`, `/etc/ld.so.cache`, and standard Linux system dirs. Caller-specific `RPATH`/`RUNPATH`, custom audit modules, and dynamic loader hardware quirks are not implemented. Always supply explicit paths for deterministic outputs.
@@ -53,10 +53,10 @@ All utilities build via Cargo without requiring CMake. The parsers, conversion l
 ### 2. Runtime Slices (`no_std` Mach-O / ELF)
 
 * **`libsimple` Synchronization:** Provides the 13 documented C synchronization primitives and the externally linked `cmpxchg` helper, maintaining identical 4-byte state layouts. Staged as a `no_std`, panic-abort archive (`liblibsimple_darlingserver.a`).
-* **Darwin/Linux Errno Mapping:** A `no_std` translation layer preserving exact Linux-to-Darwin mappings and signed integer handling (including `INT_MIN` boundary fixes). Staged as a native ELF object with hidden symbols and linked into `libsystem_kernel`.
-* **Pathname Subsystem (`dearust-path`):** Twenty-four pathname and metadata source slices share one crate, including `access`/`chmod` and `stat`/`fstat`. Guest paths and metadata outputs use guarded fault-contained copies with a checked kernel fallback; permission flags use kernel handling, including atomic no-follow chmod. [Current performance and safety evidence](RUNTIME-COPY-PERFORMANCE.txt) supersedes the earlier hardening costs.
+* **Darwin/Linux Errno Mapping:** A `no_std` translation layer preserving exact Linux-to-Darwin mappings and signed integer handling (including `INT_MIN` boundary fixes). Host staging emits a native ELF validation object; separate runtime staging emits the x86_64 Mach-O object used in verified `libsystem_kernel` links.
+* **Pathname Subsystem (`dearust-path`):** Pathname and metadata source slices share one crate, including `access`/`chmod` and `stat`/`fstat`. Guest paths and metadata outputs use guarded fault-contained copies with a checked kernel fallback; permission flags use kernel handling, including atomic no-follow chmod. [Current performance and safety evidence](RUNTIME-COPY-PERFORMANCE.txt) supersedes the earlier hardening costs.
 * **Descriptor Subsystem (`dearust-fd`):** Groups stream reads/writes, mode, creation-mask, descriptor-limit, truncation, synchronization, seek and file-lock operations in one allocation-free runtime crate. The workspace now has 11 packages after subsystem consolidation.
-* **Process Services (`dearust-process`):** Nine grouped entries cover uncached process/thread IDs and control, plus bounded kernel entropy. Entropy size, fault and interrupted-call defects are repaired. [Evidence](RUNTIME-PROCESS-SERVICES.txt). Runtime feature separation preserves the matching/pinned boundaries.
+* **Process Services (`dearust-process`):** Grouped entries cover uncached process/thread IDs and control, bounded kernel entropy and the unfinished resource ABI. Entropy size, fault and interrupted-call defects are repaired. [Evidence](RUNTIME-PROCESS-SERVICES.txt). Runtime feature separation preserves the matching/pinned boundaries.
 * **Mach Lockset Server & Process Queries:** Executes real Mach-O applications inside unprivileged user, mount, and PID namespaces without patching installed binaries.
 
 ---
@@ -65,20 +65,25 @@ All utilities build via Cargo without requiring CMake. The parsers, conversion l
 
 Progress is tracked granularly against upstream commit [`60ba801`](https://github.com/darlinghq/darling/commit/60ba801decee7a00782f74f6be4c8ffb013f79ff).
 
-```
-Superproject Entries [27,274 total]
-[██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 7 Ported / Partial (27,267 Pending)
+The pinned superproject and dependency inventories count committed tree leaves,
+including headers, data, symlinks and gitlinks. The captured default CMake graph
+covers one configuration. Their entry and target totals are scope denominators,
+not percentages of implementation effort.
 
-Default Build Targets [1,629 total]
-[█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 7 Cargo Slices (1,622 Pending)
-
-```
+A target can contain substantial Rust source work while its whole-target status
+remains pending. Host and runtime manifests stage different artifacts; one object
+can serve several targets, and several objects can serve one target. Source
+coverage, verified consumer links, executed workloads, production selection and
+legacy retirement must therefore be read separately. No legacy target retirement
+or complete runtime migration is claimed. Resource ownership candidates remain
+outside the default runtime staging path.
 
 Detailed breakdowns are maintained in:
 
 * [`migration-inventory.json`](migration-inventory.json): Full superproject file-by-file tracking.
 * [`dependency-inventory.json`](dependency-inventory.json): Pinned submodules, license records, and leaf dependencies.
-* [`migration-targets.json`](migration-targets.json): Upstream build targets vs. Cargo implementations.
+* [`migration-targets.json`](migration-targets.json): Schema v2 target records, source slices and artifact relationships.
+* [`migration-reconciliation.json`](migration-reconciliation.json): Current reconciliation, evidence scope, unresolved gaps and package dependencies.
 * [`MIGRATION.txt`](MIGRATION.txt): Completion gates, architectural boundaries, and pending ABI specs.
 
 ---
@@ -133,9 +138,9 @@ These benchmarks demonstrate isolated, workload-specific behavior only. **They d
 | --- | --- |
 | [`BUILDING.txt`](BUILDING.txt) | Detailed build requirements, linker flags, and environment vars |
 | [`MIGRATION.txt`](MIGRATION.txt) | Subsystem boundaries, migration rules, and remaining milestones |
-| [`LOCKSET-PROCESS.txt`](LOCKSET-PROCESS.txt) | Latest runtime lockset implementation details and verification |
+| [`LOCKSET-PROCESS.txt`](LOCKSET-PROCESS.txt) | Historical lockset implementation and execution scope |
 | [`GUI-VERIFICATION.txt`](GUI-VERIFICATION.txt) | Test notes and execution constraints for Cocoa GUI applications |
-| [`verification.json`](verification.json) | SHA-256 artifacts, suite outputs, and machine-readable test records |
+| [`verification.json`](verification.json) | Historical verification; consult the reconciliation for later scoped evidence |
 
 ---
 

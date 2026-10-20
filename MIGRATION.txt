@@ -11,14 +11,52 @@ The migration scope includes every upstream library, framework, executable,
 resource, SDK link and external dependency; existing stubs are not grounds for
 silently deleting an ABI. Performance improvements must be measured per workload.
 
+Current reconciliation (package00 preparation; 2026-10-20)
+----------------------------------------------------------
+migration-ledger.json stores qualified source/blob pins, artifact/consumer bindings,
+architecture/configuration scopes and immutable historical report references.
+tools/target_inventory.py generates migration-targets.json schema v2,
+migration-reconciliation.json and migration-gap-matrix.txt. The readable matrix
+separates source work, staged artifacts, links, execution and whole replacement.
+Counts are unions/sums of those records, never estimates of effort. Pending now
+means whole-target replacement remains unverified; the old seven direct-artifact
+count omitted source-only and mixed-consumer integration. No target is retired.
+
+The captured default graph and all160 pinned dependency trees remain inputs.
+Source suffix labels include additional implementation languages but remain hints;
+unobserved leaves, symlink aliases, shared/generated inputs, SDK/data preservation,
+custom commands and other configurations require explicit scope review. They are
+visible unknowns, not evidence that their implementation is absent or completed.
+
+The default runtime graph compiles partial host-backed resource ABI plus safe
+policy/view foundations. Those foundations are not activated client ownership.
+The separately preserved dirty server/loader/exec candidates have ordinary guest
+evidence; both candidate harness slots use the same candidate. Their successful
+startup supersedes the older startup hypothesis, without closing ownership,
+physical enforcement, credentials, lifecycle/OOM or generic-copy CPU gates.
+Previously blocked adversarial RPC validation remains unverified; no retry.
+
+Packages01-09 follow the user-supplied porting-prompts pack, with hashed scopes,
+missing work, interface dependencies and explicit unknowns in
+tools/migration-packages.json and tools/MIGRATION-PACKAGES.txt. Resource-critical
+prerequisites retain priority. The per-API/ABI/configuration matrix and full port
+remain unfinished. See tools/MIGRATION-LEDGER.txt for schema migration/reproduction.
+
+Historical implementation continuations below retain their original run scope.
+They are not current aggregate numbers or claims of a fresh run. The identified
+7975b5c default-copy validation reports202 ordinary Rust tests,11 compile-fail and
+35 Python tests in runtime-resource-copies-verification.json. This reconciliation
+has its own generator checks; it does not rerun those guest/performance results.
+
 Latest resource ABI continuation (2026-10-18; UNFINISHED)
 --------------------------------------------------------
 RUNTIME-RESOURCES.txt/runtime-resources-verification.json record partial
 getrlimit/setrlimit/getrusage integration in existing dearust-process/process-ids.o.
 Full unsigned limit compatibility, complete resource-specific policy and material
 CPU overhead remain OPEN completion gates. No completed resource subsystem is
-claimed. The three dependency leaves are partial:52 partial/265751 pending of
-265803. Workspace11 packages and target slices7/1622pending/0retired unchanged.
+claimed. The three resource dependency leaves are partial; the historical inventory snapshot
+was52 partial/265751 pending of265803. These are leaf entries, not effort.
+Current target unions and whole-replacement states are generated separately.
 
 Latest core input continuation (2026-10-18)
 -------------------------------------------
@@ -72,12 +110,12 @@ retirements. Full migration remains incomplete.
 Reproduce the scope inventory
 ----------------------------
 
-Run from this repository with a local upstream checkout at the pinned HEAD:
+Run from this repository with a local upstream checkout containing the pinned commit:
 
   python3 tools/inventory.py /path/to/darling --output migration-inventory.json
 
 The generator requires Python 3 and Git, makes no network requests, reads committed
-Git objects rather than working files, and rejects a different HEAD. It inventories
+Git objects rather than working files, and requires the exact pinned commit object. It inventories
 every superproject leaf exactly once, including symbolic links and gitlinks.
 Directories are represented by their leaves. Deleted or untracked working files
 do not change the inventory. Object IDs make each source and dependency pin
@@ -114,8 +152,8 @@ and lossless raw notes. See CORE-REGISTERS.txt for source layouts and validation
 
 All 149 first-level submodules and 11 nested gitlinks are now expanded at their
 exact pinned commits in dependency-inventory.json. The 160 dependency trees
-contain 265, 803 committed leaves (two partial errno/futex source slices and
-265, 801 pending), and 341 filename-based
+contain 265,803 committed leaves; current source statuses come from the leaf
+records and generated counts, with341 filename-based
 license candidates with actual blob hashes. No Git trees are unavailable in this
 snapshot. The isolated baseline still contains 44 Swift Git LFS pointers;
 their binary payloads have not been materialized or migrated. Regeneration is byte-identical with the same object cache; see
@@ -142,9 +180,9 @@ payloads remain missing even though their Git pointer objects are inventoried.
 
 upstream-cmake-graph.json captures 1, 629 emitted default targets, 7, 785 dependency
 edges, 34, 478 source records (9, 593 generated) and 1, 238 targets with installation
-metadata. migration-targets.json maps seven default targets to Cargo artifact
-slices, including partial wrapper/native/Darling library coverage. There are 1, 622
-pending default targets and no claim of legacy target retirement. Optional
+metadata. migration-targets.json schema v2 joins source contributions and artifact
+bindings, including mixed legacy consumers. Every whole replacement remains
+pending; no legacy target retirement is claimed. Optional
 print_wrapped_elf is a verified extra artifact absent from the default graph.
 Custom command bodies, optional component configurations and generator-specific
 recipes are not fully represented by the File API and require separate gates.
