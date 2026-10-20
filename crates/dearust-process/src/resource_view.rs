@@ -7,8 +7,10 @@
 //! transaction is held, and must not abandon a guard through foreign cancellation,
 //! thread exit or longjmp (which do not run Rust Drop). A guard reserves one local
 //! publication before any mutation RPC and is consumed by publication. All owner
-//! mutations must use this same transaction domain; gaps require a full snapshot
-//! refresh, not a partial reply. This module alone supplies no lifecycle hooks.
+//! mutations must use this same transaction domain and advance the generation,
+//! including changes to limits, stack metadata, and policy. Gaps require a full
+//! snapshot refresh, not a partial reply. A generation identifies one immutable
+//! snapshot. This module alone supplies no lifecycle hooks.
 use crate::resource_policy::{Limits, Policy, RESOURCE_COUNT, State};
 use core::marker::PhantomData;
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering, fence};
@@ -217,8 +219,10 @@ impl Transaction<'_> {
         Ok(())
     }
     /// Replace all26 words from the SAME authoritative owner while its lifecycle
-    /// identity/transaction is held. Accept equal/newer generations, never an
-    /// older snapshot. This contains no PID cache or owner-identity validation.
+    /// identity/transaction is held. An equal generation must carry the identical
+    /// snapshot; a change to limits, stack metadata, or policy must advance the
+    /// owner's generation. Accept newer generations, never an older snapshot.
+    /// This contains no PID cache or owner-identity validation.
     #[inline]
     pub fn refresh(self, snapshot: Snapshot) -> Result<(), PublishError> {
         let words = snapshot.encode();
@@ -226,7 +230,9 @@ impl Transaction<'_> {
         if self.generation == 0 {
             return Err(PublishError::Invalid);
         }
-        if snapshot.generation < self.generation {
+        if snapshot.generation < self.generation
+            || (snapshot.generation == self.generation && self.view.snapshot() != Some(snapshot))
+        {
             return Err(PublishError::Stale);
         }
         self.publish(words);
@@ -450,6 +456,60 @@ mod tests {
             Err(PublishError::Invalid)
         );
         assert_eq!(view.snapshot(), Some(owner));
+    }
+
+    #[test]
+    fn each_generation_identifies_one_complete_owner_snapshot() {
+        // Independent wire records: the owner assigns a generation to all
+        // limits, stack metadata, and policy together, never to limits alone.
+        let authoritative = [
+            7, 10, 100, 11, 101, 12, 102, 13, 103, 14, 104, 15, 105, 16, 106, 17, 107, 18, 108,
+            0x1_0000, 0, 1000, 2000, 3000, 4000, 5000,
+        ];
+        let view = View::new();
+        view.try_transaction()
+            .unwrap()
+            .initialize(Snapshot::decode(authoritative).unwrap())
+            .unwrap();
+        // Repeating the exact same owner response remains idempotent.
+        view.try_transaction()
+            .unwrap()
+            .refresh(Snapshot::decode(authoritative).unwrap())
+            .unwrap();
+        // A reordered or inconsistent response cannot replace any payload word
+        // while claiming the already-established owner generation. Every pair
+        // remains valid, so validation alone cannot reject these conflicts.
+        for index in 1..26 {
+            let mut conflicting = authoritative;
+            conflicting[index] += 1;
+            assert_eq!(
+                view.try_transaction()
+                    .unwrap()
+                    .refresh(Snapshot::decode(conflicting).unwrap()),
+                Err(PublishError::Stale),
+                "same-generation conflict at word {index}"
+            );
+            assert_eq!(view.snapshot().unwrap().encode(), authoritative);
+            assert!(view.try_transaction().is_ok());
+        }
+        // A later full response may legitimately change every payload word and
+        // bridge a generation gap, including independent stack/policy changes.
+        let newer = [
+            12, 20, 200, 21, 201, 22, 202, 23, 203, 24, 204, 25, 205, 26, 206, 27, 207, 28, 208,
+            0x2_0000, 1, 6000, 7000, 8000, 9000, 10000,
+        ];
+        view.try_transaction()
+            .unwrap()
+            .refresh(Snapshot::decode(newer).unwrap())
+            .unwrap();
+        assert_eq!(view.snapshot().unwrap().encode(), newer);
+        assert_eq!(
+            view.try_transaction()
+                .unwrap()
+                .refresh(Snapshot::decode(authoritative).unwrap()),
+            Err(PublishError::Stale)
+        );
+        assert_eq!(view.snapshot().unwrap().encode(), newer);
     }
 
     #[test]

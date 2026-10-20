@@ -89,3 +89,15 @@ covers fixtures/adapters, not Rust/assembly. Actual Darwin guest regressions,
 original-bug observations and pinned ABI oracles are recorded separately.
 Performance and full-domain completion are independent gates, not inferred from
 passing tests or sanitizer results.
+
+Inactive owned-state foundations
+-------------------------------
+resource_policy/resource_view are pure tested foundations, not active runtime
+ownership. A resource_view generation identifies all26 snapshot words from one
+authoritative owner. Every limits, stack-metadata, or policy change must advance
+that generation within the same transaction domain. An equal-generation refresh
+is accepted only when the entire snapshot is identical; conflicting payloads
+return Stale without publication. A future mutable policy must join this same
+generation protocol rather than silently changing an existing generation.
+Full refresh still requires the caller to hold the owner's lifecycle identity;
+the view does not validate process identity or establish resource enforcement.
