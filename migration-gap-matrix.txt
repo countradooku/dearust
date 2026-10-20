@@ -31,10 +31,10 @@ Original i386 retained in fat links is original implementation, not Rust coverag
 
 Unresolved / unknown rows
 -------------------------
-resources [unfinished]: Exact unsigned ownership, XNU enforcement and candidate lifecycle plus measured CPU gates; finish before post-resource packages.
+resources [unfinished]: CPU-delivery allocation loss and bound-timer rearm prerequisites have scoped native/owned guest evidence; exact unsigned ownership, XNU physical enforcement, VM/credential/lifecycle, multiworker, architecture and measured whole/generic-copy CPU gates remain unfinished before post-resource packages.
 optional-configurations [unknown]: Exact-pinned CMake declarations capture 1,144 selected files across 161 repositories, including custom commands, options and conditions. Fifteen inputs remain unparsed; expansion, reachability, configured command bodies, architecture variants and additional graph captures remain unknown.
-unclassified-implementation [review-required]: Suffix labels are heuristics. The exact CMake scan identifies 15 prose/header/template/malformed inputs requiring role review; unobserved sources, symlink aliases, SDK/data and handwritten languages still need semantic ownership review.
-blocked-validation [externally-blocked]: Previously rejected adversarial RPC validation remains unverified; ordinary functional work only.
+unclassified-implementation [review-required]: Suffix labels are heuristics. All15 unparsed CMake inputs have exact pinned role/consumer reviews; configured template behavior, reachability and handwritten semantics remain unresolved. Unobserved sources, symlink aliases, SDK/data and other languages still need semantic ownership review.
+blocked-validation [externally-blocked]: Automatically rejected adversarial RPC, direct Checkin fault proof, exec-notification/cleanup-lane follow-up, executing continuation and intrusive C wait-admission fix/regression remain unverified/inactive; no retry, rephrasing or transfer. Ordinary independent resource work only.
 
 Exact-pinned build declarations: {"by_category": {"condition": 5329, "configure": 37, "custom-command": 100, "definition": 313, "execute-process": 45, "file-generate": 1, "option": 155, "other": 17239, "target": 1457}, "declarations": 24676, "files": 1144, "parse_invalid_files": 15, "repositories": 161}
 360 plain literal target names are absent from the captured graph; reachability and configuration remain unknown.

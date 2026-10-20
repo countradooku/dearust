@@ -84,6 +84,14 @@ with python3 tools/record_resource_copy_progress.py --output /fresh/index.json.
 This verifies existing proof hashes; use their recorded commands to rebuild them.
 Generic-copy CPU, multiworker and resource ownership gates remain open.
 
+The independent CPU delivery derivative is documented in RUNTIME-RESOURCE-CPU.txt.
+It fixes actual lost expiration under allocation failure, reuses an original kernel
+timer binding, and passes native/raw/ASan/UBSan, exact deferred-adapter and88 ordinary
+guest checks in an owned single-worker server. This Linux-host C++ prerequisite is
+not a Rust source replacement or activated ownership. Recreate its checked current
+index with python3 tools/record_resource_cpu_progress.py --output /fresh/index.json.
+Its known native cold-arm/FD/default-stack costs and whole resource gates stay open.
+
 Functioning executables: elfdep, getuuid, bsdln, print_wrapped_elf,
 darling-coredump and wrapgen (partial loader-name resolution; see README.md). No libbsd
 dependency is needed for the Rust bsdln. Mach-O metadata supports 32/64-bit thin

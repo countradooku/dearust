@@ -1,0 +1,985 @@
+{
+  "blocked_checks_retried": false,
+  "component": {
+    "path": "work/resource-cpu-next/verification-v2.json",
+    "sha256": "1443800c7c5c821a3f6dd12c519b4dea3c3b09fb8b34d5e6b0f3f74bd71de345"
+  },
+  "guests": {
+    "comparisons": [
+      {
+        "group": "guards",
+        "path": "work/resource-cpu-next/guests2/guards/comparison.json",
+        "sha256": "3891c1d20f13b63de73d99affcd67580a18c3c069f4cbe646fd7da84df1161cf"
+      },
+      {
+        "group": "filesystem",
+        "path": "work/resource-cpu-next/guests2/filesystem/comparison.json",
+        "sha256": "19ddfb3a6cabea2d786b3ffcc09e3c179a73983a0baf57b93796b58b2d30828b"
+      },
+      {
+        "group": "existing",
+        "path": "work/resource-cpu-next/guests2/existing/comparison.json",
+        "sha256": "591554ed6a6db40069215962b97fb0e7c6da3c15b6ff476eff7b846c2fefec83"
+      },
+      {
+        "group": "apps",
+        "path": "work/resource-cpu-next/guests2/apps/comparison.json",
+        "sha256": "779e5448581d94d03a961d3d932a19ac016e88f761b03b884496128f146967ed"
+      },
+      {
+        "group": "resources",
+        "path": "work/resource-cpu-next/guests2/resources/comparison.json",
+        "sha256": "c4d6b866a61d3dbb7540d0d7db6bc099ee334e98aeec836e0495bdae4538ceab"
+      }
+    ],
+    "kernel": {
+      "path": "work/resource-copy-next/matching-simd/libsystem_kernel-rust.dylib",
+      "sha256": "2e413374080b96d4828521995425b4f8ff30ecbd917352e381314d9b128b1a26"
+    },
+    "observation": {
+      "path": "work/resource-cpu-next/guest-observations2.json",
+      "sha256": "77aa8175562aa668af7250085a50a0456b21708b2d68e023e403914d4e0ef7ca"
+    },
+    "observed_executables": {
+      "darlingserver": 10,
+      "mldr": 355
+    },
+    "slots": "Same owned server2/loader12/SIMD kernel in both slots; not original C versus Rust.",
+    "strict_passes": 88
+  },
+  "implemented_checks_passed": true,
+  "multiworker_gate_passed": false,
+  "open_gates": [
+    "Automatic-review-stopped wait-admission fix/check remains inactive; last historical multiworker78/80 has two Mach lockset timeouts. No blocked checks retried.",
+    "Earlier RPC, Checkin, exec-notification/cleanup-lane and executing continuation validations remain stopped.",
+    "Full unsigned ownership and VM/wiring, host hard-limit coherence/partial effects, credential/NPROC, fork/exec/cancellation/shutdown and architecture gates remain unfinished.",
+    "Signal reservation64 is explicit for this owned native server; wider configuration/platform support is not established.",
+    "A timer-state query failure remains a reported negative diagnostic until explicit successful rearm; no automatic redelivery or retry is claimed.",
+    "Host C++ prerequisite repair is not a completed Rust implementation or legacy retirement."
+  ],
+  "performance": {
+    "first_revision_benchmark": {
+      "path": "work/resource-cpu-next/benchmark2/verification.json",
+      "sha256": "8655f91a04daeef788161ca277040cece77336bc500f7a3fc0bb096e342ee9cb"
+    },
+    "limitations": [
+      "Native engine workloads only; no whole application or resource-performance acceptance.",
+      "Cold first arm and explicit teardown have additional preparation/lifetime cost; two service FDs and default stack remain visible.",
+      "VmSize/VmData, RSS and per-executable VmHWM are distinct. Raw RUSAGE_SELF maxrss may retain pre-exec high water.",
+      "Native generic-copy heap/cross-page CPU remains materially above C, an independent open gate."
+    ],
+    "native_benchmark": {
+      "path": "work/resource-cpu-next/benchmark3/verification.json",
+      "sha256": "5f89b3e233473b68ff28311d9da3f65a43fe14508d3b7318129055175a672bd9"
+    },
+    "native_summary": {
+      "current": {
+        "after": {
+          "Threads": {
+            "maximum": 1,
+            "median": 1,
+            "minimum": 1,
+            "p95": 1.0,
+            "p99": 1.0,
+            "q1": 1.0,
+            "q3": 1.0,
+            "samples": 21
+          },
+          "VmData": {
+            "maximum": 8508,
+            "median": 8508,
+            "minimum": 8508,
+            "p95": 8508.0,
+            "p99": 8508.0,
+            "q1": 8508.0,
+            "q3": 8508.0,
+            "samples": 21
+          },
+          "VmHWM": {
+            "maximum": 4432,
+            "median": 4428,
+            "minimum": 4240,
+            "p95": 4432.0,
+            "p99": 4432.0,
+            "q1": 4308.0,
+            "q3": 4428.0,
+            "samples": 21
+          },
+          "VmRSS": {
+            "maximum": 4432,
+            "median": 4428,
+            "minimum": 4240,
+            "p95": 4432.0,
+            "p99": 4432.0,
+            "q1": 4308.0,
+            "q3": 4428.0,
+            "samples": 21
+          },
+          "VmSize": {
+            "maximum": 14960,
+            "median": 14960,
+            "minimum": 14960,
+            "p95": 14960.0,
+            "p99": 14960.0,
+            "q1": 14960.0,
+            "q3": 14960.0,
+            "samples": 21
+          },
+          "fds_including_observer": {
+            "maximum": 6,
+            "median": 6,
+            "minimum": 6,
+            "p95": 6.0,
+            "p99": 6.0,
+            "q1": 6.0,
+            "q3": 6.0,
+            "samples": 21
+          }
+        },
+        "before": {
+          "Threads": {
+            "maximum": 1,
+            "median": 1,
+            "minimum": 1,
+            "p95": 1.0,
+            "p99": 1.0,
+            "q1": 1.0,
+            "q3": 1.0,
+            "samples": 21
+          },
+          "VmData": {
+            "maximum": 312,
+            "median": 312,
+            "minimum": 312,
+            "p95": 312.0,
+            "p99": 312.0,
+            "q1": 312.0,
+            "q3": 312.0,
+            "samples": 21
+          },
+          "VmHWM": {
+            "maximum": 4160,
+            "median": 4148,
+            "minimum": 3960,
+            "p95": 4152.0,
+            "p99": 4158.4,
+            "q1": 4028.0,
+            "q3": 4148.0,
+            "samples": 21
+          },
+          "VmRSS": {
+            "maximum": 4160,
+            "median": 4148,
+            "minimum": 3960,
+            "p95": 4152.0,
+            "p99": 4158.4,
+            "q1": 4028.0,
+            "q3": 4148.0,
+            "samples": 21
+          },
+          "VmSize": {
+            "maximum": 6764,
+            "median": 6764,
+            "minimum": 6764,
+            "p95": 6764.0,
+            "p99": 6764.0,
+            "q1": 6764.0,
+            "q3": 6764.0,
+            "samples": 21
+          },
+          "fds_including_observer": {
+            "maximum": 6,
+            "median": 6,
+            "minimum": 6,
+            "p95": 6.0,
+            "p99": 6.0,
+            "q1": 6.0,
+            "q3": 6.0,
+            "samples": 21
+          }
+        },
+        "child_cpu_ns": {
+          "maximum": 383311680,
+          "median": 382875740,
+          "minimum": 382086998,
+          "p95": 383288465.0,
+          "p99": 383307037.0,
+          "q1": 382411979.0,
+          "q3": 383018914.0,
+          "samples": 21
+        },
+        "cpu_overrun_ns": {
+          "maximum": 1150092,
+          "median": 988864.5,
+          "minimum": 22220,
+          "p95": 996170.0,
+          "p99": 1005609.3699999999,
+          "q1": 986000.75,
+          "q3": 990881.25,
+          "samples": 1344
+        },
+        "destroy_cpu_ns": {
+          "maximum": 41769,
+          "median": 32532,
+          "minimum": 30539,
+          "p95": 40475.0,
+          "p99": 41510.200000000004,
+          "q1": 32090.0,
+          "q3": 33874.0,
+          "samples": 21
+        },
+        "destroy_wall_ns": {
+          "maximum": 48522,
+          "median": 32111,
+          "minimum": 30177,
+          "p95": 38303.0,
+          "p99": 46478.200000000004,
+          "q1": 31499.0,
+          "q3": 32832.0,
+          "samples": 21
+        },
+        "expiry_cpu_ns": {
+          "maximum": 3757368,
+          "median": 3564860,
+          "minimum": 3265845,
+          "p95": 3668818.0,
+          "p99": 3739658.0,
+          "q1": 3517017.0,
+          "q3": 3608778.0,
+          "samples": 21
+        },
+        "expiry_wall_ns": {
+          "maximum": 384991374,
+          "median": 384554809,
+          "minimum": 383981896,
+          "p95": 384900603.0,
+          "p99": 384973219.8,
+          "q1": 384074421.0,
+          "q3": 384753665.0,
+          "samples": 21
+        },
+        "post_expiry": {
+          "Threads": {
+            "maximum": 2,
+            "median": 2,
+            "minimum": 2,
+            "p95": 2.0,
+            "p99": 2.0,
+            "q1": 2.0,
+            "q3": 2.0,
+            "samples": 21
+          },
+          "VmData": {
+            "maximum": 8508,
+            "median": 8508,
+            "minimum": 8508,
+            "p95": 8508.0,
+            "p99": 8508.0,
+            "q1": 8508.0,
+            "q3": 8508.0,
+            "samples": 21
+          },
+          "VmHWM": {
+            "maximum": 4312,
+            "median": 4300,
+            "minimum": 4112,
+            "p95": 4304.0,
+            "p99": 4310.4,
+            "q1": 4180.0,
+            "q3": 4300.0,
+            "samples": 21
+          },
+          "VmRSS": {
+            "maximum": 4312,
+            "median": 4300,
+            "minimum": 4112,
+            "p95": 4304.0,
+            "p99": 4310.4,
+            "q1": 4180.0,
+            "q3": 4300.0,
+            "samples": 21
+          },
+          "VmSize": {
+            "maximum": 14960,
+            "median": 14960,
+            "minimum": 14960,
+            "p95": 14960.0,
+            "p99": 14960.0,
+            "q1": 14960.0,
+            "q3": 14960.0,
+            "samples": 21
+          },
+          "fds_including_observer": {
+            "maximum": 8,
+            "median": 8,
+            "minimum": 8,
+            "p95": 8.0,
+            "p99": 8.0,
+            "q1": 8.0,
+            "q3": 8.0,
+            "samples": 21
+          }
+        },
+        "rearm_cpu_ns": {
+          "maximum": 1049204,
+          "median": 1008058,
+          "minimum": 1000162,
+          "p95": 1041018.0,
+          "p99": 1047566.8,
+          "q1": 1004680.0,
+          "q3": 1015920.0,
+          "samples": 21
+        },
+        "rearm_wall_ns": {
+          "maximum": 1053521,
+          "median": 1011411,
+          "minimum": 1003466,
+          "p95": 1045486.0,
+          "p99": 1051914.0,
+          "q1": 1009177.0,
+          "q3": 1016981.0,
+          "samples": 21
+        },
+        "rusage_self_maxrss_kib": {
+          "maximum": 21312,
+          "median": 21312,
+          "minimum": 21312,
+          "p95": 21312.0,
+          "p99": 21312.0,
+          "q1": 21312.0,
+          "q3": 21312.0,
+          "samples": 21
+        },
+        "setup_cpu_ns": {
+          "maximum": 69761,
+          "median": 57468,
+          "minimum": 53049,
+          "p95": 66946.0,
+          "p99": 69198.0,
+          "q1": 55624.0,
+          "q3": 59653.0,
+          "samples": 21
+        },
+        "setup_wall_ns": {
+          "maximum": 69391,
+          "median": 54603,
+          "minimum": 51427,
+          "p95": 66526.0,
+          "p99": 68818.0,
+          "q1": 52910.0,
+          "q3": 57398.0,
+          "samples": 21
+        },
+        "steady": {
+          "Threads": {
+            "maximum": 2,
+            "median": 2,
+            "minimum": 2,
+            "p95": 2.0,
+            "p99": 2.0,
+            "q1": 2.0,
+            "q3": 2.0,
+            "samples": 21
+          },
+          "VmData": {
+            "maximum": 8508,
+            "median": 8508,
+            "minimum": 8508,
+            "p95": 8508.0,
+            "p99": 8508.0,
+            "q1": 8508.0,
+            "q3": 8508.0,
+            "samples": 21
+          },
+          "VmHWM": {
+            "maximum": 4308,
+            "median": 4296,
+            "minimum": 4108,
+            "p95": 4300.0,
+            "p99": 4306.4,
+            "q1": 4176.0,
+            "q3": 4296.0,
+            "samples": 21
+          },
+          "VmRSS": {
+            "maximum": 4308,
+            "median": 4296,
+            "minimum": 4108,
+            "p95": 4300.0,
+            "p99": 4306.4,
+            "q1": 4176.0,
+            "q3": 4296.0,
+            "samples": 21
+          },
+          "VmSize": {
+            "maximum": 14960,
+            "median": 14960,
+            "minimum": 14960,
+            "p95": 14960.0,
+            "p99": 14960.0,
+            "q1": 14960.0,
+            "q3": 14960.0,
+            "samples": 21
+          },
+          "fds_including_observer": {
+            "maximum": 8,
+            "median": 8,
+            "minimum": 8,
+            "p95": 8.0,
+            "p99": 8.0,
+            "q1": 8.0,
+            "q3": 8.0,
+            "samples": 21
+          }
+        }
+      },
+      "previous": {
+        "after": {
+          "Threads": {
+            "maximum": 2,
+            "median": 2,
+            "minimum": 2,
+            "p95": 2.0,
+            "p99": 2.0,
+            "q1": 2.0,
+            "q3": 2.0,
+            "samples": 21
+          },
+          "VmData": {
+            "maximum": 8804,
+            "median": 8804,
+            "minimum": 8804,
+            "p95": 8804.0,
+            "p99": 8804.0,
+            "q1": 8804.0,
+            "q3": 8804.0,
+            "samples": 21
+          },
+          "VmHWM": {
+            "maximum": 4444,
+            "median": 4388,
+            "minimum": 4248,
+            "p95": 4444.0,
+            "p99": 4444.0,
+            "q1": 4380.0,
+            "q3": 4440.0,
+            "samples": 21
+          },
+          "VmRSS": {
+            "maximum": 4444,
+            "median": 4388,
+            "minimum": 4248,
+            "p95": 4444.0,
+            "p99": 4444.0,
+            "q1": 4380.0,
+            "q3": 4440.0,
+            "samples": 21
+          },
+          "VmSize": {
+            "maximum": 146060,
+            "median": 146060,
+            "minimum": 146060,
+            "p95": 146060.0,
+            "p99": 146060.0,
+            "q1": 146060.0,
+            "q3": 146060.0,
+            "samples": 21
+          },
+          "fds_including_observer": {
+            "maximum": 6,
+            "median": 6,
+            "minimum": 6,
+            "p95": 6.0,
+            "p99": 6.0,
+            "q1": 6.0,
+            "q3": 6.0,
+            "samples": 21
+          }
+        },
+        "before": {
+          "Threads": {
+            "maximum": 1,
+            "median": 1,
+            "minimum": 1,
+            "p95": 1.0,
+            "p99": 1.0,
+            "q1": 1.0,
+            "q3": 1.0,
+            "samples": 21
+          },
+          "VmData": {
+            "maximum": 312,
+            "median": 312,
+            "minimum": 312,
+            "p95": 312.0,
+            "p99": 312.0,
+            "q1": 312.0,
+            "q3": 312.0,
+            "samples": 21
+          },
+          "VmHWM": {
+            "maximum": 4152,
+            "median": 4144,
+            "minimum": 3952,
+            "p95": 4152.0,
+            "p99": 4152.0,
+            "q1": 4088.0,
+            "q3": 4148.0,
+            "samples": 21
+          },
+          "VmRSS": {
+            "maximum": 4152,
+            "median": 4144,
+            "minimum": 3952,
+            "p95": 4152.0,
+            "p99": 4152.0,
+            "q1": 4088.0,
+            "q3": 4148.0,
+            "samples": 21
+          },
+          "VmSize": {
+            "maximum": 6760,
+            "median": 6760,
+            "minimum": 6760,
+            "p95": 6760.0,
+            "p99": 6760.0,
+            "q1": 6760.0,
+            "q3": 6760.0,
+            "samples": 21
+          },
+          "fds_including_observer": {
+            "maximum": 6,
+            "median": 6,
+            "minimum": 6,
+            "p95": 6.0,
+            "p99": 6.0,
+            "q1": 6.0,
+            "q3": 6.0,
+            "samples": 21
+          }
+        },
+        "child_cpu_ns": {
+          "maximum": 384139560,
+          "median": 382849549,
+          "minimum": 381889400,
+          "p95": 383756493.0,
+          "p99": 384062946.6,
+          "q1": 382349955.0,
+          "q3": 383045954.0,
+          "samples": 21
+        },
+        "cpu_overrun_ns": {
+          "maximum": 1977143,
+          "median": 987849.0,
+          "minimum": 68505,
+          "p95": 1006034.8,
+          "p99": 1060941.0299999998,
+          "q1": 982199.5,
+          "q3": 991618.5,
+          "samples": 1344
+        },
+        "destroy_cpu_ns": {
+          "maximum": 1894,
+          "median": 732,
+          "minimum": 711,
+          "p95": 1203.0,
+          "p99": 1755.8000000000006,
+          "q1": 731.0,
+          "q3": 752.0,
+          "samples": 21
+        },
+        "destroy_wall_ns": {
+          "maximum": 831,
+          "median": 651,
+          "minimum": 621,
+          "p95": 792.0,
+          "p99": 823.2,
+          "q1": 631.0,
+          "q3": 661.0,
+          "samples": 21
+        },
+        "expiry_cpu_ns": {
+          "maximum": 5758372,
+          "median": 5228688,
+          "minimum": 4907137,
+          "p95": 5573953.0,
+          "p99": 5721488.2,
+          "q1": 5177853.0,
+          "q3": 5275959.0,
+          "samples": 21
+        },
+        "expiry_wall_ns": {
+          "maximum": 385829597,
+          "median": 384527888,
+          "minimum": 383850879,
+          "p95": 385606567.0,
+          "p99": 385784991.0,
+          "q1": 383942532.0,
+          "q3": 384776057.0,
+          "samples": 21
+        },
+        "post_expiry": {
+          "Threads": {
+            "maximum": 2,
+            "median": 2,
+            "minimum": 2,
+            "p95": 2.0,
+            "p99": 2.0,
+            "q1": 2.0,
+            "q3": 2.0,
+            "samples": 21
+          },
+          "VmData": {
+            "maximum": 8804,
+            "median": 8804,
+            "minimum": 8804,
+            "p95": 8804.0,
+            "p99": 8804.0,
+            "q1": 8804.0,
+            "q3": 8804.0,
+            "samples": 21
+          },
+          "VmHWM": {
+            "maximum": 4444,
+            "median": 4388,
+            "minimum": 4248,
+            "p95": 4444.0,
+            "p99": 4444.0,
+            "q1": 4380.0,
+            "q3": 4440.0,
+            "samples": 21
+          },
+          "VmRSS": {
+            "maximum": 4444,
+            "median": 4388,
+            "minimum": 4248,
+            "p95": 4444.0,
+            "p99": 4444.0,
+            "q1": 4380.0,
+            "q3": 4440.0,
+            "samples": 21
+          },
+          "VmSize": {
+            "maximum": 146060,
+            "median": 146060,
+            "minimum": 146060,
+            "p95": 146060.0,
+            "p99": 146060.0,
+            "q1": 146060.0,
+            "q3": 146060.0,
+            "samples": 21
+          },
+          "fds_including_observer": {
+            "maximum": 6,
+            "median": 6,
+            "minimum": 6,
+            "p95": 6.0,
+            "p99": 6.0,
+            "q1": 6.0,
+            "q3": 6.0,
+            "samples": 21
+          }
+        },
+        "rearm_cpu_ns": {
+          "maximum": 2381761,
+          "median": 2152547,
+          "minimum": 2136278,
+          "p95": 2165043.0,
+          "p99": 2338417.4000000004,
+          "q1": 2143112.0,
+          "q3": 2160423.0,
+          "samples": 21
+        },
+        "rearm_wall_ns": {
+          "maximum": 2384296,
+          "median": 2159722,
+          "minimum": 2143530,
+          "p95": 2181744.0,
+          "p99": 2343785.6,
+          "q1": 2150985.0,
+          "q3": 2172005.0,
+          "samples": 21
+        },
+        "rusage_self_maxrss_kib": {
+          "maximum": 21312,
+          "median": 21312,
+          "minimum": 21312,
+          "p95": 21312.0,
+          "p99": 21312.0,
+          "q1": 21312.0,
+          "q3": 21312.0,
+          "samples": 21
+        },
+        "setup_cpu_ns": {
+          "maximum": 41568,
+          "median": 35076,
+          "minimum": 31540,
+          "p95": 40426.0,
+          "p99": 41339.6,
+          "q1": 33824.0,
+          "q3": 36138.0,
+          "samples": 21
+        },
+        "setup_wall_ns": {
+          "maximum": 41549,
+          "median": 35638,
+          "minimum": 31439,
+          "p95": 40427.0,
+          "p99": 41324.6,
+          "q1": 33814.0,
+          "q3": 38532.0,
+          "samples": 21
+        },
+        "steady": {
+          "Threads": {
+            "maximum": 2,
+            "median": 2,
+            "minimum": 2,
+            "p95": 2.0,
+            "p99": 2.0,
+            "q1": 2.0,
+            "q3": 2.0,
+            "samples": 21
+          },
+          "VmData": {
+            "maximum": 344,
+            "median": 344,
+            "minimum": 344,
+            "p95": 344.0,
+            "p99": 344.0,
+            "q1": 344.0,
+            "q3": 344.0,
+            "samples": 21
+          },
+          "VmHWM": {
+            "maximum": 4300,
+            "median": 4292,
+            "minimum": 3968,
+            "p95": 4300.0,
+            "p99": 4300.0,
+            "q1": 4172.0,
+            "q3": 4296.0,
+            "samples": 21
+          },
+          "VmRSS": {
+            "maximum": 4300,
+            "median": 4292,
+            "minimum": 3968,
+            "p95": 4300.0,
+            "p99": 4300.0,
+            "q1": 4172.0,
+            "q3": 4296.0,
+            "samples": 21
+          },
+          "VmSize": {
+            "maximum": 6792,
+            "median": 6792,
+            "minimum": 6792,
+            "p95": 6792.0,
+            "p99": 6792.0,
+            "q1": 6792.0,
+            "q3": 6792.0,
+            "samples": 21
+          },
+          "fds_including_observer": {
+            "maximum": 6,
+            "median": 6,
+            "minimum": 6,
+            "p95": 6.0,
+            "p99": 6.0,
+            "q1": 6.0,
+            "q3": 6.0,
+            "samples": 21
+          }
+        }
+      }
+    },
+    "startup_benchmark": {
+      "path": "work/resource-cpu-next/startup3/verification.json",
+      "sha256": "dea5a85e5bd7a42ae97906319e8a098e9a84550a5e02b99323349c8c4aa95a7a"
+    },
+    "startup_summary": {
+      "current": {
+        "cpu_us": {
+          "maximum": 1383,
+          "median": 1082.0,
+          "minimum": 999
+        },
+        "process_wall_ns": {
+          "median": 1425699.0
+        },
+        "rss_kib": {
+          "maximum": 5692,
+          "median": 5482.0,
+          "minimum": 5308
+        },
+        "threads": {
+          "maximum": 3,
+          "median": 3.0,
+          "minimum": 3
+        },
+        "vmdata_kib": {
+          "maximum": 17664,
+          "median": 17664.0,
+          "minimum": 17664
+        },
+        "vmsize_kib": {
+          "maximum": 90724,
+          "median": 90724.0,
+          "minimum": 90724
+        },
+        "wall_ns": {
+          "maximum": 402410,
+          "median": 331706.5,
+          "minimum": 307351
+        }
+      },
+      "previous": {
+        "cpu_us": {
+          "maximum": 1333,
+          "median": 1063.5,
+          "minimum": 992
+        },
+        "process_wall_ns": {
+          "median": 1379698.0
+        },
+        "rss_kib": {
+          "maximum": 5668,
+          "median": 5436.0,
+          "minimum": 5344
+        },
+        "threads": {
+          "maximum": 3,
+          "median": 3.0,
+          "minimum": 3
+        },
+        "vmdata_kib": {
+          "maximum": 17664,
+          "median": 17664.0,
+          "minimum": 17664
+        },
+        "vmsize_kib": {
+          "maximum": 90712,
+          "median": 90712.0,
+          "minimum": 90712
+        },
+        "wall_ns": {
+          "maximum": 458196,
+          "median": 323576.5,
+          "minimum": 300006
+        }
+      }
+    }
+  },
+  "performance_gate_passed": false,
+  "preservation": {
+    "frozen_server12": {
+      "files": 70,
+      "path": "work/resources-complete/server-build12/build.json",
+      "sha256": "db39207ae08604212d20217a0caa03c59990e681aaf093930da13ee93b22d0c5",
+      "unchanged": true
+    },
+    "historical_cpu_revision1": {
+      "owned_server_files": 95,
+      "scope": "First revision remains historical; its mutable repository source references legitimately drift to revision2.",
+      "source_manifest": {
+        "path": "work/resource-cpu-next/revision1-frozen/manifest.json",
+        "sha256": "b18d509ed00ed8b06f59922b5c696936d9195cc5977f005fd08c5fa4bc52cd19"
+      },
+      "unchanged": true
+    },
+    "preceding_paired_runtimes": {
+      "files": {
+        "base_kernel": {
+          "path": "work/resources-complete/matching-exec-fixed/libsystem_kernel-rust.dylib",
+          "sha256": "1914e257be34c877f7ab266378b195b538840b0881a4f6a0c93bf4a333242854",
+          "unchanged": true
+        },
+        "base_loader": {
+          "path": "work/resources-complete/loader12/mldr",
+          "sha256": "60046ab06fe63360b819233e64cec40612010c20392b322a7b21e8340ff85b78",
+          "unchanged": true
+        },
+        "base_server": {
+          "path": "work/resources-complete/server-build12/linked/darlingserver",
+          "sha256": "8be246940029ab72ffdb8a15b25399ccbf52a2331db8b9a20a2a38b185f86acf",
+          "unchanged": true
+        }
+      },
+      "manifest": {
+        "path": "work/resource-copy-next/final-preservation.json",
+        "sha256": "c272311c7cb3d806cbbfeaeeb1f5683845fc4c104c82cce838d6606f7307e69b"
+      },
+      "unchanged": true
+    },
+    "preserved-candidates.json": {
+      "files": 23,
+      "path": "work/resource-death-continuation/preserved-candidates.json",
+      "sha256": "44193fa8bc08dccf0706d44a546daecd2272e3d7f04127adfbd705bfec4a1f23",
+      "unchanged": true
+    },
+    "stopped-wip-preservation4.json": {
+      "files": 11,
+      "path": "work/resource-death-continuation/stopped-wip-preservation4.json",
+      "sha256": "b6c41aea6096bc40858253c285b8facc7886c4d462db0532e1075ba5741a95e1",
+      "unchanged": true
+    }
+  },
+  "proofs": {
+    "engine": {
+      "path": "work/resource-cpu-next/proof4/verification.json",
+      "sha256": "394e2bfc4d80f8400e9044db8324ea341046a7cbeddc3e96fadc97b4fd7342db"
+    },
+    "lazy_adapter": {
+      "path": "work/resource-cpu-next/lazy3/verification.json",
+      "sha256": "5496a9f74dc7bbdfb7c9dd0c76c4029792ebfa5d776cf8138489e429f9fc3851"
+    },
+    "query_failure": {
+      "path": "work/resource-cpu-next/query-proof2/verification.json",
+      "sha256": "e98e98cf282c357600fe578c9c850d1c182f82098673e32b1ff0b716fd93c951"
+    }
+  },
+  "python": {
+    "count": 115,
+    "exit_code": 0,
+    "path": "work/resource-cpu-next/python-tests-final.log",
+    "sha256": "c8b64202b686b6588cde292ba1cbd9f9a2541ae057cb9de7e0d4e4a7eb5d53a5"
+  },
+  "resource_complete": false,
+  "resource_ownership_activated": false,
+  "rust_scope": "No Rust source changes in this batch; prior214 ordinary/11compilefail and Darwin ABI checks retain their exact historical scope in resource-copy-current-index.json.",
+  "schema_version": 1,
+  "scope": "Owned Linux-host CPU-delivery prerequisite, integrated into an inactive single-worker server derivative. No Rust source replacement or whole-resource completion.",
+  "server": {
+    "build": {
+      "path": "work/resource-cpu-next/server2/server/build.json",
+      "sha256": "3bb455e8f8b2d9eb2a08b24159c3a91202bf70d5286645c68f5b43a04708423c"
+    },
+    "link": {
+      "path": "work/resource-cpu-next/server2/server/linked/relink.json",
+      "sha256": "5d66fe9d58282e5c61c3a30fb5c362caa7a0c49a1b6dfdedf6e2fccb4303acd2"
+    },
+    "path": "work/resource-cpu-next/server2/server/linked/darlingserver",
+    "receiver_deferred_until_first_arm": true,
+    "scope": "Single-worker owned build; no current multiworker acceptance or production activation.",
+    "sha256": "b90326c2c76f146c8cea92f21432b20cfdeead3bee2b3de9c8147c4f0e74c50f",
+    "signal": 64,
+    "translation_units": 12
+  },
+  "source_sha256": {
+    "tools/benchmark_resource_cpu_dispatch.py": "6e89d9a19ea835f3b8ebf2dc28888e2510f18989471dbe9c68ee7a90a5ea4b7a",
+    "tools/benchmark_resource_cpu_startup.py": "074fe2c1ba09d67c3d18f03c99dc2d69878444d5e7de95fb1629be45c6712b69",
+    "tools/build_resource_cpu_dispatch_server.py": "39bff3553c853f3730666f650fdb7a7250c32ac2d0f0ddc7ce80c10779f46891",
+    "tools/check_resource_cpu_lazy.py": "5f4ef04955a9505304280b31b1e7b3330a89ae235f40e89a3458494059b70e55",
+    "tools/fixtures/resource-cpu-dispatch-bench.cpp": "3bfcbb7323caa40c064f370db21bf64a65484657d2e0170438fcf0cd5878bccf",
+    "tools/fixtures/resource-cpu-lazy-native.cpp": "9b877fa02bde753a35a2e9d2ba3fd3e8e417bea3532707ad7e84826530fe116d",
+    "tools/record_resource_cpu_progress.py": "36aceb4715c2db8dc5ede5d1aefae8371a543d4a7440f7b29f80c7c6f5ed8fb6",
+    "tools/resource-cpu-timer.inc": "669b8a75962d816cdae617e19cde6dbcdeb9fb7249e6b16af42dba72d3ea9d26",
+    "tools/resource_cpu_check.py": "8cd240adc626df7c3330a1d8264f7efd3adcfecd7d6954c0451ea6fe5ad1abf8",
+    "tools/resource_cpu_dispatch.inc": "b40add078d43705f86041e4d1ba6216073bc568201c802b63ad25fa64a2eaf51",
+    "tools/resource_cpu_dispatch_native.cpp": "035e6428eb2d3c5d89107e1aa22e5922387ad0d0eaa0454255729bef9eca0ca4",
+    "tools/resource_cpu_original_loss_native.cpp": "eaddcdcf6f29da3460546282adab81cb37dcfb70559ddbb20d30705211cc1f23",
+    "tools/resource_cpu_query_check.py": "822137c4c4f3374cb780a6c5c7d14b5aeb404bb1e4923b9a166370ff3c8cf7c0",
+    "tools/resource_cpu_query_failure_native.cpp": "e1e1b44bbffd18b3ba60dd0b8eee29885616428d88037e35000237bc8197a8c4"
+  }
+}

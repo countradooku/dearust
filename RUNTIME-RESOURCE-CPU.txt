@@ -1,0 +1,113 @@
+Owned CPU-limit delivery prerequisite — resources remain UNFINISHED
+=================================================================
+
+resource-cpu-current-index.json indexes the current Linux-host C++ derivative,
+its exact source/native proofs, owned server2 build, 88 ordinary guest checks,
+executable inode/hash observations and matched measurements. It is candidate-only:
+logical resource ownership remains inactive; default Cargo staging is unchanged.
+No C++ support file or test counts as another Rust source replacement or target.
+
+Confirmed defects and implementation
+------------------------------------
+The preceding candidate used SIGEV_THREAD. An actual installed-glibc allocation
+failure reproduces loss of a one-shot CPU deadline: zero SIGXCPU, last_error zero.
+The frozen source witness is glibc04e750e75b73957cf1c791535a3f4319534a52fc;
+the actual distro libc is separately hashed/disassembled, not equated to that pin.
+The primary source allocates callback data and starts a callback thread at expiry.
+Original source URLs/hashes, the failed allocation and recovery are retained.
+
+New tools/resource_cpu_dispatch.inc prepares a shared synchronous receiver,
+CLOEXEC/NONBLOCK signalfd and eventfd before accepting a timer. Expiry and rearming
+an existing timer allocate nothing and create no threads. Each owner retains one
+kernel timer bound to the original task/struct-pid identity. Initial numeric-clock
+binding is checked against the original pidfd AFTER unarmed timer_create, before
+arming/publication; a raced death fails without publishing the prepared timer.
+The host_pid/pidfd pair must name the same original process. The descriptor-only
+fd_owner must not own a Process, CpuTimer or Dispatcher, even indirectly.
+
+An opaque, never-reused token identifies that kernel binding, not a generation.
+On a matching notification the receiver locks the Arm and queries the exact owned
+timer. Nonzero remaining time suppresses an old wake after a later rearm; zero
+allows exactly one current delivery. Code/token filtering alone does not prove
+kernel-authenticated origin. The bound timer state prevents premature delivery.
+Rearm updates physical timer state before nonthrowing generation publication;
+failed preparation or replacement retains the prior arm. Disable retires the
+binding; terminal shutdown cannot be reopened. Deadlines above signed64 nanoseconds
+fail EOVERFLOW rather than inherit Linux's earlier ktime clamp. Existing XNU policy
+saturates physical CPU deadlines at INT32_MAX seconds, below that boundary; this
+is separate from full logical unsigned-limit ownership, which is unfinished.
+
+The receiver explicitly blocks its reserved RT signal before publishing readiness.
+The caller reserves that signal for cooperating dispatchers and preserves its
+non-ignored disposition. Shutdown wakes through the precreated eventfd, so it does
+not need a fresh RT signal-queue allocation. A failed timer-state query is reported
+as a persistent negative diagnostic until explicit successful rearm; automatic
+redelivery or retry is not claimed. Full asynchronous fault handling remains open.
+
+Owned integration
+------------------
+The new builder composes existing verified lifecycle/lockset transforms, then
+selects the new CPU helper and exact ResourceLazyCpuTimer adapter. All12 server
+translation units and selected C inputs are rebuilt; prior bridges and archives
+remain pinned. The adapter prepares its receiver only on the first CPU deadline,
+keeping unused/infinite CPU limits from adding a worker or two FDs at startup.
+Native/ASan tests compile the identical generated adapter and exercise first-arm
+failure, sharing, replacement, cancellation, terminal death and complete teardown.
+
+  python3 tools/build_resource_cpu_dispatch_server.py \
+    --candidate work/resources-complete/server-build12 \
+    --output /fresh/owned/cpu-server --cpu-signal 64
+
+Signal64 is explicit for this owned Linux/glibc configuration. There is no new
+production default or established wider platform/configuration support. The
+88-case ordinary cohort uses the same new server2/loader12/SIMD kernel in both
+slots, not C-versus-Rust variants. The private PID/mount namespace observations
+verify all10 server executables and355 loader observations against expected hashes.
+The mapped kernel matches the unchanged current SIMD kernel. This does not execute
+active client resource ownership or establish guest CPU-enforcement acceptance.
+
+Verification and measurements
+-----------------------------
+Native adapted/raw-boundary and ASan/UBSan C++ proofs cover real CPU versus wall
+time, one-shot delivery, delayed/coalesced stale notifications,128 owners sharing
+one receiver,200 allocation-denied rearms without another kernel timer creation,
+preparation allocation/FD/pthread/timer failures, pidfd binding death, range errors,
+query failure/recovery, cancellation/replacement and terminal shutdown. Actual
+RLIMIT_SIGPENDING exhaustion still permits eventfd-based teardown. ASan/UBSan
+instrument the C++ helper/fixtures; libc and the kernel are not instrumented.
+Python115 tests pass. No Rust source changed; prior214ordinary/11compilefail and
+Darwin ABI results remain identified historical evidence in the copy index.
+
+Native performance has21 paired fresh processes per variant with reversed pair
+ordering. Previous/current medians for1000 future rearms are2.152547/1.008058ms
+process CPU (-53.17%);64 expirations cost5.228688/3.564860ms (-31.82%). Expiration
+wall medians remain384.528/384.555ms; CPU-deadline overruns retain kernel tick and
+scheduling costs, with every raw sample/tail preserved. These are engine workloads,
+not complete resource or application acceptance. Cold first arm CPU increases
+35.076->57.468us. Last-owner teardown costs32.532us versus prior0.732us, while the
+prior glibc helper remains alive and the new receiver is joined/FDs closed.
+
+One shared receiver adds2FDs and an8MiB default virtual stack plus4KiB guard when
+first needed. Those are real costs. procfs VmSize/VmData, RSS, per-executable VmHWM
+and raw RUSAGE_SELF high water are kept distinct; the latter can retain pre-exec
+launcher history and cannot establish this executable's peak. No universal memory
+or speed advantage is inferred. Before first deadline, matched20-process owned
+startup has3 threads and17664KiB VmData for both variants; native initialization
+wall medians323.577/331.707us and process CPU1063.5/1082us overlap their ranges.
+An earlier startup2 cohort ran alongside functional guests and is retained as a
+diagnostic; startup3 is the quiet matched run. First revisions/failed diagnostics
+are preserved, including their less efficient rearm implementation.
+
+Open gates and preservation
+----------------------------
+All23 original dirty candidates,11 stopped WIP files,70 frozen server12 inputs,
+earlier paired runtimes, first CPU revision and all failed builds/runs are preserved.
+No installed or reference runtime is changed. The automatically stopped RPC,
+Checkin, exec-notification/cleanup-lane, executing continuation and intrusive C
+wait-admission checks were not retried, rephrased, transferred or integrated.
+Last historical multiworker58 remains78/80 with two Mach lockset timeouts; no new
+multiworker result is claimed. Full unsigned ownership, VM/wiring, host hard-limit
+coherence/partial effects, credentials/NPROC, client fork/exec/cancellation, shutdown,
+architecture and generic-copy CPU/performance gates remain unfinished. Packages01–09
+remain scoped dependencies, not completed implementation. No replacement/retirement
+count is increased by this prerequisite.

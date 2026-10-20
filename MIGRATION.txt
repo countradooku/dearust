@@ -41,6 +41,11 @@ policy/view foundations. Those foundations are not activated client ownership. E
 refresh now rejects conflicting complete snapshots. The independent SIMD copy
 follow-up passes native/ABI/link and88 ordinary guest checks; its measured
 effects establish no material speedup. See resource-copy-current-index.json.
+The newer Linux-host CPU delivery candidate replaces allocation-dependent expiry
+callbacks with one prepared receiver and original-kernel-timer reuse;88 ordinary
+guests pass in owned server2. It leaves ownership inactive and adds no Rust source
+or target replacement count. resource-cpu-current-index.json separates native
+engine correctness, actual mapping evidence, performance and unresolved gates.
 The separately preserved dirty server/loader/exec candidates have ordinary guest
 evidence; both candidate harness slots use the same candidate. Their successful
 startup supersedes the older startup hypothesis, without closing ownership,

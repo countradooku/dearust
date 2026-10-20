@@ -269,7 +269,8 @@
         "tools/build_prepared_resource_server.py",
         "tools/build_resource_lifecycle_server.py",
         "tools/build_resource_workqueue_configuration.py",
-        "tools/build_resource_lockset_server.py"
+        "tools/build_resource_lockset_server.py",
+        "tools/build_resource_cpu_dispatch_server.py"
       ],
       "evidence": [
         "work/resources-complete/continuation-20261019/guest-summary-final6.json",
@@ -281,7 +282,8 @@
         "work/resource-death-continuation/lockset58-multi/server/linked/relink.json",
         "work/resource-death-continuation/lockset-registry/proof6/verification.json",
         "work/resource-death-continuation/lockset-cancel/proof1/verification.json",
-        "resource-copy-current-index"
+        "resource-copy-current-index",
+        "resource-cpu-current-index"
       ],
       "historical_scope_observations": [
         {
@@ -300,6 +302,26 @@
             "Latest single-worker thread-info.c post-join ESRCH assertion failed; exact termination/result ordering remains under review, without weakened expectations."
           ],
           "scope": "Owned lifecycle prerequisites include worker ownership/handoff, C mutex interlock and eventfd rearm fixes. Latest single/multi owned guest cohorts fail; earlier same-candidate88 passes remain historical. Component native proofs retain exact binaries. Ownership inactive; no Rust replacement/retirement."
+        },
+        {
+          "open_gates": [
+            "Client owner lifecycle/fork/exec/signal/cancellation",
+            "Host hard-limit concurrency/partial mprotect and coherent VM/wiring lifecycle",
+            "Guest credential/NPROC authority",
+            "Old-kernel and queued message-lifetime identity",
+            "Native generic-copy CPU regressions",
+            "Adversarial RPC validation externally blocked; do not retry.",
+            "Checked ordinary acquisition and generation lifetime have scoped native proofs; final combined exec/initial-call failure, generic/lazy IPC, bootstrap, active-call cancellation and full shutdown remain open.",
+            "Additional exec-notification/extra-guest/cleanup-lane follow-up and direct native Checkin fault proof stopped by automatic cybersecurity review; do not retry/rephrase/transfer.",
+            "Additional native cleanup pthread/default stack and broader performance acceptance remain open.",
+            "Multiworker ordinary guest timeout remains unresolved; deterministic handoff fixes pass scoped native/sanitized methods and default88 guests.",
+            "Continuation closure lifetime validation stopped by automatic cybersecurity review; inactive WIP must not be retried/rephrased/transferred.",
+            "Post-join thread-info ordering has an independent pinned-contract correction; historical immediate-ESRCH failures remain preserved. This does not close complete lifecycle/concurrency acceptance.",
+            "Duplicate intrusive wake/TailQ and wait/admission/interrupt ownership remain unresolved in multiworker scope; no complete concurrency gate is passed.",
+            "New wait-admission fix/check/fixture work was stopped by automatic cybersecurity review and remains inactive/unverified; do not retry, rephrase, transfer or execute it. Previously stopped work remains stopped.",
+            "Current mask-proven SIMD reduces copy-loop instructions; effects below 1% do not establish a material gain. Generic heap/cross-page CPU remains about 68% above C. Equal-generation view integrity is fixed in an inactive foundation, not integrated ownership."
+          ],
+          "scope": "Owned registration, cleanup and wait prerequisites plus revised partial Rust lockset: owned57 single-worker passes88 ordinary guests; owned58 multiworker passes78/80 executed cases and fails2 Mach lockset cases. Resource ownership inactive; no additional source replacement, whole-target replacement or retirement. Full faults/shutdown/performance and automatic-review-stopped wait-admission work remain open."
         }
       ],
       "name": "resource-ownership",
@@ -318,13 +340,14 @@
         "Post-join thread-info ordering has an independent pinned-contract correction; historical immediate-ESRCH failures remain preserved. This does not close complete lifecycle/concurrency acceptance.",
         "Duplicate intrusive wake/TailQ and wait/admission/interrupt ownership remain unresolved in multiworker scope; no complete concurrency gate is passed.",
         "New wait-admission fix/check/fixture work was stopped by automatic cybersecurity review and remains inactive/unverified; do not retry, rephrase, transfer or execute it. Previously stopped work remains stopped.",
-        "Current mask-proven SIMD reduces copy-loop instructions; effects below 1% do not establish a material gain. Generic heap/cross-page CPU remains about 68% above C. Equal-generation view integrity is fixed in an inactive foundation, not integrated ownership."
+        "Current mask-proven SIMD reduces copy-loop instructions; effects below 1% do not establish a material gain. Generic heap/cross-page CPU remains about 68% above C. Equal-generation view integrity is fixed in an inactive foundation, not integrated ownership.",
+        "CPU delivery derivative fixes observed lost expiry under allocation failure and avoids allocation on bound-timer rearm; native rearm/expiry CPU improves, but first-arm/last-owner teardown cost, twoFD/default8MiB stack, full async-fault and whole application/performance acceptance remain open. Explicit signal64 is scoped to owned Linux/glibc server2; no production ownership activation."
       ],
       "rust_foundations": [
         "crates/dearust-process/src/resource_policy.rs",
         "crates/dearust-process/src/resource_view.rs"
       ],
-      "scope": "Owned registration, cleanup and wait prerequisites plus revised partial Rust lockset: owned57 single-worker passes88 ordinary guests; owned58 multiworker passes78/80 executed cases and fails2 Mach lockset cases. Resource ownership inactive; no additional source replacement, whole-target replacement or retirement. Full faults/shutdown/performance and automatic-review-stopped wait-admission work remain open."
+      "scope": "Owned lifecycle prerequisites and partial Rust lockset remain candidate-only. New CPU server2 single-worker passes88 ordinary guests with native/raw/sanitized CPU timer reuse, deferred adapter and query-recovery proofs. Earlier57 single-worker88 and58 multiworker78/80 retain exact historical scope. Resource ownership inactive; no Rust source addition, whole-target replacement or retirement. Full faults/VM/credentials/shutdown/performance and stopped gates remain open."
     }
   ],
   "cargo_packages": [
@@ -1793,6 +1816,134 @@
       "path": "resource-copy-current-index.json",
       "scope": "Fresh mask-proven SIMD loop, inactive equal-generation snapshot integrity; owned matching/pinned links, native/sanitized and88ordinaryguestpass. No material speedup, full resource/performance/multiworker completion or activation.",
       "sha256": "0b7f439f03deb309628a8fc3f7338f333ae17d8a1a7e097afaf739fd399e1db1"
+    },
+    {
+      "assertions": [
+        {
+          "equals": true,
+          "pointer": "/implemented_checks_passed"
+        },
+        {
+          "equals": false,
+          "pointer": "/resource_complete"
+        },
+        {
+          "equals": false,
+          "pointer": "/resource_ownership_activated"
+        },
+        {
+          "equals": false,
+          "pointer": "/blocked_checks_retried"
+        },
+        {
+          "equals": false,
+          "pointer": "/performance_gate_passed"
+        },
+        {
+          "equals": 88,
+          "pointer": "/guests/strict_passes"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "resource-cpu-current-index",
+      "kind": "scoped-current-evidence-index",
+      "path": "resource-cpu-current-index.json",
+      "scope": "Owned Linux-host C++ CPU delivery prerequisite;88ordinaryguests/native/sanitized proofs and measured costs. No Rust source port, activation, whole resource/performance/multiworker completion or retirement.",
+      "sha256": "7e56729b097c2f51c7d3f443fef84cc286435d63243ae4309c552593779303ec"
+    },
+    {
+      "assertions": [
+        {
+          "equals": true,
+          "pointer": "/passed"
+        },
+        {
+          "equals": true,
+          "pointer": "/inputs_unchanged"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "resource-cpu-native-reuse",
+      "kind": "scoped-native-component-proof",
+      "path": "work/resource-cpu-next/proof4/verification.json",
+      "scope": "Real old allocation-loss reproduction; new native/raw/ASan CPU timer binding/reuse, delayed/coalesced wakes, preparation/teardown failures. Not RPC/whole resource proof.",
+      "sha256": "394e2bfc4d80f8400e9044db8324ea341046a7cbeddc3e96fadc97b4fd7342db"
+    },
+    {
+      "assertions": [
+        {
+          "equals": true,
+          "pointer": "/passed"
+        },
+        {
+          "equals": true,
+          "pointer": "/inputs_unchanged"
+        },
+        {
+          "equals": false,
+          "pointer": "/resource_ownership_activated"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "resource-cpu-query-recovery",
+      "kind": "scoped-native-component-proof",
+      "path": "work/resource-cpu-next/query-proof2/verification.json",
+      "scope": "Exact timer-state query failure is reported without false signal; same-binding explicit rearm recovers. No automatic redelivery or full async fault acceptance.",
+      "sha256": "e98e98cf282c357600fe578c9c850d1c182f82098673e32b1ff0b716fd93c951"
+    },
+    {
+      "assertions": [
+        {
+          "equals": true,
+          "pointer": "/passed"
+        },
+        {
+          "equals": true,
+          "pointer": "/inputs_unchanged"
+        },
+        {
+          "equals": false,
+          "pointer": "/resource_ownership_activated"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "resource-cpu-lazy-adapter",
+      "kind": "scoped-native-component-proof",
+      "path": "work/resource-cpu-next/lazy3/verification.json",
+      "scope": "Exact generated lazy adapter and real CPU helper, native/ASan; unused/infinite limits create no receiver or descriptors; failures/terminal state/sharing/teardown. No RPC or active ownership.",
+      "sha256": "5496a9f74dc7bbdfb7c9dd0c76c4029792ebfa5d776cf8138489e429f9fc3851"
+    },
+    {
+      "assertions": [
+        {
+          "equals": true,
+          "pointer": "/inputs_unchanged"
+        },
+        {
+          "equals": false,
+          "pointer": "/resource_ownership_activated"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "resource-cpu-owned-build",
+      "kind": "candidate-consumer-build",
+      "path": "work/resource-cpu-next/server2/server/build.json",
+      "scope": "All12serverTUs and selected C inputs rebuild current CPU helper plus existing partial Rust archives. Owned single-worker only; no production activation.",
+      "sha256": "3bb455e8f8b2d9eb2a08b24159c3a91202bf70d5286645c68f5b43a04708423c"
+    },
+    {
+      "assertions": [
+        {
+          "equals": "b90326c2c76f146c8cea92f21432b20cfdeead3bee2b3de9c8147c4f0e74c50f",
+          "pointer": "/server_sha256"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "resource-cpu-owned-link",
+      "kind": "candidate-consumer-link",
+      "path": "work/resource-cpu-next/server2/server/linked/relink.json",
+      "scope": "Exact owned Linux server2 selected inputs/archives and final ELF provenance; not a newly ported source/artifact or a whole-target replacement.",
+      "sha256": "5d66fe9d58282e5c61c3a30fb5c362caa7a0c49a1b6dfdedf6e2fccb4303acd2"
     }
   ],
   "execution_observations": [
@@ -3905,16 +4056,163 @@
       "path": "work/resource-copy-next/pinned-simd.json",
       "provenance": "resource-copy-current-index.json",
       "sha256": "0ea014f4d1e14870b4f489defa3a59d8de3ebf10b59143ae9726efcc0b4b68cb"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "6e89d9a19ea835f3b8ebf2dc28888e2510f18989471dbe9c68ee7a90a5ea4b7a",
+      "path": "tools/benchmark_resource_cpu_dispatch.py",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "6e89d9a19ea835f3b8ebf2dc28888e2510f18989471dbe9c68ee7a90a5ea4b7a"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "074fe2c1ba09d67c3d18f03c99dc2d69878444d5e7de95fb1629be45c6712b69",
+      "path": "tools/benchmark_resource_cpu_startup.py",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "074fe2c1ba09d67c3d18f03c99dc2d69878444d5e7de95fb1629be45c6712b69"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "39bff3553c853f3730666f650fdb7a7250c32ac2d0f0ddc7ce80c10779f46891",
+      "path": "tools/build_resource_cpu_dispatch_server.py",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "39bff3553c853f3730666f650fdb7a7250c32ac2d0f0ddc7ce80c10779f46891"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "5f4ef04955a9505304280b31b1e7b3330a89ae235f40e89a3458494059b70e55",
+      "path": "tools/check_resource_cpu_lazy.py",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "5f4ef04955a9505304280b31b1e7b3330a89ae235f40e89a3458494059b70e55"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "3bfcbb7323caa40c064f370db21bf64a65484657d2e0170438fcf0cd5878bccf",
+      "path": "tools/fixtures/resource-cpu-dispatch-bench.cpp",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "3bfcbb7323caa40c064f370db21bf64a65484657d2e0170438fcf0cd5878bccf"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "9b877fa02bde753a35a2e9d2ba3fd3e8e417bea3532707ad7e84826530fe116d",
+      "path": "tools/fixtures/resource-cpu-lazy-native.cpp",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "9b877fa02bde753a35a2e9d2ba3fd3e8e417bea3532707ad7e84826530fe116d"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "36aceb4715c2db8dc5ede5d1aefae8371a543d4a7440f7b29f80c7c6f5ed8fb6",
+      "path": "tools/record_resource_cpu_progress.py",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "36aceb4715c2db8dc5ede5d1aefae8371a543d4a7440f7b29f80c7c6f5ed8fb6"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "8cd240adc626df7c3330a1d8264f7efd3adcfecd7d6954c0451ea6fe5ad1abf8",
+      "path": "tools/resource_cpu_check.py",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "8cd240adc626df7c3330a1d8264f7efd3adcfecd7d6954c0451ea6fe5ad1abf8"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "b40add078d43705f86041e4d1ba6216073bc568201c802b63ad25fa64a2eaf51",
+      "path": "tools/resource_cpu_dispatch.inc",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "b40add078d43705f86041e4d1ba6216073bc568201c802b63ad25fa64a2eaf51"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "035e6428eb2d3c5d89107e1aa22e5922387ad0d0eaa0454255729bef9eca0ca4",
+      "path": "tools/resource_cpu_dispatch_native.cpp",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "035e6428eb2d3c5d89107e1aa22e5922387ad0d0eaa0454255729bef9eca0ca4"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "eaddcdcf6f29da3460546282adab81cb37dcfb70559ddbb20d30705211cc1f23",
+      "path": "tools/resource_cpu_original_loss_native.cpp",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "eaddcdcf6f29da3460546282adab81cb37dcfb70559ddbb20d30705211cc1f23"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "822137c4c4f3374cb780a6c5c7d14b5aeb404bb1e4923b9a166370ff3c8cf7c0",
+      "path": "tools/resource_cpu_query_check.py",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "822137c4c4f3374cb780a6c5c7d14b5aeb404bb1e4923b9a166370ff3c8cf7c0"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-source",
+      "observed_sha256": "e1e1b44bbffd18b3ba60dd0b8eee29885616428d88037e35000237bc8197a8c4",
+      "path": "tools/resource_cpu_query_failure_native.cpp",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "New CPU candidate source/tooling, not an upstream Rust implementation replacement.",
+      "sha256": "e1e1b44bbffd18b3ba60dd0b8eee29885616428d88037e35000237bc8197a8c4"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-evidence",
+      "observed_sha256": "00b9d6235f97f9a7af42e19b9ba4c7991067010e6ddcb86ab07754cb78df2ed0",
+      "path": "RUNTIME-RESOURCE-CPU.txt",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "Owned CPU-only prerequisite evidence; no production activation or new Rust artifact count.",
+      "sha256": "00b9d6235f97f9a7af42e19b9ba4c7991067010e6ddcb86ab07754cb78df2ed0"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-evidence",
+      "observed_sha256": "b90326c2c76f146c8cea92f21432b20cfdeead3bee2b3de9c8147c4f0e74c50f",
+      "path": "work/resource-cpu-next/server2/server/linked/darlingserver",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "Owned CPU-only prerequisite evidence; no production activation or new Rust artifact count.",
+      "sha256": "b90326c2c76f146c8cea92f21432b20cfdeead3bee2b3de9c8147c4f0e74c50f"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-support-evidence",
+      "observed_sha256": "5d66fe9d58282e5c61c3a30fb5c362caa7a0c49a1b6dfdedf6e2fccb4303acd2",
+      "path": "work/resource-cpu-next/server2/server/linked/relink.json",
+      "provenance": "resource-cpu-current-index.json",
+      "scope": "Owned CPU-only prerequisite evidence; no production activation or new Rust artifact count.",
+      "sha256": "5d66fe9d58282e5c61c3a30fb5c362caa7a0c49a1b6dfdedf6e2fccb4303acd2"
     }
   ],
   "gaps": [
     {
       "evidence": [
         "runtime-resource-copies-verification.json",
-        "work/resources-complete/continuation-20261019/guest-summary-final6.json"
+        "work/resources-complete/continuation-20261019/guest-summary-final6.json",
+        "resource-copy-current-index.json",
+        "resource-cpu-current-index.json",
+        "resource-lifecycle-current-index.json"
       ],
       "id": "resources",
-      "missing": "Exact unsigned ownership, XNU enforcement and candidate lifecycle plus measured CPU gates; finish before post-resource packages.",
+      "missing": "CPU-delivery allocation loss and bound-timer rearm prerequisites have scoped native/owned guest evidence; exact unsigned ownership, XNU physical enforcement, VM/credential/lifecycle, multiworker, architecture and measured whole/generic-copy CPU gates remain unfinished before post-resource packages.",
       "status": "unfinished"
     },
     {
@@ -3928,12 +4226,12 @@
     },
     {
       "id": "unclassified-implementation",
-      "missing": "Suffix labels are heuristics. The exact CMake scan identifies 15 prose/header/template/malformed inputs requiring role review; unobserved sources, symlink aliases, SDK/data and handwritten languages still need semantic ownership review.",
+      "missing": "Suffix labels are heuristics. All15 unparsed CMake inputs have exact pinned role/consumer reviews; configured template behavior, reachability and handwritten semantics remain unresolved. Unobserved sources, symlink aliases, SDK/data and other languages still need semantic ownership review.",
       "status": "review-required"
     },
     {
       "id": "blocked-validation",
-      "missing": "Previously rejected adversarial RPC validation remains unverified; ordinary functional work only.",
+      "missing": "Automatically rejected adversarial RPC, direct Checkin fault proof, exec-notification/cleanup-lane follow-up, executing continuation and intrusive C wait-admission fix/regression remain unverified/inactive; no retry, rephrasing or transfer. Ordinary independent resource work only.",
       "status": "externally-blocked"
     }
   ],
@@ -3941,7 +4239,7 @@
     "cmake-declarations.json": "6904e6d9f47ad1e6a30acf8580b2b2e8f9bb8f08d27d1d22322e5129416c5614",
     "dependency-inventory.json": "b93144bf7276349f8423a85be3a0180caf2e78b876520a5cd7720c307ac44fcd",
     "migration-inventory.json": "308426bdb469e38a8aceec78bed3d5350a92750528874abbc46bad9f4aec13d5",
-    "migration-ledger.json": "379d8687d47e39992cca97f92654501332d034d4db2ba79fc81ac42f368d71ef",
+    "migration-ledger.json": "5e196a5a915834d8ca480ff521740b2de2ad62672236c957ffeb95678bc95732",
     "tools/cmake-input-role-review.json": "64458a578956e7422c7afa5967968ec0527bd94352fe098afc3e425ac49dbbd6",
     "tools/cmake_declaration_inventory.py": "3d8bb974a9ca9e566f83e9042638a252a33c18f76fbb0e4c98d7ea2c2e289e00",
     "tools/cmake_inventory_evidence.py": "5ff97e1d5860b9d494936e64fedd8a33341c0e8dfcebbbdd59b1c67f07a11a94",
@@ -558503,6 +558801,26 @@
         "crates/dearust-path/src/abi/guarded.rs": "e3bb9c74c0df88fc2ab4bc5b84d4781c263a58ef5b08e15a70610a4db071dfce",
         "crates/dearust-process/SAFETY-RESOURCES.txt": "190d1dd321a55cc415fbf56a843c97237718faea9a24891897b8634beeb38d3f",
         "crates/dearust-process/src/resource_view.rs": "f5fc6e53f37077f4ae77c8bf279f13c2330e3fb897a3801579d1cdef0445baf7"
+      }
+    },
+    "current_resource_cpu_revision": {
+      "evidence": "resource-cpu-current-index",
+      "scope": "Linux-host C++ candidate prerequisite and tooling only; no additional Rust source-port or artifact replacement.",
+      "source_sha256": {
+        "tools/benchmark_resource_cpu_dispatch.py": "6e89d9a19ea835f3b8ebf2dc28888e2510f18989471dbe9c68ee7a90a5ea4b7a",
+        "tools/benchmark_resource_cpu_startup.py": "074fe2c1ba09d67c3d18f03c99dc2d69878444d5e7de95fb1629be45c6712b69",
+        "tools/build_resource_cpu_dispatch_server.py": "39bff3553c853f3730666f650fdb7a7250c32ac2d0f0ddc7ce80c10779f46891",
+        "tools/check_resource_cpu_lazy.py": "5f4ef04955a9505304280b31b1e7b3330a89ae235f40e89a3458494059b70e55",
+        "tools/fixtures/resource-cpu-dispatch-bench.cpp": "3bfcbb7323caa40c064f370db21bf64a65484657d2e0170438fcf0cd5878bccf",
+        "tools/fixtures/resource-cpu-lazy-native.cpp": "9b877fa02bde753a35a2e9d2ba3fd3e8e417bea3532707ad7e84826530fe116d",
+        "tools/record_resource_cpu_progress.py": "36aceb4715c2db8dc5ede5d1aefae8371a543d4a7440f7b29f80c7c6f5ed8fb6",
+        "tools/resource-cpu-timer.inc": "669b8a75962d816cdae617e19cde6dbcdeb9fb7249e6b16af42dba72d3ea9d26",
+        "tools/resource_cpu_check.py": "8cd240adc626df7c3330a1d8264f7efd3adcfecd7d6954c0451ea6fe5ad1abf8",
+        "tools/resource_cpu_dispatch.inc": "b40add078d43705f86041e4d1ba6216073bc568201c802b63ad25fa64a2eaf51",
+        "tools/resource_cpu_dispatch_native.cpp": "035e6428eb2d3c5d89107e1aa22e5922387ad0d0eaa0454255729bef9eca0ca4",
+        "tools/resource_cpu_original_loss_native.cpp": "eaddcdcf6f29da3460546282adab81cb37dcfb70559ddbb20d30705211cc1f23",
+        "tools/resource_cpu_query_check.py": "822137c4c4f3374cb780a6c5c7d14b5aeb404bb1e4923b9a166370ff3c8cf7c0",
+        "tools/resource_cpu_query_failure_native.cpp": "e1e1b44bbffd18b3ba60dd0b8eee29885616428d88037e35000237bc8197a8c4"
       }
     },
     "historical_implementation_snapshots": [
