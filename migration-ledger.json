@@ -793,28 +793,32 @@
         "tools/build_resource_exec_bridge.py",
         "tools/build_resource_loader.py",
         "tools/build_resource_server.py",
-        "tools/build_prepared_resource_server.py"
+        "tools/build_prepared_resource_server.py",
+        "tools/build_resource_lifecycle_server.py"
       ],
       "evidence": [
         "work/resources-complete/continuation-20261019/guest-summary-final6.json",
         "work/resources-complete/continuation-20261019/wip-sources.json",
-        "resource-prepared-registration-verification.json"
+        "resource-prepared-registration-verification.json",
+        "resource-lifecycle-current-index.json"
       ],
       "name": "resource-ownership",
       "open_gates": [
         "Client owner lifecycle/fork/exec/signal/cancellation",
         "Host hard-limit concurrency/partial mprotect and coherent VM/wiring lifecycle",
         "Guest credential/NPROC authority",
-        "Prepared registration passes scoped native/guest checks; inner-XNU OOM, bootstrap failure, full published-death/shutdown and added cleanup-lane performance cost remain open",
         "Old-kernel and queued message-lifetime identity",
         "Native generic-copy CPU regressions",
-        "Adversarial RPC validation externally blocked; do not retry."
+        "Adversarial RPC validation externally blocked; do not retry.",
+        "Checked ordinary acquisition and generation lifetime have scoped native proofs; final combined exec/initial-call failure, generic/lazy IPC, bootstrap, active-call cancellation and full shutdown remain open.",
+        "Additional exec-notification/extra-guest/cleanup-lane follow-up and direct native Checkin fault proof stopped by automatic cybersecurity review; do not retry/rephrase/transfer.",
+        "Additional native cleanup pthread/default stack and broader performance acceptance remain open."
       ],
       "rust_foundations": [
         "crates/dearust-process/src/resource_policy.rs",
         "crates/dearust-process/src/resource_view.rs"
       ],
-      "scope": "Ordinary startup and retained probes; both slots use SAME candidate. Not unsigned-owner integration or C/Rust comparison."
+      "scope": "Owned resource lifecycle prerequisites and scoped ordinary guest/native derivatives; resource ownership inactive. Final88 ordinary guest executions use SAME candidate in both slots, not C versus Rust. Component/native failure proofs retain their own exact binaries and dates."
     }
   ],
   "cargo_manifests": [
@@ -1880,6 +1884,32 @@
       "path": "resource-prepared-registration-verification.json",
       "scope": "Owned prepared registration with reserved EIDs and intrusive cleanup; native/sanitized/real-dtape and same-candidate guest scope only. Ownership unactivated, resources unfinished, performance and deeper OOM gates open.",
       "sha256": "aa9772515726ccd46fb8a7b7da072d03fb6a9fe4922dc2c4e0937cabb237999b"
+    },
+    {
+      "assertions": [
+        {
+          "equals": false,
+          "pointer": "/resource_complete"
+        },
+        {
+          "equals": false,
+          "pointer": "/resource_ownership_activated"
+        },
+        {
+          "equals": false,
+          "pointer": "/blocked_rpc_checks_retried"
+        },
+        {
+          "equals": 88,
+          "pointer": "/guests/count"
+        }
+      ],
+      "date": "2026-10-20",
+      "id": "resource-lifecycle-current-index",
+      "kind": "current-evidence-index",
+      "path": "resource-lifecycle-current-index.json",
+      "scope": "Owned C/C++ prerequisite candidate only. Final88 ordinary guest executions, separately scoped native derivatives, all candidates preserved; ownership inactive and latest combined fault/performance/blocked gates open.",
+      "sha256": "2a3714c75d66c56c2b53ab16760e99829f56ea5f1cbb49c9fcef18a06337f430"
     }
   ],
   "execution_observations": [

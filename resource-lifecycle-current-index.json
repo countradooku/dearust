@@ -1,0 +1,177 @@
+{
+  "automatic_review_stops": [
+    {
+      "action": "Exec-notification regressions/extra guest and cleanup-lane redesign follow-up",
+      "reason": "Possible cybersecurity risk",
+      "status": "stopped; unverified; not retried"
+    },
+    {
+      "action": "Direct native Checkin allocation/terminal-reply fault proof",
+      "reason": "Possible cybersecurity risk",
+      "status": "stopped; unverified; not retried"
+    }
+  ],
+  "blocked_rpc_checks_retried": false,
+  "guests": {
+    "cohorts": [
+      {
+        "group": "guards",
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests8/guards/comparison.json",
+        "sha256": "5b2648cf5c5d62c02268a4442d67b2b8098d140747c399f33c4ff05c8fc51706"
+      },
+      {
+        "group": "filesystem",
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests8/filesystem/comparison.json",
+        "sha256": "7e9521a3d423eb5c2af821f7eabbe769b110f61607bd67f5fd6452dab5b31d37"
+      },
+      {
+        "group": "existing",
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests8/existing/comparison.json",
+        "sha256": "d68531f836fae4323aa30defae6ea2fedec2204a350990d1025363c336f08f5c"
+      },
+      {
+        "group": "apps",
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests8/apps/comparison.json",
+        "sha256": "61f993bff2ebbd4c54e07ad2d9417e6168f60ef5c1084906b25a975e3de702d4"
+      },
+      {
+        "group": "resources",
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests8/resources/comparison.json",
+        "sha256": "b08f8ab2d598e5089a5930777151831c570bc15365da02f15e22420bd83f2cc0"
+      }
+    ],
+    "count": 88,
+    "run": "work/resource-death-continuation/guests8/run.json",
+    "run_sha256": "cd4c2b355d405261bdd68f91b0ac881bc854d7d158eabab954afc2105224e9b0",
+    "slots": "same owned server/loader/kernel in both slots; not original-C versus Rust"
+  },
+  "historical_checked_failure_cases": 79,
+  "historical_exec_failure_cases": 29,
+  "native_component_evidence": {
+    "checked_acquisition_and_generations": {
+      "path": "work/resources-complete/prepared-checked-ipc-proof9/verification.json",
+      "sha256": "e5c3f4669101cbb739f57797baa07301d68b08741dbe8d50bea7c1c7539aef1a"
+    },
+    "earlier_ordinary_process_kqueue": {
+      "path": "work/resource-death-continuation/process-kqueue-guest4/comparison.json",
+      "sha256": "42c625a222f79028d9acb2f7c8e6529889a4d0c71e7a989cc1edb9c8570ed782"
+    },
+    "generation_resume": {
+      "path": "work/prepared-registration/generation-resume/proof3/verification.json",
+      "sha256": "8b25d99e11c17bf6d7ea12aef7284ff0a0bbd67b601eb70795e49213d9c14a6e"
+    },
+    "historical_exec_core": {
+      "path": "work/resources-complete/prepared-checked-ipc-proof11/verification.json",
+      "sha256": "5a523375c861e8e349f02caf31d5cb2c6ab4952c4f144e3b83afe6629957ef66"
+    },
+    "historical_startup": {
+      "path": "work/prepared-registration/lane-cost/matched-startup2/verification.json",
+      "sha256": "753482aa8225485b427f0f6e5755eea9b12d42d8195f5dcfd4519e70120afb35"
+    },
+    "inner_acquisition": {
+      "path": "work/resources-complete/prepared-inner-dtape-proof3/verification.json",
+      "sha256": "f39c371992e60608db3dc5543f05a1c313bb802ffd43b0b980acc674705576b8"
+    },
+    "mach_callback_retirement": {
+      "path": "work/resource-death-continuation/actual-machport8/verification.json",
+      "sha256": "2394f9e8bd3f739f5e4e6b8ca24d82d33d87f967f560b58566766af28ace332e"
+    },
+    "reply_queue": {
+      "path": "work/resource-death-continuation/replies8/verification.json",
+      "sha256": "d9ce7c30d7382a9675952f1452efc6c659703aae7f487993400bf49e01216f85"
+    },
+    "reserved_work_queue": {
+      "path": "work/resource-death-continuation/death-work-proof3/verification.json",
+      "sha256": "228fde73d474142779057adc3c74b58a5955a9843ba78a4b32950c1ad73bfbaa"
+    },
+    "resource_state": {
+      "path": "work/prepared-registration/resource-state-death/actual3/verification.json",
+      "sha256": "e58f913544a6bb426db6547ed58c9785954181cc924d33215ac6d0f749e3ab01"
+    },
+    "sustained_cleanup": {
+      "path": "work/prepared-registration/lane-cost/actual-cached-storage-mutex1/verification.json",
+      "sha256": "05cdb9dbda74c00d169fef53278b2f6027fde409695a630f2188810a9e2700b1"
+    }
+  },
+  "native_results_scope": "Each native derivative retains its own exact input hashes and binary; do not combine historical component proofs into a claim that the final binary passed the complete fault matrix.",
+  "open_gates": [
+    "Latest prepared exec lock-scope changes pass ordinary guest execution; the earlier29-failure exec proof is historical and does not validate those later changes.",
+    "Direct native Checkin fault proof and further exec-notification validation stopped by automatic cybersecurity review; do not retry, rephrase or transfer those actions.",
+    "Original adversarial RPC verification remains externally blocked and was not retried.",
+    "Complete initial-call failure behavior, Process/Thread active-call cancellation and full shutdown draining remain unverified.",
+    "Legacy bootstrap and generic no-fail XNU APIs, lazy IPC/port-set/prepost/waiter acquisition, optional MACF/configurations and other architectures remain open.",
+    "A pendingReplacement notification follows physical exec; old-task VM access requires a separate pre-exec drain/cancellation protocol.",
+    "Native cleanup retains one additional default-stack pthread; broader performance acceptance remains open. The stopped follow-up was not retried.",
+    "Unsigned resource ownership, host hard-limit/VM coherence and partial effects, credential/NPROC authority, fork/exec/signal/cancellation and generic-copy CPU regressions remain unfinished.",
+    "Resources and packages01-09 remain unfinished; no whole target replacement, source replacement count or legacy retirement follows from these C/C++ prerequisites."
+  ],
+  "owned_build": {
+    "complete_combined_fault_validation": false,
+    "inputs_unchanged": true,
+    "report": "work/resource-death-continuation/server8/build.json",
+    "report_sha256": "728bf87ee11756747f1b3121280e6359de6426a1ebc28ef5924ba0517b22b225",
+    "server": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/server8/linked/darlingserver",
+    "server_sha256": "585bd4603faa9527f24ad3105b707a329f5bec72eb1c755be5e7e3cfc08cbac7"
+  },
+  "preservation": {
+    "count": 23,
+    "sha256": {
+      "tools/build_resource_exec_bridge.py": "82c50ecaf214be718517623361dafcb048bad762335cf9bf7874d1487df09f70",
+      "tools/build_resource_loader.py": "7da926806fdfbd6ea3ed3dbbc4013c983164894bb8f931400b869b8096cf96b6",
+      "tools/build_resource_server.py": "31a759aba961312576f603e2750603397c4a5a002a80e07cf50aa67978564ba2",
+      "tools/check_resource_checkin.py": "243c7dde11735b5a6e851b22dd3b720b6cf009c233e1c6da9154ff93896e8918",
+      "tools/check_resource_cpu.py": "f9463c2b75ba515720630e6aa9a4217401fa31e06f491462cc888f1b11a053d5",
+      "tools/check_resource_loader.py": "ef5273b516e43d1488860b5b712748aa5a352cdfb8f5685c7dcaafdcaae83308",
+      "tools/check_resource_policy.py": "bc24874fbde3ecba2c7d51d2f3f794a28d97d74a2de5fd5e1cbb4b69837f2124",
+      "tools/check_resource_threads.py": "dd1d6bd3b52bb25ec25e11f085e8a80f36cb1faca81c3262e130d72b69815316",
+      "tools/fixtures/resource-checkin-native.c.in": "faf24c67f29c4f16dffed916eac869653f3a429f20752e20d956b594be4e3d2c",
+      "tools/fixtures/resource-cpu-timer-native.cpp": "16c653cc0cdae3a0c1b061500c86a88c292671c96b4258bbd49a4f093bc536b4",
+      "tools/fixtures/resource-effect-wire.h": "8947907e2bd4f5019832ff9db46458edf96298044395502adb7a3ea319e5a5b1",
+      "tools/fixtures/resource-loader-native.c.in": "84a2ed0a310ac70556bb81f63d6a7358dabb3a353a67bdf538b4f7245c6f1dc7",
+      "tools/fixtures/resource-monitor-native.cpp.in": "7b006be86f796c4914d9df8e7f4f69fb55c51767cbe3e22b71d20ed6d823c8cb",
+      "tools/fixtures/resource-threads-native.cpp.in": "424ee9541d068024eb33a8db1dfe655f05961e06fa7e7a8f4b6571889ba87c13",
+      "tools/relink_matching_kernel.py": "6a174a5e3e31549a8328d1c8a7987bc377efb296a9571b7046e7d71d265c723c",
+      "tools/relink_system_kernel.py": "1384f6e77699714cfa2b121e3b00b9db0b96f4e07d834a591d9432f99e44359b",
+      "tools/resource-cpu-timer.inc": "669b8a75962d816cdae617e19cde6dbcdeb9fb7249e6b16af42dba72d3ea9d26",
+      "tools/resource-policy-host.rs.in": "2ca051a6d9287f2cfbcefefa91fcffcc584358659b762da5a583c50eea27d34a",
+      "tools/resource-server-call.inc": "b978e0928223a4b02e0b4aa6783a2d065fa31731b3c4fb430f1b90a0033e8bc5",
+      "tools/resource-server-declarations.inc": "f490ff0f8c2e9bf0f448e941b3b3c63450b871304c6dd37c0a9beef7fd52875a",
+      "tools/resource-server-state.inc": "04b855ea22b683c1076917384d38d14e8d26c4a795ee23a644c9644884956f86",
+      "tools/resource-server-thread.inc": "7c205ff2ad103d550a284123e9126dfa2af9d0e5e517ee5de451e55d226d5f09",
+      "tools/test_resource_server.py": "b1720c1234a50efe152401b504881ff458d4f164cedbb28eb4146d6ecaf881a4"
+    }
+  },
+  "python_check": {
+    "command": "python3 -m unittest discover -s tools -p 'test_*.py' -v",
+    "count": 94,
+    "log": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/python-tests2.log",
+    "sha256": "1521e810d45e5317507eb9412affd5b65266525cef30877dac0cfb3bb328136c"
+  },
+  "resource_complete": false,
+  "resource_ownership_activated": false,
+  "schema_version": 1,
+  "scope": "Owned resource lifecycle prerequisite candidate; scoped evidence index, not a full Rust port or whole-runtime OOM/performance acceptance.",
+  "source_sha256": {
+    "tools/build_resource_lifecycle_server.py": "1446d0551be7494e876d795c8530bb2d1a9ff1fc1c31e71c4eb50223e9479792",
+    "tools/patch_prepared_resource_checked_ipc.py": "bb54107ded1e322ea2afacaeb856d4d06489b8f9075dd999e3c514712b20e4c9",
+    "tools/patch_prepared_resource_inner_dtape.py": "bba0ae00f5fcc5bd0acbad3a8623bdcd7c7aec1a84c5afea7b71f744f38ab6ff",
+    "tools/patch_prepared_resource_kq_ownership.py": "236c520ad41c2d6d1a144a13d04487a875449cee5f2bcab21749af082356c470",
+    "tools/patch_prepared_resource_lane_cost.py": "d1d7b7446ea123c6707fa61d0fa0b54f243615e70c08d534d1982582f84d25f4",
+    "tools/patch_prepared_resource_mach_notifications.py": "b3588dcc2359bc064bec86be497c555bb12dabc8c61901a51bb68d04ca1f481b",
+    "tools/patch_prepared_resource_mach_waiter.py": "9f16bf67d423c7b4a8bb5de3b1b4b93f349c95fea691a2ac4a921e2840583846",
+    "tools/patch_prepared_resource_machport_retirement.py": "834996cf90f0a9ecfd44d7dd45a7813032e51c6842d288065f065986d377cfb6",
+    "tools/patch_prepared_resource_process_notifications.py": "315694747367a12e37435442cd5a383b0a0ec02ffce8d66be562b7d976269e86",
+    "tools/patch_prepared_resource_replies.py": "1f2d40125aa1cb792a279f44743573588f32d005b5a79f807da9008f95ab25e0",
+    "tools/patch_resource_death_lifecycle.py": "49b4f42fb2e27265e676353469b6be2cfc9867bb92294573bdb117aaa6dfa21f",
+    "tools/patch_resource_death_work.py": "b80d9ae910a36b7b0eb41990d1417c102021672e81e705a838d84f84c112a458",
+    "tools/patch_resource_generation_resume.py": "d5c9287dbc69abcf395786a6a0f9d899c93359b047b686a55f41c3b2dd901ba2",
+    "tools/patch_resource_kernel_contexts.py": "b6546523c67c2ebf1c399c901b55d7578bc851a77532221d239939a9a9363e10",
+    "tools/patch_resource_prepared_exec.py": "190074c7e6df8b515c4eea1230c1ed6c801c47dda923cb88ad5d7740bfe120eb",
+    "tools/patch_resource_state_death.py": "fb1a97e87b3575dc893d1a11ca79acae0e3054f4893e58779f91b4b57f551bc2",
+    "tools/prepared-resource-mach-notifications.inc": "d24e0d0e788b12eb1d086c26e3f47ed40cdd34f7d055ce64ea44e6cb924f9d6f",
+    "tools/prepared-resource-process-notifications.inc": "17cd69a55e18f81b6fc2ce2f42fd908075cbe3da57aa3bc456225afbbcf8c545",
+    "tools/prepared-resource-reply-queue.inc": "29d5732066d71b3a9ee2e913dc3d49246b17573b96a270ac87aad9665f820167",
+    "tools/prepared-resource-reply-send.inc": "b57070e0597102056f7ff0f56671cc7ad5ac30b83a34be138044a60c8a810f8a",
+    "tools/resource-prepared-exec.inc": "4216763d3dea6fded57f5a5fe07e98b2c5f3f4e06b11f7ecfa80f9f0761fe16f"
+  }
+}

@@ -1,0 +1,89 @@
+#include <cassert>
+#include <cerrno>
+#include <cstdio>
+#include <fcntl.h>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <shared_mutex>
+#include <system_error>
+#include <unistd.h>
+#include <vector>
+enum Failure { None, Setup, Publish, Reply, Descriptor, Queue };
+static Failure failure = None;
+static int createdPeer = -1;
+static int delivered = 0;
+static void fail(Failure point) { if (failure == point) throw std::bad_alloc(); }
+namespace DarlingServer {
+class FD {
+ int value = -1;
+public:
+ FD() = default; FD(int fd):value(fd) {} ~FD() { if(value>=0) close(value); }
+ FD(const FD&) = delete; FD& operator=(const FD&) = delete;
+ FD(FD&& other):value(other.extract()) {}
+ FD& operator=(FD&& other) { if(value>=0)close(value); value=other.extract(); return *this; }
+ int fd()const{return value;} int extract(){int old=value;value=-1;return old;}
+ explicit operator bool(){return value>=0;}
+};
+struct Kqchan {
+ virtual ~Kqchan() = default;
+ uintptr_t _idForProcess(){return reinterpret_cast<uintptr_t>(this);}
+ struct MachPort; struct Process;
+};
+class Process {
+public:
+ std::shared_mutex _rwlock; bool _dead=false, _resourceCleanupQueued=false;
+ struct Channels:std::map<uintptr_t,std::shared_ptr<Kqchan>> {
+  std::shared_ptr<Kqchan>& operator[](uintptr_t id){fail(Publish);return std::map<uintptr_t,std::shared_ptr<Kqchan>>::operator[](id);}
+ } _kqchannels;
+ void registerKqchan(std::shared_ptr<Kqchan>);
+};
+static int setup() {
+ fail(Setup); int fds[2]; assert(socketpair(AF_UNIX,SOCK_SEQPACKET,0,fds)==0);
+ close(fds[0]); createdPeer=fds[1]; return fds[1];
+}
+struct Kqchan::MachPort:Kqchan { MachPort(std::shared_ptr<DarlingServer::Process>,int,int,int,int){} int setup(){return DarlingServer::setup();} };
+struct Kqchan::Process:Kqchan { Process(std::shared_ptr<DarlingServer::Process>,int,int){} int setup(){return DarlingServer::setup();} };
+struct Header {int number,code;};
+struct Wire {Header header; struct{int socket;} body;};
+using dserver_rpc_reply_kqchan_mach_port_open_t=Wire;
+using dserver_rpc_reply_kqchan_proc_open_t=Wire;
+constexpr int dserver_callnum_kqchan_mach_port_open=1,dserver_callnum_kqchan_proc_open=2;
+class Message {
+ std::vector<char> bytes; FD fd;
+public:
+ Message(size_t size,int){fail(Reply);bytes.resize(size);} Message(Message&&)=default;
+ void setAddress(int){} auto& data(){return bytes;}
+ void pushDescriptor(int descriptor){fail(Descriptor);fd=FD(descriptor);}
+};
+struct Thread {
+ std::shared_ptr<Process> owner; auto process(){return owner;}
+ template<class T>void pushCallReply(std::shared_ptr<T>,Message){fail(Queue);++delivered;}
+};
+struct Call {
+ struct KqchanMachPortOpen; struct KqchanProcOpen;
+ static void sendReply(Message){fail(Queue);++delivered;}
+};
+#define BODY struct {int port_name=0,receive_buffer=0,receive_buffer_size=0,saved_filter_flags=0,pid=0,flags=0;} _body
+struct Call::KqchanMachPortOpen:std::enable_shared_from_this<KqchanMachPortOpen>{std::weak_ptr<Thread>_thread;int _replyAddress=0;BODY;void processCall();};
+struct Call::KqchanProcOpen:std::enable_shared_from_this<KqchanProcOpen>{std::weak_ptr<Thread>_thread;int _replyAddress=0;BODY;void processCall();};
+}
+// REGISTER
+// MACH_OPEN
+// PROC_OPEN
+template<class Call>void cases() {
+ using namespace DarlingServer;
+ for(int state=0;state<3;++state) for(auto point:{None,Setup,Publish,Reply,Descriptor,Queue}) {
+  failure=point;createdPeer=-1;delivered=0;
+  auto process=std::make_shared<Process>();process->_dead=state==1;process->_resourceCleanupQueued=state==2;
+  auto thread=std::make_shared<Thread>();thread->owner=process;
+  auto call=std::make_shared<Call>();call->_thread=thread;
+  try {call->processCall();} catch(const std::bad_alloc&) {}
+  if(createdPeer>=0) {errno=0;assert(fcntl(createdPeer,F_GETFD)==-1 && errno==EBADF);}
+  const bool published=state==0 && point!=Setup && point!=Publish;
+  assert(process->_kqchannels.size()==(published?1u:0u));
+  assert(delivered==(point==Reply || point==Queue || (published && point==Descriptor)?0:1));
+  process->_kqchannels.clear();
+ }
+}
+int main(){cases<DarlingServer::Call::KqchanMachPortOpen>();cases<DarlingServer::Call::KqchanProcOpen>();puts("kq ownership 36 exact-method setup/publication/reply failure cases passed");}

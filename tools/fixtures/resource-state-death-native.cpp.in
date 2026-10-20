@@ -1,0 +1,152 @@
+// Actual transformed ResourceState constructor/destructor/deleter and death
+// methods, with a modeled foreign semaphore and real native pidfd/CPU clock.
+#include <array>
+#include <atomic>
+#include <cassert>
+#include <cerrno>
+#include <chrono>
+#include <cstdlib>
+#include <fcntl.h>
+#include <memory>
+#include <new>
+#include <shared_mutex>
+#include <sstream>
+#include <string>
+#include <sys/syscall.h>
+#include <thread>
+#include <unistd.h>
+#include "resource-cpu-timer.inc"
+#include "prepared-resource-cleanup.hpp"
+
+static thread_local long failAfter = -1;
+static thread_local bool kernelLane = false;
+static std::atomic<unsigned> cleanupAllocationAttempts{0}, liveGates{0}, createdGates{0}, completedJobs{0};
+static bool failGate = false;
+static std::atomic<bool> stopWorker{false};
+void* operator new(std::size_t size) {
+    if (failAfter == 0) {
+        if (kernelLane) ++cleanupAllocationAttempts;
+        throw std::bad_alloc();
+    }
+    if (failAfter > 0) --failAfter;
+    if (void* raw = std::malloc(size ? size : 1)) return raw;
+    throw std::bad_alloc();
+}
+void operator delete(void* raw) noexcept { std::free(raw); }
+void operator delete(void* raw, std::size_t) noexcept { std::free(raw); }
+void* operator new[](std::size_t size) { return ::operator new(size); }
+void operator delete[](void* raw) noexcept { ::operator delete(raw); }
+void operator delete[](void* raw, std::size_t) noexcept { ::operator delete(raw); }
+template<class Predicate> static void await(Predicate predicate) {
+    const auto until = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (!predicate()) { assert(std::chrono::steady_clock::now() < until); std::this_thread::yield(); }
+}
+struct dtape_task_t {};
+struct dtape_semaphore_t { int value; };
+static dtape_semaphore_t* dtape_semaphore_create(dtape_task_t*, int value) {
+    if (failGate) return nullptr;
+    auto* semaphore = static_cast<dtape_semaphore_t*>(std::malloc(sizeof(dtape_semaphore_t)));
+    assert(semaphore); semaphore->value = value; ++liveGates; ++createdGates;
+    return semaphore;
+}
+static void dtape_semaphore_destroy(dtape_semaphore_t* semaphore) {
+    assert(kernelLane && failAfter == 0);
+    --liveGates;
+    std::free(semaphore);
+}
+namespace DarlingServer {
+class FD {
+    int descriptor;
+public:
+    explicit FD(int value): descriptor(value) {}
+    ~FD() { if (descriptor >= 0) close(descriptor); }
+    int fd() const { return descriptor; }
+};
+class Monitor {};
+class Thread {
+public:
+    static PreparedResourceCleanupQueue queue;
+    static void requireResourceCleanupReady() {}
+    static void enqueueResourceCleanup(PreparedResourceCleanupJob& job) noexcept { queue.push(job); }
+};
+PreparedResourceCleanupQueue Thread::queue;
+static constexpr uint64_t resourceInfinity = INT64_MAX;
+static constexpr std::array<uint64_t, 5> resourcePolicy{resourceInfinity, 64 * 1024 * 1024 - 4096, 1044, 522, 10240};
+static int32_t resourceErrno(int value) { return value; }
+@RESOURCE_STATE@
+class Process {
+public:
+    std::shared_mutex _rwlock;
+    std::shared_ptr<ResourceState> _resources;
+    void resourceDying() noexcept;
+};
+@RESOURCE_DYING@
+static std::shared_ptr<ResourceState> create(dtape_task_t* task, std::shared_ptr<FD> pidfd,
+                                          std::shared_ptr<FD> pipe, std::shared_ptr<FD> directory) {
+    return std::shared_ptr<ResourceState>(new ResourceState(task, pidfd, pipe, directory, getpid(), 77),
+@RESOURCE_DELETER@
+}
+}
+int main() {
+    using namespace DarlingServer;
+    // The fixture lane is a model; only the actual server proof establishes a
+    // dtape kernel context.
+    std::thread worker([]() {
+        kernelLane = true; failAfter = 0;
+        for (;;) {
+            auto* job = Thread::queue.take(); job->run(job->context); ++completedJobs;
+            if (stopWorker) break;
+        }
+    });
+    dtape_task_t task;
+    int descriptors[2]; assert(pipe2(descriptors, O_CLOEXEC) == 0);
+    auto writeEnd = std::make_shared<FD>(descriptors[1]);
+    auto pipe = std::make_shared<FD>(descriptors[0]);
+    auto pidfd = std::make_shared<FD>(static_cast<int>(syscall(SYS_pidfd_open, getpid(), 0)));
+    auto directory = std::make_shared<FD>(open("/proc/self", O_RDONLY | O_DIRECTORY | O_CLOEXEC));
+    assert(pidfd->fd() >= 0 && directory->fd() >= 0);
+    unsigned failures = 0, failedControlBlocks = 0;
+    for (long offset = 0; offset < 16; ++offset) {
+        const auto created = createdGates.load(), completed = completedJobs.load();
+        std::shared_ptr<ResourceState> state;
+        bool failed = false;
+        failAfter = offset;
+        try { state = create(&task, pidfd, pipe, directory); }
+        catch (const std::bad_alloc&) { failed = true; }
+        failAfter = -1;
+        if (failed) {
+            ++failures;
+            if (createdGates > created) {
+                ++failedControlBlocks;
+                await([&]() { return completedJobs == completed + 1; });
+            }
+            assert(liveGates == 0);
+        } else {
+            assert(state && liveGates == 1);
+            Process process; process._resources = state;
+            failAfter = 0;
+            process.resourceDying();
+            assert(state->dead && state->cpu->set_deadline(0, 1) == -ESRCH);
+            assert(state->cpu->disable() == 0 && state->cpu->set_deadline(0, 2) == -ESRCH);
+            process._resources.reset();
+            state.reset();
+            failAfter = -1;
+            await([&]() { return completedJobs == completed + 1; });
+            assert(liveGates == 0);
+            break;
+        }
+    }
+    failGate = true;
+    try { (void)create(&task, pidfd, pipe, directory); assert(false); }
+    catch (const std::bad_alloc&) {}
+    failGate = false;
+    assert(liveGates == 0 && failures >= 4 && failedControlBlocks == 1 && cleanupAllocationAttempts == 0);
+    printf("ResourceState: %u allocation failures including control-block failure after modeled gate acquisition; "
+           "allocation-free final release/death, terminal timer and kernel-lane modeled destruction passed\n", failures);
+    fflush(stdout);
+    PreparedResourceCleanupJob stopJob;
+    stopJob.run = [](void*) noexcept { stopWorker = true; };
+    Thread::enqueueResourceCleanup(stopJob);
+    worker.join();
+    return 0;
+}

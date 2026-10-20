@@ -1,0 +1,74 @@
+#include "prepared-resource-machport-model.h"
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sched.h>
+#include <stdbool.h>
+
+#define EV_ERROR 1
+#define EVFILT_MACHPORT 2
+#define dtape_log_debug(...) ((void)0)
+#define __container_of(pointer, type, member) ((type*)((char*)(pointer) - offsetof(type, member)))
+static pthread_mutex_t queueLock = PTHREAD_MUTEX_INITIALIZER;
+static int allocationFailure, attachmentFailure, eventsPresent;
+static int liveHandles, detachStarted, snapshotEntered, snapshotReleased, delaySnapshot;
+static void task_reference(xnu_task_model* task) { __atomic_add_fetch(&task->references, 1, __ATOMIC_SEQ_CST); }
+static void task_deallocate(xnu_task_model* task) { assert(__atomic_sub_fetch(&task->references, 1, __ATOMIC_SEQ_CST) >= 1); }
+static void os_ref_init(int* ref, void* unused) { (void)unused; *ref = 1; }
+static int os_ref_release(int* ref) { return --*ref; }
+static void panic(const char* reason) { (void)reason; abort(); }
+static void filt_machportattach(struct knote* note, void* unused) {
+    (void)unused;
+    if (attachmentFailure) note->kn_flags |= EV_ERROR;
+}
+static void filt_machportdetach(struct knote* note) {
+    (void)note;
+    __atomic_store_n(&detachStarted, 1, __ATOMIC_SEQ_CST);
+    // Models the exact XNU contract: detach acquires the mqueue lock held by
+    // port knote callbacks, then joins the port-set waiter before returning.
+    assert(!pthread_mutex_lock(&queueLock));
+    assert(!pthread_mutex_unlock(&queueLock));
+}
+static void* prepared_alloc(size_t size) {
+    if (allocationFailure) return NULL;
+    void* result = malloc(size);
+    if (result) __atomic_add_fetch(&liveHandles, 1, __ATOMIC_SEQ_CST);
+    return result;
+}
+static void prepared_free(void* value) {
+    if (value) __atomic_sub_fetch(&liveHandles, 1, __ATOMIC_SEQ_CST);
+    free(value);
+}
+#define malloc prepared_alloc
+#define free prepared_free
+// CREATE
+// DESTROY
+// DISABLE
+#undef malloc
+#undef free
+
+static void prepared_snapshot_barrier(void) {
+    if (!__atomic_load_n(&delaySnapshot, __ATOMIC_SEQ_CST)) return;
+    __atomic_store_n(&snapshotEntered, 1, __ATOMIC_SEQ_CST);
+    while (!__atomic_load_n(&snapshotReleased, __ATOMIC_SEQ_CST)) sched_yield();
+}
+// POST
+void prepared_model_post(dtape_kqchan_mach_port_t* handle) {
+    assert(!pthread_mutex_lock(&queueLock));
+    knote_post(&handle->knote, 0);
+    assert(!pthread_mutex_unlock(&queueLock));
+}
+void prepared_model_fault(int allocation, int attachment, int has_events) {
+    allocationFailure = allocation; attachmentFailure = attachment; eventsPresent = has_events;
+    __atomic_store_n(&detachStarted, 0, __ATOMIC_SEQ_CST);
+}
+int dtape_kqchan_mach_port_has_events(dtape_kqchan_mach_port_t* unused) { (void)unused; return eventsPresent; }
+int prepared_model_live(void) { return __atomic_load_n(&liveHandles, __ATOMIC_SEQ_CST); }
+int prepared_model_detaching(void) { return __atomic_load_n(&detachStarted, __ATOMIC_SEQ_CST); }
+int prepared_model_snapshot(void) { return __atomic_load_n(&snapshotEntered, __ATOMIC_SEQ_CST); }
+void prepared_model_release_snapshot(void) { __atomic_store_n(&snapshotReleased, 1, __ATOMIC_SEQ_CST); }
+void prepared_model_delay_snapshot(int enable) {
+    __atomic_store_n(&snapshotEntered, 0, __ATOMIC_SEQ_CST);
+    __atomic_store_n(&snapshotReleased, 0, __ATOMIC_SEQ_CST);
+    __atomic_store_n(&delaySnapshot, enable, __ATOMIC_SEQ_CST);
+}

@@ -1,0 +1,110 @@
+#include <atomic>
+#include <cassert>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <deque>
+#include <fcntl.h>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <new>
+#include <optional>
+#include <stdexcept>
+#include <unistd.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include @SUPPLEMENT@
+static thread_local bool exhausted=false;
+static unsigned attempts=0;
+void* operator new(size_t size){if(exhausted){++attempts;throw std::bad_alloc();}if(auto*p=malloc(size?size:1))return p;throw std::bad_alloc();}
+void operator delete(void*p)noexcept{free(p);} void operator delete(void*p,size_t)noexcept{free(p);}
+struct Handle {bool events=false;};
+static bool dtape_kqchan_mach_port_has_events(Handle*h){return h->events;}
+static void dtape_kqchan_mach_port_modify(Handle*,uint64_t,uint64_t,uint64_t){}
+static bool dtape_kqchan_mach_port_fill(Handle*h,dserver_kqchan_reply_mach_port_read_t*,uint64_t,uint64_t){return h->events;}
+namespace DarlingServer {
+struct FD {int value;explicit FD(int v):value(v){}~FD(){close(value);}int fd()const{return value;}};
+struct Monitor {enum class Event {Readable,Writable};int socket=-1;};
+struct Server {
+ int epoll=epoll_create1(EPOLL_CLOEXEC);
+ ~Server(){close(epoll);}
+ static Server& sharedInstance(){static Server server;return server;}
+ bool rearmPreparedMonitor(const std::shared_ptr<Monitor>&monitor)noexcept{
+  if(!monitor)return true;epoll_event setting={};setting.events=EPOLLIN|EPOLLOUT|EPOLLET;
+  return epoll_ctl(epoll,EPOLL_CTL_MOD,monitor->socket,&setting)==0;
+ }
+};
+struct Thread {
+ static std::deque<std::function<void()>>jobs;
+ static std::shared_ptr<Thread>current;
+ static Thread*currentThread(){return current.get();}
+ void impersonate(std::shared_ptr<Thread>){}
+ static void kernelAsync(std::function<void()>fn){jobs.push_back(std::move(fn));}
+};
+std::deque<std::function<void()>>Thread::jobs;
+std::shared_ptr<Thread>Thread::current;
+struct Registry{std::optional<std::shared_ptr<Thread>>lookupEntryByNSID(pid_t){return Thread::current;}};
+static Registry&threadRegistry(){static Registry registry;return registry;}
+struct Kqchan{class MachPort;};
+class Kqchan::MachPort:public std::enable_shared_from_this<MachPort>{
+public:
+ std::shared_ptr<FD>_socket;std::shared_ptr<Monitor>_monitor;
+ std::mutex _sendingMutex;
+ bool _canSendNotification=true,_deferNotification=false;
+ uint64_t _notificationCount=0;
+ Handle*_dtapeKqchan;
+ // FIELDS
+ explicit MachPort(Handle*h):_dtapeKqchan(h){}
+ void _modify(uint64_t,uint64_t,uint64_t,pid_t);
+ void _read(uint64_t,uint64_t,pid_t);
+ void _notify();void _processMessages();void _checkForEventsAsync();std::function<void()>_checkForEventsAsyncFactory();
+};
+}
+// PACKET
+// METHODS
+using namespace DarlingServer;
+static std::shared_ptr<Kqchan::MachPort>setup(Handle&handle,int&peer){
+ int fds[2];assert(socketpair(AF_UNIX,SOCK_SEQPACKET|SOCK_NONBLOCK|SOCK_CLOEXEC,0,fds)==0);
+ auto channel=std::make_shared<Kqchan::MachPort>(&handle);channel->_socket=std::make_shared<FD>(fds[0]);peer=fds[1];
+ channel->_monitor=std::make_shared<Monitor>();channel->_monitor->socket=fds[0];
+ epoll_event setting={};setting.events=EPOLLIN|EPOLLOUT|EPOLLET;
+ assert(epoll_ctl(Server::sharedInstance().epoll,EPOLL_CTL_ADD,fds[0],&setting)==0);return channel;
+}
+static void runJob(){assert(!Thread::jobs.empty());auto job=std::move(Thread::jobs.front());Thread::jobs.pop_front();exhausted=true;job();exhausted=false;}
+static void readRequest(int peer){dserver_kqchan_call_mach_port_read_t r={};r.header.number=dserver_kqchan_msgnum_mach_port_read;r.header.tid=7;assert(send(peer,&r,sizeof(r),MSG_NOSIGNAL)==sizeof(r));}
+static void modifyRequest(int peer){dserver_kqchan_call_mach_port_modify_t r={};r.header.number=dserver_kqchan_msgnum_mach_port_modify;r.header.tid=7;assert(send(peer,&r,sizeof(r),MSG_NOSIGNAL)==sizeof(r));}
+static unsigned receive(int peer,int*code=nullptr){alignas(dserver_kqchan_reply_mach_port_read_t)unsigned char buffer[512];auto n=recv(peer,buffer,sizeof(buffer),MSG_DONTWAIT);assert(n>0);auto*h=reinterpret_cast<dserver_kqchan_replyhdr_t*>(buffer);if(code)*code=h->code;return h->number;}
+static void empty(int peer){char c;assert(recv(peer,&c,1,MSG_DONTWAIT)==-1&&errno==EAGAIN);}
+static void notify(Kqchan::MachPort&channel){exhausted=true;channel._notify();exhausted=false;}
+static void drainEdges(){epoll_event event;while(epoll_wait(Server::sharedInstance().epoll,&event,1,0)==1){}}
+static void exhaustSend(int fd){char bytes[256]={};while(send(fd,bytes,sizeof(bytes),MSG_DONTWAIT|MSG_NOSIGNAL)>0){}assert(errno==EAGAIN);}
+static void drainFill(int fd){char bytes[512];while(recv(fd,bytes,sizeof(bytes),MSG_DONTWAIT)>0){}assert(errno==EAGAIN);}
+int main(){
+ Thread::current=std::make_shared<Thread>();Server::sharedInstance();unsigned cases=0;
+ {
+  Handle h;int peer;auto c=setup(h,peer);notify(*c);notify(*c);assert(receive(peer)==dserver_kqchan_msgnum_notification);empty(peer);++cases;
+  readRequest(peer);c->_processMessages();assert(c->_preparedMachRequestInFlight&&Thread::jobs.size()==1);h.events=true;notify(*c);empty(peer);runJob();
+  assert(receive(peer)==dserver_kqchan_msgnum_mach_port_read);assert(receive(peer)==dserver_kqchan_msgnum_notification);assert(c->_notificationCount==1&&Thread::jobs.empty());++cases;
+  h.events=false;readRequest(peer);c->_processMessages();runJob();int code;assert(receive(peer,&code)==dserver_kqchan_msgnum_mach_port_read&&code==0xdead);empty(peer);++cases;close(peer);
+ }
+ {
+  Handle h;int peer;auto c=setup(h,peer);int size=4096;assert(setsockopt(c->_socket->fd(),SOL_SOCKET,SO_SNDBUF,&size,sizeof(size))==0);
+  exhaustSend(c->_socket->fd());notify(*c);assert(c->_preparedMachNotificationPending);readRequest(peer);c->_processMessages();assert(Thread::jobs.empty());
+  drainEdges();drainFill(peer);epoll_event e;assert(epoll_wait(Server::sharedInstance().epoll,&e,1,1000)==1);
+  c->_processMessages();assert(receive(peer)==dserver_kqchan_msgnum_notification&&Thread::jobs.size()==1);runJob();assert(receive(peer)==dserver_kqchan_msgnum_mach_port_read);++cases;close(peer);
+ }
+ {
+  Handle h;int peer;auto c=setup(h,peer);readRequest(peer);modifyRequest(peer);c->_processMessages();c->_processMessages();assert(Thread::jobs.size()==1);
+  drainEdges();runJob();assert(receive(peer)==dserver_kqchan_msgnum_mach_port_read);epoll_event e;assert(epoll_wait(Server::sharedInstance().epoll,&e,1,1000)==1);
+  c->_processMessages();assert(Thread::jobs.size()==1);h.events=true;runJob();assert(receive(peer)==dserver_kqchan_msgnum_mach_port_modify);assert(receive(peer)==dserver_kqchan_msgnum_notification);++cases;close(peer);
+ }
+ {
+  Handle h;int peer;auto c=setup(h,peer);readRequest(peer);c->_processMessages();int size=4096;setsockopt(c->_socket->fd(),SOL_SOCKET,SO_SNDBUF,&size,sizeof(size));
+  exhaustSend(c->_socket->fd());h.events=true;runJob();assert(c->_preparedMachReplyLength&&c->_preparedMachNotificationPending);
+  drainFill(peer);exhausted=true;c->_processPreparedTransportEvent(Monitor::Event::Writable);exhausted=false;
+  assert(receive(peer)==dserver_kqchan_msgnum_mach_port_read);assert(receive(peer)==dserver_kqchan_msgnum_notification);++cases;close(peer);
+ }
+ assert(attempts==0&&Thread::jobs.empty());printf("%u exact-method Mach transport cases passed; zero completion/notification allocation attempts\n",cases);
+}

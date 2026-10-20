@@ -1,0 +1,48 @@
+#define _GNU_SOURCE
+#include <assert.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdatomic.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+struct waitq {int unused;};
+struct knote {int unused;};
+typedef struct {sem_t value;} dtape_semaphore_t;
+typedef struct {struct knote knote;struct waitq*waitq;void*waiter_thread;dtape_semaphore_t*waiter_death_semaphore,*waiter_read_semaphore;} dtape_kqchan_mach_port_t;
+#define __container_of(pointer,type,member) ((type*)((char*)(pointer)-offsetof(type,member)))
+#define THREAD_INTERRUPTED 1
+#define panic(...) abort()
+static atomic_bool callback_entered,callback_release;
+static unsigned references;
+static void dtape_semaphore_up(dtape_semaphore_t*s){assert(sem_post(&s->value)==0);}
+static bool dtape_semaphore_down_simple(dtape_semaphore_t*s){assert(sem_wait(&s->value)==0);return true;}
+static void dtape_semaphore_destroy(dtape_semaphore_t*s){assert(sem_destroy(&s->value)==0);}
+static void clear_wait(void*thread,int result){assert(thread&&result==THREAD_INTERRUPTED);atomic_store(&callback_release,true);}
+static void thread_deallocate(void*thread){assert(thread&&references==1);--references;}
+// UNLINK
+static void*waiter(void*raw){
+ dtape_kqchan_mach_port_t*c=raw;
+ // A real port-set callback has left waitq/thread_block. clear_wait cannot
+ // interrupt the later semaphore_wait. The reserved semaphore wake is needed.
+ atomic_store(&callback_entered,true);
+ while(!atomic_load(&callback_release)){}
+ dtape_semaphore_down_simple(c->waiter_read_semaphore);
+ assert(__atomic_load_n(&c->waitq,__ATOMIC_ACQUIRE)==NULL);
+ dtape_semaphore_up(c->waiter_death_semaphore);return NULL;
+}
+int main(void){
+ for(unsigned i=0;i<100;++i){
+  struct waitq queue;dtape_semaphore_t read,death;assert(sem_init(&read.value,0,0)==0);assert(sem_init(&death.value,0,0)==0);
+  dtape_kqchan_mach_port_t c={.waitq=&queue,.waiter_thread=&queue,.waiter_death_semaphore=&death,.waiter_read_semaphore=&read};
+  atomic_store(&callback_entered,false);atomic_store(&callback_release,false);references=1;
+  pthread_t native;assert(pthread_create(&native,NULL,waiter,&c)==0);
+  while(!atomic_load(&callback_entered)){}
+  assert(knote_unlink_waitq(&c.knote,&queue)==0);
+  assert(c.waitq==NULL&&c.waiter_thread==NULL&&c.waiter_death_semaphore==NULL&&c.waiter_read_semaphore==NULL&&references==0);
+  assert(pthread_join(native,NULL)==0);
+ }
+ puts("100 exact unlink active-callback/read-wait handoffs passed");return 0;
+}

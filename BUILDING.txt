@@ -61,6 +61,15 @@ runtime-resource-copies-verification.json and its hashed raw summary. These
 counts describe that run, not a rerun at the current checkout. No owner candidate
 was selected in that default validation.
 
+The later owned resource lifecycle candidate is built separately with
+tools/build_resource_lifecycle_server.py. It requires the preserved matching
+server-build12 inputs and an absent owned output directory; it rebuilds all12
+server translation units and selected C bridges without installation/activation.
+tools/RESOURCE-LIFECYCLE-CANDIDATE.txt and resource-lifecycle-current-index.json
+record final88 ordinary guest executions,94 Python tests, separately scoped
+native evidence and unverified/stopped gates. These counts describe identified
+runs, not additional Rust replacements or complete resource acceptance.
+
 Functioning executables: elfdep, getuuid, bsdln, print_wrapped_elf,
 darling-coredump and wrapgen (partial loader-name resolution; see README.md). No libbsd
 dependency is needed for the Rust bsdln. Mach-O metadata supports 32/64-bit thin

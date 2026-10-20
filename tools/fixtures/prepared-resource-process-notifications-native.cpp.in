@@ -1,0 +1,337 @@
+#include <atomic>
+#include <cassert>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <deque>
+#include <fcntl.h>
+#include <memory>
+#include <mutex>
+#include <new>
+#include <optional>
+#include <shared_mutex>
+#include <stdexcept>
+#include <thread>
+#include <unordered_map>
+#include <unistd.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include @SUPPLEMENT@
+
+#define NOTE_EXIT 0x80000000U
+#define NOTE_FORK 0x40000000U
+#define NOTE_EXEC 0x20000000U
+#define NOTE_SIGNAL 0x08000000U
+#define NOTE_TRACK 1U
+#define NOTE_TRACKERR 2U
+
+static thread_local bool exhausted = false;
+void* operator new(size_t size) {
+    if (exhausted) throw std::bad_alloc();
+    if (auto p = std::malloc(size ? size : 1)) return p;
+    throw std::bad_alloc();
+}
+void operator delete(void* p) noexcept { std::free(p); }
+void operator delete(void* p, size_t) noexcept { std::free(p); }
+
+namespace DarlingServer {
+struct FD {
+    int value = -1;
+    explicit FD(int fd = -1): value(fd) {}
+    FD(FD&& other): value(other.extract()) {}
+    FD(const FD&) = delete;
+    ~FD() { if (value >= 0) close(value); }
+    int fd() const { return value; }
+    int extract() { const int result = value; value = -1; return result; }
+};
+struct Monitor { enum class Event { Readable, Writable }; };
+struct Server {
+    unsigned removed = 0;
+    static Server& sharedInstance() { static Server server; return server; }
+    void removeMonitor(std::shared_ptr<Monitor>) { ++removed; }
+};
+class Process;
+class Kqchan {
+public:
+    std::weak_ptr<DarlingServer::Process> _process;
+    std::shared_ptr<FD> _socket;
+    std::shared_ptr<Monitor> _monitor;
+    bool _canSendNotification = true, _deferNotification = false;
+    uint64_t _notificationCount = 0;
+    std::mutex _sendingMutex;
+    explicit Kqchan(std::shared_ptr<DarlingServer::Process> process): _process(process) {}
+    virtual ~Kqchan();
+    virtual bool _processPreparedTransportEvent(Monitor::Event) { return false; }
+    virtual uintptr_t _idForProcess() const { return reinterpret_cast<uintptr_t>(this); }
+    class Process;
+};
+class Process: public std::enable_shared_from_this<Process> {
+public:
+    std::shared_mutex _rwlock;
+    bool _dead = false;
+    std::unordered_map<uintptr_t, std::weak_ptr<Kqchan::Process>> _listeningKqchannels;
+    std::unordered_map<uintptr_t, std::shared_ptr<Kqchan>> _kqchannels;
+    void registerListeningKqchan(std::shared_ptr<Kqchan::Process>);
+    void unregisterListeningKqchan(uintptr_t id) {
+        std::unique_lock lock(_rwlock); _listeningKqchannels.erase(id);
+    }
+    void registerKqchan(std::shared_ptr<Kqchan> channel) {
+        std::unique_lock lock(_rwlock); _kqchannels[channel->_idForProcess()] = channel;
+    }
+    void notifyPreparedExitListeners() noexcept;
+};
+class Kqchan::Process: public Kqchan, public std::enable_shared_from_this<Kqchan::Process> {
+public:
+    struct Event { uint32_t events = 0; int64_t data = 0; std::shared_ptr<Process> newKqchan; };
+    uint32_t _flags;
+    std::mutex _mutex;
+    std::deque<Event> _events;
+    std::weak_ptr<DarlingServer::Process> _targetProcess;
+    // KQ_FIELDS
+public:
+    bool failSetup = false;
+    explicit Process(std::shared_ptr<DarlingServer::Process> process, uint32_t flags): Kqchan(process), _flags(flags) {}
+    ~Process();
+    int setup() {
+        if (failSetup) throw std::bad_alloc();
+        int fds[2]; assert(socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_NONBLOCK | SOCK_CLOEXEC, 0, fds) == 0);
+        FD local(fds[0]), peer(fds[1]);
+        _socket = std::make_shared<FD>(std::move(local));
+        _sendPreparedProcessNotification();
+        return peer.extract();
+    }
+    void _modify(uint32_t flags);
+    void _read();
+    void exit(int64_t data) noexcept { _notifyPreparedExit(data); }
+    void ordinary(uint32_t event, int64_t data, std::shared_ptr<Process> child = nullptr) {
+        { std::lock_guard lock(_mutex); _events.push_back({event, data, child}); }
+        _sendPreparedProcessNotification();
+    }
+    void readable() { _processPreparedTransportEvent(Monitor::Event::Readable); }
+    void writable() { _processPreparedTransportEvent(Monitor::Event::Writable); }
+    bool exitPending() { std::lock_guard lock(_mutex); return _preparedExitPending; }
+};
+}
+
+// BASE_DESTRUCTOR
+// KQ_DESTRUCTOR
+// REGISTER_LISTENER
+// PROCESS_METHODS
+// CORE_METHODS
+
+static void readRequest(int socket) {
+    dserver_kqchan_call_proc_read_t request = {};
+    request.header.number = dserver_kqchan_msgnum_proc_read;
+    assert(send(socket, &request, sizeof(request), MSG_NOSIGNAL) == sizeof(request));
+}
+static void modifyRequest(int socket, uint32_t flags) {
+    dserver_kqchan_call_proc_modify_t request = {};
+    request.header.number = dserver_kqchan_msgnum_proc_modify;
+    request.flags = flags;
+    assert(send(socket, &request, sizeof(request), MSG_NOSIGNAL) == sizeof(request));
+}
+static void notification(int socket) {
+    dserver_kqchan_call_notification_t packet = {};
+    assert(recv(socket, &packet, sizeof(packet), 0) == sizeof(packet));
+    assert(packet.header.number == dserver_kqchan_msgnum_notification);
+    assert(packet.header.pid == 0 && packet.header.tid == 0);
+}
+static dserver_kqchan_reply_proc_read_t readReply(int socket, int* descriptor = nullptr) {
+    dserver_kqchan_reply_proc_read_t packet = {};
+    iovec vector = {&packet, sizeof(packet)};
+    alignas(cmsghdr) char control[CMSG_SPACE(sizeof(ucred)) + CMSG_SPACE(sizeof(int))] = {};
+    msghdr message = {};
+    message.msg_iov = &vector; message.msg_iovlen = 1;
+    message.msg_control = control; message.msg_controllen = sizeof(control);
+    assert(recvmsg(socket, &message, MSG_CMSG_CLOEXEC) == sizeof(packet));
+    assert(packet.header.number == dserver_kqchan_msgnum_proc_read);
+    for (auto* header = CMSG_FIRSTHDR(&message); header; header = CMSG_NXTHDR(&message, header))
+        if (header->cmsg_level == SOL_SOCKET && header->cmsg_type == SCM_RIGHTS) {
+            int fd; memcpy(&fd, CMSG_DATA(header), sizeof(fd));
+            if (descriptor) *descriptor = fd; else close(fd);
+        }
+    return packet;
+}
+
+int main() {
+    using namespace DarlingServer;
+    unsigned cases = 0;
+    {
+        auto listener = std::make_shared<DarlingServer::Process>();
+        auto channel = std::make_shared<Kqchan::Process>(listener, NOTE_EXEC | NOTE_EXIT | NOTE_SIGNAL);
+        FD client(channel->setup());
+        channel->ordinary(NOTE_EXEC, 11);
+        notification(client.fd());
+        exhausted = true;
+        channel->exit(44);
+        exhausted = false;
+        channel->ordinary(NOTE_SIGNAL, 55);
+        exhausted = true;
+        for (auto expected: {NOTE_EXEC, NOTE_EXIT, NOTE_SIGNAL}) {
+            readRequest(client.fd()); channel->readable();
+            auto reply = readReply(client.fd());
+            assert(reply.header.code == 0 && reply.fflags == expected);
+            assert(reply.data == (expected == NOTE_EXEC ? 11 : expected == NOTE_EXIT ? 44 : 55));
+            if (expected != NOTE_SIGNAL) notification(client.fd());
+        }
+        channel->exit(999);
+        readRequest(client.fd()); channel->readable();
+        assert(readReply(client.fd()).header.code == 0xdead);
+        exhausted = false;
+        ++cases;
+    }
+    // Death observed before socket setup is retained and becomes ready as soon
+    // as the ordinary setup transaction exposes the peer endpoint.
+    {
+        auto listener = std::make_shared<DarlingServer::Process>();
+        auto channel = std::make_shared<Kqchan::Process>(listener, NOTE_EXIT);
+        exhausted = true; channel->exit(12); exhausted = false;
+        FD client(channel->setup()); notification(client.fd());
+        exhausted = true; readRequest(client.fd()); channel->readable();
+        assert(readReply(client.fd()).data == 12); exhausted = false;
+        ++cases;
+    }
+    // Filter is selected at read time, and each read reply precedes any renewed
+    // readiness. A modify does not acknowledge an outstanding notification.
+    {
+        auto listener = std::make_shared<DarlingServer::Process>();
+        auto channel = std::make_shared<Kqchan::Process>(listener, NOTE_EXEC);
+        FD client(channel->setup());
+        channel->ordinary(NOTE_EXEC, 1); notification(client.fd());
+        exhausted = true;
+        channel->exit(2);
+        modifyRequest(client.fd(), NOTE_EXIT); channel->readable();
+        dserver_kqchan_reply_proc_modify_t acknowledgement = {};
+        assert(recv(client.fd(), &acknowledgement, sizeof(acknowledgement), 0) == sizeof(acknowledgement));
+        assert(acknowledgement.header.number == dserver_kqchan_msgnum_proc_modify && !acknowledgement.header.code);
+        readRequest(client.fd()); channel->readable();
+        auto reply = readReply(client.fd());
+        assert(reply.fflags == NOTE_EXIT && reply.data == 2 && !reply.header.code);
+        exhausted = false;
+        ++cases;
+    }
+    // Fanout and a second attachment of the same channel may race after death.
+    // They record one exit and one outstanding readiness notification.
+    {
+        auto target = std::make_shared<DarlingServer::Process>();
+        auto listener = std::make_shared<DarlingServer::Process>();
+        auto channel = std::make_shared<Kqchan::Process>(listener, NOTE_EXIT);
+        channel->_targetProcess = target;
+        FD client(channel->setup());
+        target->registerListeningKqchan(channel);
+        { std::unique_lock lock(target->_rwlock); target->_dead = true; }
+        std::atomic<bool> start{false};
+        std::thread fanout([&] {
+            while (!start.load()) std::this_thread::yield();
+            exhausted = true; target->notifyPreparedExitListeners(); exhausted = false;
+        });
+        std::thread late([&] {
+            while (!start.load()) std::this_thread::yield();
+            exhausted = true; target->registerListeningKqchan(channel); exhausted = false;
+        });
+        start = true; fanout.join(); late.join();
+        exhausted = true;
+        notification(client.fd()); readRequest(client.fd()); channel->readable();
+        assert(readReply(client.fd()).fflags == NOTE_EXIT);
+        readRequest(client.fd()); channel->readable();
+        assert(readReply(client.fd()).header.code == 0xdead);
+        exhausted = false;
+        ++cases;
+    }
+    // Sending pressure cannot consume reserved exit or lose notification/read
+    // reply state. The actual seqpacket writable edge resumes fixed buffers.
+    {
+        auto listener = std::make_shared<DarlingServer::Process>();
+        auto channel = std::make_shared<Kqchan::Process>(listener, NOTE_EXIT);
+        FD client(channel->setup());
+        int size = 4096;
+        assert(setsockopt(channel->_socket->fd(), SOL_SOCKET, SO_SNDBUF, &size, sizeof(size)) == 0);
+        int epoll = epoll_create1(EPOLL_CLOEXEC); epoll_event setting = {}; setting.events = EPOLLOUT | EPOLLET;
+        assert(epoll_ctl(epoll, EPOLL_CTL_ADD, channel->_socket->fd(), &setting) == 0);
+        epoll_event event; assert(epoll_wait(epoll, &event, 1, 1000) == 1);
+        char byte = 'x'; unsigned queued = 0;
+        while (send(channel->_socket->fd(), &byte, 1, MSG_DONTWAIT | MSG_NOSIGNAL) == 1) ++queued;
+        assert(errno == EAGAIN && queued);
+        exhausted = true;
+        channel->exit(77);
+        assert(channel->preparedTransportError() == EAGAIN && channel->exitPending());
+        while (epoll_wait(epoll, &event, 1, 0) == 1) {}
+        for (unsigned i = 0; i < queued; ++i) assert(recv(client.fd(), &byte, 1, 0) == 1);
+        assert(epoll_wait(epoll, &event, 1, 1000) == 1);
+        channel->writable(); notification(client.fd());
+        // Saturate again, this time after the request has reached the server.
+        queued = 0;
+        while (send(channel->_socket->fd(), &byte, 1, MSG_DONTWAIT | MSG_NOSIGNAL) == 1) ++queued;
+        readRequest(client.fd()); channel->readable();
+        assert(channel->preparedTransportError() == EAGAIN && !channel->exitPending());
+        for (unsigned i = 0; i < queued; ++i) assert(recv(client.fd(), &byte, 1, 0) == 1);
+        channel->writable();
+        auto reply = readReply(client.fd());
+        assert(reply.fflags == NOTE_EXIT && reply.data == 77 && channel->preparedTransportError() == 0);
+        exhausted = false; close(epoll);
+        ++cases;
+    }
+    // Reserved exit remains behind fork, including the original NOTE_TRACKERR
+    // behavior when child-channel preparation cannot allocate.
+    {
+        auto listener = std::make_shared<DarlingServer::Process>();
+        auto channel = std::make_shared<Kqchan::Process>(listener, NOTE_FORK | NOTE_EXIT | NOTE_TRACK);
+        auto child = std::make_shared<Kqchan::Process>(listener, NOTE_EXIT);
+        child->failSetup = true;
+        FD client(channel->setup());
+        channel->ordinary(NOTE_FORK, 66, child); notification(client.fd());
+        exhausted = true; channel->exit(99);
+        readRequest(client.fd()); channel->readable(); auto fork = readReply(client.fd());
+        assert(fork.fflags == (NOTE_FORK | NOTE_TRACKERR) && fork.data == 66);
+        notification(client.fd()); readRequest(client.fd()); channel->readable();
+        auto exit = readReply(client.fd()); assert(exit.fflags == NOTE_EXIT && exit.data == 99);
+        exhausted = false;
+        ++cases;
+    }
+    // Actual SCM_RIGHTS ownership survives reply backpressure/transfer.
+    {
+        auto listener = std::make_shared<DarlingServer::Process>();
+        auto channel = std::make_shared<Kqchan::Process>(listener, NOTE_FORK | NOTE_TRACK);
+        auto child = std::make_shared<Kqchan::Process>(listener, NOTE_EXIT);
+        FD client(channel->setup());
+        channel->ordinary(NOTE_FORK, 8, child); notification(client.fd());
+        readRequest(client.fd()); channel->readable(); int fd = -1;
+        auto reply = readReply(client.fd(), &fd);
+        assert(reply.fflags == NOTE_FORK && fd >= 0 && fcntl(fd, F_GETFD) >= 0);
+        close(fd); listener->_kqchannels.clear();
+        ++cases;
+    }
+    // Fanout and a late subscription both remain allocation-free. Self-owned
+    // channel destruction occurs after releasing Process::_rwlock.
+    {
+        auto process = std::make_shared<DarlingServer::Process>();
+        auto channel = std::make_shared<Kqchan::Process>(process, NOTE_EXIT);
+        channel->_targetProcess = process;
+        FD client(channel->setup());
+        channel->_monitor = std::make_shared<Monitor>();
+        const int ownedFD = channel->_socket->fd();
+        process->registerListeningKqchan(channel);
+        process->registerKqchan(channel);
+        std::weak_ptr<Kqchan::Process> weak = channel;
+        channel.reset();
+        decltype(process->_kqchannels) owned;
+        { std::unique_lock lock(process->_rwlock); process->_dead = true; owned.swap(process->_kqchannels); }
+        exhausted = true;
+        process->notifyPreparedExitListeners();
+        notification(client.fd());
+        owned.clear();
+        exhausted = false;
+        assert(weak.expired() && fcntl(ownedFD, F_GETFD) == -1 && errno == EBADF);
+        assert(Server::sharedInstance().removed == 1);
+        auto late = std::make_shared<Kqchan::Process>(process, NOTE_EXIT);
+        FD lateClient(late->setup());
+        exhausted = true;
+        process->registerListeningKqchan(late);
+        notification(lateClient.fd()); readRequest(lateClient.fd()); late->readable();
+        assert(readReply(lateClient.fd()).fflags == NOTE_EXIT && process->_listeningKqchannels.empty());
+        exhausted = false;
+        ++cases;
+    }
+    std::printf("%u exact-method process-exit cases passed: FIFO/filter/readiness, seqpacket backpressure, tracked fork, SCM_RIGHTS, self-subscription teardown and late attachment\n", cases);
+}

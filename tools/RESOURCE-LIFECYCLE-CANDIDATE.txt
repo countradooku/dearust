@@ -1,0 +1,98 @@
+Owned resource lifecycle continuation (unfinished)
+===================================================
+
+resource-lifecycle-current-index.json indexes this continuation separately from
+the immutable resource-prepared-registration-verification.json. Every native
+derivative retains its own binary/input hashes; results are not a combined fault
+matrix for the final candidate. These C/C++ prerequisites neither activate
+unsigned resource ownership nor add Rust replacements or target retirements.
+
+Implementation
+----------------
+The Registry reserves EIDs before factories and map nodes before foreign handles.
+Selected task/thread C source now follows the selected bridge object's adjacent
+source, preserving Rust lockset dying/destruction callbacks. Owned builds freeze
+inputs, rebuild all12 server translation units, compile checked C changes and
+record all selected objects/archives and C compilation commands.
+
+Private task/thread preparation checks VM, IPC, importance, psynch and turnstile
+stages and retains partial ownership explicitly. Kernel-lane abort releases only
+acquired state; thread dying decrements active_thread_count once. Every opaque C
+context independently owns its generation, so retained old handles keep C++
+owners alive and late disposal cannot clear replacements. Resume validates its
+expected generation under the Thread lock through reserved queue insertion.
+StackPool reserves its cache and honors capacity without the old off-by-one.
+
+Process death marks ResourceState synchronously and stops timer rearming. Owned
+channels are destroyed outside the Process lock; exit fanout and foreign cleanup
+use reserved events/jobs. ResourceState's embedded job precedes its real gate
+semaphore. Startup-owned cleanup TLS removes the previous64MiB allocator arena
+reservation; the lane still adds a default-stack pthread, an open performance gate.
+
+Process/Mach notification packets retain fixed storage across EAGAIN. Weak C
+callback promotion defers final C detach. Port-set unlink atomically publishes
+shutdown, posts the read semaphore and interrupts an existing wait, closing a
+reproduced lost wakeup when callback return preceded its next semaphore wait.
+
+Exec prepares a replacement task, thread and five semaphores before publishing.
+It pins predecessor handles, releases both owner locks for C preparation, then
+relocks and revalidates exact live ownership before commit. An embedded cleanup
+capsule retires handles after unlocking. Physical exec has already occurred;
+failure is terminal bookkeeping, not image rollback. Checkin Call/reply storage
+is reserved before Registry publication. Message tokens preserve signal/S2C
+deferrals; intrusive nodes merge into ordinary FIFO/batched transport without
+queue allocation. Terminal exec errors queue their reserved reply before death.
+
+Recorded evidence and limits
+------------------------------
+Owned server8 SHA256:
+585bd4603faa9527f24ad3105b707a329f5bec72eb1c755be5e7e3cfc08cbac7
+Its88 ordinary guest executions pass: guards2, filesystem1, retained30,
+applications10 and resource1 in each of two same-candidate slots. Actual kernel
+mapping and paired loader/kernel hashes remain recorded. Earlier server4 also
+passed two ordinary Process kqueue executions; that is earlier scoped evidence.
+
+Historical owned native derivatives pass79 real acquisition failures, three
+overlapping generations with newest-first disposal, real ResourceState semaphore
+accounting, real Mach callback/detach races and allocation-denied notifications.
+Exact reply queue methods pass natively and under ASan/UBSan:1024 concurrent
+replies, mixed batched FIFO, EAGAIN, SCM_RIGHTS, moved/deferred/dropped owners,
+shutdown and callback replacement/reentrancy, with zero denied allocations.
+Generation resume passes64 forced publication interleavings in native/sanitized
+fixtures. Public ABI interposition excludes hidden libc internals; fixture
+sanitizers do not instrument linked Rust/XNU. The identified Python run passes94
+tests; no Rust source changed in this batch.
+
+The earlier29-failure exec proof predates the later owner-lock fix and remains
+historical evidence. Final combined fault validation is NOT passed. All23 old
+dirty candidates and frozen build12 inputs remain unchanged; failed iterations
+are preserved. The final ordinary bootstrap run caught and verified correction
+of a real C-callback lock recursion absent from the earlier native context.
+
+Reproduction (owned build/index only)
+---------------------------------------
+  python3 tools/build_resource_lifecycle_server.py \
+    --candidate work/resources-complete/server-build12 \
+    --output /fresh/owned/lifecycle-server
+
+  python3 tools/record_resource_lifecycle_progress.py \
+    --output /fresh/current-evidence-index.json
+
+No installation or activation occurs. Inputs/reference builds, prior paired
+artifacts, prefixes and work evidence remain preserved.
+
+Open and stopped gates
+-------------------------
+Original adversarial RPC verification remains blocked. Further automatic review
+stopped an exec-notification/extra-guest/cleanup-lane redesign follow-up and a
+direct native Checkin fault test, citing possible cybersecurity risk. These
+actions were not retried, rephrased or transferred. Their WIP remains separate;
+verification is unclaimed. Reproduction commands for stopped work are omitted.
+
+Latest combined exec fault behavior, initial-call failure, active-call
+cancellation, full shutdown, generic/lazy IPC allocation, bootstrap exhaustion,
+optional configurations/architectures and performance remain open. Physical
+exec versus old-task VM access needs its own drain/cancellation protocol.
+Exact unsigned ownership/enforcement, host hard-limit/VM partial effects,
+credential/NPROC authority and generic-copy CPU gates remain unfinished.
+Resources and post-resource packages01-09 are not complete.

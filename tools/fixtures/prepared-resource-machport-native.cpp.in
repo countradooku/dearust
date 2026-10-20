@@ -1,0 +1,164 @@
+#include "prepared-resource-machport-model.h"
+#include @CLEANUP@
+#include <atomic>
+#include <cassert>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <fcntl.h>
+#include <memory>
+#include <new>
+#include <shared_mutex>
+#include <system_error>
+#include <thread>
+#include <unistd.h>
+#include <sys/socket.h>
+
+static thread_local bool exhausted = false;
+void* operator new(size_t size) {
+    if (exhausted) throw std::bad_alloc();
+    if (auto result = std::malloc(size ? size : 1)) return result;
+    throw std::bad_alloc();
+}
+void operator delete(void* value) noexcept { std::free(value); }
+void operator delete(void* value, size_t) noexcept { std::free(value); }
+static std::atomic<bool> notifyEntered{false}, notifyReleased{false};
+static bool notifyShouldWait = false, notifyShouldThrow = false, baseShouldThrow = false;
+static int lastPeer = -1;
+
+namespace DarlingServer {
+struct FD {
+    int value;
+    explicit FD(int fd): value(fd) {}
+    ~FD() { if (value >= 0) close(value); }
+    int extract() { const auto fd = value; value = -1; return fd; }
+};
+struct Process {
+    std::shared_mutex _rwlock;
+    bool _dead = false;
+    dtape_task_t task{{1}};
+    dtape_task_t* _dtapeTask = &task;
+};
+struct Logger {
+    Logger& debug() { return *this; }
+    template<class T> Logger& operator<<(const T&) { return *this; }
+    int endLog = 0;
+};
+static Logger kqchanMachPortLog;
+struct Thread {
+    static std::atomic<PreparedResourceCleanupJob*> pending;
+    static void requireResourceCleanupReady() {}
+    static void enqueueResourceCleanup(PreparedResourceCleanupJob& job) noexcept {
+        PreparedResourceCleanupJob* empty = nullptr;
+        assert(pending.compare_exchange_strong(empty, &job));
+    }
+};
+std::atomic<PreparedResourceCleanupJob*> Thread::pending{nullptr};
+class Kqchan {
+public:
+    std::weak_ptr<Process> _process;
+    int _socket = -1;
+    explicit Kqchan(std::shared_ptr<Process> process): _process(process) {}
+    virtual ~Kqchan() { if (_socket >= 0) close(_socket); }
+    virtual int setup() {
+        if (baseShouldThrow) throw std::bad_alloc();
+        int fds[2]; assert(!socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC, 0, fds));
+        _socket = fds[0]; lastPeer = fds[1]; return fds[1];
+    }
+    class MachPort;
+};
+class Kqchan::MachPort: public Kqchan, public std::enable_shared_from_this<MachPort> {
+public:
+    struct PreparedRetirement;
+    std::unique_ptr<PreparedRetirement> _preparedRetirement;
+    dtape_kqchan_mach_port_t* _dtapeKqchan = nullptr;
+    uint32_t _port = 1;
+    uint64_t _receiveBuffer = 0, _receiveBufferSize = 0, _savedFilterFlags = 0;
+    explicit MachPort(std::shared_ptr<Process> process);
+    ~MachPort();
+    int setup() override;
+    void _notify() {
+        if (notifyShouldThrow) throw std::bad_alloc();
+        notifyEntered = true;
+        if (notifyShouldWait) while (!notifyReleased.load()) std::this_thread::yield();
+    }
+};
+}
+
+// RETIREMENT_TYPE
+DarlingServer::Kqchan::MachPort::MachPort(std::shared_ptr<Process> process): Kqchan(process) {}
+// MACH_DESTRUCTOR
+// SETUP
+
+static void drain() {
+    auto* job = DarlingServer::Thread::pending.exchange(nullptr);
+    if (job) {
+        exhausted = true; job->run(job->context); exhausted = false;
+    }
+}
+
+int main() {
+    using namespace DarlingServer;
+    unsigned cases = 0;
+    auto process = std::make_shared<Process>();
+    for (int point = 0; point < 4; ++point) {
+        prepared_model_fault(point == 1, point == 2, point == 3);
+        auto channel = std::make_shared<Kqchan::MachPort>(process);
+        notifyShouldThrow = point == 3;
+        bool failed = false;
+        if (point == 0) exhausted = true;
+        try { channel->setup(); }
+        catch (const std::bad_alloc&) { failed = true; }
+        catch (const std::system_error&) { failed = true; }
+        exhausted = false;
+        assert(failed);
+        if (point == 3) assert(fcntl(lastPeer, F_GETFD) == -1 && errno == EBADF);
+        exhausted = true; channel.reset(); exhausted = false; drain();
+        assert(prepared_model_live() == 0 && process->task.xnu_task.references == 1);
+        ++cases;
+    }
+    prepared_model_fault(0, 0, 0); notifyShouldThrow = false;
+    {
+        auto channel = std::make_shared<Kqchan::MachPort>(process);
+        FD peer(channel->setup());
+        auto* handle = channel->_dtapeKqchan;
+        prepared_model_delay_snapshot(1);
+        std::thread callback([&] { prepared_model_post(handle); });
+        while (!prepared_model_snapshot()) std::this_thread::yield();
+        exhausted = true; channel.reset(); exhausted = false;
+        assert(Thread::pending.load() && !notifyEntered.load());
+        std::thread cleanup([] { drain(); });
+        while (!prepared_model_detaching()) std::this_thread::yield();
+        assert(prepared_model_live() == 1);
+        prepared_model_release_snapshot();
+        callback.join(); cleanup.join();
+        assert(!notifyEntered.load() && prepared_model_live() == 0 && process->task.xnu_task.references == 1);
+        ++cases;
+    }
+    {
+        prepared_model_delay_snapshot(0); prepared_model_fault(0, 0, 0);
+        notifyEntered = false; notifyReleased = false; notifyShouldWait = true;
+        auto channel = std::make_shared<Kqchan::MachPort>(process);
+        FD peer(channel->setup()); auto* handle = channel->_dtapeKqchan;
+        std::thread callback([&] { prepared_model_post(handle); });
+        while (!notifyEntered.load()) std::this_thread::yield();
+        exhausted = true; channel.reset(); exhausted = false;
+        assert(!Thread::pending.load()); // the promoted callback owns the channel
+        notifyReleased = true; callback.join(); drain();
+        assert(prepared_model_live() == 0 && process->task.xnu_task.references == 1);
+        ++cases;
+    }
+    // Socket setup failure after C acquisition still has a preallocated job.
+    {
+        notifyShouldWait = false; baseShouldThrow = true;
+        prepared_model_fault(0, 0, 0);
+        auto channel = std::make_shared<Kqchan::MachPort>(process);
+        bool failed = false;
+        try { channel->setup(); } catch (const std::bad_alloc&) { failed = true; }
+        assert(failed && prepared_model_live() == 1);
+        exhausted = true; channel.reset(); exhausted = false; drain();
+        assert(prepared_model_live() == 0 && process->task.xnu_task.references == 1);
+        ++cases;
+    }
+    std::printf("%u exact C/C++ Mach-port retirement cases passed: preparation failure, task-ref balance, peer-FD unwind, callback-before-promotion and promoted-callback teardown\n", cases);
+}
