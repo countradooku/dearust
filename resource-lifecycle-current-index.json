@@ -20,35 +20,39 @@
   "guests": {
     "cohorts": [
       {
+        "exit_code": 0,
         "group": "guards",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests16-single/guards/comparison.json",
-        "sha256": "10ea9e4b6ffbbd5bcdea92ef8e2152f25e603f5eece56071d1ef562ec8afff42"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests20-single/guards/comparison.json",
+        "sha256": "504751d48a2b0ba758cebee481b53861196bea94397542e772ec10d469b76d9d"
       },
       {
+        "exit_code": 0,
         "group": "filesystem",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests16-single/filesystem/comparison.json",
-        "sha256": "1616c0aa07fc9181e6796b9d24de97aeb8090a086e98ce41fc22d96c286cbc76"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests20-single/filesystem/comparison.json",
+        "sha256": "1912ef329b41f81415ef6e646a0b1204149e7e2119ef91f0306c39b82761b918"
       },
       {
+        "exit_code": 1,
         "group": "existing",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests16-single/existing/comparison.json",
-        "sha256": "6f573646cdf7ca7c88e116b22e52085ef7aa90c7bae29c81361a4e75fd20c545"
-      },
-      {
-        "group": "apps",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests16-single/apps/comparison.json",
-        "sha256": "7ae6233ed098583776a26953868bb6255c62107ffda46f446a51a2a7924fe4e9"
-      },
-      {
-        "group": "resources",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests16-single/resources/comparison.json",
-        "sha256": "733550d1ca7a84cb85e70c0c57f38c2b8e41855e7932da194e3a4d23a7054c31"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests20-single/existing/comparison.json",
+        "sha256": "fc10e39041894f1051e1f532bdc99c980592f104853453315c46482e8a857b53"
       }
     ],
-    "count": 88,
-    "run": "work/resource-death-continuation/guests16-single/run.json",
-    "run_sha256": "c46fe9e8f9320ed186d602fb0a9d7da009e86b539d944ca296b241b8c4f5c574",
-    "slots": "same owned server/loader/kernel in both slots; not original-C versus Rust"
+    "count": 66,
+    "expected_count": 88,
+    "failures": [
+      {
+        "case": "thread-info.c",
+        "group": "existing",
+        "slot": "original",
+        "stderr": "Assertion failed: (__proc_info(2,getpid(),PROC_PIDTHREADINFO,other,bytes,128)==-1&&errno==ESRCH), function main, file /home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/tools/fixtures/thread-info.c, line 61.\n",
+        "timed_out": false
+      }
+    ],
+    "run": "work/resource-death-continuation/guests20-single/run.json",
+    "run_sha256": "3c1bf95849737bce590a4155ddcbcc549dcf270f5716eb7a534cd1ebf61282c2",
+    "slots": "same owned server/loader/kernel in both slots; not original-C versus Rust",
+    "status": "failing"
   },
   "historical_checked_failure_cases": 79,
   "historical_exec_failure_cases": 29,
@@ -66,58 +70,84 @@
       "guest_run": "work/resource-death-continuation/guests13-multi/run.json",
       "guest_run_sha256": "996e9e18a477ba25a5c57194ebb1486d2474d72a73a398b41ec8792089debc84",
       "status": "failed; immutable earlier run"
+    },
+    {
+      "build_report": "work/resource-death-continuation/server17-multi/build.json",
+      "build_report_sha256": "7218b651934121e67e23886ecd112a8497c6474db06e081e450b95146ba93de2",
+      "guest_run": "work/resource-death-continuation/guests17-multi/run.json",
+      "guest_run_sha256": "e9b06c4276d9855fdea26615b5e2f8a7afaf03e6a72af1b5ca0aa428a963934b",
+      "status": "failed; immutable earlier run"
+    },
+    {
+      "build_report": "work/resource-death-continuation/server17-multi/build.json",
+      "build_report_sha256": "7218b651934121e67e23886ecd112a8497c6474db06e081e450b95146ba93de2",
+      "guest_run": "work/resource-death-continuation/guests19-plain-multi/run.json",
+      "guest_run_sha256": "408c138d4f0028d1117cc4509f1c07c60e6f7bf68f0e2d5fc84a14539c350032",
+      "status": "failed; immutable earlier run"
     }
   ],
+  "historical_singleworker_success": {
+    "build_report": "work/resource-death-continuation/server16-single/build.json",
+    "build_report_sha256": "e4ab1bbec086a6dbe0c681a0be71c780a840ad767c981bfa796434b3bad619e9",
+    "count": 88,
+    "guest_run": "work/resource-death-continuation/guests16-single/run.json",
+    "guest_run_sha256": "c46fe9e8f9320ed186d602fb0a9d7da009e86b539d944ca296b241b8c4f5c574",
+    "status": "passed earlier scoped ordinary cohort"
+  },
   "multiworker": {
-    "build_report": "work/resource-death-continuation/server17-multi/build.json",
-    "build_report_sha256": "7218b651934121e67e23886ecd112a8497c6474db06e081e450b95146ba93de2",
-    "cases_executed": 44,
+    "build_report": "work/resource-death-continuation/server21-multi/build.json",
+    "build_report_sha256": "e91d0c4d3d78af33e889f00520215a7fcbc8be62988f00746ff7898859208a77",
+    "cases_executed": 58,
     "cohorts": [
       {
         "exit_code": 0,
         "group": "guards",
-        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests17-multi/guards/comparison.json",
-        "sha256": "d5deb91d5454d55c72e37dbfdcbc4c5245c05712699bc1ca684c8ee80dfdb607"
+        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests21-multi/guards/comparison.json",
+        "sha256": "ab8260dc49bd8e6cad1556dd261df5d3d89544294dbaf0346d5207a60583ac9c"
       },
       {
         "exit_code": 0,
         "group": "filesystem",
-        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests17-multi/filesystem/comparison.json",
-        "sha256": "b156cf45c4e5f206497f0f684947337ebbebbcfd88530155cffc755c4bd30243"
+        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests21-multi/filesystem/comparison.json",
+        "sha256": "ff1123b7e6f9d08174f0d91a10889c7d31e49d8be623b0fd6ff57355a870fe03"
       },
       {
         "exit_code": 1,
         "group": "existing",
-        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests17-multi/existing/comparison.json",
-        "sha256": "9153070d672c09bab2623c93b5970b3ed725374cf7049ee5c46807a2cda6e3ea"
+        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests21-multi/existing/comparison.json",
+        "sha256": "346480024702193c76f88dbd2ac0975312a1b2496826304b9a3907a69d74cedc"
       }
     ],
     "configuration": {
-      "path": "work/resource-death-continuation/server17-multi/workqueue-configuration.json",
-      "sha256": "1cdeeb8074a1432b231bddbb6bdaf2dbce01f9f6d7a69973ef5be395eda06073"
+      "path": "work/resource-death-continuation/server21-multi/workqueue-configuration.json",
+      "sha256": "e3fb6d4f746aa88bc538e335b5a60189a791342e8871e86d7735d7d68d8e62b7"
     },
     "failures": [
       {
-        "case": "fsync-regression.c",
+        "case": "readlinkat-regression.c",
         "group": "existing",
         "slot": "rust",
         "timed_out": true
       }
     ],
-    "guest_run": "work/resource-death-continuation/guests17-multi/run.json",
-    "guest_run_sha256": "e9b06c4276d9855fdea26615b5e2f8a7afaf03e6a72af1b5ca0aa428a963934b",
+    "guest_run": "work/resource-death-continuation/guests21-multi/run.json",
+    "guest_run_sha256": "59c84df3840d65c14790c87f9ed237be2fb6a8c47293340870d9a10d45172830",
     "inputs_unchanged": true,
     "observation": {
-      "path": "work/resource-death-continuation/multiworker-observation17/verification.json",
-      "sha256": "46463dfc14554edc255f3854d54000307fc958565f4e8741e4ea4630a9f9ce73"
+      "path": "work/resource-death-continuation/multiworker-observation21/verification.json",
+      "sha256": "be4020cd3b09f6ac4bf28cc184f97505ef0c25f5ef5242a7906bf26708b787bb"
     },
-    "server_sha256": "dbdc25d06b530602172dfd602247447a6b04260b46892ac98fa17f6c688880c3",
+    "server_sha256": "0fa0fbfb1227eb7948538134d9505af43986e350eb170f1e9f809ce18f68d830",
     "status": "failing"
   },
   "native_component_evidence": {
     "checked_acquisition_and_generations": {
       "path": "work/resources-complete/prepared-checked-ipc-proof9/verification.json",
       "sha256": "e5c3f4669101cbb739f57797baa07301d68b08741dbe8d50bea7c1c7539aef1a"
+    },
+    "dispatch_wakeup": {
+      "path": "work/resource-death-continuation/dispatch-wakeup/proof1/verification.json",
+      "sha256": "49b5dcb765febd0cb47013b1af77a8786da07a4454565843bfff7f41cd617a51"
     },
     "earlier_ordinary_process_kqueue": {
       "path": "work/resource-death-continuation/process-kqueue-guest4/comparison.json",
@@ -174,6 +204,7 @@
   },
   "native_results_scope": "Each native derivative retains its own exact input hashes and binary; do not combine historical component proofs into a claim that the final binary passed the complete fault matrix.",
   "open_gates": [
+    "The latest single-worker ordinary cohort fails thread-info.c after pthread_join; the assertion/termination ordering remains under review. Earlier server16 passed88 and is retained separately.",
     "Historical multiworker ordinary guest timeouts remain preserved. Scoped fresh cohort results and deterministic handoff/mutex regressions do not establish complete concurrency acceptance.",
     "Executing continuation closure ownership across suspension/native-worker reuse remains unverified; its attempted native validation was stopped by automatic cybersecurity review and was not retried or activated.",
     "Latest prepared exec lock-scope changes pass ordinary guest execution; the earlier29-failure exec proof is historical and does not validate those later changes.",
@@ -189,10 +220,10 @@
   "owned_build": {
     "complete_combined_fault_validation": false,
     "inputs_unchanged": true,
-    "report": "work/resource-death-continuation/server16-single/build.json",
-    "report_sha256": "e4ab1bbec086a6dbe0c681a0be71c780a840ad767c981bfa796434b3bad619e9",
-    "server": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/server16-single/linked/darlingserver",
-    "server_sha256": "9f9c97b36ab08a104d982d023c2b5a1ea6bdfdefd7b5c138b5a52b2e143fbc83"
+    "report": "work/resource-death-continuation/server20-single/build.json",
+    "report_sha256": "a9d362b6ed4edc9bdc576782c50b30501cd77e5a714927319c1d245b2c850aa8",
+    "server": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/server20-single/linked/darlingserver",
+    "server_sha256": "dee45f4e60c8daad182f9867f23849a5533c40683a7336a9dedbe924082964c3"
   },
   "preservation": {
     "count": 23,
@@ -236,15 +267,15 @@
   "python_check": {
     "command": "python3 -m unittest discover -s tools -p 'test_*.py' -v",
     "count": 94,
-    "log": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/python-tests-mutex.log",
-    "sha256": "cdcf3935abb642a689f4d860854ca8916b1b773b447ec315dffa02638f8d19cc"
+    "log": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/python-tests-dispatch.log",
+    "sha256": "1521e810d45e5317507eb9412affd5b65266525cef30877dac0cfb3bb328136c"
   },
   "resource_complete": false,
   "resource_ownership_activated": false,
   "schema_version": 1,
   "scope": "Owned resource lifecycle prerequisite candidate; scoped evidence index, not a full Rust port or whole-runtime OOM/performance acceptance.",
   "source_sha256": {
-    "tools/build_resource_lifecycle_server.py": "b62b4f1b0f493e8afdec813026f6360a70645f0589ce87152193b4179a9c69bb",
+    "tools/build_resource_lifecycle_server.py": "2eb85b1fe0b79b3332ae45fb24e3e5c71a7671d6c8de7cb0c9ff4370f8c5cd13",
     "tools/build_resource_workqueue_configuration.py": "898b229fd33cbf0c972b427c33bbe3c77fad068c5d090d3b20930febcf151b10",
     "tools/patch_prepared_resource_checked_ipc.py": "bb54107ded1e322ea2afacaeb856d4d06489b8f9075dd999e3c514712b20e4c9",
     "tools/patch_prepared_resource_inner_dtape.py": "bba0ae00f5fcc5bd0acbad3a8623bdcd7c7aec1a84c5afea7b71f744f38ab6ff",
@@ -257,6 +288,7 @@
     "tools/patch_prepared_resource_replies.py": "1f2d40125aa1cb792a279f44743573588f32d005b5a79f807da9008f95ab25e0",
     "tools/patch_resource_death_lifecycle.py": "49b4f42fb2e27265e676353469b6be2cfc9867bb92294573bdb117aaa6dfa21f",
     "tools/patch_resource_death_work.py": "b80d9ae910a36b7b0eb41990d1417c102021672e81e705a838d84f84c112a458",
+    "tools/patch_resource_dispatch_wakeup.py": "bb46203e4d031f6494583b8c34cb6c18d9efb1df4da200db3bd29521cb32ad48",
     "tools/patch_resource_generation_resume.py": "d5c9287dbc69abcf395786a6a0f9d899c93359b047b686a55f41c3b2dd901ba2",
     "tools/patch_resource_kernel_contexts.py": "b6546523c67c2ebf1c399c901b55d7578bc851a77532221d239939a9a9363e10",
     "tools/patch_resource_mutex_interlock.py": "20bc6799ac4f1a7e4930142bd4bb69c2a5d8b868560421b813769d5231a59daa",
@@ -269,5 +301,12 @@
     "tools/prepared-resource-reply-queue.inc": "29d5732066d71b3a9ee2e913dc3d49246b17573b96a270ac87aad9665f820167",
     "tools/prepared-resource-reply-send.inc": "b57070e0597102056f7ff0f56671cc7ad5ac30b83a34be138044a60c8a810f8a",
     "tools/resource-prepared-exec.inc": "4216763d3dea6fded57f5a5fe07e98b2c5f3f4e06b11f7ecfa80f9f0761fe16f"
+  },
+  "thread_info_ordering": {
+    "diagnostic": "work/resource-death-continuation/thread-info-observed22/guests/comparison.json",
+    "diagnostic_sha256": "59422c12c76fd8a62005621313841c9fac3d8ba0a9edd93bacf964b1d87bda6f",
+    "review": "work/resource-death-continuation/thread-info-ordering/source-review.json",
+    "review_sha256": "d75a514f7dde2d340725c967bebae7a0d4423ee6ac829e879ce8564ad5b64b13",
+    "scope": "Read-only pinned-source ordering review; owned logging-only diagnostic preserves ESRCH assertion and passes two same-candidate cases. Original failing return/errno remain unknown; no expectation was weakened or failure resolved."
   }
 }

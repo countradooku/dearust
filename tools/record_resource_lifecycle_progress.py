@@ -22,6 +22,7 @@ SOURCES = [
     'patch_resource_worker_ownership.py',
     'patch_resource_work_handoff.py', 'build_resource_workqueue_configuration.py',
     'patch_resource_mutex_interlock.py',
+    'patch_resource_dispatch_wakeup.py',
 ]
 
 EVIDENCE = {
@@ -39,6 +40,7 @@ EVIDENCE = {
     'worker_ownership': 'work/prepared-registration/worker-ownership/proof3/verification.json',
     'work_handoff': 'work/resource-death-continuation/work-handoff/proof1/verification.json',
     'mutex_interlock': 'work/resource-death-continuation/mutex-interlock/proof1/verification.json',
+    'dispatch_wakeup': 'work/resource-death-continuation/dispatch-wakeup/proof1/verification.json',
 }
 
 
@@ -63,11 +65,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=Path('.'))
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--build-report', default='work/resource-death-continuation/server16-single/build.json')
-    parser.add_argument('--guest-run', default='work/resource-death-continuation/guests16-single/run.json')
-    parser.add_argument('--multi-build-report', default='work/resource-death-continuation/server17-multi/build.json')
-    parser.add_argument('--multi-guest-run', default='work/resource-death-continuation/guests17-multi/run.json')
-    parser.add_argument('--multi-observation', default='work/resource-death-continuation/multiworker-observation17/verification.json')
+    parser.add_argument('--build-report', default='work/resource-death-continuation/server20-single/build.json')
+    parser.add_argument('--guest-run', default='work/resource-death-continuation/guests20-single/run.json')
+    parser.add_argument('--multi-build-report', default='work/resource-death-continuation/server21-multi/build.json')
+    parser.add_argument('--multi-guest-run', default='work/resource-death-continuation/guests21-multi/run.json')
+    parser.add_argument('--multi-observation', default='work/resource-death-continuation/multiworker-observation21/verification.json')
     args = parser.parse_args()
     root = args.root.resolve(strict=True)
     load = lambda name: json.loads((root/name).read_text())
@@ -91,16 +93,18 @@ def main():
     guest_runs = load(guest_path)
     guest_count = 0
     guests = []
+    guest_failures = []
     for run in guest_runs:
-        if run['exit_code']: raise ValueError('ordinary cohort failed')
         report = Path(run['report'])
         data = json.loads(report.read_text())
         for variant in data['variants']:
             if not variant['kernel_mappings']: raise ValueError('missing actual kernel mapping')
-            if not all(case['normalized_pass'] for case in variant['results']):
-                raise ValueError('ordinary guest result failed')
+            for case in variant['results']:
+                if not case['normalized_pass']:
+                    guest_failures.append(dict(group=run['group'], slot=variant['variant'], case=case['name'],
+                        timed_out=case['launcher']['timed_out'], stderr=case['stderr']))
             guest_count += len(variant['results'])
-        guests.append(dict(group=run['group'], report=str(report), sha256=digest(report)))
+        guests.append(dict(group=run['group'], report=str(report), sha256=digest(report), exit_code=run['exit_code']))
     multi_build = checked_build(root, args.multi_build_report)
     multi_configuration_path = Path(args.multi_build_report).parent/'workqueue-configuration.json'
     multi_configuration = load(multi_configuration_path)
@@ -123,7 +127,7 @@ def main():
                 if not case['normalized_pass']:
                     multi_failures.append(dict(group=run['group'], slot=variant['variant'], case=case['name'],
                         timed_out=case['launcher']['timed_out']))
-    python_log = root/'work/resource-death-continuation/python-tests-mutex.log'
+    python_log = root/'work/resource-death-continuation/python-tests-dispatch.log'
     if not python_log.read_text().rstrip().endswith('OK'): raise ValueError('Python checks failed')
     python_count = int(re.search(r'Ran (\d+) tests', python_log.read_text()).group(1))
     worker = load(EVIDENCE['worker_ownership'])
@@ -135,7 +139,11 @@ def main():
     mutex = load(EVIDENCE['mutex_interlock'])
     if not mutex['passed'] or not mutex['inputs_unchanged']:
         raise ValueError('mutex interlock validation failed')
+    dispatch = load(EVIDENCE['dispatch_wakeup'])
+    if not dispatch['passed'] or not dispatch['inputs_unchanged']:
+        raise ValueError('dispatch wakeup validation failed')
     open_gates = [
+        'The latest single-worker ordinary cohort fails thread-info.c after pthread_join; the assertion/termination ordering remains under review. Earlier server16 passed88 and is retained separately.',
         'Historical multiworker ordinary guest timeouts remain preserved. Scoped fresh cohort results and deterministic handoff/mutex regressions do not establish complete concurrency acceptance.',
         'Executing continuation closure ownership across suspension/native-worker reuse remains unverified; its attempted native validation was stopped by automatic cybersecurity review and was not retried or activated.',
         'Latest prepared exec lock-scope changes pass ordinary guest execution; the earlier29-failure exec proof is historical and does not validate those later changes.',
@@ -154,7 +162,9 @@ def main():
         owned_build=dict(report=build_path, report_sha256=digest(root/build_path), server=build['server'],
                          server_sha256=build['server_sha256'], inputs_unchanged=True,
                          complete_combined_fault_validation=False),
-        guests=dict(count=guest_count, slots='same owned server/loader/kernel in both slots; not original-C versus Rust',
+        guests=dict(count=guest_count, expected_count=88, failures=guest_failures,
+                    status='failing' if guest_failures or any(run['exit_code'] for run in guest_runs) else 'passed scoped ordinary cohort',
+                    slots='same owned server/loader/kernel in both slots; not original-C versus Rust',
                     run=guest_path, run_sha256=digest(root/guest_path), cohorts=guests),
         multiworker=dict(status='failing' if multi_failures or any(run['exit_code'] for run in multi_runs) else 'passed scoped ordinary cohort',
             build_report=args.multi_build_report, build_report_sha256=digest(root/args.multi_build_report),
@@ -174,7 +184,20 @@ def main():
             guest_run='work/resource-death-continuation/'+guest_name+'/run.json',
             guest_run_sha256=digest(root/'work/resource-death-continuation'/guest_name/'run.json'),
             status='failed; immutable earlier run') for build_name,guest_name in (
-                ('server11-multiworker','guests11-multiworker'),('server13-multi','guests13-multi'))],
+                ('server11-multiworker','guests11-multiworker'),('server13-multi','guests13-multi'),
+                ('server17-multi','guests17-multi'),('server17-multi','guests19-plain-multi'))],
+        historical_singleworker_success=dict(
+            build_report='work/resource-death-continuation/server16-single/build.json',
+            build_report_sha256=digest(root/'work/resource-death-continuation/server16-single/build.json'),
+            guest_run='work/resource-death-continuation/guests16-single/run.json',
+            guest_run_sha256=digest(root/'work/resource-death-continuation/guests16-single/run.json'),
+            count=88, status='passed earlier scoped ordinary cohort'),
+        thread_info_ordering=dict(
+            review='work/resource-death-continuation/thread-info-ordering/source-review.json',
+            review_sha256=digest(root/'work/resource-death-continuation/thread-info-ordering/source-review.json'),
+            diagnostic='work/resource-death-continuation/thread-info-observed22/guests/comparison.json',
+            diagnostic_sha256=digest(root/'work/resource-death-continuation/thread-info-observed22/guests/comparison.json'),
+            scope='Read-only pinned-source ordering review; owned logging-only diagnostic preserves ESRCH assertion and passes two same-candidate cases. Original failing return/errno remain unknown; no expectation was weakened or failure resolved.'),
         preservation=dict(count=len(preserved), sha256=preserved,
             preceding_candidate=dict(report=base_path, sha256=digest(root/base_path),
                                      input_count=len(frozen_base['sha256']), inputs_unchanged=True),

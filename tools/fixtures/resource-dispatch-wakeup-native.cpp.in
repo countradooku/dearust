@@ -1,0 +1,80 @@
+#include <sys/epoll.h>
+#include <sys/eventfd.h>
+#include <unistd.h>
+#include <atomic>
+#include <cassert>
+#include <condition_variable>
+#include <cstdio>
+#include <mutex>
+#include <thread>
+
+struct Outbox {
+    std::atomic<unsigned> count{0};
+    bool empty() const noexcept { return count.load()==0; }
+};
+static unsigned selectedEvents(bool _canWrite, const Outbox& _outbox) {
+    (void)_canWrite; (void)_outbox;
+    struct epoll_event settings{};
+    @EVENTS@
+    return settings.events;
+}
+int main() {
+    unsigned lost=0, delivered=0;
+    for (unsigned round=0; round<64; ++round) {
+        int counter=eventfd(0,EFD_NONBLOCK|EFD_CLOEXEC);
+        int poller=epoll_create1(EPOLL_CLOEXEC);
+        assert(counter>=0 && poller>=0);
+        struct epoll_event settings{};
+        settings.data.fd=counter;
+        settings.events=EPOLLIN|EPOLLONESHOT;
+        assert(epoll_ctl(poller,EPOLL_CTL_ADD,counter,&settings)==0);
+        Outbox _outbox;
+        // The main loop has previously encountered EAGAIN. An ordinary worker
+        // can subsequently drain the outbox without changing main's flag.
+        bool _canWrite=false;
+        std::mutex lock;
+        std::condition_variable changed;
+        bool snapshot=false,written=false;
+        std::thread producer([&] {
+            std::unique_lock guard(lock);
+            changed.wait(guard,[&]{return snapshot;});
+            _outbox.count.fetch_add(1);
+            assert(eventfd_write(counter,1)==0);
+            written=true;
+            guard.unlock();changed.notify_one();
+        });
+        settings.events=selectedEvents(_canWrite,_outbox);
+        // Force the real producer into the actual source window between mask
+        // computation and epoll_ctl, rather than relying on scheduler luck.
+        {
+            std::unique_lock guard(lock);
+            snapshot=true;changed.notify_one();
+            changed.wait(guard,[&]{return written;});
+        }
+        assert(epoll_ctl(poller,EPOLL_CTL_MOD,counter,&settings)==0);
+        struct epoll_event observed{};
+        int ready=epoll_wait(poller,&observed,1,0);
+#ifdef OLD_DISPATCH_MASK
+        assert(ready==0);++lost;
+#else
+        assert(ready==1 && observed.data.fd==counter && (observed.events&EPOLLIN));++delivered;
+#endif
+        eventfd_t value=0;
+        assert(eventfd_read(counter,&value)==0 && value==1 && _outbox.count==1);
+        producer.join();
+        _outbox.count=0;
+        settings.events=selectedEvents(_canWrite,_outbox);
+        assert(epoll_ctl(poller,EPOLL_CTL_MOD,counter,&settings)==0);
+        assert(epoll_wait(poller,&observed,1,0)==0); // No idle readiness/spin.
+#ifndef OLD_DISPATCH_MASK
+        assert(eventfd_write(counter,7)==0);
+        assert(epoll_wait(poller,&observed,1,0)==1);
+        assert(epoll_wait(poller,&observed,1,0)==0); // ONESHOT until rearmed.
+        assert(eventfd_read(counter,&value)==0 && value==7);
+        assert(epoll_ctl(poller,EPOLL_CTL_MOD,counter,&settings)==0);
+        assert(epoll_wait(poller,&observed,1,0)==0);
+#endif
+        close(poller);close(counter);
+    }
+    printf("{\"forced_interleavings\":64,\"lost_notifications\":%u,\"delivered_notifications\":%u,\"idle_not_ready\":true}\n",lost,delivered);
+}

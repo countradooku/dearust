@@ -41,6 +41,11 @@ diagnostics use atomic observations without changing the ABI layout. Both
 locks.c and misc.c are rebuilt. The native no-active-thread busy-spin fallback
 is unchanged and remains outside performance acceptance.
 
+The server's producer eventfd is always rearmed with EPOLLIN|EPOLLONESHOT.
+Disabling it after an empty-outbox snapshot could discard a producer's later
+counter write before epoll_ctl. This change adds no descriptor, polling loop,
+timer, allocation or extra syscall; complete transport acceptance remains open.
+
 Process death marks ResourceState synchronously and stops timer rearming. Owned
 channels are destroyed outside the Process lock; exit fanout and foreign cleanup
 use reserved events/jobs. ResourceState's embedded job precedes its real gate
@@ -63,12 +68,26 @@ queue allocation. Terminal exec errors queue their reserved reply before death.
 
 Recorded evidence and limits
 ------------------------------
-Owned single-worker server16 SHA256:
+Earlier single-worker server16 SHA256:
 9f9c97b36ab08a104d982d023c2b5a1ea6bdfdefd7b5c138b5a52b2e143fbc83
 Its88 ordinary guest executions pass: guards2, filesystem1, retained30,
 applications10 and resource1 in each of two same-candidate slots. Actual kernel
 mapping and paired loader/kernel hashes remain recorded. Earlier server4 also
 passed two ordinary Process kqueue executions; that is earlier scoped evidence.
+
+Latest single-worker server20 SHA256:
+dee45f4e60c8daad182f9867f23849a5533c40683a7336a9dedbe924082964c3
+Its cohort stopped after66 executions: thread-info.c's post-pthread_join ESRCH
+assertion failed once. No expectation was weakened. The exact termination/join
+ordering and result semantics remain under review. This is a failed current run;
+server16's earlier88 passes do not validate this later binary.
+
+The pinned-source ordering review shows ordinary pthread_join wakes before the
+native termination tail and legacy Darling also reads /proc for this query.
+An owned logging-only derivative retains the ESRCH assertion and passed two
+same-candidate cases with result=-1/errno=3. It does not reproduce the original
+failure or establish its return value. Original fixtures/expectations remain
+unchanged; the failed cohort is still recorded as failing.
 
 Historical owned native derivatives pass79 real acquisition failures, three
 overlapping generations with newest-first disposal, real ResourceState semaphore
@@ -103,6 +122,13 @@ plus8000 blocking critical sections each with zero overlaps. Current-thread
 identity and suspend/resume callbacks are modeled; full XNU/ucontext execution
 and native-fallback performance are not established by this fixture.
 
+The native/sanitized eventfd fixture uses the extracted selected and pinned
+original wake masks with real Linux epoll/eventfd calls. Both old masks lose all64
+forced writes between mask computation and MOD; the fixed mask delivers64/64.
+Zero counters remain idle and ONESHOT behavior is preserved. Outbox state and
+producer timing are modeled. This does not prove the cause of guest timeouts or
+complete socket-backpressure behavior.
+
 All12 server TUs were also rebuilt with DSERVER_SINGLE_THREADED=0. The actual
 multiworker run observed the selected executable inode and multiple native
 workers, but timed out in process-control-regression.c after54 executions.
@@ -110,7 +136,10 @@ Earlier server11 timed out in linkat-regression.c; both failures are preserved.
 A traced diagnostic and a subsequent plain retained cohort passed60 ordinary
 cases each, which does not resolve the intermittent failure. Multiworker
 server17 includes the mutex fix and still timed out in fsync-regression.c after44
-executions. Multiworker validation remains failing. The separate continuation
+executions. A later standalone server17 cohort passed retained60 then timed out
+twice in mach_lockset_basic.c. Latest server21 includes the eventfd fix and still
+times out in readlinkat-regression.c after58 executions. Multiworker validation
+remains failing. The separate continuation
 ownership candidate stopped during automatic review and remains inactive,
 unverified WIP. No comparative performance claim follows from these runs.
 

@@ -815,13 +815,14 @@
         "Additional exec-notification/extra-guest/cleanup-lane follow-up and direct native Checkin fault proof stopped by automatic cybersecurity review; do not retry/rephrase/transfer.",
         "Additional native cleanup pthread/default stack and broader performance acceptance remain open.",
         "Multiworker ordinary guest timeout remains unresolved; deterministic handoff fixes pass scoped native/sanitized methods and default88 guests.",
-        "Continuation closure lifetime validation stopped by automatic cybersecurity review; inactive WIP must not be retried/rephrased/transferred."
+        "Continuation closure lifetime validation stopped by automatic cybersecurity review; inactive WIP must not be retried/rephrased/transferred.",
+        "Latest single-worker thread-info.c post-join ESRCH assertion failed; exact termination/result ordering remains under review, without weakened expectations."
       ],
       "rust_foundations": [
         "crates/dearust-process/src/resource_policy.rs",
         "crates/dearust-process/src/resource_view.rs"
       ],
-      "scope": "Owned resource lifecycle prerequisites including worker startup/shutdown, handoff and C mutex interlock fixes. The default single-worker candidate passes88 same-candidate guests; multiworker ordinary guests still time out. Component native proofs retain exact binaries. Resource ownership inactive, no Rust replacement/retirement."
+      "scope": "Owned lifecycle prerequisites include worker ownership/handoff, C mutex interlock and eventfd rearm fixes. Latest single/multi owned guest cohorts fail; earlier same-candidate88 passes remain historical. Component native proofs retain exact binaries. Ownership inactive; no Rust replacement/retirement."
     }
   ],
   "cargo_manifests": [
@@ -1904,15 +1905,15 @@
         },
         {
           "equals": 88,
-          "pointer": "/guests/count"
+          "pointer": "/guests/expected_count"
         }
       ],
       "date": "2026-10-20",
       "id": "resource-lifecycle-current-index",
       "kind": "current-evidence-index",
       "path": "resource-lifecycle-current-index.json",
-      "scope": "Owned C/C++ prerequisites only. Single-worker server16 passes88 ordinary guests; exact native/sanitized worker/handoff/mutex fixtures pass. Multiworker server17 times out in ordinary fsync. Continuation validation stopped and inactive. Component proofs retain their own binaries; ownership inactive and full fault/shutdown/performance/stopped gates open.",
-      "sha256": "918666f6f55d692072e23d2bc97e7a06c51027d6e38a95a85dd930c58321e56d"
+      "scope": "Owned C/C++ prerequisites only. Handoff, mutex interlock and eventfd masks pass scoped native/sanitized regressions. Latest single-worker server20 fails thread-info after66 cases; multiworker server21 times out after58. Earlier server16 passes88 remain historical. Resource ownership inactive; full fault/shutdown/performance/stopped gates open.",
+      "sha256": "954b2f0cc6679b1e24b3f4bdd52961da4f06d7b6b07cf4f14490289c213a64e7"
     }
   ],
   "execution_observations": [
