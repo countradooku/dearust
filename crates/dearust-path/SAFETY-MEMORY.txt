@@ -30,9 +30,10 @@ C expansion helpers must inspect only that terminated prefix, as their original
 strcpy-based callers also require. This removes repeated4096-byte clears without
 weakening the initialized-memory contract. Path input is read one byte at a time,
 stopping at NUL or4096 bytes. The exact
-guest-load PC is recoverable. Metadata output uses bounded four-byte stores from
-initialized local storage, with one recoverable guest-store PC; supported120/144
-byte layouts are multiples of four. Nonmultiples of four choose the fallback.
+guest-load PC is recoverable. Metadata output uses bounded four-byte stores for
+the120-byte layout and exact16-byte SIMD stores for the144-byte layout, from
+initialized local storage. Their distinct guest-store PCs are recoverable.
+Nonmultiples of four choose the fallback.
 A third exact guest-load PC supports fixed binary input without NUL scanning.
 Two further exact SIMD guest PCs support the proven fixed-copy path below.
 Positive-code synchronous SIGSEGV/SIGBUS at those exact five PCs redirects to
@@ -132,9 +133,10 @@ dearust_copyout(local,guest,length). Both are unsafe Rust APIs with explicit
 local initialization, ownership/aliasing and foreign ABI contracts; the helper
 never forms a reference over a raw guest address. Two compile-fail checks cover
 these contracts. Resource callers use exactly16/144 initialized local bytes.
-Copyin guarded mode2 uses a distinct guest dword-load label; its local store is
-not recoverable. Other lengths use exact-count kernel fallback; zero lengths
-succeed before inspecting either address. Existing40-byte recovery stack,
+Copyin guarded mode2 uses distinct guest dword/SIMD-load labels; local stores
+are not recoverable. Nonzero lengths divisible by16 use exact SIMD chunks;
+other multiples of four use words, and other lengths use exact-count kernel
+fallback. Zero lengths succeed before inspecting either address. Existing40-byte recovery stack,
 Mach-O alternate-entry atom, AC/mask checks, asynchronous abort before ordinary
 dispatch and handler-fork/PID rules are retained. Native fixtures exercise
 lengths0/1/3/4/8/16/144, embedded zeros, protected/readonly/cross-page/unaligned
@@ -176,3 +178,21 @@ ordinary fault, signal, handler-fork, AC, protection and churn cases. C sanitize
 execution uses ASAN_OPTIONS=detect_leaks=0:handle_segv=0:handle_sigbus=0 so ASan
 does not replace the signal runtime under test. Rust/assembly are uninstrumented.
 See RUNTIME-RESOURCE-COPIES.txt for the independent review and measured scope.
+
+Unanchored exact SIMD copies
+---------------------------
+After a successful fresh current-mask query, a nonzero binary length divisible
+by16 also uses the existing exact SIMD loop. This does not skip readiness, AC,
+mask or fallback checks and does not add another recoverable instruction site.
+Each iteration touches exactly16 bytes; the remaining length is also divisible
+by16, so there is no overread or overwrite. Other multiples of four retain the
+word loops; other lengths retain the kernel fallback. Zero length still returns
+before entering a loop. Path scanning is unchanged. The same40-byte recovery
+frame, exact guest fault PCs and asynchronous abort apply to both SIMD routes.
+
+The focused native fixture checks unanchored16/144-byte fault PCs, page bounds,
+unaligned exact ranges, SIGBUS, blocked masks and missing readiness with actual
+production objects. Ordinary isolated guest resource, pointer and metadata
+fixtures exercise the linked candidate. Alternating native and actual guest
+measurements are recorded in work/resource-copy-next. The fresh mask-query cost
+remains; this small loop optimization does not close the generic-copy CPU gate.

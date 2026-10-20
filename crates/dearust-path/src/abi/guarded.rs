@@ -165,13 +165,16 @@ global_asm!(
     "mov rax, -63",
     "jmp {end}",
     "3:",
-    // Both supported metadata layouts are multiples of four bytes. A bounded
-    // word loop avoids reading past the initialized source; other lengths use
-    // the kernel path rather than adding another recoverable instruction site.
-    "test rcx, 3",
-    "jnz {fallback}",
     "test rcx, rcx",
     "jz 5f",
+    // The fresh mask query established fault delivery for this attempt. Exact
+    // SIMD chunks use the same guest-store PC as the anchored path; lengths
+    // divisible only by four retain the bounded word loop below. Neither loop
+    // reads beyond initialized local storage or adds a recovery instruction.
+    "test rcx, 15",
+    "jz 13f",
+    "test rcx, 3",
+    "jnz {fallback}",
     "4:",
     "mov edx, dword ptr [rsi]",
     "{write}:",
@@ -184,10 +187,12 @@ global_asm!(
     "7:",
     // Binary copyin has a distinct guest-load PC. The local destination store
     // must never be mistaken for a recoverable guest fault.
-    "test rcx, 3",
-    "jnz {fallback}",
     "test rcx, rcx",
     "jz 5f",
+    "test rcx, 15",
+    "jz 14f",
+    "test rcx, 3",
+    "jnz {fallback}",
     "8:",
     "{binary_read}:",
     "mov edx, dword ptr [rsi]",
