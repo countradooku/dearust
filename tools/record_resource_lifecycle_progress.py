@@ -20,6 +20,7 @@ SOURCES = [
     'patch_prepared_resource_replies.py', 'prepared-resource-reply-queue.inc',
     'prepared-resource-reply-send.inc',
     'patch_resource_worker_ownership.py',
+    'patch_resource_work_handoff.py', 'build_resource_workqueue_configuration.py',
 ]
 
 EVIDENCE = {
@@ -35,6 +36,7 @@ EVIDENCE = {
     'historical_startup': 'work/prepared-registration/lane-cost/matched-startup2/verification.json',
     'earlier_ordinary_process_kqueue': 'work/resource-death-continuation/process-kqueue-guest4/comparison.json',
     'worker_ownership': 'work/prepared-registration/worker-ownership/proof3/verification.json',
+    'work_handoff': 'work/resource-death-continuation/work-handoff/proof1/verification.json',
 }
 
 
@@ -42,12 +44,28 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def checked_build(root, report):
+    build = json.loads((root/report).read_text())
+    if not build['inputs_unchanged'] or build['resource_ownership_activated']:
+        raise ValueError('invalid or activated owned candidate')
+    if digest(Path(build['server'])) != build['server_sha256']:
+        raise ValueError('owned server changed')
+    if any(digest(Path(path)) != value for path,value in build['initial_input_sha256'].items()):
+        raise ValueError('owned build source drift')
+    if any(digest(Path(path)) != value for path,value in build['sha256'].items()):
+        raise ValueError('owned build output drift')
+    return build
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=Path('.'))
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--build-report', default='work/resource-death-continuation/server9/build.json')
-    parser.add_argument('--guest-run', default='work/resource-death-continuation/guests9/run.json')
+    parser.add_argument('--build-report', default='work/resource-death-continuation/server12-single/build.json')
+    parser.add_argument('--guest-run', default='work/resource-death-continuation/guests12-single/run.json')
+    parser.add_argument('--multi-build-report', default='work/resource-death-continuation/server13-multi/build.json')
+    parser.add_argument('--multi-guest-run', default='work/resource-death-continuation/guests13-multi/run.json')
+    parser.add_argument('--multi-observation', default='work/resource-death-continuation/multiworker-observation13/verification.json')
     args = parser.parse_args()
     root = args.root.resolve(strict=True)
     load = lambda name: json.loads((root/name).read_text())
@@ -58,11 +76,7 @@ def main():
     if any(digest(root/path) != value for path,value in preserved.items()):
         raise ValueError('original dirty candidate changed')
     build_path = args.build_report
-    build = load(build_path)
-    if digest(Path(build['server'])) != build['server_sha256']:
-        raise ValueError('owned server changed')
-    if any(digest(Path(path)) != value for path,value in build['initial_input_sha256'].items()):
-        raise ValueError('owned build source drift')
+    build = checked_build(root, build_path)
     guest_path = args.guest_run
     guest_runs = load(guest_path)
     guest_count = 0
@@ -77,13 +91,39 @@ def main():
                 raise ValueError('ordinary guest result failed')
             guest_count += len(variant['results'])
         guests.append(dict(group=run['group'], report=str(report), sha256=digest(report)))
-    python_log = root/'work/resource-death-continuation/python-tests2.log'
+    multi_build = checked_build(root, args.multi_build_report)
+    multi_configuration_path = Path(args.multi_build_report).parent/'workqueue-configuration.json'
+    multi_configuration = load(multi_configuration_path)
+    if multi_configuration['DSERVER_SINGLE_THREADED'] != 0 or multi_configuration['server_translation_units'] != 12:
+        raise ValueError('missing multiworker compilation evidence')
+    multi_observation = load(args.multi_observation)
+    if multi_observation['server_sha256'] != multi_build['server_sha256'] or not multi_observation['multiple_workers_observed']:
+        raise ValueError('missing actual multiworker observation')
+    multi_runs = load(args.multi_guest_run)
+    multi_cases, multi_failures = 0, []
+    multi_reports = []
+    for run in multi_runs:
+        report = Path(run['report'])
+        data = json.loads(report.read_text())
+        multi_reports.append(dict(group=run['group'], path=str(report), sha256=digest(report), exit_code=run['exit_code']))
+        for variant in data['variants']:
+            if not variant['kernel_mappings']: raise ValueError('missing multiworker kernel mapping')
+            for case in variant['results']:
+                multi_cases += 1
+                if not case['normalized_pass']:
+                    multi_failures.append(dict(group=run['group'], slot=variant['variant'], case=case['name'],
+                        timed_out=case['launcher']['timed_out']))
+    python_log = root/'work/resource-death-continuation/python-tests-handoff.log'
     if not python_log.read_text().rstrip().endswith('OK'): raise ValueError('Python checks failed')
     python_count = int(re.search(r'Ran (\d+) tests', python_log.read_text()).group(1))
     worker = load(EVIDENCE['worker_ownership'])
     if not worker['passed'] or not worker['inputs_unchanged']:
         raise ValueError('worker ownership validation failed')
+    handoff = load(EVIDENCE['work_handoff'])
+    if not handoff['passed'] or not handoff['inputs_unchanged']:
+        raise ValueError('work handoff validation failed')
     open_gates = [
+        'Multiworker owned guests still expose a timeout; deterministic lost-request and running-cleanup fixes pass, but do not establish the remaining concurrency behavior.',
         'Latest prepared exec lock-scope changes pass ordinary guest execution; the earlier29-failure exec proof is historical and does not validate those later changes.',
         'Direct native Checkin fault proof and further exec-notification validation stopped by automatic cybersecurity review; do not retry, rephrase or transfer those actions.',
         'Original adversarial RPC verification remains externally blocked and was not retried.',
@@ -102,6 +142,13 @@ def main():
                          complete_combined_fault_validation=False),
         guests=dict(count=guest_count, slots='same owned server/loader/kernel in both slots; not original-C versus Rust',
                     run=guest_path, run_sha256=digest(root/guest_path), cohorts=guests),
+        multiworker=dict(status='failing' if multi_failures or any(run['exit_code'] for run in multi_runs) else 'passed scoped ordinary cohort',
+            build_report=args.multi_build_report, build_report_sha256=digest(root/args.multi_build_report),
+            server_sha256=multi_build['server_sha256'], inputs_unchanged=True,
+            configuration=dict(path=str(multi_configuration_path), sha256=digest(root/multi_configuration_path)),
+            observation=dict(path=args.multi_observation, sha256=digest(root/args.multi_observation)),
+            guest_run=args.multi_guest_run, guest_run_sha256=digest(root/args.multi_guest_run),
+            cases_executed=multi_cases, failures=multi_failures, cohorts=multi_reports),
         native_component_evidence=evidence,
         historical_checked_failure_cases=failures,
         historical_exec_failure_cases=load(EVIDENCE['historical_exec_core'])['results']['exec']['actual_allocation_failures'],

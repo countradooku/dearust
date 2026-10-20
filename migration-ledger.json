@@ -794,7 +794,8 @@
         "tools/build_resource_loader.py",
         "tools/build_resource_server.py",
         "tools/build_prepared_resource_server.py",
-        "tools/build_resource_lifecycle_server.py"
+        "tools/build_resource_lifecycle_server.py",
+        "tools/build_resource_workqueue_configuration.py"
       ],
       "evidence": [
         "work/resources-complete/continuation-20261019/guest-summary-final6.json",
@@ -812,7 +813,8 @@
         "Adversarial RPC validation externally blocked; do not retry.",
         "Checked ordinary acquisition and generation lifetime have scoped native proofs; final combined exec/initial-call failure, generic/lazy IPC, bootstrap, active-call cancellation and full shutdown remain open.",
         "Additional exec-notification/extra-guest/cleanup-lane follow-up and direct native Checkin fault proof stopped by automatic cybersecurity review; do not retry/rephrase/transfer.",
-        "Additional native cleanup pthread/default stack and broader performance acceptance remain open."
+        "Additional native cleanup pthread/default stack and broader performance acceptance remain open.",
+        "Multiworker ordinary guest timeout remains unresolved; deterministic handoff fixes pass scoped native/sanitized methods and default88 guests."
       ],
       "rust_foundations": [
         "crates/dearust-process/src/resource_policy.rs",
@@ -1908,8 +1910,8 @@
       "id": "resource-lifecycle-current-index",
       "kind": "current-evidence-index",
       "path": "resource-lifecycle-current-index.json",
-      "scope": "Owned C/C++ prerequisite candidate only. Final server9 passes88 ordinary guest executions; worker startup/shutdown ownership passes native/sanitized comparison with exact original. Component fault proofs retain their own binaries; ownership inactive and full fault/shutdown/performance/stopped gates open.",
-      "sha256": "94d44a8ade35cf4df150848c721b7a629e6eda9a0ebb0e63eed91db992b2c0a5"
+      "scope": "Owned C/C++ prerequisites only. Single-worker server12 passes88 ordinary guests; exact native/sanitized handoff and worker ownership fixtures pass. Multiworker server13 times out in ordinary process control; concurrency investigation remains open. Component proofs retain their own binaries; ownership inactive and full fault/shutdown/performance/stopped gates open.",
+      "sha256": "39e36bdbb490ce2a9ea272e7efbbce94cafe855a22ed99a24fc07714a91e3f9c"
     }
   ],
   "execution_observations": [

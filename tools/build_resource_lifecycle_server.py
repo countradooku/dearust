@@ -28,6 +28,7 @@ from patch_resource_prepared_exec import patch_prepared_exec
 from patch_prepared_resource_replies import patch_prepared_replies
 from patch_resource_generation_resume import patch_generation_resume
 from patch_resource_worker_ownership import patch_worker_ownership_files
+from patch_resource_work_handoff import patch_work_handoff
 
 
 def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c_flags=(), checked_generation=False, prepared_exec=False):
@@ -57,7 +58,7 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
             'patch_prepared_resource_kq_ownership.py', 'patch_prepared_resource_mach_notifications.py',
             'prepared-resource-mach-notifications.inc', 'patch_prepared_resource_mach_waiter.py',
             'patch_resource_death_work.py', 'patch_resource_worker_ownership.py',
-            'patch_resource_death_lifecycle.py')]]
+            'patch_resource_death_lifecycle.py', 'patch_resource_work_handoff.py')]]
     if checked_generation:
         builder.EXTRA_TRANSFORM_INPUTS += [tools / 'patch_prepared_resource_checked_ipc.py',
             tools / 'patch_resource_kernel_contexts.py', tools / 'patch_resource_generation_resume.py',
@@ -89,7 +90,7 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
             files = patch_generation_resume(patch_kernel_context_cpp(patch_checked_cpp(files)))
         if prepared_exec:
             files = patch_prepared_replies(patch_prepared_exec(files))
-        return files
+        return patch_work_handoff(files)
 
     builder.patch_checkin = lifecycle
     previous_relink = builder.relink

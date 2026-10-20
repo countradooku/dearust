@@ -1,0 +1,263 @@
+#include <darlingserver/workers.hpp>
+#include <atomic>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <memory>
+#include <new>
+#include <shared_mutex>
+
+static std::atomic<bool> denyAllocations{false};
+static std::atomic<unsigned> deniedAllocations{0};
+void* operator new(size_t size) {
+    if (denyAllocations.load()) { ++deniedAllocations; throw std::bad_alloc(); }
+    if (void* result = std::malloc(size ? size : 1)) return result;
+    throw std::bad_alloc();
+}
+void operator delete(void* pointer) noexcept { std::free(pointer); }
+void operator delete(void* pointer, size_t) noexcept { std::free(pointer); }
+
+namespace DarlingServer {
+class Thread;
+}
+struct FakeKernelThread {
+    DarlingServer::Thread* owner = nullptr;
+    std::atomic<bool> alive{true}, gateHeld{false};
+    std::atomic<unsigned> exits{0}, unlocks{0};
+};
+struct FakeCleanupJob { void (*run)(void*) noexcept = nullptr; void* context = nullptr; };
+namespace DarlingServer {
+class Server {
+public:
+    WorkQueue<std::shared_ptr<Thread>> queue;
+    std::atomic<unsigned> reservedDispatches{0}, ordinaryDispatches{0};
+    Server();
+    static Server& sharedInstance();
+    void scheduleThread(std::shared_ptr<Thread> thread);
+    void scheduleResumedThread(std::shared_ptr<Thread> thread) noexcept;
+};
+class Thread: public std::enable_shared_from_this<Thread> {
+public:
+    enum class DeferralState { NotDeferred, Deferred, DeferredPending };
+    std::shared_mutex _rwlock;
+    bool _running = false, _workHandoffPending = false, _terminating = false;
+    bool _dead = false, _preparedDeathInProgress = false, _suspended = false;
+    bool _resourceCleanupQueued = false;
+    DeferralState _deferralState = DeferralState::NotDeferred;
+    std::shared_ptr<int> _activeCall, _pendingCall;
+    std::shared_ptr<Thread> _selfReference;
+    std::queue<std::shared_ptr<int>> _pendingInterrupts;
+    std::condition_variable_any _runningCondvar;
+    FakeKernelThread kernel;
+    FakeKernelThread* _dtapeThread = &kernel;
+    void* _s2cPerformSempahore = nullptr;
+    void* _s2cReplySempahore = nullptr;
+    void* _s2cInterruptEnterSemaphore = nullptr;
+    void* _s2cInterruptExitSemaphore = nullptr;
+    FakeCleanupJob _resourceCleanupJob;
+    ReservedWorkNode<std::shared_ptr<Thread>> _deathWork;
+    std::atomic<unsigned> executions{0}, workerCalls{0}, releases{0}, deaths{0};
+    std::atomic<bool> entered{false}, release{false};
+    bool holdFirst = true;
+    bool useKernelGate = false;
+    unsigned finishActiveOnPass = 1;
+    void doWork();
+    Thread() { kernel.owner = this; }
+    void abortKernelHandles() noexcept;
+    void _handoffPendingWorkLocked() noexcept;
+    void modeledRun() {
+        unsigned pass;
+        {
+            std::unique_lock lock(_rwlock);
+            if (!_pendingCall && !_activeCall) return;
+            if (_pendingCall) { _activeCall = std::move(_pendingCall); }
+            pass = ++executions;
+            if (pass >= finishActiveOnPass) _activeCall.reset();
+            _suspended = pass < finishActiveOnPass;
+        }
+        if (pass == 1 && useKernelGate) setKernelGate();
+        if (pass == 1 && holdFirst) {
+            entered = true;
+            while (!release.load()) std::this_thread::yield();
+        }
+    }
+    void setKernelGate();
+    void notifyDead();
+    void resume() {
+        std::shared_lock lock(_rwlock);
+        if (_suspended) Server::sharedInstance().scheduleResumedThread(shared_from_this());
+    }
+    void _scheduleRelease() { abortKernelHandles(); }
+    static void _resourceCleanupRun(void* raw) noexcept {
+        auto* thread = static_cast<Thread*>(raw);
+        std::unique_lock lock(thread->_rwlock);
+        assert(!thread->_running);
+        ++thread->releases;
+        thread->kernel.alive = false;
+        thread->_dtapeThread = nullptr;
+        thread->_selfReference.reset();
+    }
+    static void enqueueResourceCleanup(FakeCleanupJob& job) noexcept { job.run(job.context); }
+};
+}
+
+static DarlingServer::Server* activeServer = nullptr;
+static thread_local std::shared_ptr<DarlingServer::Thread> currentThread;
+static auto& currentThreadVarStorage() { return currentThread; }
+static thread_local void* unlockMeWhenSuspending = nullptr;
+void DarlingServer::Thread::setKernelGate() { kernel.gateHeld = true; unlockMeWhenSuspending = &kernel; }
+static void libsimple_lock_unlock(void* raw) {
+    auto* kernel = static_cast<FakeKernelThread*>(raw);
+    assert(kernel->owner->_running); // Required publication order.
+    assert(kernel->gateHeld.exchange(false));
+    ++kernel->unlocks;
+}
+static void dtape_thread_exiting(FakeKernelThread* kernel) {
+    assert(kernel && kernel->alive && !kernel->gateHeld);
+    ++kernel->exits;
+}
+static void dtape_thread_dying(FakeKernelThread* kernel) { assert(kernel && kernel->alive); }
+struct FakeThreadRegistry {
+    void unregisterEntry(std::shared_ptr<DarlingServer::Thread> thread) { ++thread->deaths; }
+};
+static FakeThreadRegistry& threadRegistry() { static FakeThreadRegistry registry; return registry; }
+DarlingServer::Server::Server(): queue([](auto thread) { ++thread->workerCalls; thread->doWork(); }) {}
+DarlingServer::Server& DarlingServer::Server::sharedInstance() { assert(activeServer); return *activeServer; }
+void DarlingServer::Server::scheduleThread(std::shared_ptr<Thread> thread) {
+    ++ordinaryDispatches; queue.push(std::move(thread));
+}
+void DarlingServer::Server::scheduleResumedThread(std::shared_ptr<Thread> thread) noexcept {
+    assert(!thread->kernel.gateHeld);
+    ++reservedDispatches; queue.pushReserved(thread->_deathWork, thread);
+}
+
+@DOWORK@
+@HANDOFF@
+@ABORT@
+@NOTIFY_DEAD@
+
+template<class Predicate> static void waitFor(Predicate predicate) {
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (!predicate()) {
+        assert(std::chrono::steady_clock::now() < deadline);
+        std::this_thread::yield();
+    }
+}
+static void waitIdle(DarlingServer::Server& server, DarlingServer::Thread& thread) {
+    waitFor([&] { return server.queue.testReservedIdle(thread._deathWork); });
+}
+
+int main() {
+    using namespace DarlingServer;
+    Server server;
+    activeServer = &server;
+    auto firstCall = std::make_shared<int>(1), secondCall = std::make_shared<int>(2);
+    {
+        auto thread = std::make_shared<Thread>();
+        thread->_pendingCall = firstCall;
+#ifndef OLD_HANDOFF_BASELINE
+        thread->useKernelGate = true;
+#endif
+        server.scheduleResumedThread(thread);
+        waitFor([&] { return thread->entered.load(); });
+        const auto dispatches = server.reservedDispatches.load();
+        {
+            std::unique_lock lock(thread->_rwlock);
+            assert(thread->_running && !thread->_activeCall);
+            thread->_pendingCall = secondCall;
+        }
+        denyAllocations = true;
+        for (unsigned index = 0; index != 1000; ++index) thread->doWork();
+        assert(thread->executions == 1 && server.reservedDispatches == dispatches);
+        thread->release = true;
+        waitIdle(server, *thread);
+#ifdef OLD_HANDOFF_BASELINE
+        assert(thread->executions == 1 && thread->_pendingCall == secondCall &&
+            server.reservedDispatches == dispatches);
+        denyAllocations = false;
+        std::puts("{\"lost_request_reproduced\":true,\"running_duplicates\":1000,\"executions\":1}");
+        return 0;
+#else
+        waitFor([&] { return thread->executions == 2; });
+        waitIdle(server, *thread);
+        assert(thread->workerCalls == 2 && !thread->_pendingCall &&
+            server.reservedDispatches == dispatches + 1 && thread->kernel.unlocks == 1);
+        denyAllocations = false;
+#endif
+    }
+#ifndef OLD_HANDOFF_BASELINE
+    {
+        // A direct reply clears _activeCall while the old doWork still owns the
+        // C context. Death and explicit abort must wait for its exit epilogue.
+        auto thread = std::make_shared<Thread>();
+        thread->_pendingCall = firstCall; thread->_selfReference = thread;
+        server.scheduleResumedThread(thread);
+        waitFor([&] { return thread->entered.load(); });
+        denyAllocations = true;
+        thread->notifyDead(); thread->abortKernelHandles();
+        assert(thread->_dead && thread->_running && !thread->_activeCall &&
+            !thread->_resourceCleanupQueued && thread->releases == 0 && thread->kernel.alive);
+        thread->release = true;
+        waitFor([&] { return thread->releases == 1; }); waitIdle(server, *thread);
+        assert(!thread->kernel.alive && thread->kernel.exits == 1 && !thread->_running);
+        denyAllocations = false;
+    }
+    {
+        // A suspended active call must resume even after logical death. The
+        // second pass completes it and schedules final release exactly once.
+        auto thread = std::make_shared<Thread>();
+        thread->_dead = true; thread->_suspended = true;
+        thread->_activeCall = firstCall; thread->_selfReference = thread;
+        thread->finishActiveOnPass = 2;
+        server.scheduleResumedThread(thread);
+        waitFor([&] { return thread->entered.load(); });
+        const auto dispatches = server.reservedDispatches.load();
+        denyAllocations = true;
+        thread->doWork();
+        assert(server.reservedDispatches == dispatches);
+        thread->release = true;
+        waitFor([&] { return thread->releases == 1; }); waitIdle(server, *thread);
+        assert(thread->executions == 2 && thread->workerCalls == 2 &&
+            thread->_terminating && !thread->_activeCall &&
+            server.reservedDispatches == dispatches + 1);
+        denyAllocations = false;
+    }
+    {
+        auto thread = std::make_shared<Thread>();
+        thread->_pendingCall = firstCall;
+        server.scheduleResumedThread(thread);
+        waitFor([&] { return thread->entered.load(); });
+        const auto dispatches = server.reservedDispatches.load();
+        {
+            std::unique_lock lock(thread->_rwlock);
+            thread->_pendingInterrupts.push(secondCall);
+        }
+        denyAllocations = true;
+        thread->doWork(); thread->release = true;
+        waitFor([&] { return thread->executions == 2; }); waitIdle(server, *thread);
+        assert(thread->workerCalls == 2 && server.ordinaryDispatches == 0 &&
+            server.reservedDispatches == dispatches + 1);
+        denyAllocations = false;
+    }
+    {
+        auto dead = std::make_shared<Thread>();
+        dead->_dead = true; dead->_workHandoffPending = true;
+        const auto dispatches = server.reservedDispatches.load();
+        denyAllocations = true; dead->doWork(); denyAllocations = false;
+        assert(dead->_terminating && !dead->_workHandoffPending &&
+            dead->executions == 0 && server.reservedDispatches == dispatches);
+        auto terminating = std::make_shared<Thread>();
+        terminating->_terminating = true; terminating->_workHandoffPending = true;
+        denyAllocations = true; terminating->doWork(); denyAllocations = false;
+        assert(terminating->_dead && terminating->deaths == 1 &&
+            !terminating->_workHandoffPending && terminating->executions == 0 &&
+            server.reservedDispatches == dispatches);
+    }
+    assert(deniedAllocations == 0);
+    std::puts("{\"running_duplicates_coalesced\":1000,\"complete_handoffs\":3,"
+        "\"dead_active_continuation\":true,\"dead_and_terminating_excluded\":true,"
+        "\"interrupt_and_request_one_reserved_dispatch\":true,"
+        "\"running_reply_death_defers_cleanup\":true,\"kernel_unlock_before_publication\":true,"
+        "\"denied_allocations\":0}");
+#endif
+}

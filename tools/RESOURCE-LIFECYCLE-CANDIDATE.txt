@@ -29,6 +29,12 @@ the worker map under the queue mutex, then joins outside it, excluding concurren
 temporary timeout retirement. Optional growth failure preserves accepted work.
 These queue ownership fixes do not establish whole-server shutdown draining.
 
+A Thread now retains requests arriving while its prior worker is still running.
+The epilogue combines them with pending interrupts into one reserved handoff.
+Death and rollback defer C handle cleanup until that worker finishes; the kernel
+suspend interlock is released before publishing _running=false. Native-worker
+TLS is cleared while the Thread lock still prevents another worker's entry.
+
 Process death marks ResourceState synchronously and stops timer rearming. Owned
 channels are destroyed outside the Process lock; exit fanout and foreign cleanup
 use reserved events/jobs. ResourceState's embedded job precedes its real gate
@@ -51,8 +57,8 @@ queue allocation. Terminal exec errors queue their reserved reply before death.
 
 Recorded evidence and limits
 ------------------------------
-Owned server9 SHA256:
-2ca04714cfd677c0720e6127fb2174e878b239e31c8e120bc7ef9bf3c1eed8c3
+Owned single-worker server12 SHA256:
+b64f83f8486499a50f18788c859fc0690743b292df9b690144690537bc0b25c4
 Its88 ordinary guest executions pass: guards2, filesystem1, retained30,
 applications10 and resource1 in each of two same-candidate slots. Actual kernel
 mapping and paired loader/kernel hashes remain recorded. Earlier server4 also
@@ -77,6 +83,21 @@ the fixed queue catches and joins at each. The4096-item reserved-dispatch suite
 also passes with zero denied C++ allocations. Test-only timeout/barrier changes
 and failure-hook scope remain explicit in the native report.
 
+The handoff state-method fixture reproduces the pinned original guard losing
+1000 running requests. The fixed native/sanitized fixture coalesces them and
+checks dead active continuations, interrupt/request combination, running death
+and kernel unlock ordering with zero denied allocations. Its ucontext body and
+foreign objects are modeled; actual guest evidence is recorded separately.
+
+All12 server TUs were also rebuilt with DSERVER_SINGLE_THREADED=0. The actual
+multiworker run observed the selected executable inode and multiple native
+workers, but timed out in process-control-regression.c after54 executions.
+Earlier server11 timed out in linkat-regression.c; both failures are preserved.
+A traced diagnostic and a subsequent plain retained cohort passed60 ordinary
+cases each, which does not resolve the intermittent failure. Multiworker
+validation remains failing; C mutex interlock and continuation ownership review
+is ongoing. No comparative performance claim follows from these runs.
+
 The earlier29-failure exec proof predates the later owner-lock fix and remains
 historical evidence. Final combined fault validation is NOT passed. All23 old
 dirty candidates and frozen build12 inputs remain unchanged; failed iterations
@@ -91,6 +112,10 @@ Reproduction (owned build/index only)
 
   python3 tools/record_resource_lifecycle_progress.py \
     --output /fresh/current-evidence-index.json
+
+  python3 tools/build_resource_workqueue_configuration.py \
+    --candidate work/resources-complete/server-build12 \
+    --output /fresh/owned/multiworker-server --work-queue multi
 
 No installation or activation occurs. Inputs/reference builds, prior paired
 artifacts, prefixes and work evidence remain preserved.

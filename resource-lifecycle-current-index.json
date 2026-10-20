@@ -16,37 +16,83 @@
     "cohorts": [
       {
         "group": "guards",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests9/guards/comparison.json",
-        "sha256": "cbbc42a0775df9c4997516fa58f294e1ef31b8dd1cf62e58b6309377a6a85c9a"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests12-single/guards/comparison.json",
+        "sha256": "51e55736b8ada68cd75320567868e779c9fe72d7bf5db46c5a0936691acf4864"
       },
       {
         "group": "filesystem",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests9/filesystem/comparison.json",
-        "sha256": "6e4ff5724ee889fc969ba878cc297465c6521f1cc001aed05804dff40baa2c6b"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests12-single/filesystem/comparison.json",
+        "sha256": "d6babdc62573db7655e5f8f5ec5f1de7035d0cb138bf4788aa027c58674fb336"
       },
       {
         "group": "existing",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests9/existing/comparison.json",
-        "sha256": "981695114db4014bf12148b659be50aac32de330aef3b95222c8de84c60ef988"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests12-single/existing/comparison.json",
+        "sha256": "b59771ef92cf4a6b41f322caabb4cc4fcd2109b793155bfe1d28ceca37f32a8b"
       },
       {
         "group": "apps",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests9/apps/comparison.json",
-        "sha256": "46204e1b8a09948f210d0d5386c1029dde079f087ef5aff156b28c7e628f6696"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests12-single/apps/comparison.json",
+        "sha256": "34738ec04772646b4d77506ee0d3f1f780340fe8b516c20c640de082620fd11a"
       },
       {
         "group": "resources",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests9/resources/comparison.json",
-        "sha256": "3a73808182635a943ce4bd4bdafa8f2b2c5d91ce553f461212ef75b92aac6f4f"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests12-single/resources/comparison.json",
+        "sha256": "9fe2c85892f6d80d2881ddf6e9bf868e1305ef9cdfb34d670a0a34082977cca4"
       }
     ],
     "count": 88,
-    "run": "work/resource-death-continuation/guests9/run.json",
-    "run_sha256": "4e66f40e367a1a2504826a66ed41c6e7ca8504ea35d495812c693c527a5bdd2d",
+    "run": "work/resource-death-continuation/guests12-single/run.json",
+    "run_sha256": "fac155fba33483fda1d9531bada6c6c4fa55bd14d8e8e03063c3a820599a6789",
     "slots": "same owned server/loader/kernel in both slots; not original-C versus Rust"
   },
   "historical_checked_failure_cases": 79,
   "historical_exec_failure_cases": 29,
+  "multiworker": {
+    "build_report": "work/resource-death-continuation/server13-multi/build.json",
+    "build_report_sha256": "a54d37f8e6adf09588f7ad1519e794f4a0c17ce0bb0c2107d7ea8a4017653e59",
+    "cases_executed": 54,
+    "cohorts": [
+      {
+        "exit_code": 0,
+        "group": "guards",
+        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests13-multi/guards/comparison.json",
+        "sha256": "34e356f13b76e8a29e33517f2153113a07d4d6457304177007e0fea2d916d947"
+      },
+      {
+        "exit_code": 0,
+        "group": "filesystem",
+        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests13-multi/filesystem/comparison.json",
+        "sha256": "183245b454043eb818892134f83198506e8c412f8462d7ea1a6750e2fb2af6a4"
+      },
+      {
+        "exit_code": 1,
+        "group": "existing",
+        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests13-multi/existing/comparison.json",
+        "sha256": "53d23c3ee8a4240fca1cfbf595553ad87350bd9a3f69db02f5f79cb75126c7d9"
+      }
+    ],
+    "configuration": {
+      "path": "work/resource-death-continuation/server13-multi/workqueue-configuration.json",
+      "sha256": "8b5a95249ed746a8b6c7f00d7d37bd57e1033b2af9ce8d26ae9f756a03123c94"
+    },
+    "failures": [
+      {
+        "case": "process-control-regression.c",
+        "group": "existing",
+        "slot": "rust",
+        "timed_out": true
+      }
+    ],
+    "guest_run": "work/resource-death-continuation/guests13-multi/run.json",
+    "guest_run_sha256": "996e9e18a477ba25a5c57194ebb1486d2474d72a73a398b41ec8792089debc84",
+    "inputs_unchanged": true,
+    "observation": {
+      "path": "work/resource-death-continuation/multiworker-observation13/verification.json",
+      "sha256": "79f9449638f6b9a203871e8f0d41ff7a2226249dc3a7e06fd006deac433f6e0c"
+    },
+    "server_sha256": "e24349e1f910ad99e1db9774d8a758abfaac8845b71527a0f64635263b082410",
+    "status": "failing"
+  },
   "native_component_evidence": {
     "checked_acquisition_and_generations": {
       "path": "work/resources-complete/prepared-checked-ipc-proof9/verification.json",
@@ -92,6 +138,10 @@
       "path": "work/prepared-registration/lane-cost/actual-cached-storage-mutex1/verification.json",
       "sha256": "05cdb9dbda74c00d169fef53278b2f6027fde409695a630f2188810a9e2700b1"
     },
+    "work_handoff": {
+      "path": "work/resource-death-continuation/work-handoff/proof1/verification.json",
+      "sha256": "a2560f63a150fc1377c2339690bb88cc6512865d4f1f5936ea3b97a7387ef5a8"
+    },
     "worker_ownership": {
       "path": "work/prepared-registration/worker-ownership/proof3/verification.json",
       "sha256": "ec4a7d07b1fecee69b93784cdfdf5c6e6896b66cdda7823451879699639dbe0f"
@@ -99,6 +149,7 @@
   },
   "native_results_scope": "Each native derivative retains its own exact input hashes and binary; do not combine historical component proofs into a claim that the final binary passed the complete fault matrix.",
   "open_gates": [
+    "Multiworker owned guests still expose a timeout; deterministic lost-request and running-cleanup fixes pass, but do not establish the remaining concurrency behavior.",
     "Latest prepared exec lock-scope changes pass ordinary guest execution; the earlier29-failure exec proof is historical and does not validate those later changes.",
     "Direct native Checkin fault proof and further exec-notification validation stopped by automatic cybersecurity review; do not retry, rephrase or transfer those actions.",
     "Original adversarial RPC verification remains externally blocked and was not retried.",
@@ -112,10 +163,10 @@
   "owned_build": {
     "complete_combined_fault_validation": false,
     "inputs_unchanged": true,
-    "report": "work/resource-death-continuation/server9/build.json",
-    "report_sha256": "153707b1c9002545fe9532269ec1a0baf00553fd9fc0f8c71b5c7da1ca5e8590",
-    "server": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/server9/linked/darlingserver",
-    "server_sha256": "2ca04714cfd677c0720e6127fb2174e878b239e31c8e120bc7ef9bf3c1eed8c3"
+    "report": "work/resource-death-continuation/server12-single/build.json",
+    "report_sha256": "55d9f25171cab384064b6d789381d97e8f2a6b9bd7fb345f047c234d2afc143d",
+    "server": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/server12-single/linked/darlingserver",
+    "server_sha256": "b64f83f8486499a50f18788c859fc0690743b292df9b690144690537bc0b25c4"
   },
   "preservation": {
     "count": 23,
@@ -148,15 +199,16 @@
   "python_check": {
     "command": "python3 -m unittest discover -s tools -p 'test_*.py' -v",
     "count": 94,
-    "log": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/python-tests2.log",
-    "sha256": "1521e810d45e5317507eb9412affd5b65266525cef30877dac0cfb3bb328136c"
+    "log": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/python-tests-handoff.log",
+    "sha256": "60e7b7055e39f1ed15b5080f123343b3b228248159cff81e8bd0c5ec4eb01c86"
   },
   "resource_complete": false,
   "resource_ownership_activated": false,
   "schema_version": 1,
   "scope": "Owned resource lifecycle prerequisite candidate; scoped evidence index, not a full Rust port or whole-runtime OOM/performance acceptance.",
   "source_sha256": {
-    "tools/build_resource_lifecycle_server.py": "c5b7226625c853859c932a0f4b60c8facd70042a6eed53c74be81c4205857cb5",
+    "tools/build_resource_lifecycle_server.py": "27394b58f3c02f155d9a7bf4c970cbb89ebbe28542074f2fb9d0b880a38b697d",
+    "tools/build_resource_workqueue_configuration.py": "898b229fd33cbf0c972b427c33bbe3c77fad068c5d090d3b20930febcf151b10",
     "tools/patch_prepared_resource_checked_ipc.py": "bb54107ded1e322ea2afacaeb856d4d06489b8f9075dd999e3c514712b20e4c9",
     "tools/patch_prepared_resource_inner_dtape.py": "bba0ae00f5fcc5bd0acbad3a8623bdcd7c7aec1a84c5afea7b71f744f38ab6ff",
     "tools/patch_prepared_resource_kq_ownership.py": "236c520ad41c2d6d1a144a13d04487a875449cee5f2bcab21749af082356c470",
@@ -172,6 +224,7 @@
     "tools/patch_resource_kernel_contexts.py": "b6546523c67c2ebf1c399c901b55d7578bc851a77532221d239939a9a9363e10",
     "tools/patch_resource_prepared_exec.py": "190074c7e6df8b515c4eea1230c1ed6c801c47dda923cb88ad5d7740bfe120eb",
     "tools/patch_resource_state_death.py": "fb1a97e87b3575dc893d1a11ca79acae0e3054f4893e58779f91b4b57f551bc2",
+    "tools/patch_resource_work_handoff.py": "998b433addf9cb8b9850c394e55792cf990091c48d7e27ae26584bbf1c6faa46",
     "tools/patch_resource_worker_ownership.py": "b50c303f075ed168d66d2a4f2023f6ec50ae61e0646c4bfc5233232de3aeab63",
     "tools/prepared-resource-mach-notifications.inc": "d24e0d0e788b12eb1d086c26e3f47ed40cdd34f7d055ce64ea44e6cb924f9d6f",
     "tools/prepared-resource-process-notifications.inc": "17cd69a55e18f81b6fc2ce2f42fd908075cbe3da57aa3bc456225afbbcf8c545",
