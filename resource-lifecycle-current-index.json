@@ -16,33 +16,33 @@
     "cohorts": [
       {
         "group": "guards",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests8/guards/comparison.json",
-        "sha256": "5b2648cf5c5d62c02268a4442d67b2b8098d140747c399f33c4ff05c8fc51706"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests9/guards/comparison.json",
+        "sha256": "cbbc42a0775df9c4997516fa58f294e1ef31b8dd1cf62e58b6309377a6a85c9a"
       },
       {
         "group": "filesystem",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests8/filesystem/comparison.json",
-        "sha256": "7e9521a3d423eb5c2af821f7eabbe769b110f61607bd67f5fd6452dab5b31d37"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests9/filesystem/comparison.json",
+        "sha256": "6e4ff5724ee889fc969ba878cc297465c6521f1cc001aed05804dff40baa2c6b"
       },
       {
         "group": "existing",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests8/existing/comparison.json",
-        "sha256": "d68531f836fae4323aa30defae6ea2fedec2204a350990d1025363c336f08f5c"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests9/existing/comparison.json",
+        "sha256": "981695114db4014bf12148b659be50aac32de330aef3b95222c8de84c60ef988"
       },
       {
         "group": "apps",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests8/apps/comparison.json",
-        "sha256": "61f993bff2ebbd4c54e07ad2d9417e6168f60ef5c1084906b25a975e3de702d4"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests9/apps/comparison.json",
+        "sha256": "46204e1b8a09948f210d0d5386c1029dde079f087ef5aff156b28c7e628f6696"
       },
       {
         "group": "resources",
-        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests8/resources/comparison.json",
-        "sha256": "b08f8ab2d598e5089a5930777151831c570bc15365da02f15e22420bd83f2cc0"
+        "report": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/guests9/resources/comparison.json",
+        "sha256": "3a73808182635a943ce4bd4bdafa8f2b2c5d91ce553f461212ef75b92aac6f4f"
       }
     ],
     "count": 88,
-    "run": "work/resource-death-continuation/guests8/run.json",
-    "run_sha256": "cd4c2b355d405261bdd68f91b0ac881bc854d7d158eabab954afc2105224e9b0",
+    "run": "work/resource-death-continuation/guests9/run.json",
+    "run_sha256": "4e66f40e367a1a2504826a66ed41c6e7ca8504ea35d495812c693c527a5bdd2d",
     "slots": "same owned server/loader/kernel in both slots; not original-C versus Rust"
   },
   "historical_checked_failure_cases": 79,
@@ -91,6 +91,10 @@
     "sustained_cleanup": {
       "path": "work/prepared-registration/lane-cost/actual-cached-storage-mutex1/verification.json",
       "sha256": "05cdb9dbda74c00d169fef53278b2f6027fde409695a630f2188810a9e2700b1"
+    },
+    "worker_ownership": {
+      "path": "work/prepared-registration/worker-ownership/proof3/verification.json",
+      "sha256": "ec4a7d07b1fecee69b93784cdfdf5c6e6896b66cdda7823451879699639dbe0f"
     }
   },
   "native_results_scope": "Each native derivative retains its own exact input hashes and binary; do not combine historical component proofs into a claim that the final binary passed the complete fault matrix.",
@@ -108,10 +112,10 @@
   "owned_build": {
     "complete_combined_fault_validation": false,
     "inputs_unchanged": true,
-    "report": "work/resource-death-continuation/server8/build.json",
-    "report_sha256": "728bf87ee11756747f1b3121280e6359de6426a1ebc28ef5924ba0517b22b225",
-    "server": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/server8/linked/darlingserver",
-    "server_sha256": "585bd4603faa9527f24ad3105b707a329f5bec72eb1c755be5e7e3cfc08cbac7"
+    "report": "work/resource-death-continuation/server9/build.json",
+    "report_sha256": "153707b1c9002545fe9532269ec1a0baf00553fd9fc0f8c71b5c7da1ca5e8590",
+    "server": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/server9/linked/darlingserver",
+    "server_sha256": "2ca04714cfd677c0720e6127fb2174e878b239e31c8e120bc7ef9bf3c1eed8c3"
   },
   "preservation": {
     "count": 23,
@@ -152,7 +156,7 @@
   "schema_version": 1,
   "scope": "Owned resource lifecycle prerequisite candidate; scoped evidence index, not a full Rust port or whole-runtime OOM/performance acceptance.",
   "source_sha256": {
-    "tools/build_resource_lifecycle_server.py": "1446d0551be7494e876d795c8530bb2d1a9ff1fc1c31e71c4eb50223e9479792",
+    "tools/build_resource_lifecycle_server.py": "c5b7226625c853859c932a0f4b60c8facd70042a6eed53c74be81c4205857cb5",
     "tools/patch_prepared_resource_checked_ipc.py": "bb54107ded1e322ea2afacaeb856d4d06489b8f9075dd999e3c514712b20e4c9",
     "tools/patch_prepared_resource_inner_dtape.py": "bba0ae00f5fcc5bd0acbad3a8623bdcd7c7aec1a84c5afea7b71f744f38ab6ff",
     "tools/patch_prepared_resource_kq_ownership.py": "236c520ad41c2d6d1a144a13d04487a875449cee5f2bcab21749af082356c470",
@@ -168,6 +172,7 @@
     "tools/patch_resource_kernel_contexts.py": "b6546523c67c2ebf1c399c901b55d7578bc851a77532221d239939a9a9363e10",
     "tools/patch_resource_prepared_exec.py": "190074c7e6df8b515c4eea1230c1ed6c801c47dda923cb88ad5d7740bfe120eb",
     "tools/patch_resource_state_death.py": "fb1a97e87b3575dc893d1a11ca79acae0e3054f4893e58779f91b4b57f551bc2",
+    "tools/patch_resource_worker_ownership.py": "b50c303f075ed168d66d2a4f2023f6ec50ae61e0646c4bfc5233232de3aeab63",
     "tools/prepared-resource-mach-notifications.inc": "d24e0d0e788b12eb1d086c26e3f47ed40cdd34f7d055ce64ea44e6cb924f9d6f",
     "tools/prepared-resource-process-notifications.inc": "17cd69a55e18f81b6fc2ce2f42fd908075cbe3da57aa3bc456225afbbcf8c545",
     "tools/prepared-resource-reply-queue.inc": "29d5732066d71b3a9ee2e913dc3d49246b17573b96a270ac87aad9665f820167",

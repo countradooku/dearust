@@ -19,6 +19,7 @@ SOURCES = [
     'patch_prepared_resource_mach_notifications.py', 'prepared-resource-mach-notifications.inc',
     'patch_prepared_resource_replies.py', 'prepared-resource-reply-queue.inc',
     'prepared-resource-reply-send.inc',
+    'patch_resource_worker_ownership.py',
 ]
 
 EVIDENCE = {
@@ -33,6 +34,7 @@ EVIDENCE = {
     'sustained_cleanup': 'work/prepared-registration/lane-cost/actual-cached-storage-mutex1/verification.json',
     'historical_startup': 'work/prepared-registration/lane-cost/matched-startup2/verification.json',
     'earlier_ordinary_process_kqueue': 'work/resource-death-continuation/process-kqueue-guest4/comparison.json',
+    'worker_ownership': 'work/prepared-registration/worker-ownership/proof3/verification.json',
 }
 
 
@@ -44,6 +46,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=Path('.'))
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--build-report', default='work/resource-death-continuation/server9/build.json')
+    parser.add_argument('--guest-run', default='work/resource-death-continuation/guests9/run.json')
     args = parser.parse_args()
     root = args.root.resolve(strict=True)
     load = lambda name: json.loads((root/name).read_text())
@@ -53,13 +57,13 @@ def main():
     preserved = load('work/resource-death-continuation/preserved-candidates.json')
     if any(digest(root/path) != value for path,value in preserved.items()):
         raise ValueError('original dirty candidate changed')
-    build_path = 'work/resource-death-continuation/server8/build.json'
+    build_path = args.build_report
     build = load(build_path)
     if digest(Path(build['server'])) != build['server_sha256']:
         raise ValueError('owned server changed')
     if any(digest(Path(path)) != value for path,value in build['initial_input_sha256'].items()):
         raise ValueError('owned build source drift')
-    guest_path = 'work/resource-death-continuation/guests8/run.json'
+    guest_path = args.guest_run
     guest_runs = load(guest_path)
     guest_count = 0
     guests = []
@@ -76,6 +80,9 @@ def main():
     python_log = root/'work/resource-death-continuation/python-tests2.log'
     if not python_log.read_text().rstrip().endswith('OK'): raise ValueError('Python checks failed')
     python_count = int(re.search(r'Ran (\d+) tests', python_log.read_text()).group(1))
+    worker = load(EVIDENCE['worker_ownership'])
+    if not worker['passed'] or not worker['inputs_unchanged']:
+        raise ValueError('worker ownership validation failed')
     open_gates = [
         'Latest prepared exec lock-scope changes pass ordinary guest execution; the earlier29-failure exec proof is historical and does not validate those later changes.',
         'Direct native Checkin fault proof and further exec-notification validation stopped by automatic cybersecurity review; do not retry, rephrase or transfer those actions.',

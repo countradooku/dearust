@@ -277,7 +277,7 @@
         "crates/dearust-process/src/resource_policy.rs",
         "crates/dearust-process/src/resource_view.rs"
       ],
-      "scope": "Owned resource lifecycle prerequisites and scoped ordinary guest/native derivatives; resource ownership inactive. Final88 ordinary guest executions use SAME candidate in both slots, not C versus Rust. Component/native failure proofs retain their own exact binaries and dates."
+      "scope": "Owned resource lifecycle prerequisites including worker startup/shutdown ownership, with scoped ordinary guest/native derivatives; resource ownership inactive. Final88 ordinary guest executions use SAME candidate in both slots, not C versus Rust. Component/native failure proofs retain their own exact binaries."
     }
   ],
   "cargo_packages": [
@@ -1567,8 +1567,8 @@
       "id": "resource-lifecycle-current-index",
       "kind": "current-evidence-index",
       "path": "resource-lifecycle-current-index.json",
-      "scope": "Owned C/C++ prerequisite candidate only. Final88 ordinary guest executions, separately scoped native derivatives, all candidates preserved; ownership inactive and latest combined fault/performance/blocked gates open.",
-      "sha256": "2a3714c75d66c56c2b53ab16760e99829f56ea5f1cbb49c9fcef18a06337f430"
+      "scope": "Owned C/C++ prerequisite candidate only. Final server9 passes88 ordinary guest executions; worker startup/shutdown ownership passes native/sanitized comparison with exact original. Component fault proofs retain their own binaries; ownership inactive and full fault/shutdown/performance/stopped gates open.",
+      "sha256": "94d44a8ade35cf4df150848c721b7a629e6eda9a0ebb0e63eed91db992b2c0a5"
     }
   ],
   "execution_observations": [
@@ -3612,7 +3612,7 @@
   "generator_inputs_sha256": {
     "dependency-inventory.json": "b93144bf7276349f8423a85be3a0180caf2e78b876520a5cd7720c307ac44fcd",
     "migration-inventory.json": "308426bdb469e38a8aceec78bed3d5350a92750528874abbc46bad9f4aec13d5",
-    "migration-ledger.json": "5507215caac27e056548c16f6d4cda04acf23f2a43177bc74f28afbc3ab7d404",
+    "migration-ledger.json": "cae9ba0fe7c642fdec20124650dedd196bf69253eab578123907b2d9a275b52b",
     "tools/migration-packages.json": "657a4900cc97b75579caead0afacabf71816d5fdff46064caaaf951c4363b8bc",
     "tools/target_inventory.py": "0db5b20841711375eff9e88cb4638491c60ea9525e770468382f88f9aa03c40a",
     "upstream-cmake-graph.json": "736ebae1cb52161a7d63d14638c93b1f3f5a703b809f7fd4c05defa15dba0dbd",

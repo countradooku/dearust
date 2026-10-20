@@ -23,6 +23,12 @@ owners alive and late disposal cannot clear replacements. Resume validates its
 expected generation under the Thread lock through reserved queue insertion.
 StackPool reserves its cache and honors capacity without the old off-by-one.
 
+Worker launch allocates/extracts a map node before creating its native thread.
+Constructor failure joins every started worker before rethrowing. Shutdown swaps
+the worker map under the queue mutex, then joins outside it, excluding concurrent
+temporary timeout retirement. Optional growth failure preserves accepted work.
+These queue ownership fixes do not establish whole-server shutdown draining.
+
 Process death marks ResourceState synchronously and stops timer rearming. Owned
 channels are destroyed outside the Process lock; exit fanout and foreign cleanup
 use reserved events/jobs. ResourceState's embedded job precedes its real gate
@@ -45,8 +51,8 @@ queue allocation. Terminal exec errors queue their reserved reply before death.
 
 Recorded evidence and limits
 ------------------------------
-Owned server8 SHA256:
-585bd4603faa9527f24ad3105b707a329f5bec72eb1c755be5e7e3cfc08cbac7
+Owned server9 SHA256:
+2ca04714cfd677c0720e6127fb2174e878b239e31c8e120bc7ef9bf3c1eed8c3
 Its88 ordinary guest executions pass: guards2, filesystem1, retained30,
 applications10 and resource1 in each of two same-candidate slots. Actual kernel
 mapping and paired loader/kernel hashes remain recorded. Earlier server4 also
@@ -62,6 +68,14 @@ Generation resume passes64 forced publication interleavings in native/sanitized
 fixtures. Public ABI interposition excludes hidden libc internals; fixture
 sanitizers do not instrument linked Rust/XNU. The identified Python run passes94
 tests; no Rust source changed in this batch.
+
+Exact WorkQueue native/sanitized tests pass7 constructor allocation failures,
+2 injected std::thread-boundary launch failures,3 optional-growth allocation
+failures, accepted-work recovery and64 timeout/shutdown interleavings. The exact
+committed original Darlingserver89751e64 aborts at allocation indices3/4/5/6;
+the fixed queue catches and joins at each. The4096-item reserved-dispatch suite
+also passes with zero denied C++ allocations. Test-only timeout/barrier changes
+and failure-hook scope remain explicit in the native report.
 
 The earlier29-failure exec proof predates the later owner-lock fix and remains
 historical evidence. Final combined fault validation is NOT passed. All23 old

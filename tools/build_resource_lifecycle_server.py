@@ -27,6 +27,7 @@ from patch_resource_kernel_contexts import patch_kernel_context_cpp, patch_kerne
 from patch_resource_prepared_exec import patch_prepared_exec
 from patch_prepared_resource_replies import patch_prepared_replies
 from patch_resource_generation_resume import patch_generation_resume
+from patch_resource_worker_ownership import patch_worker_ownership_files
 
 
 def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c_flags=(), checked_generation=False, prepared_exec=False):
@@ -55,7 +56,8 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
             'patch_prepared_resource_machport_retirement.py', 'patch_resource_state_death.py',
             'patch_prepared_resource_kq_ownership.py', 'patch_prepared_resource_mach_notifications.py',
             'prepared-resource-mach-notifications.inc', 'patch_prepared_resource_mach_waiter.py',
-            'patch_resource_death_work.py', 'patch_resource_death_lifecycle.py')]]
+            'patch_resource_death_work.py', 'patch_resource_worker_ownership.py',
+            'patch_resource_death_lifecycle.py')]]
     if checked_generation:
         builder.EXTRA_TRANSFORM_INPUTS += [tools / 'patch_prepared_resource_checked_ipc.py',
             tools / 'patch_resource_kernel_contexts.py', tools / 'patch_resource_generation_resume.py',
@@ -77,6 +79,7 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
     def lifecycle(files):
         files = checkin(files)
         files = patch_death_work(files)
+        files = patch_worker_ownership_files(files)
         files = patch_resource_state_death(files)
         files = patch_process_notifications(files)
         files = patch_machport_retirement(files)
