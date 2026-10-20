@@ -167,8 +167,8 @@
         }
       ],
       "known_missing_work": [
-        "Prepared Process/Thread/monitor/Registry publication with reserved eternal ID before dtape task construction",
-        "NULL/partial dtape handle cleanup, noexcept rollback and nonallocating kernel-context cleanup; coherent notifyDead",
+        "Complete Rust ownership/integration and remaining failure/configuration gates for prepared Process/Thread/monitor/Registry publication; the owned C++ candidate already implements reserved EIDs and staged publication.",
+        "Complete active-call, initial-call failure, bootstrap and full shutdown contracts; the owned candidate checks ordinary partial C acquisition and uses nonallocating kernel-context cleanup with coherent death.",
         "Resource client snapshots/setters/fork/exec/signal/cancellation integration and sender-message lifetime ownership",
         "Complete Rust server/scheduler/loader/dynamic-linking implementation and clean standalone bootstrap"
       ],
@@ -179,12 +179,22 @@
         "tools/build_resource_loader.py",
         "tools/build_resource_exec_bridge.py",
         "HANDOFF-20261019",
-        "REGISTRATION-OOM-AUDIT"
+        "REGISTRATION-OOM-AUDIT",
+        "resource-lifecycle-current-index.json"
       ],
       "unresolved_or_unknown": [
-        "Candidate92 ordinary executions repeat the same candidate in both slots; no comparative performance or production owner activation",
+        "Historical92 and later88 ordinary candidate executions retain distinct runs; both slots use each same candidate. No comparative performance or production owner activation follows.",
         "Queued SCM sender-death/PID-reuse identity proof incomplete; blocked adversarial RPC validation remains unverified",
-        "Actual bootstrap and guest-prefix overlay mappings both need source/hash/inode proof"
+        "Actual paired kernel mapping provenance exists for identified owned x86_64 bootstrap/guest runs; clean pinned runtime, complete ABI/configuration scope and other architectures remain unverified."
+      ],
+      "candidate_prerequisites": [
+        {
+          "scope": "Reserved identities, checked ordinary partial acquisition, generation-owned contexts and reserved scheduling/replies",
+          "implementation": "owned C/C++ prerequisite; not a Rust server replacement",
+          "evidence": "resource-lifecycle-current-index.json",
+          "activation": "candidate-only",
+          "completion": "unfinished"
+        }
       ]
     },
     {
