@@ -1944,6 +1944,52 @@
       "path": "work/resource-cpu-next/server2/server/linked/relink.json",
       "scope": "Exact owned Linux server2 selected inputs/archives and final ELF provenance; not a newly ported source/artifact or a whole-target replacement.",
       "sha256": "5d66fe9d58282e5c61c3a30fb5c362caa7a0c49a1b6dfdedf6e2fccb4303acd2"
+    },
+    {
+      "assertions": [
+        {
+          "equals": 518,
+          "pointer": "/counts/catalogued_declarations"
+        },
+        {
+          "equals": 24158,
+          "pointer": "/counts/uncatalogued_declarations"
+        },
+        {
+          "equals": false,
+          "pointer": "/completion/commands_executed"
+        },
+        {
+          "equals": false,
+          "pointer": "/completion/configured_behavior_resolved"
+        },
+        {
+          "equals": false,
+          "pointer": "/completion/handwritten_semantic_review_complete"
+        },
+        {
+          "equals": false,
+          "pointer": "/completion/ownership_activated"
+        },
+        {
+          "equals": false,
+          "pointer": "/completion/reachability_resolved"
+        },
+        {
+          "equals": false,
+          "pointer": "/completion/resource_gate_complete"
+        },
+        {
+          "equals": false,
+          "pointer": "/completion/variables_expanded"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "cmake-command-effects-pinned",
+      "kind": "pinned-static-command-role-catalogue",
+      "path": "cmake-command-effects.json",
+      "scope": "518 static direct command-name rows with pinned raw arguments/conditions/definition/template context; 24,158 declarations remain outside this catalogue and15 original inputs unparsed. No evaluation, expansion, execution, target or implementation completion inferred.",
+      "sha256": "44c537c3bcd04dd0c1b2aab0c52d127839abe5c97af954212a9239df16565c90"
     }
   ],
   "execution_observations": [
@@ -4200,6 +4246,30 @@
       "provenance": "resource-cpu-current-index.json",
       "scope": "Owned CPU-only prerequisite evidence; no production activation or new Rust artifact count.",
       "sha256": "5d66fe9d58282e5c61c3a30fb5c362caa7a0c49a1b6dfdedf6e2fccb4303acd2"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "inventory-support-source",
+      "observed_sha256": "ba4a2331239f92bad6a148199e76608284c9c5f332e08333e00b4fdb098935bb",
+      "path": "tools/cmake_command_effect_inventory.py",
+      "provenance": "cmake-command-effects-verification.json",
+      "sha256": "ba4a2331239f92bad6a148199e76608284c9c5f332e08333e00b4fdb098935bb"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "inventory-support-source",
+      "observed_sha256": "33c16569035ab55f1bfcd8d2b297111ff0a539626d4097fbcf65b2e575732fea",
+      "path": "tools/test_cmake_command_effect_inventory.py",
+      "provenance": "cmake-command-effects-verification.json",
+      "sha256": "33c16569035ab55f1bfcd8d2b297111ff0a539626d4097fbcf65b2e575732fea"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "inventory-static-role-verification",
+      "observed_sha256": "28a86f98c8741eb1a75aa05bf623fffc5ef8a723bc631a01375f4f7d4707df8b",
+      "path": "cmake-command-effects-verification.json",
+      "provenance": "work/pinned-cmake-effects/verification.json",
+      "sha256": "28a86f98c8741eb1a75aa05bf623fffc5ef8a723bc631a01375f4f7d4707df8b"
     }
   ],
   "gaps": [
@@ -4218,15 +4288,16 @@
     {
       "evidence": [
         "upstream-cmake-graph.json",
-        "tools/BASELINE.txt"
+        "tools/BASELINE.txt",
+        "cmake-command-effects.json"
       ],
       "id": "optional-configurations",
-      "missing": "Exact-pinned CMake declarations capture 1,144 selected files across 161 repositories, including custom commands, options and conditions. Fifteen inputs remain unparsed; expansion, reachability, configured command bodies, architecture variants and additional graph captures remain unknown.",
+      "missing": "Exact-pinned CMake declarations capture 1,144 selected files across 161 repositories, including custom commands, options and conditions. Fifteen inputs remain unparsed; expansion, reachability, configured command bodies, architecture variants and additional graph captures remain unknown. Direct command roles now distinguish process execution, compiler probes and file operations; names/conditions do not establish actual invocations or configured effects.",
       "status": "unknown"
     },
     {
       "id": "unclassified-implementation",
-      "missing": "Suffix labels are heuristics. All15 unparsed CMake inputs have exact pinned role/consumer reviews; configured template behavior, reachability and handwritten semantics remain unresolved. Unobserved sources, symlink aliases, SDK/data and other languages still need semantic ownership review.",
+      "missing": "Suffix labels are heuristics. All15 unparsed CMake inputs have exact pinned role/consumer reviews; configured template behavior, reachability and handwritten semantics remain unresolved. Unobserved sources, symlink aliases, SDK/data and other languages still need semantic ownership review. The static command-role catalogue keeps unreviewed wrappers/transitive effects explicit.",
       "status": "review-required"
     },
     {
@@ -4239,7 +4310,7 @@
     "cmake-declarations.json": "6904e6d9f47ad1e6a30acf8580b2b2e8f9bb8f08d27d1d22322e5129416c5614",
     "dependency-inventory.json": "b93144bf7276349f8423a85be3a0180caf2e78b876520a5cd7720c307ac44fcd",
     "migration-inventory.json": "308426bdb469e38a8aceec78bed3d5350a92750528874abbc46bad9f4aec13d5",
-    "migration-ledger.json": "5e196a5a915834d8ca480ff521740b2de2ad62672236c957ffeb95678bc95732",
+    "migration-ledger.json": "d2d57ee762bf30bbd1f1eda019c6340ac903a2cde2753b686898cfdaaa832d93",
     "tools/cmake-input-role-review.json": "64458a578956e7422c7afa5967968ec0527bd94352fe098afc3e425ac49dbbd6",
     "tools/cmake_declaration_inventory.py": "3d8bb974a9ca9e566f83e9042638a252a33c18f76fbb0e4c98d7ea2c2e289e00",
     "tools/cmake_inventory_evidence.py": "5ff97e1d5860b9d494936e64fedd8a33341c0e8dfcebbbdd59b1c67f07a11a94",
@@ -558755,6 +558826,18 @@
       "status": "matched"
     },
     {
+      "observed_sha256": "ba4a2331239f92bad6a148199e76608284c9c5f332e08333e00b4fdb098935bb",
+      "path": "tools/cmake_command_effect_inventory.py",
+      "recorded_sha256": "ba4a2331239f92bad6a148199e76608284c9c5f332e08333e00b4fdb098935bb",
+      "status": "matched"
+    },
+    {
+      "observed_sha256": "33c16569035ab55f1bfcd8d2b297111ff0a539626d4097fbcf65b2e575732fea",
+      "path": "tools/test_cmake_command_effect_inventory.py",
+      "recorded_sha256": "33c16569035ab55f1bfcd8d2b297111ff0a539626d4097fbcf65b2e575732fea",
+      "status": "matched"
+    },
+    {
       "observed_sha256": "c67d6fa155f90de96963a21bf83c9d970408136875737656f8b9118633f6c9c3",
       "path": "xtask/src/install.rs",
       "recorded_sha256": "c67d6fa155f90de96963a21bf83c9d970408136875737656f8b9118633f6c9c3",
@@ -559048,6 +559131,8 @@
       "src/elf_wrapper.rs": "a16be484c1586422fe67b1f5614e5ad40b9bdd59f68005b288bfc11ea4ed3413",
       "src/lib.rs": "fc42026d51281c6277f3e0bfa2460df302d923fc877e159e80cbe683d75ff6b7",
       "src/wrapped_elf.rs": "b58643df98f597d4497d32a75eef91377e55585a439dacb9bcca042cc4e32d65",
+      "tools/cmake_command_effect_inventory.py": "ba4a2331239f92bad6a148199e76608284c9c5f332e08333e00b4fdb098935bb",
+      "tools/test_cmake_command_effect_inventory.py": "33c16569035ab55f1bfcd8d2b297111ff0a539626d4097fbcf65b2e575732fea",
       "xtask/src/install.rs": "c67d6fa155f90de96963a21bf83c9d970408136875737656f8b9118633f6c9c3",
       "xtask/src/main.rs": "4a3d554c960a1c612dc08429634f8b2ebc1c222f891b2a787b8be8851d1ed91c",
       "xtask/src/runtime.rs": "8103745d1e308a5e2ac05b1a79837388fae4ea0d7ef7943a81b61a2807370a5c"

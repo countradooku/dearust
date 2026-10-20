@@ -35,6 +35,11 @@ tools/cmake-input-role-review.json. Prose, C-header templates, CMake templates
 and malformed commented install bodies are distinguished; the raw parse status
 is preserved. Variables, configured output/reachability and execution remain
 unknown. No declarations are added to the observed target or replacement counts.
+The separate cmake-command-effects.json classifies518 direct command-name roles,
+including process/probe/file operations hidden by the earlier catch-all category.
+It keeps24158 other declarations outside its catalogue and all15 unparsed inputs.
+Conditions, function bodies and templates remain unexpanded; names do not prove
+resolved effects or execution. See tools/CMAKE-COMMAND-EFFECTS.txt.
 
 The default runtime graph compiles partial host-backed resource ABI plus safe
 policy/view foundations. Those foundations are not activated client ownership. Equal-generation

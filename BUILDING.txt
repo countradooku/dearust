@@ -84,6 +84,10 @@ with python3 tools/record_resource_copy_progress.py --output /fresh/index.json.
 This verifies existing proof hashes; use their recorded commands to rebuild them.
 Generic-copy CPU, multiworker and resource ownership gates remain open.
 
+For pinned static build-command roles, run tools/cmake_command_effect_inventory.py
+with --output-dir /fresh/effects. It reads verified declarations without invoking
+CMake or resolving execution. See tools/CMAKE-COMMAND-EFFECTS.txt.
+
 The independent CPU delivery derivative is documented in RUNTIME-RESOURCE-CPU.txt.
 It fixes actual lost expiration under allocation failure, reuses an original kernel
 timer binding, and passes native/raw/ASan/UBSan, exact deferred-adapter and88 ordinary

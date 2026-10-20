@@ -1,0 +1,29 @@
+Pinned CMake direct command-name catalogue
+==========================================
+This package00 preparation retains pinned raw declarations, condition/function
+context and template filenames for518 direct command-name roles. It separates
+process execution names, compiler probes, file operations, custom rules/targets
+and configuration generators from the prior catch-all category. This does not
+interpret CMake, resolve shadowed builtins, follow custom wrappers, expand paths,
+execute commands or add configured targets.24158 declarations remain outside
+this catalogue; the15 original unparsed inputs retain their provenance.
+
+The machine-readable report is cmake-command-effects.json. Its original input
+cmake-declarations.json remains unchanged. Regenerate into an absent directory:
+
+  python3 tools/cmake_command_effect_inventory.py --output-dir /fresh/effects
+
+The tool verifies original report/input hashes and pinned inventory provenance
+before classifying. Two agent runs and an independent generation match exactly.
+Nine small-fixture tests cover condition/definition context, templates, quoting,
+dynamic/unknown commands, symlinks, provenance drift, false completion, counting,
+determinism and existing-output preservation. All124 ordinary Python tests pass;
+cmake-command-effects-verification.json identifies exact sources and raw logs.
+
+Roles describe literal source command names. Declarations inside functions and
+conditional branches retain unknown execution; builtins/module names can be shadowed.
+Custom targets/commands need not contain any process invocation. Wrapper effects,
+configured outputs/shared ownership, expansion, reachability, architectures and
+complete handwritten rule review remain unfinished. This report changes no Rust
+source coverage, execution, activation, replacement or retirement count. Resource
+ownership remains inactive and all automatically stopped checks stay untouched.
