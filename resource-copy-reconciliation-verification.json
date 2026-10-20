@@ -1,0 +1,95 @@
+{
+  "cmake_declarations": {
+    "commands_executed": false,
+    "configuration_evaluated": false,
+    "declarations": 24676,
+    "files": 1144,
+    "literal_names_absent": 360,
+    "repositories": 161,
+    "roles": {
+      "C-header-configuration-template": 2,
+      "CMake-package-configuration-template": 2,
+      "malformed-commented-install-body": 7,
+      "prose-build-documentation": 4
+    },
+    "unparsed": 15
+  },
+  "commands": [
+    "python3 tools/target_inventory.py --output work/resource-copy-next/targets-a.json --reconciliation work/resource-copy-next/reconciliation-a.json --matrix work/resource-copy-next/gaps-a.txt",
+    "python3 tools/target_inventory.py --output work/resource-copy-next/targets-b.json --reconciliation work/resource-copy-next/reconciliation-b.json --matrix work/resource-copy-next/gaps-b.txt"
+  ],
+  "counts": {
+    "candidate_artifacts": 2,
+    "legacy_targets_retired": 0,
+    "manifest_artifacts": 17,
+    "observed_default_targets": 1629,
+    "optional_artifact_bindings": 1,
+    "pending_targets": 1629,
+    "production_active_targets": 0,
+    "source_target_participations": 110,
+    "unique_artifacts": 21,
+    "unique_ported_upstream_sources": 59,
+    "unique_sources_participating_in_captured_graph": 58,
+    "unique_sources_with_rust_work": 59,
+    "unretired_targets": 1629,
+    "whole_target_replacements_verified": 0,
+    "with_cargo_artifact_slice": 11,
+    "with_compiled_unlinked_scopes": 3,
+    "with_consumer_link_evidence": 9,
+    "with_execution_evidence": 9,
+    "with_rust_work": 12,
+    "with_source_port_participation": 10
+  },
+  "deterministic_pair": true,
+  "evidence_index_matched": 78,
+  "historical_source_drift": [
+    {
+      "availability": "changed",
+      "kind": "historical-source",
+      "observed_sha256": "e3bb9c74c0df88fc2ab4bc5b84d4781c263a58ef5b08e15a70610a4db071dfce",
+      "path": "crates/dearust-path/src/abi/guarded.rs",
+      "provenance": "work/resources-complete/default-final-validation/summary.json",
+      "sha256": "680d2ddb0e911acac66199b1d1f0315c809d477ffc316501af780114a1dbf006"
+    },
+    {
+      "availability": "changed",
+      "kind": "historical-source",
+      "observed_sha256": "f5fc6e53f37077f4ae77c8bf279f13c2330e3fb897a3801579d1cdef0445baf7",
+      "path": "crates/dearust-process/src/resource_view.rs",
+      "provenance": "work/resources-complete/default-final-validation/summary.json",
+      "sha256": "93fb4e58ed06e20b2c48bb4e5e8b71165375d339a83c028664edaf45286885ea"
+    },
+    {
+      "availability": "changed",
+      "kind": "historical-source",
+      "observed_sha256": "6a174a5e3e31549a8328d1c8a7987bc377efb296a9571b7046e7d71d265c723c",
+      "path": "tools/relink_matching_kernel.py",
+      "provenance": "work/resources-complete/default-final-validation/summary.json",
+      "sha256": "e8c710aeeea8bf9ec1af9a7fdaa9b4e63555df5a11008b0292c2a853569339e9"
+    },
+    {
+      "availability": "changed",
+      "kind": "historical-source",
+      "observed_sha256": "1384f6e77699714cfa2b121e3b00b9db0b96f4e07d834a591d9432f99e44359b",
+      "path": "tools/relink_system_kernel.py",
+      "provenance": "work/resources-complete/default-final-validation/summary.json",
+      "sha256": "c178a9b9bc394a621fdd1f380f06164295af9dba8011c2b68c30c08449be1f61"
+    },
+    {
+      "availability": "changed",
+      "kind": "historical-source",
+      "observed_sha256": "f8db57282dc3516388b90d2498c2c297626d14e8511bcc4e2ba16e30ad53676b",
+      "path": "tools/run_isolated_server.py",
+      "provenance": "work/resources-complete/default-final-validation/summary.json",
+      "sha256": "5ede507d79afc0fb47e5998d6758367bba3863eeb4ce099f9766c90d6238d9fb"
+    }
+  ],
+  "input_index_matched": 85,
+  "output_sha256": {
+    "migration-gap-matrix.txt": "e2a475b29974a3be52dc3c35e92f48e06846e7494b7a9a296d88f008d36ff612",
+    "migration-reconciliation.json": "f115f7dfd701fc70ab83a0409b503fafac6a1fd8afcb14e71afb5cf36d910cfb",
+    "migration-targets.json": "c40597a3554f6e52b0752fa354ad5a03aa3035d2d337b91a1ac7a5d26a0381f1"
+  },
+  "passed": true,
+  "scope": "Source/artifact/declaration accounting only; unknown configured behavior and all incomplete resource/product gates remain explicit."
+}

@@ -28,8 +28,19 @@ unobserved leaves, symlink aliases, shared/generated inputs, SDK/data preservati
 custom commands and other configurations require explicit scope review. They are
 visible unknowns, not evidence that their implementation is absent or completed.
 
+Exact committed CMake source declarations are now captured separately in
+cmake-declarations.json from1,144 selected files across161 pinned repositories.
+All15 unparsed rows have pinned role/consumer evidence in
+tools/cmake-input-role-review.json. Prose, C-header templates, CMake templates
+and malformed commented install bodies are distinguished; the raw parse status
+is preserved. Variables, configured output/reachability and execution remain
+unknown. No declarations are added to the observed target or replacement counts.
+
 The default runtime graph compiles partial host-backed resource ABI plus safe
-policy/view foundations. Those foundations are not activated client ownership.
+policy/view foundations. Those foundations are not activated client ownership. Equal-generation
+refresh now rejects conflicting complete snapshots. The independent SIMD copy
+follow-up passes native/ABI/link and88 ordinary guest checks; its measured
+effects establish no material speedup. See resource-copy-current-index.json.
 The separately preserved dirty server/loader/exec candidates have ordinary guest
 evidence; both candidate harness slots use the same candidate. Their successful
 startup supersedes the older startup hypothesis, without closing ownership,

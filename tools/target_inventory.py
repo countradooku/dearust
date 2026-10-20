@@ -336,6 +336,10 @@ def reconcile(root, graph, superproject, dependencies, ledger):
         actual = digest(path) if path.is_file() else None
         reconciliation['file_evidence_index'].append(dict(record, observed_sha256=actual,
             availability='hash-matched' if actual == record['sha256'] else 'missing' if actual is None else 'changed'))
+    if ledger.get('build_declaration_inventory'):
+        from cmake_inventory_evidence import checked_declarations
+        reconciliation['graph_reconciliation']['cmake_declarations'] = checked_declarations(
+            root, ledger['build_declaration_inventory'], superproject, dependencies, observed, load, digest)
     return targets, reconciliation
 
 
@@ -368,6 +372,17 @@ def gap_matrix(targets, current):
     for gap in current['gaps']:
         lines.append(f"{gap['id']} [{gap['status']}]: {gap['missing']}")
     graph = current['graph_reconciliation']
+    if 'cmake_declarations' in graph:
+        declarations = graph['cmake_declarations']
+        lines += ['', 'Exact-pinned build declarations: ' + json.dumps({key: value
+                    for key, value in declarations['counts'].items() if key != 'by_command'}, sort_keys=True),
+                  f"{len(declarations['literal_targets_absent_from_captured_graph'])} plain literal target names are absent from the captured graph; reachability and configuration remain unknown.",
+                  'Declarations are not evaluated or executed; they do not add observed targets or implementation counts.',
+                  'Unparsed exact inputs: ' + ', '.join(declarations['unparsed_files'])]
+        if declarations.get('input_role_review'):
+            lines.append('Unparsed input roles: ' + json.dumps(
+                declarations['input_role_review']['counts_by_role'], sort_keys=True)
+                + '; configured behavior and reachability remain unverified.')
     lines += ['', 'Captured graph reconciliation: ' + json.dumps({k: v for k, v in graph.items()
                if not isinstance(v, (dict, list))}, sort_keys=True),
               f"{len(graph['implementation_leaves_absent_from_captured_graph'])} source-classified leaves absent by literal path from this graph need scope review; they may include tests, generated inputs or optional sources.",
@@ -397,6 +412,12 @@ def main():
         scope_path = load(root / args.ledger).get('package_scope_path')
         if scope_path:
             paths.append(Path(scope_path))
+        declarations = load(root / args.ledger).get('build_declaration_inventory')
+        if declarations:
+            paths += [Path(declarations['path']), Path('tools/cmake_declaration_inventory.py'),
+                      Path('tools/cmake_inventory_evidence.py')]
+            if declarations.get('role_review'):
+                paths.append(Path(declarations['role_review']['path']))
         current['generator_inputs_sha256'] = {str(path): digest(root / path) for path in paths}
         for filename, data in ((args.output, targets), (args.reconciliation, current)):
             (root / filename).write_text(json.dumps(data, indent=2, sort_keys=True) + '\n')

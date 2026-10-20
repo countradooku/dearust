@@ -70,12 +70,19 @@ archive/C object/consumer map/link are checked in resource-lifecycle-current-ind
 Owned57 single-worker passes88/88 ordinary guests. Owned58 multiworker passes78
 of80 executed cases and still times out twice in Mach lockset. Thread-info's
 post-join ordering fixture is corrected and validated with forced native-exit
-delay. The workspace passes213 ordinary Rust/11 compile-fail/94 Python checks.
+delay. The current copy/snapshot follow-up passes214 ordinary Rust/11 compile-fail/115 Python checks.
 These counts are scoped evidence, not resource completion, additional Rust source
 replacement or performance acceptance. See tools/RESOURCE-LIFECYCLE-CANDIDATE.txt
 for precise reproduction and all unfinished/automatically stopped gates. The
 wait-admission fix/regression was stopped by automatic review and stays inactive;
 its checker and earlier blocked checks must not be retried.
+
+The independent copy/snapshot follow-up is indexed in resource-copy-current-index.json.
+Its owned matching and pinned kernel links preserve public/import sets and original
+i386 bytes;88 ordinary guest checks pass. Reproduce the identified evidence index
+with python3 tools/record_resource_copy_progress.py --output /fresh/index.json.
+This verifies existing proof hashes; use their recorded commands to rebuild them.
+Generic-copy CPU, multiworker and resource ownership gates remain open.
 
 Functioning executables: elfdep, getuuid, bsdln, print_wrapped_elf,
 darling-coredump and wrapgen (partial loader-name resolution; see README.md). No libbsd

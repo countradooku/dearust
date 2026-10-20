@@ -1,7 +1,7 @@
 Resource fixed-copy optimization; resource subsystem remains UNFINISHED
 =======================================================================
 
-The default runtime now proves eligible16/144-byte fixed copies safe through
+The fixed-anchor batch proves eligible16/144-byte copies safe through
 a continuously live mutable local anchor, then copies with exact SSE2 chunks.
 See crates/dearust-path/SAFETY-MEMORY.txt for the ownership/page proof, exact
 guest PCs and retained negative-path checks. No guest address becomes a Rust
@@ -17,7 +17,7 @@ builders are integration work, not the policy used in these measurements.
 Full unsigned-limit ownership, XNU physical enforcement and generic CPU costs
 remain independently open. No new source-port or retired-target count is claimed.
 
-Fresh exact C comparisons, current production objects
+Historical fixed-anchor batch: exact C comparisons
 ------------------------------------------------------
 Native:21 alternating fresh processes per variant/layout,100000 three-call
 rounds per process, pinned CPU. Resource copy adapters are the actual production
@@ -85,3 +85,29 @@ is activated by cargo xtask runtime.
 
 Run a fresh output directory for each variant/layout. Preserve all strong
 signal/fork/RPC/vchroot/TLS bridges when linking, as in RUNTIME-RESOURCES.txt.
+
+Current follow-up: mask-proven SIMD and snapshot integrity
+----------------------------------------------------------
+The default source also reuses existing SIMD guest PCs for unanchored binary
+lengths divisible by16 AFTER the fresh mask query. Other multiple-of4 lengths
+retain the bounded word loop. Readiness, AC, local-page proof, signal/fork frame
+and kernel fallback remain intact; no mask/PID/VMA cache or new fault PC exists.
+resource-copy-current-index.json records the new source, native/Darwin objects,
+matching and pinned kernel links,88 strict ordinary guest cases and the explicit
+Darwin ABI/staging gate. The original i386 slice remains original and unchanged.
+
+Matched native previous/SIMD median CPU changes are below1%, with overlapping quartiles;
+guest ABBA CPU1.0914->1.0975us (+0.56%) also establishes no material gain.
+A101-process stack follow-up reverses the initial upper-quartile ordering;
+all raw slow samples remain retained. Generic heap/cross-page copy CPU remains
+about68% above C, an OPEN gate. The fresh mask query still cannot be safely
+removed for arbitrary guest buffers under the existing raw-pointer contract.
+These comparisons retain their exact baseline/source/adapter limitations.
+
+The inactive resource_view foundation now accepts equal generations only with
+identical limits, stack metadata and policy. Independent26-word records reproduce
+the prior overwrite and cover every payload conflict. This is not activated
+resource ownership or physical enforcement. Current checks pass214 ordinary Rust,
+11 compile-fail and115 Python tests; exact scope and commands are in the index.
+The review-stopped lifecycle/wait-admission/RPC checks were not retried. Resource,
+multiworker, lifecycle, architecture and performance completion stays unclaimed.

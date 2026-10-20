@@ -280,7 +280,8 @@
         "work/resource-death-continuation/lockset58-multi/server/build.json",
         "work/resource-death-continuation/lockset58-multi/server/linked/relink.json",
         "work/resource-death-continuation/lockset-registry/proof6/verification.json",
-        "work/resource-death-continuation/lockset-cancel/proof1/verification.json"
+        "work/resource-death-continuation/lockset-cancel/proof1/verification.json",
+        "resource-copy-current-index"
       ],
       "historical_scope_observations": [
         {
@@ -316,7 +317,8 @@
         "Continuation closure lifetime validation stopped by automatic cybersecurity review; inactive WIP must not be retried/rephrased/transferred.",
         "Post-join thread-info ordering has an independent pinned-contract correction; historical immediate-ESRCH failures remain preserved. This does not close complete lifecycle/concurrency acceptance.",
         "Duplicate intrusive wake/TailQ and wait/admission/interrupt ownership remain unresolved in multiworker scope; no complete concurrency gate is passed.",
-        "New wait-admission fix/check/fixture work was stopped by automatic cybersecurity review and remains inactive/unverified; do not retry, rephrase, transfer or execute it. Previously stopped work remains stopped."
+        "New wait-admission fix/check/fixture work was stopped by automatic cybersecurity review and remains inactive/unverified; do not retry, rephrase, transfer or execute it. Previously stopped work remains stopped.",
+        "Current mask-proven SIMD reduces copy-loop instructions; effects below 1% do not establish a material gain. Generic heap/cross-page CPU remains about 68% above C. Equal-generation view integrity is fixed in an inactive foundation, not integrated ownership."
       ],
       "rust_foundations": [
         "crates/dearust-process/src/resource_policy.rs",
@@ -1717,6 +1719,80 @@
       "path": "work/resource-death-continuation/historical-current-index-6f60f32.json",
       "scope": "Owned C/C++ prerequisites only. Handoff, mutex interlock and eventfd masks pass scoped native/sanitized regressions. Latest single-worker server20 fails thread-info after66 cases; multiworker server21 times out after58. Earlier server16 passes88 remain historical. Resource ownership inactive; full fault/shutdown/performance/stopped gates open.",
       "sha256": "954b2f0cc6679b1e24b3f4bdd52961da4f06d7b6b07cf4f14490289c213a64e7"
+    },
+    {
+      "assertions": [
+        {
+          "equals": true,
+          "pointer": "/coverage/selected_exact_inputs_verified"
+        },
+        {
+          "equals": false,
+          "pointer": "/coverage/handwritten_semantic_review_complete"
+        },
+        {
+          "equals": false,
+          "pointer": "/valid"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "cmake-declarations-exact-inputs",
+      "kind": "pinned-source-declaration-inventory",
+      "path": "cmake-declarations.json",
+      "scope": "All 1,144 selected exact Git inputs are pinned and verified; 24,676 lexical declarations retained, 15 prose/template/malformed inputs unparsed. No configured or executed target or implementation completion inferred.",
+      "sha256": "6904e6d9f47ad1e6a30acf8580b2b2e8f9bb8f08d27d1d22322e5129416c5614"
+    },
+    {
+      "assertions": [
+        {
+          "equals": true,
+          "pointer": "/completion/all_15_role_classified"
+        },
+        {
+          "equals": false,
+          "pointer": "/completion/configured_or_executed"
+        },
+        {
+          "equals": false,
+          "pointer": "/completion/reachability_resolved"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "cmake-input-roles-pinned",
+      "kind": "pinned-source-role-review",
+      "path": "tools/cmake-input-role-review.json",
+      "scope": "All 15 unparsed inputs have pinned blob role and consumer evidence: 4 prose, 4 templates, 7 malformed commented install bodies. Roles do not establish configured reachability, execution or implementation completion.",
+      "sha256": "64458a578956e7422c7afa5967968ec0527bd94352fe098afc3e425ac49dbbd6"
+    },
+    {
+      "assertions": [
+        {
+          "equals": true,
+          "pointer": "/implemented_checks_passed"
+        },
+        {
+          "equals": false,
+          "pointer": "/resource_ownership_activated"
+        },
+        {
+          "equals": false,
+          "pointer": "/resource_complete"
+        },
+        {
+          "equals": false,
+          "pointer": "/performance_gate_passed"
+        },
+        {
+          "equals": 88,
+          "pointer": "/guest/strict_passes"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "resource-copy-current-index",
+      "kind": "scoped-current-evidence-index",
+      "path": "resource-copy-current-index.json",
+      "scope": "Fresh mask-proven SIMD loop, inactive equal-generation snapshot integrity; owned matching/pinned links, native/sanitized and88ordinaryguestpass. No material speedup, full resource/performance/multiworker completion or activation.",
+      "sha256": "0b7f439f03deb309628a8fc3f7338f333ae17d8a1a7e097afaf739fd399e1db1"
     }
   ],
   "execution_observations": [
@@ -2407,9 +2483,9 @@
       "sha256": "45d8d804776e9190b76d170a481ee7bde01881890f8f651211220d9ce3a7f956"
     },
     {
-      "availability": "hash-matched",
+      "availability": "changed",
       "kind": "historical-source",
-      "observed_sha256": "680d2ddb0e911acac66199b1d1f0315c809d477ffc316501af780114a1dbf006",
+      "observed_sha256": "e3bb9c74c0df88fc2ab4bc5b84d4781c263a58ef5b08e15a70610a4db071dfce",
       "path": "crates/dearust-path/src/abi/guarded.rs",
       "provenance": "work/resources-complete/default-final-validation/summary.json",
       "sha256": "680d2ddb0e911acac66199b1d1f0315c809d477ffc316501af780114a1dbf006"
@@ -2631,9 +2707,9 @@
       "sha256": "1397d2448b484828cd94ca5bf43e9f9e15c4401d39f300534c2def58177aae1e"
     },
     {
-      "availability": "hash-matched",
+      "availability": "changed",
       "kind": "historical-source",
-      "observed_sha256": "93fb4e58ed06e20b2c48bb4e5e8b71165375d339a83c028664edaf45286885ea",
+      "observed_sha256": "f5fc6e53f37077f4ae77c8bf279f13c2330e3fb897a3801579d1cdef0445baf7",
       "path": "crates/dearust-process/src/resource_view.rs",
       "provenance": "work/resources-complete/default-final-validation/summary.json",
       "sha256": "93fb4e58ed06e20b2c48bb4e5e8b71165375d339a83c028664edaf45286885ea"
@@ -3797,6 +3873,38 @@
       "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/lockset58-multi/server/duct-tape/xnu/osfmk/kern/sync_lock.c.o",
       "provenance": "work/resource-death-continuation/lockset58-multi/server/linked/relink.json",
       "sha256": "3efa8d7c9c6833a50e993686e5abcb00d01a5ee5ad8ff8076deb2ad96e12ccab"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-current-path-object",
+      "observed_sha256": "d9d7e22cab70e4b551dc11deb90c7f60b20b9ba39d722c7ab666c6d4d5ca630b",
+      "path": "work/resource-copy-next/simd-darwin/objects/paths.o",
+      "provenance": "resource-copy-current-index.json",
+      "sha256": "d9d7e22cab70e4b551dc11deb90c7f60b20b9ba39d722c7ab666c6d4d5ca630b"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-current-matching-kernel",
+      "observed_sha256": "2e413374080b96d4828521995425b4f8ff30ecbd917352e381314d9b128b1a26",
+      "path": "work/resource-copy-next/matching-simd/libsystem_kernel-rust.dylib",
+      "provenance": "resource-copy-current-index.json",
+      "sha256": "2e413374080b96d4828521995425b4f8ff30ecbd917352e381314d9b128b1a26"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-current-matching-link",
+      "observed_sha256": "422e943f80ffea5daa6bc695f5c5524340ea16381626863545427d568d17e010",
+      "path": "work/resource-copy-next/matching-simd/matching-link-report.json",
+      "provenance": "resource-copy-current-index.json",
+      "sha256": "422e943f80ffea5daa6bc695f5c5524340ea16381626863545427d568d17e010"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-current-pinned-link",
+      "observed_sha256": "0ea014f4d1e14870b4f489defa3a59d8de3ebf10b59143ae9726efcc0b4b68cb",
+      "path": "work/resource-copy-next/pinned-simd.json",
+      "provenance": "resource-copy-current-index.json",
+      "sha256": "0ea014f4d1e14870b4f489defa3a59d8de3ebf10b59143ae9726efcc0b4b68cb"
     }
   ],
   "gaps": [
@@ -3815,12 +3923,12 @@
         "tools/BASELINE.txt"
       ],
       "id": "optional-configurations",
-      "missing": "Additional component/architecture graph captures and custom-command bodies; default graph is not every supported configuration.",
+      "missing": "Exact-pinned CMake declarations capture 1,144 selected files across 161 repositories, including custom commands, options and conditions. Fifteen inputs remain unparsed; expansion, reachability, configured command bodies, architecture variants and additional graph captures remain unknown.",
       "status": "unknown"
     },
     {
       "id": "unclassified-implementation",
-      "missing": "Suffix labels are heuristics; every unobserved source, symlink alias, generated input, SDK/data and handwritten language needs explicit ownership review.",
+      "missing": "Suffix labels are heuristics. The exact CMake scan identifies 15 prose/header/template/malformed inputs requiring role review; unobserved sources, symlink aliases, SDK/data and handwritten languages still need semantic ownership review.",
       "status": "review-required"
     },
     {
@@ -3830,17 +3938,5117 @@
     }
   ],
   "generator_inputs_sha256": {
+    "cmake-declarations.json": "6904e6d9f47ad1e6a30acf8580b2b2e8f9bb8f08d27d1d22322e5129416c5614",
     "dependency-inventory.json": "b93144bf7276349f8423a85be3a0180caf2e78b876520a5cd7720c307ac44fcd",
     "migration-inventory.json": "308426bdb469e38a8aceec78bed3d5350a92750528874abbc46bad9f4aec13d5",
-    "migration-ledger.json": "6638af055eba95e75e523a78779bfd98c6d50ca54bbc1aa086c5702dca88c0e7",
+    "migration-ledger.json": "379d8687d47e39992cca97f92654501332d034d4db2ba79fc81ac42f368d71ef",
+    "tools/cmake-input-role-review.json": "64458a578956e7422c7afa5967968ec0527bd94352fe098afc3e425ac49dbbd6",
+    "tools/cmake_declaration_inventory.py": "3d8bb974a9ca9e566f83e9042638a252a33c18f76fbb0e4c98d7ea2c2e289e00",
+    "tools/cmake_inventory_evidence.py": "5ff97e1d5860b9d494936e64fedd8a33341c0e8dfcebbbdd59b1c67f07a11a94",
     "tools/migration-packages.json": "657a4900cc97b75579caead0afacabf71816d5fdff46064caaaf951c4363b8bc",
-    "tools/target_inventory.py": "0db5b20841711375eff9e88cb4638491c60ea9525e770468382f88f9aa03c40a",
+    "tools/target_inventory.py": "9ce2cc9660fbb96f154ab5a08cd4306627bab9e0afda0e3c63d7e29770f70dce",
     "upstream-cmake-graph.json": "736ebae1cb52161a7d63d14638c93b1f3f5a703b809f7fd4c05defa15dba0dbd",
     "xtask/host-artifacts.tsv": "2debd9041159b81d7b61db9bfd867e7681548ea0e0175e018a42833ec2a58a36",
     "xtask/runtime-artifacts.tsv": "11745378c132d3ca35b99ffc68912405a86866654d80ce542d9b7deeaa9cdb83"
   },
   "graph_reconciliation": {
     "canonical_non_generated_paths": 23783,
+    "cmake_declarations": {
+      "commands_executed": false,
+      "complete_configured_closure": false,
+      "configuration_evaluated": false,
+      "counts": {
+        "by_category": {
+          "condition": 5329,
+          "configure": 37,
+          "custom-command": 100,
+          "definition": 313,
+          "execute-process": 45,
+          "file-generate": 1,
+          "option": 155,
+          "other": 17239,
+          "target": 1457
+        },
+        "by_command": {
+          "_add_if": 39,
+          "_expat_copy_bool_int": 6,
+          "_install_target": 3,
+          "add_asan_test": 4,
+          "add_asan_tests_for_arch_and_kind": 2,
+          "add_backend": 2,
+          "add_benchmark_test": 1,
+          "add_bundle": 113,
+          "add_c_flags": 1,
+          "add_c_flags_if": 1,
+          "add_cctools_misc": 19,
+          "add_circular": 34,
+          "add_command": 3,
+          "add_compile_definitions": 113,
+          "add_compile_flags": 9,
+          "add_compile_flags_if": 4,
+          "add_compile_flags_if_supported": 26,
+          "add_compile_options": 166,
+          "add_compiler_rt_object_libraries": 16,
+          "add_compiler_rt_resource_file": 3,
+          "add_compiler_rt_runtime": 24,
+          "add_compiler_rt_script": 1,
+          "add_compiler_rt_test": 5,
+          "add_custom_command": 100,
+          "add_custom_libcxx": 2,
+          "add_custom_target": 102,
+          "add_cxx_compile_flags_if_supported": 4,
+          "add_cxx_compiler_flag": 29,
+          "add_cxx_flags": 1,
+          "add_cxx_flags_if": 1,
+          "add_darling_bundle": 11,
+          "add_darling_executable": 406,
+          "add_darling_library": 105,
+          "add_darling_object_library": 80,
+          "add_darling_static_library": 94,
+          "add_db_executable": 12,
+          "add_default_target_arch": 7,
+          "add_definitions": 397,
+          "add_dependencies": 123,
+          "add_executable": 385,
+          "add_filecheck_test": 3,
+          "add_filter_test": 18,
+          "add_flags": 3,
+          "add_flags_if": 3,
+          "add_flex_bison_dependency": 1,
+          "add_framework": 217,
+          "add_gtest": 7,
+          "add_header_include": 8,
+          "add_lib_ios": 4,
+          "add_lib_ios_shim": 6,
+          "add_library": 208,
+          "add_library_flags": 6,
+          "add_library_flags_if": 6,
+          "add_link_flags": 5,
+          "add_link_flags_if": 4,
+          "add_link_flags_if_supported": 2,
+          "add_link_options": 5,
+          "add_lit_target": 3,
+          "add_lit_testsuite": 14,
+          "add_llvm_loadable_module": 1,
+          "add_macos_legacy_lib": 30,
+          "add_manual_pages": 2,
+          "add_module": 16,
+          "add_msan_tests_for_arch": 2,
+          "add_required_cxx_compiler_flag": 1,
+          "add_ruby_bundle": 35,
+          "add_ruby_bundle_enc": 53,
+          "add_ruby_digest_bundle": 4,
+          "add_sanitizer_common_lib": 3,
+          "add_sanitizer_rt_symbols": 9,
+          "add_sanitizer_rt_version_list": 1,
+          "add_sanitizer_tests_for_arch": 1,
+          "add_sasl_plugin": 8,
+          "add_security_library": 6,
+          "add_separated_framework": 3,
+          "add_shim": 1,
+          "add_shims": 2,
+          "add_sphinx_target": 2,
+          "add_subdirectory": 817,
+          "add_swift_library": 1,
+          "add_swift_target": 2,
+          "add_target_flags": 6,
+          "add_target_flags_if": 3,
+          "add_test": 326,
+          "add_tsan_unittest": 2,
+          "add_typelib": 1,
+          "add_ubsan_testsuite": 4,
+          "add_unit_gtest": 55,
+          "add_zsh_module": 35,
+          "append_flags_if": 3,
+          "append_flags_if_supported": 3,
+          "append_have_file_definition": 2,
+          "append_list_if": 63,
+          "append_no_rtti_flag": 10,
+          "append_path_sdk_subframework": 4,
+          "append_string_if": 5,
+          "asan_compile": 4,
+          "bison_target": 5,
+          "break": 3,
+          "build_pybundle": 14,
+          "check_c_compiler_flag": 14,
+          "check_c_source_compiles": 14,
+          "check_c_source_runs": 1,
+          "check_compile_definition": 1,
+          "check_cxx_compiler_flag": 72,
+          "check_function_exists": 41,
+          "check_include_file": 34,
+          "check_include_file_concat": 79,
+          "check_include_file_cxx": 2,
+          "check_include_files": 3,
+          "check_library_exists": 34,
+          "check_library_exists_concat": 11,
+          "check_linker_flag": 1,
+          "check_struct_has_member": 3,
+          "check_symbol_exists": 85,
+          "check_type_exists": 4,
+          "check_type_size": 16,
+          "clang_compile": 5,
+          "clang_compiler_add_cxx_check": 1,
+          "clang_link_shared": 1,
+          "clang_version_check": 2,
+          "cmake_dependent_option": 5,
+          "cmake_minimum_required": 143,
+          "cmake_parse_arguments": 46,
+          "cmake_policy": 98,
+          "cmake_pop_check_state": 5,
+          "cmake_push_check_state": 5,
+          "compile_benchmark_test": 13,
+          "compile_benchmark_test_with_main": 1,
+          "compile_gtest": 1,
+          "compile_output_test": 12,
+          "config_compiler_and_linker": 2,
+          "configure_file": 37,
+          "configure_lit_site_cfg": 23,
+          "configure_package_config_file": 2,
+          "continue": 3,
+          "count_true": 1,
+          "create_symlink": 16,
+          "curl_internal_test": 5,
+          "curl_nroff_check": 1,
+          "cxx_abi_list_identifier": 1,
+          "cxx_add_common_build_flags": 3,
+          "cxx_executable": 25,
+          "cxx_executable_with_flags": 6,
+          "cxx_feature_check": 5,
+          "cxx_library": 11,
+          "cxx_library_with_type": 2,
+          "cxx_link_system_libraries": 1,
+          "cxx_set_common_defines": 2,
+          "cxx_shared_library": 2,
+          "cxx_test": 39,
+          "cxx_test_with_flags": 9,
+          "darling_parse_components": 1,
+          "darling_parse_components_get_deps": 1,
+          "darwin_add_builtin_libraries": 1,
+          "darwin_add_builtin_library": 3,
+          "darwin_add_embedded_builtin_libraries": 1,
+          "darwin_add_eprintf_library": 1,
+          "darwin_filter_builtin_sources": 3,
+          "darwin_filter_host_archs": 5,
+          "darwin_find_excluded_builtins_list": 2,
+          "darwin_get_toolchain_supported_archs": 1,
+          "darwin_lipo_libs": 3,
+          "darwin_read_list_from_file": 8,
+          "darwin_test_archs": 4,
+          "define_linker_script": 1,
+          "define_property": 1,
+          "detect_target_arch": 1,
+          "dispatch_add_unit_test": 4,
+          "dispatch_set_linker": 1,
+          "dispatch_verify_windows_environment_variables": 3,
+          "dispatch_windows_arch_spelling": 1,
+          "dsym": 3,
+          "dtrace_usdt_probe": 1,
+          "easyinstall": 1,
+          "else": 517,
+          "elseif": 218,
+          "enable_language": 26,
+          "enable_testing": 11,
+          "endforeach": 279,
+          "endfunction": 145,
+          "endif": 2297,
+          "endmacro": 168,
+          "endwhile": 8,
+          "evaluate_detection_results": 2,
+          "exec_program": 11,
+          "execute_process": 45,
+          "expat_add_test": 2,
+          "expat_install": 9,
+          "export": 4,
+          "export_symbol": 9,
+          "export_symbols": 2,
+          "externalproject_add": 5,
+          "externalproject_add_step": 2,
+          "externalproject_get_property": 1,
+          "file": 212,
+          "filter_available_targets": 13,
+          "find_compiler_rt_dir": 2,
+          "find_compiler_rt_library": 5,
+          "find_darwin_sdk_dir": 3,
+          "find_file": 3,
+          "find_library": 83,
+          "find_package": 101,
+          "find_package_handle_standard_args": 26,
+          "find_path": 33,
+          "find_program": 28,
+          "finddsymutil": 1,
+          "fix_default_compiler_settings_": 1,
+          "flex_target": 1,
+          "foreach": 279,
+          "format_object_libs": 2,
+          "function": 145,
+          "generate_architecture": 1,
+          "generate_exp": 9,
+          "generate_list_h": 4,
+          "generate_sdk_framework": 179,
+          "generate_sdk_subframework": 22,
+          "get_bits_for_arch": 1,
+          "get_directory_property": 6,
+          "get_filename_component": 72,
+          "get_git_version": 1,
+          "get_host_triple": 1,
+          "get_path_preframework": 6,
+          "get_property": 7,
+          "get_sanitizer_common_lib_for_arch": 1,
+          "get_source_file_property": 1,
+          "get_swift_host_arch": 1,
+          "get_swift_host_os": 1,
+          "get_target_flags_for_arch": 12,
+          "get_target_property": 12,
+          "getcompilerinclude": 1,
+          "gettext_create_translations": 1,
+          "hash_certificate": 1,
+          "hexversion": 1,
+          "if": 2297,
+          "include": 341,
+          "include_directories": 446,
+          "include_regular_expression": 1,
+          "install": 989,
+          "install_lib": 27,
+          "install_man": 4,
+          "install_pyobjc_framework_egg_info": 2,
+          "install_pyobjc_sources": 10,
+          "install_pyobjc_wrapper": 43,
+          "installsymlink": 178,
+          "internal_generate_developer_framework": 2,
+          "internal_generate_framework_include": 2,
+          "libsystem_reexport": 1,
+          "link_directories": 4,
+          "link_libraries": 2,
+          "list": 783,
+          "list_union": 14,
+          "lzfse_add_compiler_flags": 4,
+          "macro": 168,
+          "macro_ensure_out_of_source_build": 1,
+          "make_directory": 2,
+          "make_fat": 117,
+          "mangle_compiler_flag": 3,
+          "mangle_name": 22,
+          "mark_as_advanced": 58,
+          "math": 5,
+          "message": 364,
+          "mig": 91,
+          "msan_compile": 3,
+          "msan_link_shared": 1,
+          "nomuldefs": 2,
+          "option": 150,
+          "pkg_check_modules": 20,
+          "pkg_search_module": 2,
+          "playstation_copy_shared_libraries": 2,
+          "pre_project_set_up_hermetic_build": 2,
+          "processorcount": 1,
+          "project": 725,
+          "py_test": 15,
+          "pyc": 25,
+          "pymodule": 54,
+          "pythonize_bool": 34,
+          "reexport": 54,
+          "reexport_symbols": 4,
+          "remove_definitions": 5,
+          "remove_sdk_framework": 180,
+          "return": 18,
+          "separate_arguments": 5,
+          "serialize_lit_param": 14,
+          "set": 4370,
+          "set_directory_properties": 3,
+          "set_package_properties": 1,
+          "set_property": 161,
+          "set_source_files_properties": 121,
+          "set_target_compile_flags": 7,
+          "set_target_link_flags": 4,
+          "set_target_properties": 348,
+          "set_tests_properties": 22,
+          "set_up_hermetic_build": 2,
+          "setup_abi_lib": 3,
+          "setup_executable": 1,
+          "setup_forwarded_headers": 2,
+          "setup_lcov_test_target_coverage": 1,
+          "setup_test": 2,
+          "should_enable_assembly_tests": 1,
+          "source_group": 7,
+          "sphinxbuild": 13,
+          "split_list": 14,
+          "string": 321,
+          "target_compile_definitions": 105,
+          "target_compile_features": 1,
+          "target_compile_options": 59,
+          "target_include_directories": 151,
+          "target_link_directories": 1,
+          "target_link_libraries": 863,
+          "target_link_options": 56,
+          "target_sources": 20,
+          "test_big_endian": 2,
+          "test_file_equality": 1,
+          "test_target_arch": 15,
+          "transform_makefile_inc": 8,
+          "translate_msvc_cflags": 1,
+          "try_compile": 8,
+          "try_run": 1,
+          "tsan_compile": 1,
+          "unset": 34,
+          "use_ld64": 3,
+          "versioner": 2,
+          "webkit_add_source_dependencies": 2,
+          "webkit_add_target_cxx_flags": 2,
+          "webkit_copy_files": 3,
+          "webkit_create_forwarding_headers": 2,
+          "webkit_executable": 7,
+          "webkit_executable_declare": 7,
+          "webkit_framework": 2,
+          "webkit_framework_declare": 2,
+          "webkit_framework_target": 2,
+          "webkit_include_config_files_if_exists": 5,
+          "webkit_wrap_executable": 7,
+          "webkit_wrap_sourcelist": 2,
+          "while": 8,
+          "wrap_elf": 22,
+          "write_basic_package_version_file": 3,
+          "xcproj": 1,
+          "xctest_discover_tests": 1
+        },
+        "declarations": 24676,
+        "files": 1144,
+        "parse_invalid_files": 15,
+        "repositories": 161
+      },
+      "coverage": {
+        "all_commands_parsed": false,
+        "handwritten_semantic_review_complete": false,
+        "selected_exact_inputs_verified": true
+      },
+      "input_role_review": {
+        "all_unparsed_inputs_role_classified": true,
+        "commands_executed": false,
+        "configuration_evaluated": false,
+        "counts_by_role": {
+          "C-header-configuration-template": 2,
+          "CMake-package-configuration-template": 2,
+          "malformed-commented-install-body": 7,
+          "prose-build-documentation": 4
+        },
+        "path": "tools/cmake-input-role-review.json",
+        "reachability_resolved": false,
+        "remaining_gates": [
+          "All conditions, variable expansions, generated contents, dynamic include/subdirectory paths, tool side effects, supported configurations, architecture and installation semantics require separate evidence.",
+          "No default graph omission is used to infer that an input or optional scope is unreachable.",
+          "The declaration inventory remains lexically invalid for the original 15 raw inputs; this role review does not rewrite, repair or execute them.",
+          "Runtime/resources ownership and correctness/performance gates remain unfinished and inactive."
+        ],
+        "reviewed_files": 15,
+        "sha256": "64458a578956e7422c7afa5967968ec0527bd94352fe098afc3e425ac49dbbd6"
+      },
+      "literal_target_names": 1107,
+      "literal_targets_absent_from_captured_graph": [
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 163,
+              "path": "src/external/compiler-rt/lib/asan/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "AsanBenchmarks"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 159,
+              "path": "src/external/compiler-rt/lib/asan/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "AsanDynamicUnitTests"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 279,
+              "path": "src/external/compiler-rt/lib/asan/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "AsanNoinstTest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 293,
+              "path": "src/external/compiler-rt/lib/asan/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "AsanTest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 155,
+              "path": "src/external/compiler-rt/lib/asan/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "AsanUnitTests"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 1,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/Sources/BlocksRuntime/CMakeLists.txt"
+            }
+          ],
+          "name": "BlocksRuntime"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 11,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/Sources/BlocksRuntime/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 40,
+              "path": "src/external/libdispatch/cmake/modules/FindBlocksRuntime.cmake"
+            }
+          ],
+          "name": "BlocksRuntime::BlocksRuntime"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_framework",
+              "line": 416,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/CoreFoundation/CMakeLists.txt"
+            }
+          ],
+          "name": "CFURLSessionInterface"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_framework",
+              "line": 439,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/CoreFoundation/CMakeLists.txt"
+            }
+          ],
+          "name": "CFXMLInterface"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 7,
+              "path": "src/external/cocotron/examples/CGShadingCreate/CMakeLists.txt"
+            }
+          ],
+          "name": "CGShadingCreate"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 65,
+              "path": "src/external/darling-dmg/CMakeLists.txt"
+            }
+          ],
+          "name": "CacheTest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 112,
+              "path": "src/external/compiler-rt/cmake/Modules/CompilerRTCompile.cmake"
+            }
+          ],
+          "name": "CompilerRTUnitTestCheckCxx"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_framework",
+              "line": 118,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/CoreFoundation/CMakeLists.txt"
+            }
+          ],
+          "name": "CoreFoundation"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 458,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/CoreFoundation/CMakeLists.txt"
+            }
+          ],
+          "name": "CoreFoundationResources"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 469,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/CoreFoundation/CMakeLists.txt"
+            }
+          ],
+          "name": "CoreFoundationWindowsTimeZonesPLists"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 109,
+              "path": "src/external/libdispatch/src/CMakeLists.txt"
+            }
+          ],
+          "name": "DispatchStubs"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 11,
+              "path": "src/external/compiler-rt/test/CMakeLists.txt"
+            }
+          ],
+          "name": "FileCheck"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 1,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/Sources/Foundation/CMakeLists.txt"
+            }
+          ],
+          "name": "Foundation"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 20,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/Sources/FoundationNetworking/CMakeLists.txt"
+            }
+          ],
+          "name": "FoundationNetworking"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 1,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/Sources/FoundationXML/CMakeLists.txt"
+            }
+          ],
+          "name": "FoundationXML"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_framework",
+              "line": 105,
+              "path": "src/external/glut/CMakeLists.txt"
+            }
+          ],
+          "name": "GLUT"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 1,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/Tests/Tools/GenerateTestFixtures/CMakeLists.txt"
+            }
+          ],
+          "name": "GenerateTestFixtures"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 107,
+              "path": "src/external/compiler-rt/lib/tsan/CMakeLists.txt"
+            }
+          ],
+          "name": "GotsanRuntimeCheck"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 48,
+              "path": "src/external/JavaScriptCore/GLib.cmake"
+            }
+          ],
+          "name": "JSC-fake-api-headers"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_framework",
+              "line": 2221,
+              "path": "src/external/JavaScriptCore/CMakeLists.txt"
+            }
+          ],
+          "name": "JavaScriptCore"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_framework",
+              "line": 3,
+              "path": "src/external/security/KeychainCircle/CMakeLists.txt"
+            }
+          ],
+          "name": "KeychainCircle"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 51,
+              "path": "src/external/libmalloc/tests/MallocBenchTest/MALLOC_BENCH/MallocBench/CMakeLists.txt"
+            }
+          ],
+          "name": "MallocBench"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 64,
+              "path": "src/external/WebCore/PlatformWinCairo.cmake"
+            }
+          ],
+          "name": "MediaFoundation"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 88,
+              "path": "src/external/metal/CMakeLists.txt"
+            }
+          ],
+          "name": "Metal_private"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 86,
+              "path": "src/external/compiler-rt/lib/msan/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "MsanUnitTests"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 7,
+              "path": "src/external/cocotron/examples/NSOpenGLView/CMakeLists.txt"
+            }
+          ],
+          "name": "NSOpenGLView"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 84,
+              "path": "src/external/xcbuild/Libraries/plist/CMakeLists.txt"
+            }
+          ],
+          "name": "PlistBuddy_xcbuild"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 13,
+              "path": "src/external/libcxx/utils/ci/runtimes/CMakeLists.txt"
+            }
+          ],
+          "name": "Python3::Interpreter"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 29,
+              "path": "src/external/libdispatch/cmake/modules/FindLibRT.cmake"
+            }
+          ],
+          "name": "RT::rt"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 18,
+              "path": "src/buildtools/Rez/ResourceFiles/CMakeLists.txt"
+            }
+          ],
+          "name": "ResourceFiles"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 34,
+              "path": "src/buildtools/Rez/CMakeLists.txt"
+            }
+          ],
+          "name": "Rez"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 1,
+              "path": "src/external/security/OSX/sec/SOSCircle/Tool/CMakeLists.txt"
+            }
+          ],
+          "name": "SOSCircleTool"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 88,
+              "path": "src/external/compiler-rt/cmake/Modules/SanitizerUtils.cmake"
+            }
+          ],
+          "name": "SanitizerLintCheck"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 195,
+              "path": "src/external/compiler-rt/lib/sanitizer_common/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "SanitizerTest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 117,
+              "path": "src/external/compiler-rt/lib/sanitizer_common/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "SanitizerUnitTests"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 18,
+              "path": "src/external/security/OSX/sec/Security/Tool/CMakeLists.txt"
+            }
+          ],
+          "name": "SecSecurityTool"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 1,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/Tests/Foundation/CMakeLists.txt"
+            }
+          ],
+          "name": "TestFoundation"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 18,
+              "path": "src/external/TextEdit/CMakeLists.txt"
+            }
+          ],
+          "name": "TextEdit"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 7,
+              "path": "src/external/cocotron/examples/TextEditor/CMakeLists.txt"
+            }
+          ],
+          "name": "TextEditor"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 3,
+              "path": "src/external/compiler-rt/lib/tsan/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "TsanUnitTests"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/security/OSX/libsecurity_keychain/xpc/CMakeLists.txt"
+            }
+          ],
+          "name": "XPCKeychainSandboxCheck"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/security/OSX/libsecurity_keychain/xpc-tsa/CMakeLists.txt"
+            }
+          ],
+          "name": "XPCTimeStampingService"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/acdriver/CMakeLists.txt"
+            }
+          ],
+          "name": "acdriver"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 49,
+              "path": "src/external/xcbuild/Libraries/acdriver/CMakeLists.txt"
+            }
+          ],
+          "name": "actool"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 27,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 27,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 17,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "aeadtest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 21,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 32,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 32,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 22,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "aes_wrap"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 28,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 39,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 39,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 29,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "arc4randomforktest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 232,
+              "path": "src/external/libarchive/libarchive/libarchive/CMakeLists.txt"
+            }
+          ],
+          "name": "archive_static"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 107,
+              "path": "src/external/compiler-rt/lib/asan/CMakeLists.txt"
+            }
+          ],
+          "name": "asan"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 12,
+              "path": "src/external/shell_cmds/sh/CMakeLists.txt"
+            }
+          ],
+          "name": "ash"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 35,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "asn1evp"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 34,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 45,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 45,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 40,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "asn1test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 50,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 50,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 45,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "asn1time"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/security/OSX/authd/CMakeLists.txt"
+            }
+          ],
+          "name": "authd"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 39,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 55,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 55,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 50,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "base64test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 20,
+              "path": "src/external/libcxx/utils/google-benchmark/src/CMakeLists.txt"
+            }
+          ],
+          "name": "benchmark"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 21,
+              "path": "src/external/libcxx/utils/google-benchmark/src/CMakeLists.txt"
+            }
+          ],
+          "name": "benchmark::benchmark"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 64,
+              "path": "src/external/libcxx/utils/google-benchmark/src/CMakeLists.txt"
+            }
+          ],
+          "name": "benchmark::benchmark_main"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 63,
+              "path": "src/external/libcxx/utils/google-benchmark/src/CMakeLists.txt"
+            }
+          ],
+          "name": "benchmark_main"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 44,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 60,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 60,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 55,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "bftest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 67,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 67,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 62,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "biotest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 51,
+              "path": "src/external/libmalloc/tests/MallocBenchTest/BMALLOC/bmalloc/CMakeLists.txt"
+            }
+          ],
+          "name": "bmalloc"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 68,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "bnaddsub"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 49,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 73,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 73,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 74,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "bntest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/libbom/CMakeLists.txt"
+            }
+          ],
+          "name": "bom"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 23,
+              "path": "src/external/libarchive/libarchive/cat/CMakeLists.txt"
+            }
+          ],
+          "name": "bsdcat"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 31,
+              "path": "src/external/libarchive/libarchive/cat/test/CMakeLists.txt"
+            }
+          ],
+          "name": "bsdcat_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 32,
+              "path": "src/external/libarchive/libarchive/cpio/CMakeLists.txt"
+            }
+          ],
+          "name": "bsdcpio"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 64,
+              "path": "src/external/libarchive/libarchive/cpio/test/CMakeLists.txt"
+            }
+          ],
+          "name": "bsdcpio_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 76,
+              "path": "src/external/libarchive/libarchive/tar/test/CMakeLists.txt"
+            }
+          ],
+          "name": "bsdtar_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/builtin/CMakeLists.txt"
+            }
+          ],
+          "name": "builtin"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 56,
+              "path": "src/external/xcbuild/Libraries/builtin/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/builtin/Tools/CMakeLists.txt"
+            }
+          ],
+          "name": "builtin-copy"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 60,
+              "path": "src/external/xcbuild/Libraries/builtin/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 13,
+              "path": "src/external/xcbuild/Libraries/builtin/Tools/CMakeLists.txt"
+            }
+          ],
+          "name": "builtin-copyPlist"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 64,
+              "path": "src/external/xcbuild/Libraries/builtin/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 16,
+              "path": "src/external/xcbuild/Libraries/builtin/Tools/CMakeLists.txt"
+            }
+          ],
+          "name": "builtin-copyStrings"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 68,
+              "path": "src/external/xcbuild/Libraries/builtin/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 19,
+              "path": "src/external/xcbuild/Libraries/builtin/Tools/CMakeLists.txt"
+            }
+          ],
+          "name": "builtin-copyTiff"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 88,
+              "path": "src/external/xcbuild/Libraries/builtin/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 34,
+              "path": "src/external/xcbuild/Libraries/builtin/Tools/CMakeLists.txt"
+            }
+          ],
+          "name": "builtin-embeddedBinaryValidationUtility"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 72,
+              "path": "src/external/xcbuild/Libraries/builtin/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 22,
+              "path": "src/external/xcbuild/Libraries/builtin/Tools/CMakeLists.txt"
+            }
+          ],
+          "name": "builtin-infoPlistUtility"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 76,
+              "path": "src/external/xcbuild/Libraries/builtin/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 25,
+              "path": "src/external/xcbuild/Libraries/builtin/Tools/CMakeLists.txt"
+            }
+          ],
+          "name": "builtin-lsRegisterURL"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 80,
+              "path": "src/external/xcbuild/Libraries/builtin/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 28,
+              "path": "src/external/xcbuild/Libraries/builtin/Tools/CMakeLists.txt"
+            }
+          ],
+          "name": "builtin-productPackagingUtility"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 84,
+              "path": "src/external/xcbuild/Libraries/builtin/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 31,
+              "path": "src/external/xcbuild/Libraries/builtin/Tools/CMakeLists.txt"
+            }
+          ],
+          "name": "builtin-validationUtility"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 416,
+              "path": "src/external/compiler-rt/lib/builtins/CMakeLists.txt"
+            }
+          ],
+          "name": "builtins"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 54,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 79,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 79,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 83,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "bytestringtest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/libcar/CMakeLists.txt"
+            }
+          ],
+          "name": "car"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 59,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 84,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 84,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 89,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "casttest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 1,
+              "path": "src/external/compiler-rt/lib/cfi/CMakeLists.txt"
+            }
+          ],
+          "name": "cfi"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/network_cmds/cfilutil/CMakeLists.txt"
+            }
+          ],
+          "name": "cfilutil"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 64,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 89,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 89,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 94,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "chachatest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 56,
+              "path": "src/external/libcxx/lib/abi/CMakeLists.txt"
+            }
+          ],
+          "name": "check-cxx-abilist"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/system_cmds/chkpasswd.tproj/CMakeLists.txt"
+            }
+          ],
+          "name": "chkpasswd"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 69,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 94,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 94,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 100,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "cipher_list"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 74,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 99,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 99,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 106,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "cipherstest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/security/keychain/ckksctl/CMakeLists.txt"
+            }
+          ],
+          "name": "ckksctl"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 233,
+              "path": "src/external/compiler-rt/cmake/Modules/CompilerRTDarwinUtils.cmake"
+            }
+          ],
+          "name": "clang_rt.eprintf"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 25,
+              "path": "src/external/nghttp2/examples/CMakeLists.txt"
+            }
+          ],
+          "name": "client"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 104,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 104,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 111,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "clienttest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 44,
+              "path": "src/external/compiler-rt/CMakeLists.txt"
+            }
+          ],
+          "name": "compiler-rt"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 26,
+              "path": "src/external/compiler-rt/include/CMakeLists.txt"
+            }
+          ],
+          "name": "compiler-rt-headers"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 116,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "configtest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 56,
+              "path": "src/external/libarchive/libarchive/build/cmake/LibarchiveCodeCoverage.cmake"
+            },
+            {
+              "command": "add_custom_target",
+              "line": 252,
+              "path": "src/external/libcxx/utils/google-benchmark/test/CMakeLists.txt"
+            }
+          ],
+          "name": "coverage"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 21,
+              "path": "src/crash/CMakeLists.txt"
+            }
+          ],
+          "name": "crash"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 16,
+              "path": "src/libcrashhandler/CMakeLists.txt"
+            }
+          ],
+          "name": "crashhandler"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 643,
+              "path": "src/external/libressl-2.2.9/crypto/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 650,
+              "path": "src/external/libressl-2.2.9/crypto/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 814,
+              "path": "src/external/libressl-2.5.5/crypto/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 828,
+              "path": "src/external/libressl-2.5.5/crypto/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 815,
+              "path": "src/external/libressl-2.6.5/crypto/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 831,
+              "path": "src/external/libressl-2.6.5/crypto/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 802,
+              "path": "src/external/libressl-2.8.3/crypto/CMakeLists.txt"
+            }
+          ],
+          "name": "crypto"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 642,
+              "path": "src/external/libressl-2.2.9/crypto/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 812,
+              "path": "src/external/libressl-2.5.5/crypto/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 813,
+              "path": "src/external/libressl-2.6.5/crypto/CMakeLists.txt"
+            }
+          ],
+          "name": "crypto-objects"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 644,
+              "path": "src/external/libressl-2.2.9/crypto/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 815,
+              "path": "src/external/libressl-2.5.5/crypto/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 816,
+              "path": "src/external/libressl-2.6.5/crypto/CMakeLists.txt"
+            }
+          ],
+          "name": "crypto-shared"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 79,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 109,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 109,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 121,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "cts128test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 3,
+              "path": "src/external/libcxxabi/fuzz/CMakeLists.txt"
+            }
+          ],
+          "name": "cxa_demangle_fuzzer"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 73,
+              "path": "src/external/libcxx/benchmarks/CMakeLists.txt"
+            }
+          ],
+          "name": "cxx-benchmarks"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 406,
+              "path": "src/external/libcxx/include/CMakeLists.txt"
+            }
+          ],
+          "name": "cxx-headers"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 138,
+              "path": "src/external/libcxx/test/CMakeLists.txt"
+            }
+          ],
+          "name": "cxx-test-depends"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 81,
+              "path": "src/external/libcxx/cmake/Modules/HandleLibCXXABI.cmake"
+            }
+          ],
+          "name": "cxx_abi_headers"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 339,
+              "path": "src/external/libcxx/src/CMakeLists.txt"
+            }
+          ],
+          "name": "cxx_experimental"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 360,
+              "path": "src/external/libcxx/src/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 362,
+              "path": "src/external/libcxx/src/CMakeLists.txt"
+            }
+          ],
+          "name": "cxx_external_threads"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 195,
+              "path": "src/external/libcxx/src/CMakeLists.txt"
+            }
+          ],
+          "name": "cxx_shared"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 202,
+              "path": "src/external/libcxxabi/src/CMakeLists.txt"
+            }
+          ],
+          "name": "cxxabi-reexports"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 178,
+              "path": "src/external/libcxxabi/src/CMakeLists.txt"
+            }
+          ],
+          "name": "cxxabi_shared"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 103,
+              "path": "src/external/darling-dmg/CMakeLists.txt"
+            }
+          ],
+          "name": "darling-dmg"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 34,
+              "path": "src/external/nghttp2/examples/CMakeLists.txt"
+            }
+          ],
+          "name": "deflate"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 212,
+              "path": "src/external/nghttp2/src/CMakeLists.txt"
+            }
+          ],
+          "name": "deflatehd"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/dependency/CMakeLists.txt"
+            }
+          ],
+          "name": "dependency"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 22,
+              "path": "src/external/xcbuild/Libraries/dependency/CMakeLists.txt"
+            }
+          ],
+          "name": "dependency-info-tool"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 84,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 114,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 114,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 126,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "destest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 14,
+              "path": "src/external/compiler-rt/lib/dfsan/CMakeLists.txt"
+            }
+          ],
+          "name": "dfsan"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 35,
+              "path": "src/external/compiler-rt/lib/dfsan/CMakeLists.txt"
+            }
+          ],
+          "name": "dfsan_abilist"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 437,
+              "path": "src/external/pcre/pcre/CMakeLists.txt"
+            }
+          ],
+          "name": "dftables"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 89,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 119,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 119,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 131,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "dhtest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 6,
+              "path": "src/external/libdispatch/src/CMakeLists.txt"
+            }
+          ],
+          "name": "dispatch"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 16,
+              "path": "src/external/libdispatch/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "dispatch_bsdtestharness"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 70,
+              "path": "src/external/darling-dmg/CMakeLists.txt"
+            }
+          ],
+          "name": "dmg"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 94,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 124,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 124,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 136,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "dsatest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 23,
+              "path": "src/external/darlingserver/tools/CMakeLists.txt"
+            }
+          ],
+          "name": "dserverdbg"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 9,
+              "path": "src/external/darlingserver/tools/CMakeLists.txt"
+            }
+          ],
+          "name": "dserverdbg_dserver_rpc"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 38,
+              "path": "src/external/xcbuild/Libraries/libbom/CMakeLists.txt"
+            }
+          ],
+          "name": "dump_bom"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 32,
+              "path": "src/external/xcbuild/Libraries/libcar/CMakeLists.txt"
+            }
+          ],
+          "name": "dump_car"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 26,
+              "path": "src/external/xcbuild/Libraries/dependency/CMakeLists.txt"
+            }
+          ],
+          "name": "dump_dependency"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 73,
+              "path": "src/external/xcbuild/Libraries/pbxbuild/CMakeLists.txt"
+            }
+          ],
+          "name": "dump_hmap"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 71,
+              "path": "src/external/xcbuild/Libraries/xcassets/CMakeLists.txt"
+            }
+          ],
+          "name": "dump_xcassets"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 26,
+              "path": "src/external/xcbuild/Libraries/pbxsetting/CMakeLists.txt"
+            }
+          ],
+          "name": "dump_xcconfig"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 49,
+              "path": "src/external/xcbuild/Libraries/pbxproj/CMakeLists.txt"
+            }
+          ],
+          "name": "dump_xcodeproj"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 35,
+              "path": "src/external/xcbuild/Libraries/pbxspec/CMakeLists.txt"
+            }
+          ],
+          "name": "dump_xcspec"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 21,
+              "path": "src/external/xcbuild/Libraries/xcworkspace/CMakeLists.txt"
+            }
+          ],
+          "name": "dump_xcworkspace"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 99,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 129,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 129,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 141,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "ecdhtest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 104,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 134,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 134,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 146,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "ecdsatest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/network_cmds/ecnprobe/CMakeLists.txt"
+            }
+          ],
+          "name": "ecnprobe"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 109,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 139,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 139,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 151,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "ectest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 327,
+              "path": "src/external/expat/expat/CMakeLists.txt"
+            }
+          ],
+          "name": "elements"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 114,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 144,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 144,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 156,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "enginetest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 149,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 149,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 161,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "evptest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 233,
+              "path": "src/external/zlib/zlib/CMakeLists.txt"
+            }
+          ],
+          "name": "example"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 241,
+              "path": "src/external/zlib/zlib/CMakeLists.txt"
+            }
+          ],
+          "name": "example64"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 126,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 157,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 159,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 157,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 159,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 169,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 171,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "explicit_bzero"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 135,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 166,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 166,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 179,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "exptest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/ext/CMakeLists.txt"
+            }
+          ],
+          "name": "ext"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 43,
+              "path": "src/external/nghttp2/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "failmalloc"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/network_cmds/frame_delay/CMakeLists.txt"
+            }
+          ],
+          "name": "frame_delay"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 172,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 187,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "freenull"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/system_cmds/fs_usage.tproj/CMakeLists.txt"
+            }
+          ],
+          "name": "fs_usage"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 400,
+              "path": "src/external/expat/expat/CMakeLists.txt"
+            }
+          ],
+          "name": "fuzzpat"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 140,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 172,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 177,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 192,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "gcm128test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 12,
+              "path": "src/external/curl/curl/docs/cmdline-opts/CMakeLists.txt"
+            }
+          ],
+          "name": "generate-curl.1"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 67,
+              "path": "src/external/libcxx/lib/abi/CMakeLists.txt"
+            }
+          ],
+          "name": "generate-cxx-abilist"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 404,
+              "path": "src/external/libcxx/include/CMakeLists.txt"
+            }
+          ],
+          "name": "generate-cxx-headers"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 17,
+              "path": "src/external/corecrypto/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "generate_test_data"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_library",
+              "line": 8,
+              "path": "src/libgmalloc/CMakeLists.txt"
+            }
+          ],
+          "name": "gmalloc"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 127,
+              "path": "src/external/gnutar/gnutar/CMakeLists.txt"
+            }
+          ],
+          "name": "gnutar"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 145,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 177,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 182,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 197,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "gost2814789t"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/graphics/CMakeLists.txt"
+            }
+          ],
+          "name": "graphics"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 194,
+              "path": "src/external/nghttp2/src/CMakeLists.txt"
+            }
+          ],
+          "name": "h2load"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 137,
+              "path": "src/external/Heimdal/darling/script/HeimdalCompilers/CMakeLists.txt"
+            }
+          ],
+          "name": "heimdal-asn1_compile"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 95,
+              "path": "src/external/Heimdal/darling/script/HeimdalCompilers/CMakeLists.txt"
+            }
+          ],
+          "name": "heimdal-compile_et"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 117,
+              "path": "src/external/Heimdal/darling/script/HeimdalCompilers/CMakeLists.txt"
+            }
+          ],
+          "name": "heimdal-slc"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 187,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 202,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "hkdf_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 150,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 182,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 192,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 207,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "hmactest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 52,
+              "path": "src/external/curl/curl/docs/libcurl/CMakeLists.txt"
+            }
+          ],
+          "name": "html"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 155,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 187,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 197,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 212,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "ideatest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 160,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 192,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 202,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 217,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "igetest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 8,
+              "path": "src/external/metal/deps/indium/test/basic-compute/CMakeLists.txt"
+            }
+          ],
+          "name": "indium-test-basic-compute"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 8,
+              "path": "src/external/metal/deps/indium/test/cube/CMakeLists.txt"
+            }
+          ],
+          "name": "indium-test-cube"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 16,
+              "path": "src/external/metal/deps/indium/test/cubemap/CMakeLists.txt"
+            }
+          ],
+          "name": "indium-test-cubemap"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 8,
+              "path": "src/external/metal/deps/indium/test/lighting/CMakeLists.txt"
+            }
+          ],
+          "name": "indium-test-lighting"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 8,
+              "path": "src/external/metal/deps/indium/test/sampler/CMakeLists.txt"
+            }
+          ],
+          "name": "indium-test-sampler"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 16,
+              "path": "src/external/metal/deps/indium/test/texturing/CMakeLists.txt"
+            }
+          ],
+          "name": "indium-test-texturing"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 8,
+              "path": "src/external/metal/deps/indium/test/triangle/CMakeLists.txt"
+            }
+          ],
+          "name": "indium-test-triangle"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 53,
+              "path": "src/external/metal/deps/indium/CMakeLists.txt"
+            }
+          ],
+          "name": "indium_kit"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 57,
+              "path": "src/external/metal/deps/indium/CMakeLists.txt"
+            }
+          ],
+          "name": "indium_kit_private"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 50,
+              "path": "src/external/metal/deps/indium/CMakeLists.txt"
+            }
+          ],
+          "name": "indium_private"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 211,
+              "path": "src/external/nghttp2/src/CMakeLists.txt"
+            }
+          ],
+          "name": "inflatehd"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 417,
+              "path": "src/external/libcxx/src/CMakeLists.txt"
+            }
+          ],
+          "name": "install-cxx"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 434,
+              "path": "src/external/libcxx/include/CMakeLists.txt"
+            }
+          ],
+          "name": "install-cxx-headers"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 440,
+              "path": "src/external/libcxx/include/CMakeLists.txt"
+            }
+          ],
+          "name": "install-cxx-headers-stripped"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 425,
+              "path": "src/external/libcxx/src/CMakeLists.txt"
+            }
+          ],
+          "name": "install-cxx-stripped"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 301,
+              "path": "src/external/libcxxabi/src/CMakeLists.txt"
+            }
+          ],
+          "name": "install-cxxabi"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 306,
+              "path": "src/external/libcxxabi/src/CMakeLists.txt"
+            }
+          ],
+          "name": "install-cxxabi-stripped"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/network_cmds/ip6addrctl.tproj/CMakeLists.txt"
+            }
+          ],
+          "name": "ip6addrctl"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 43,
+              "path": "src/external/nghttp2/integration-tests/CMakeLists.txt"
+            }
+          ],
+          "name": "it"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 21,
+              "path": "src/external/nghttp2/integration-tests/CMakeLists.txt"
+            }
+          ],
+          "name": "itprep"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 2269,
+              "path": "src/external/JavaScriptCore/CMakeLists.txt"
+            }
+          ],
+          "name": "jsc"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 223,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "keypairtest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 331,
+              "path": "src/external/nghttp2/doc/CMakeLists.txt"
+            }
+          ],
+          "name": "latexpdf"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 281,
+              "path": "src/external/libarchive/libarchive/libarchive/test/CMakeLists.txt"
+            }
+          ],
+          "name": "libarchive_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 10,
+              "path": "src/external/libcxx/utils/CMakeLists.txt"
+            }
+          ],
+          "name": "libcxx-generate-feature-test-macros"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 18,
+              "path": "src/external/libcxx/utils/CMakeLists.txt"
+            }
+          ],
+          "name": "libcxx-generate-files"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 14,
+              "path": "src/external/libcxx/utils/CMakeLists.txt"
+            }
+          ],
+          "name": "libcxx-generate-private-header-tests"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 6,
+              "path": "src/external/libcxx/utils/CMakeLists.txt"
+            }
+          ],
+          "name": "libcxx-generate-public-header-tests"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 2,
+              "path": "src/external/libcxx/utils/CMakeLists.txt"
+            }
+          ],
+          "name": "libcxx-generate-public-header-transitive-inclusion-tests"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 168,
+              "path": "src/external/libcxx/test/CMakeLists.txt"
+            }
+          ],
+          "name": "libcxx_test_objects"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 28,
+              "path": "src/external/nghttp2/examples/CMakeLists.txt"
+            }
+          ],
+          "name": "libevent-client"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 31,
+              "path": "src/external/nghttp2/examples/CMakeLists.txt"
+            }
+          ],
+          "name": "libevent-server"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 58,
+              "path": "src/external/libkqueue/test/CMakeLists.txt"
+            }
+          ],
+          "name": "libkqueue-test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 1,
+              "path": "src/external/libxpc/test/bundled-service/CMakeLists.txt"
+            }
+          ],
+          "name": "libxpc_test_bundled_service"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 2,
+              "path": "src/external/libxpc/test/launchd-service/CMakeLists.txt"
+            }
+          ],
+          "name": "libxpc_test_client"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/libxpc/test/launchd-service/CMakeLists.txt"
+            }
+          ],
+          "name": "libxpc_test_pipe_client"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 1,
+              "path": "src/external/libxpc/test/launchd-service/CMakeLists.txt"
+            }
+          ],
+          "name": "libxpc_test_server"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 95,
+              "path": "src/external/xcbuild/Libraries/plist/CMakeLists.txt"
+            }
+          ],
+          "name": "linenoise"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 7,
+              "path": "src/external/nghttp2/third-party/CMakeLists.txt"
+            }
+          ],
+          "name": "llhttp"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 19,
+              "path": "src/external/compiler-rt/lib/lsan/CMakeLists.txt"
+            }
+          ],
+          "name": "lsan"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 27,
+              "path": "src/external/xcbuild/Libraries/libbom/CMakeLists.txt"
+            }
+          ],
+          "name": "lsbom"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/system_cmds/lskq.tproj/CMakeLists.txt"
+            }
+          ],
+          "name": "lskq"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 67,
+              "path": "src/external/mDNSResponder/CMakeLists.txt"
+            }
+          ],
+          "name": "mDNSResponder"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 171,
+              "path": "src/external/mDNSResponder/CMakeLists.txt"
+            }
+          ],
+          "name": "mDNSResponderHelper"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 26,
+              "path": "src/external/nghttp2/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "main"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_library",
+              "line": 44,
+              "path": "src/external/bmalloc/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 56,
+              "path": "src/external/libmalloc/tests/MallocBenchTest/BMALLOC/bmalloc/CMakeLists.txt"
+            }
+          ],
+          "name": "mbmalloc"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 165,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 197,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 207,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 232,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "md4test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 170,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 202,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 212,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 237,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "md5test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 237,
+              "path": "src/external/zlib/zlib/CMakeLists.txt"
+            }
+          ],
+          "name": "minigzip"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 246,
+              "path": "src/external/zlib/zlib/CMakeLists.txt"
+            }
+          ],
+          "name": "minigzip64"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/network_cmds/mnc.tproj/CMakeLists.txt"
+            }
+          ],
+          "name": "mnc"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 175,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 207,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 217,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 242,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "mont"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/network_cmds/mptcp_client/CMakeLists.txt"
+            }
+          ],
+          "name": "mptcp_client"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 56,
+              "path": "src/external/nghttp2/third-party/CMakeLists.txt"
+            }
+          ],
+          "name": "mruby"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 70,
+              "path": "src/external/nghttp2/third-party/CMakeLists.txt"
+            }
+          ],
+          "name": "mruby-lib"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 28,
+              "path": "src/external/compiler-rt/lib/msan/CMakeLists.txt"
+            }
+          ],
+          "name": "msan"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/network_cmds/mtest.tproj/CMakeLists.txt"
+            }
+          ],
+          "name": "mtest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 69,
+              "path": "src/external/metal/deps/indium/CMakeLists.txt"
+            }
+          ],
+          "name": "mtl2spv"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 26,
+              "path": "src/external/nghttp2/third-party/CMakeLists.txt"
+            }
+          ],
+          "name": "neverbleed"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 183,
+              "path": "src/external/nghttp2/src/CMakeLists.txt"
+            }
+          ],
+          "name": "nghttp"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 248,
+              "path": "src/external/nghttp2/src/CMakeLists.txt"
+            }
+          ],
+          "name": "nghttp2_asio"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 61,
+              "path": "src/external/nghttp2/lib/CMakeLists.txt"
+            }
+          ],
+          "name": "nghttp2_static"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 186,
+              "path": "src/external/nghttp2/src/CMakeLists.txt"
+            }
+          ],
+          "name": "nghttpd"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 189,
+              "path": "src/external/nghttp2/src/CMakeLists.txt"
+            }
+          ],
+          "name": "nghttpx"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 162,
+              "path": "src/external/nghttp2/src/CMakeLists.txt"
+            }
+          ],
+          "name": "nghttpx-unittest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 122,
+              "path": "src/external/nghttp2/src/CMakeLists.txt"
+            }
+          ],
+          "name": "nghttpx_static"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/ninja/CMakeLists.txt"
+            }
+          ],
+          "name": "ninja"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 8,
+              "path": "src/external/foundation/test/nsxpc-launchd-service/CMakeLists.txt"
+            }
+          ],
+          "name": "nsxpc_test_client"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 7,
+              "path": "src/external/foundation/test/nsxpc-launchd-service/CMakeLists.txt"
+            }
+          ],
+          "name": "nsxpc_test_launchd_service"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 260,
+              "path": "src/external/cctools-port/cctools/libobjc2/CMakeLists.txt"
+            }
+          ],
+          "name": "objc-static"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 210,
+              "path": "src/external/cctools-port/cctools/libobjc2/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 226,
+              "path": "src/external/cctools-port/cctools/libobjc2/CMakeLists.txt"
+            }
+          ],
+          "name": "objcxx"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 213,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 223,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 248,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "ocsp_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 36,
+              "path": "src/external/libressl-2.5.5/apps/ocspcheck/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 36,
+              "path": "src/external/libressl-2.6.5/apps/ocspcheck/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 22,
+              "path": "src/external/libressl-2.8.3/apps/ocspcheck/CMakeLists.txt"
+            }
+          ],
+          "name": "ocspcheck"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 180,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 223,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 233,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 258,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "optionstest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 9,
+              "path": "src/external/curl/curl/docs/libcurl/opts/CMakeLists.txt"
+            }
+          ],
+          "name": "opts-html"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 10,
+              "path": "src/external/curl/curl/docs/libcurl/opts/CMakeLists.txt"
+            }
+          ],
+          "name": "opts-pdf"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/security/keychain/otctl/CMakeLists.txt"
+            }
+          ],
+          "name": "otctl"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 331,
+              "path": "src/external/expat/expat/CMakeLists.txt"
+            }
+          ],
+          "name": "outline"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 37,
+              "path": "src/external/libcxx/utils/google-benchmark/test/CMakeLists.txt"
+            }
+          ],
+          "name": "output_test_helper"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/system_cmds/passwd.tproj/CMakeLists.txt"
+            }
+          ],
+          "name": "passwd"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 185,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 228,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 238,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 263,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "pbkdf2"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/pbxbuild/CMakeLists.txt"
+            }
+          ],
+          "name": "pbxbuild"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/pbxproj/CMakeLists.txt"
+            }
+          ],
+          "name": "pbxproj"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/pbxsetting/CMakeLists.txt"
+            }
+          ],
+          "name": "pbxsetting"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/pbxspec/CMakeLists.txt"
+            }
+          ],
+          "name": "pbxspec"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 647,
+              "path": "src/external/pcre/pcre/CMakeLists.txt"
+            }
+          ],
+          "name": "pcre16"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 667,
+              "path": "src/external/pcre/pcre/CMakeLists.txt"
+            }
+          ],
+          "name": "pcre32"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 754,
+              "path": "src/external/pcre/pcre/CMakeLists.txt"
+            }
+          ],
+          "name": "pcre_jit_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 779,
+              "path": "src/external/pcre/pcre/CMakeLists.txt"
+            }
+          ],
+          "name": "pcre_scanner_unittest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 783,
+              "path": "src/external/pcre/pcre/CMakeLists.txt"
+            }
+          ],
+          "name": "pcre_stringpiece_unittest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 688,
+              "path": "src/external/pcre/pcre/CMakeLists.txt"
+            }
+          ],
+          "name": "pcrecpp"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 770,
+              "path": "src/external/pcre/pcre/CMakeLists.txt"
+            }
+          ],
+          "name": "pcrecpp_unittest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 53,
+              "path": "src/external/curl/curl/docs/libcurl/CMakeLists.txt"
+            }
+          ],
+          "name": "pdf"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 236,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 246,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 271,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "pidwraptest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/network_cmds/ping6.tproj/CMakeLists.txt"
+            }
+          ],
+          "name": "ping6"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 190,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 242,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 252,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 277,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "pkcs7test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/network_cmds/pktapctl/CMakeLists.txt"
+            }
+          ],
+          "name": "pktapctl"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/network_cmds/pktmnglr/CMakeLists.txt"
+            }
+          ],
+          "name": "pktmnglr"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/plist/CMakeLists.txt"
+            }
+          ],
+          "name": "plist"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 1,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/Sources/Tools/plutil/CMakeLists.txt"
+            }
+          ],
+          "name": "plutil"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 79,
+              "path": "src/external/xcbuild/Libraries/plist/CMakeLists.txt"
+            }
+          ],
+          "name": "plutil_xcbuild"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 195,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 247,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 257,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 282,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "poly1305test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 252,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 262,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 288,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "pq_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 16,
+              "path": "src/libelfloader/wrapgen/CMakeLists.txt"
+            }
+          ],
+          "name": "print_wrapped_elf"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/process/CMakeLists.txt"
+            }
+          ],
+          "name": "process"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 1,
+              "path": "src/external/compiler-rt/lib/profile/CMakeLists.txt"
+            }
+          ],
+          "name": "profile"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 205,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 262,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 272,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 303,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "randtest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 210,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 267,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 277,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 308,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "rc2test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 215,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 272,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 282,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 313,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "rc4test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 277,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 287,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 318,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "rfc5280time"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 220,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 286,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 296,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 327,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "rmdtest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 24,
+              "path": "src/external/Heimdal/darling/script/HeimdalCompilers/CMakeLists.txt"
+            }
+          ],
+          "name": "roken"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 68,
+              "path": "src/external/Heimdal/darling/script/HeimdalCompilers/CMakeLists.txt"
+            }
+          ],
+          "name": "roken-application"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 291,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 301,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 332,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "rsa_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 464,
+              "path": "src/external/expat/expat/CMakeLists.txt"
+            }
+          ],
+          "name": "run-xmltest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 70,
+              "path": "src/external/libarchive/libarchive/cat/test/CMakeLists.txt"
+            }
+          ],
+          "name": "run_bsdcat_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 103,
+              "path": "src/external/libarchive/libarchive/cpio/test/CMakeLists.txt"
+            }
+          ],
+          "name": "run_bsdcpio_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 115,
+              "path": "src/external/libarchive/libarchive/tar/test/CMakeLists.txt"
+            }
+          ],
+          "name": "run_bsdtar_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 311,
+              "path": "src/external/libarchive/libarchive/libarchive/test/CMakeLists.txt"
+            }
+          ],
+          "name": "run_libarchive_test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 366,
+              "path": "src/external/expat/expat/CMakeLists.txt"
+            }
+          ],
+          "name": "runtests"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 371,
+              "path": "src/external/expat/expat/CMakeLists.txt"
+            }
+          ],
+          "name": "runtestspp"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 1,
+              "path": "src/external/compiler-rt/lib/safestack/CMakeLists.txt"
+            }
+          ],
+          "name": "safestack"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/security/security-sysdiagnose/CMakeLists.txt"
+            }
+          ],
+          "name": "security-sysdiagnose"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 3,
+              "path": "src/external/security/supd/CMakeLists.txt"
+            }
+          ],
+          "name": "securityuploadd"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 296,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 306,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 337,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "servertest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 225,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 306,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 316,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 347,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "sha1test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 230,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 311,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 321,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 352,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "sha256test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 235,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 316,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 326,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 357,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "sha512test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 240,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "shatest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 7,
+              "path": "src/external/curl/curl/tests/data/CMakeLists.txt"
+            }
+          ],
+          "name": "show"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 7,
+              "path": "src/external/network_cmds/spray.tproj/CMakeLists.txt"
+            }
+          ],
+          "name": "spray"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 56,
+              "path": "src/external/libressl-2.2.9/ssl/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 63,
+              "path": "src/external/libressl-2.2.9/ssl/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 51,
+              "path": "src/external/libressl-2.5.5/ssl/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 65,
+              "path": "src/external/libressl-2.5.5/ssl/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 51,
+              "path": "src/external/libressl-2.6.5/ssl/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 68,
+              "path": "src/external/libressl-2.6.5/ssl/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 44,
+              "path": "src/external/libressl-2.8.3/ssl/CMakeLists.txt"
+            }
+          ],
+          "name": "ssl"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 55,
+              "path": "src/external/libressl-2.2.9/ssl/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 49,
+              "path": "src/external/libressl-2.5.5/ssl/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 49,
+              "path": "src/external/libressl-2.6.5/ssl/CMakeLists.txt"
+            }
+          ],
+          "name": "ssl-objects"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 57,
+              "path": "src/external/libressl-2.2.9/ssl/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 52,
+              "path": "src/external/libressl-2.5.5/ssl/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 52,
+              "path": "src/external/libressl-2.6.5/ssl/CMakeLists.txt"
+            }
+          ],
+          "name": "ssl-shared"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 321,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 331,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 363,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "ssl_versions"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 326,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 336,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 369,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "ssltest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 1,
+              "path": "src/external/libmalloc/tests/MallocBenchTest/MALLOC_BENCH/MallocBench/CMakeLists.txt"
+            }
+          ],
+          "name": "sysmalloc"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 34,
+              "path": "src/external/libpthread_workqueue-0.8.2/testing/CMakeLists.txt"
+            }
+          ],
+          "name": "test_api_pthread_workqueue"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 25,
+              "path": "src/external/corecrypto/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 28,
+              "path": "src/external/corecrypto/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "test_corecrypto"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 38,
+              "path": "src/external/libpthread_workqueue-0.8.2/testing/CMakeLists.txt"
+            }
+          ],
+          "name": "test_latency_pthread_workqueue"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 48,
+              "path": "src/external/libxpc/test/CMakeLists.txt"
+            }
+          ],
+          "name": "test_libxpc"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 37,
+              "path": "src/external/libxpc/test/CMakeLists.txt"
+            }
+          ],
+          "name": "test_libxpc_generate_test_data"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 259,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 360,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 370,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 403,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "timingsafe"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 24,
+              "path": "src/external/libressl-2.2.9/tls/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 31,
+              "path": "src/external/libressl-2.2.9/tls/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 30,
+              "path": "src/external/libressl-2.5.5/tls/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 44,
+              "path": "src/external/libressl-2.5.5/tls/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 30,
+              "path": "src/external/libressl-2.6.5/tls/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 47,
+              "path": "src/external/libressl-2.6.5/tls/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 33,
+              "path": "src/external/libressl-2.8.3/tls/CMakeLists.txt"
+            }
+          ],
+          "name": "tls"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 23,
+              "path": "src/external/libressl-2.2.9/tls/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 28,
+              "path": "src/external/libressl-2.5.5/tls/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 28,
+              "path": "src/external/libressl-2.6.5/tls/CMakeLists.txt"
+            }
+          ],
+          "name": "tls-objects"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 25,
+              "path": "src/external/libressl-2.2.9/tls/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 31,
+              "path": "src/external/libressl-2.5.5/tls/CMakeLists.txt"
+            },
+            {
+              "command": "add_library",
+              "line": 31,
+              "path": "src/external/libressl-2.6.5/tls/CMakeLists.txt"
+            }
+          ],
+          "name": "tls-shared"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 383,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 398,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 434,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "tls_ext_alpn"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 388,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 403,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 441,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "tls_prf"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 375,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 409,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "tlsexttest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 373,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 388,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 423,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "tlstest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_darling_executable",
+              "line": 8,
+              "path": "src/external/network_cmds/traceroute6.tproj/CMakeLists.txt"
+            }
+          ],
+          "name": "traceroute6"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 84,
+              "path": "src/external/compiler-rt/lib/tsan/CMakeLists.txt"
+            }
+          ],
+          "name": "tsan"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 30,
+              "path": "src/external/compiler-rt/lib/ubsan/CMakeLists.txt"
+            }
+          ],
+          "name": "ubsan"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 18,
+              "path": "src/external/nghttp2/third-party/CMakeLists.txt"
+            }
+          ],
+          "name": "url-parser"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 264,
+              "path": "src/external/libressl-2.2.9/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 393,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 408,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 448,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "utf8test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/libutil/CMakeLists.txt"
+            }
+          ],
+          "name": "util_xcbuild"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 1,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/Sources/UUID/CMakeLists.txt"
+            }
+          ],
+          "name": "uuid"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 79,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/CMakeLists.txt"
+            }
+          ],
+          "name": "uuid-headers"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 398,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 413,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 455,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "verifytest"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 13,
+              "path": "src/external/Heimdal/darling/script/HeimdalCompilers/CMakeLists.txt"
+            }
+          ],
+          "name": "vers"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 403,
+              "path": "src/external/libressl-2.5.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 418,
+              "path": "src/external/libressl-2.6.5/tests/CMakeLists.txt"
+            },
+            {
+              "command": "add_executable",
+              "line": 461,
+              "path": "src/external/libressl-2.8.3/tests/CMakeLists.txt"
+            }
+          ],
+          "name": "x25519test"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/xcassets/CMakeLists.txt"
+            }
+          ],
+          "name": "xcassets"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 38,
+              "path": "src/external/xcbuild/Libraries/xcdriver/CMakeLists.txt"
+            }
+          ],
+          "name": "xcbuild"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/xcdriver/CMakeLists.txt"
+            }
+          ],
+          "name": "xcdriver"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 11,
+              "path": "src/external/xcbuild/Libraries/xcexecution/CMakeLists.txt"
+            }
+          ],
+          "name": "xcexecution"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/xcformatter/CMakeLists.txt"
+            }
+          ],
+          "name": "xcformatter"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 30,
+              "path": "src/external/xcbuild/Libraries/xcsdk/CMakeLists.txt"
+            }
+          ],
+          "name": "xcode-select_xcbuild"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 25,
+              "path": "src/external/xcbuild/Libraries/xcsdk/CMakeLists.txt"
+            }
+          ],
+          "name": "xcrun_xcodebuild"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/xcscheme/CMakeLists.txt"
+            }
+          ],
+          "name": "xcscheme"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/xcsdk/CMakeLists.txt"
+            }
+          ],
+          "name": "xcsdk"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 10,
+              "path": "src/external/xcbuild/Libraries/xcworkspace/CMakeLists.txt"
+            }
+          ],
+          "name": "xcworkspace"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 1,
+              "path": "src/external/corefoundation/submodules/swift-corelibs-foundation/Tests/Tools/XDGTestHelper/CMakeLists.txt"
+            }
+          ],
+          "name": "xdgTestHelper"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 450,
+              "path": "src/external/expat/expat/CMakeLists.txt"
+            }
+          ],
+          "name": "xmltest-log-fixed"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 458,
+              "path": "src/external/expat/expat/CMakeLists.txt"
+            }
+          ],
+          "name": "xmltest-log-verified"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 442,
+              "path": "src/external/expat/expat/CMakeLists.txt"
+            }
+          ],
+          "name": "xmltest-sh-been-run"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 423,
+              "path": "src/external/expat/expat/CMakeLists.txt"
+            }
+          ],
+          "name": "xmlts-zip-downloaded"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_custom_target",
+              "line": 432,
+              "path": "src/external/expat/expat/CMakeLists.txt"
+            }
+          ],
+          "name": "xmlts-zip-extracted"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_executable",
+              "line": 306,
+              "path": "src/external/expat/expat/CMakeLists.txt"
+            }
+          ],
+          "name": "xmlwf"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 186,
+              "path": "src/external/zlib/zlib/CMakeLists.txt"
+            }
+          ],
+          "name": "zlib"
+        },
+        {
+          "declarations": [
+            {
+              "command": "add_library",
+              "line": 187,
+              "path": "src/external/zlib/zlib/CMakeLists.txt"
+            }
+          ],
+          "name": "zlibstatic"
+        }
+      ],
+      "path": "cmake-declarations.json",
+      "provenance_verified": true,
+      "scope": "Exact pinned lexical declarations; not configured targets, execution or migration completion.",
+      "sha256": "6904e6d9f47ad1e6a30acf8580b2b2e8f9bb8f08d27d1d22322e5129416c5614",
+      "unfollowed_symlink_blobs": [],
+      "unparsed_files": [
+        "src/external/apr/apr-util/apr-util/README.cmake",
+        "src/external/apr/apr/apr/README.cmake",
+        "src/external/curl/curl/CMake/curl-config.cmake.in",
+        "src/external/curl/curl/docs/INSTALL.cmake",
+        "src/external/curl/curl/docs/README.cmake",
+        "src/external/curl/curl/lib/curl_config.h.cmake",
+        "src/external/expat/expat/cmake/expat-config.cmake.in",
+        "src/external/expat/expat/expat_config.h.cmake",
+        "src/external/xcbuild/Specifications/BuildPhase/CMakeLists.txt",
+        "src/external/xcbuild/Specifications/BuildRules/CMakeLists.txt",
+        "src/external/xcbuild/Specifications/BuildSystem/CMakeLists.txt",
+        "src/external/xcbuild/Specifications/Compiler/CMakeLists.txt",
+        "src/external/xcbuild/Specifications/FileType/CMakeLists.txt",
+        "src/external/xcbuild/Specifications/Linker/CMakeLists.txt",
+        "src/external/xcbuild/Specifications/Tool/CMakeLists.txt"
+      ],
+      "unresolved": [
+        "Variables, lists, conditions, loops, definitions and generator expressions are not evaluated.",
+        "Include/subdirectory reachability, configured outputs, platform choices and target existence are not inferred.",
+        "Custom wrapper semantics and commands generated by templates or dynamic languages remain unresolved.",
+        "A declaration absent from the captured default graph is not evidence that its scope is absent."
+      ]
+    },
     "generated_inputs": [
       {
         "participation": [
@@ -553027,9 +558235,9 @@
       "status": "matched"
     },
     {
-      "observed_sha256": "680d2ddb0e911acac66199b1d1f0315c809d477ffc316501af780114a1dbf006",
+      "observed_sha256": "e3bb9c74c0df88fc2ab4bc5b84d4781c263a58ef5b08e15a70610a4db071dfce",
       "path": "crates/dearust-path/src/abi/guarded.rs",
-      "recorded_sha256": "680d2ddb0e911acac66199b1d1f0315c809d477ffc316501af780114a1dbf006",
+      "recorded_sha256": "e3bb9c74c0df88fc2ab4bc5b84d4781c263a58ef5b08e15a70610a4db071dfce",
       "status": "matched"
     },
     {
@@ -553183,9 +558391,9 @@
       "status": "matched"
     },
     {
-      "observed_sha256": "93fb4e58ed06e20b2c48bb4e5e8b71165375d339a83c028664edaf45286885ea",
+      "observed_sha256": "f5fc6e53f37077f4ae77c8bf279f13c2330e3fb897a3801579d1cdef0445baf7",
       "path": "crates/dearust-process/src/resource_view.rs",
-      "recorded_sha256": "93fb4e58ed06e20b2c48bb4e5e8b71165375d339a83c028664edaf45286885ea",
+      "recorded_sha256": "f5fc6e53f37077f4ae77c8bf279f13c2330e3fb897a3801579d1cdef0445baf7",
       "status": "matched"
     },
     {
@@ -553287,6 +558495,16 @@
         "crates/dearust-lockset/src/tests.rs": "90a98a9c8e565ed43ce57ee3d3638d866f9dd287b81f01c6710381f70ef54e14"
       }
     },
+    "current_resource_copy_revision": {
+      "evidence": "resource-copy-current-index",
+      "scope": "Owned copy loop and inactive pure snapshot fix; source identity is distinct from completed resource ownership/performance.",
+      "source_sha256": {
+        "crates/dearust-path/SAFETY-MEMORY.txt": "f36dc833de0be4aa02a569b1868ed7606cf1e8066c87b00ac0c54d643ee197d8",
+        "crates/dearust-path/src/abi/guarded.rs": "e3bb9c74c0df88fc2ab4bc5b84d4781c263a58ef5b08e15a70610a4db071dfce",
+        "crates/dearust-process/SAFETY-RESOURCES.txt": "190d1dd321a55cc415fbf56a843c97237718faea9a24891897b8634beeb38d3f",
+        "crates/dearust-process/src/resource_view.rs": "f5fc6e53f37077f4ae77c8bf279f13c2330e3fb897a3801579d1cdef0445baf7"
+      }
+    },
     "historical_implementation_snapshots": [
       {
         "base_commit": "6245da168dd2ca75c668d2d7cf2d58f14dbe2f51",
@@ -553364,6 +558582,83 @@
           "xtask/src/runtime.rs": "8103745d1e308a5e2ac05b1a79837388fae4ea0d7ef7943a81b61a2807370a5c"
         },
         "scope": "Original captured implementation hashes before the current lockset lifecycle revision; preserved verbatim as historical input, not overwritten by a newer verification claim."
+      },
+      {
+        "base_commit": "2b55355c2729db0437007b962d298bdf2a80e989",
+        "implementation_sha256": {
+          "crates/dearust-coredump/src/backing.rs": "ddcc2f9afe9038f10246809c3a107c93e72084f023717310836dad6628acf966",
+          "crates/dearust-coredump/src/fp.rs": "b0683e2846483dc5e9b76d575a0c8b3c7014d9980bdf0c05edb378a91e6420c2",
+          "crates/dearust-coredump/src/lib.rs": "e3119c224e5df759a45b99420067afb7fbae28aefdfdaddc640199c22bdbd012",
+          "crates/dearust-coredump/src/main.rs": "f64ef1308d333fa68e3bcb2964fb3319bfc3940884a871ecc48f222c44843157",
+          "crates/dearust-coredump/src/payload.rs": "b7ca2d4749063108297c3473b6459b4217a9f913cf0b334faed5867a3a1a138e",
+          "crates/dearust-coredump/tests/conversion.rs": "864ca459e301eacbcbcdafeaa8f53f908ae63b1884f6cf5ec78a51bec1a62f86",
+          "crates/dearust-coredump/tests/core_states.rs": "e6a4b4b5ad9fe598e476449fac3f7727206133db8fda7a0f0fc008cf638e1eac",
+          "crates/dearust-errno/src/abi.rs": "26b90263a0ef0eb27f08e3318d3b5e008f35b3715f54b0435f6b8a2c0083130b",
+          "crates/dearust-errno/src/conversion.rs": "6e0f7ae2bd1f0e7418c40ac76f1c68b964c5c9a9d9e1098ea94b02aa8365d918",
+          "crates/dearust-errno/src/lib.rs": "0a66a5f44114167a65d8ed7a94046d8496c1b9276620063dc79b2d626aa495a9",
+          "crates/dearust-fd/src/abi.rs": "ec0319b67f0bcc00f059de7a7c0e3df70e8b9ab8554c3e0be91ef0e5aa03f114",
+          "crates/dearust-fd/src/lib.rs": "cf0f1aa8ced8ab2376478de2ef358fe46a2da30cd474486108c167811ed10344",
+          "crates/dearust-fd/src/stream.rs": "b3d800374dfc78610d0ee3accf481725c98e716a9c12f03c64300632f479b307",
+          "crates/dearust-futex/src/abi.rs": "883fc81d2b10a5e83f622518695702de5b7105fc74f868ef81ecfcf28345a8a6",
+          "crates/dearust-futex/src/lib.rs": "0a6af66a161fb2b46cef90a4fcd9ed9bff72d962a793c9abccf324068cb34f7f",
+          "crates/dearust-futex/src/result.rs": "26bd96dc322bde6c7c3a792f5c741d30b0bbedf1dec1ba23952381f2ce390fbd",
+          "crates/dearust-guarded/src/abi.rs": "d2a5ab1f2cdc2f02a8ae640c3f81f336cd0e8df6a96c636bd272896c0a669839",
+          "crates/dearust-guarded/src/lib.rs": "fb295e98cd713a1c858d2b61bbc64daaf8b99ec593c42ba2c6ca4aa149a0550d",
+          "crates/dearust-guarded/src/table.rs": "3943799963d4f519a23b09e727eb01152389bda79f79e2510f1b865e3e06b08e",
+          "crates/dearust-libsimple/src/core.rs": "ab9feb45f47a05eee1bf46335a2465a455033dc1c11e8cbef67c489e4388af3e",
+          "crates/dearust-libsimple/src/lib.rs": "a897e76abffff70a1ba5526cdea3d0b18be516fa05cc013dd267c316c887a1d9",
+          "crates/dearust-lockset/src/core.rs": "82d1d441286cc009eca32705a530b029f84cc82ab81b3896115fbac3b2919047",
+          "crates/dearust-lockset/src/lib.rs": "9cdc6e89bddd9af2e65d40b364e845cd519324e6f348332e73a448869b4cb6fa",
+          "crates/dearust-lockset/src/tests.rs": "90a98a9c8e565ed43ce57ee3d3638d866f9dd287b81f01c6710381f70ef54e14",
+          "crates/dearust-path/src/abi/conversion.rs": "a2425960a58a6e09791dc7b1b9e45d699c03a941ebe62773e5aec6ef5dee705b",
+          "crates/dearust-path/src/abi/faccessat.rs": "151118c14332bfaebbb86503d034ec44bb9460a3967a3487eec709e6668ffe30",
+          "crates/dearust-path/src/abi/fchmodat.rs": "afe496ed2355785d0d363f3f47c59f0af869a4a71fbe367af1a5dff4ffb454c0",
+          "crates/dearust-path/src/abi/filesystem.rs": "73d3447158828e927dd6e47d2cc1819815561a77ba4bfa008d1a38d6120b9611",
+          "crates/dearust-path/src/abi/frontends.rs": "57f9f1ee8af962decfdd73520365f754eb0876149c8b6aa86675e41e3c95eb2f",
+          "crates/dearust-path/src/abi/fstat.rs": "c6324557f17a37e583a45cda909e26b655de47c6f0982b3ec5a65315e4076f4f",
+          "crates/dearust-path/src/abi/fstatat.rs": "45d8d804776e9190b76d170a481ee7bde01881890f8f651211220d9ce3a7f956",
+          "crates/dearust-path/src/abi/guarded.rs": "680d2ddb0e911acac66199b1d1f0315c809d477ffc316501af780114a1dbf006",
+          "crates/dearust-path/src/abi/linkat.rs": "c50ed736cda8bac7c17de56335512507a094a39e86747ee008076dc6e5098983",
+          "crates/dearust-path/src/abi/lstat.rs": "f4f92555d939218e74b355b6a589b9c76342b8d9e45476143e5f12076b215e67",
+          "crates/dearust-path/src/abi/memory.rs": "126d68df4aada0b5a28f7408a5c55394b666f7c3eb6535b1cfd503dcd0307a91",
+          "crates/dearust-path/src/abi/mkdirat.rs": "1aaed251c7bee9afa5027cfc895758e019045392172e453b568e5306152407e2",
+          "crates/dearust-path/src/abi/mod.rs": "8c3ca2a444cd986a463789fb52b1dee63468ce38f251cbd8010ab3a4b1ea6098",
+          "crates/dearust-path/src/abi/permissions.rs": "4b5826dd4b5405552b6c9c2e7a6398ff4fd06608030e368abebf60771f36116e",
+          "crates/dearust-path/src/abi/readlinkat.rs": "d34f591e5bbeb21480dbabe2291de18742d92f161af1d1c5938c828b0b2f65ee",
+          "crates/dearust-path/src/abi/renameat.rs": "27b63aa53dff03fbd5af4be2fc727ce04afe105d59a699d236fa459a0165e0c3",
+          "crates/dearust-path/src/abi/rmdir.rs": "9630f95a65d49c01f35190ccc00431ae12d957a2b754016777944051e5872031",
+          "crates/dearust-path/src/abi/stat.rs": "b67bdf19890ccce7020beb0e0594b04aeaae75659d7a1afa4d1c475aa8d3b5f4",
+          "crates/dearust-path/src/abi/symlinkat.rs": "9df303b9a5ee2e5b954068f986b99c50c7663ef9c3f3cbbe0dc2549040f618cd",
+          "crates/dearust-path/src/abi/truncate.rs": "a013a33dd7de56228bdf0f49d6e847889d728377c3e7150e505750befb8935f1",
+          "crates/dearust-path/src/abi/unlinkat.rs": "30b3e739e5eb04f3384604dad4e7633a6e620c33139d12685838a91b13f5be44",
+          "crates/dearust-path/src/filesystem.rs": "adb9b6f9e68f9b5bc0efeaeb063e07079eed3ee0fba60fc6b1113364e5e49bba",
+          "crates/dearust-path/src/filesystem_io.rs": "8136eb8cb726f3112631d60ee1da7f653be04230d5cbee0d89d9ed499adad0d6",
+          "crates/dearust-path/src/host_filesystem.rs": "ca12982211cafd52374aa1f290e5e0ce44f8456067e2904a77a642c370fa0054",
+          "crates/dearust-path/src/lib.rs": "24441aca54caec0bc8c23190fb81da29b3e74347c2e91ec8e8e058a8ca3c13d5",
+          "crates/dearust-path/src/path.rs": "21063aa97965bb950336a571e96bc80800b30aa74fca490078601211b4acb5df",
+          "crates/dearust-process/src/abi.rs": "31efc72d23c1459a9be30fc7005fe3bef29ceb3e91b0fe18e2447abca17fe574",
+          "crates/dearust-process/src/identifiers.rs": "59427e40009df77bcdb6877b2b5ba6216150b5caf27e71e62c5b861d27fdd460",
+          "crates/dearust-process/src/info.rs": "4c7d31091cfbdc8e673816e323a5d1a2a67a1e00e46c1c08af5460841ed3d2a0",
+          "crates/dearust-process/src/lib.rs": "9c4770da58cc11143689f87b119a3ac72535ecf5f5fa77b5afd4cfd451853283",
+          "crates/dearust-process/src/parse.rs": "1194e861ecc1b412cae1892b68a01bfe7f056642f4a71acead878d975b043be1",
+          "crates/dearust-process/src/resource_abi.rs": "f70b628f6bc62ca1d67b1fec2694f6471d6054e10656f82ca02b0b1d69f6733d",
+          "crates/dearust-process/src/resource_policy.rs": "1397d2448b484828cd94ca5bf43e9f9e15c4401d39f300534c2def58177aae1e",
+          "crates/dearust-process/src/resource_view.rs": "93fb4e58ed06e20b2c48bb4e5e8b71165375d339a83c028664edaf45286885ea",
+          "crates/dearust-process/src/resources.rs": "a99dc979b9f15732c1a5c5ebfc9c86b6d60f9bc3a61d93be5576b8f99bf0f5f6",
+          "crates/dearust-process/src/services.rs": "515b0a805240e0a9e8275c5f3d4580508bb9d9eecdf1fb0ed327366e07b66f35",
+          "src/bin/bsdln.rs": "a7d591ae9b524a19760be90cb6137080fe2a16e9f31e36454753f4ddfa6f3f43",
+          "src/bin/elfdep.rs": "8fb4bfa349e545ce0cb223f561bbeaf0443afacf27f39c9af1c9833f9f89630e",
+          "src/bin/getuuid.rs": "64c30d472d8a05c3835b445c0fd07975eb370e13cf4b1abf4d2f3143e99227a0",
+          "src/bin/print_wrapped_elf.rs": "216b4e7a7311ec99f19a1905366d168881ad1a39fb74c4551a6fccd9823a8ce4",
+          "src/bin/wrapgen.rs": "e30a41982126ef859b26b81a80acf94f8b4d5e597313875815d12f09c250cb2a",
+          "src/elf_wrapper.rs": "a16be484c1586422fe67b1f5614e5ad40b9bdd59f68005b288bfc11ea4ed3413",
+          "src/lib.rs": "fc42026d51281c6277f3e0bfa2460df302d923fc877e159e80cbe683d75ff6b7",
+          "src/wrapped_elf.rs": "b58643df98f597d4497d32a75eef91377e55585a439dacb9bcca042cc4e32d65",
+          "xtask/src/install.rs": "c67d6fa155f90de96963a21bf83c9d970408136875737656f8b9118633f6c9c3",
+          "xtask/src/main.rs": "4a3d554c960a1c612dc08429634f8b2ebc1c222f891b2a787b8be8851d1ed91c",
+          "xtask/src/runtime.rs": "8103745d1e308a5e2ac05b1a79837388fae4ea0d7ef7943a81b61a2807370a5c"
+        },
+        "scope": "Exact pre-copy/snapshot-fix implementation hash map, retained unchanged."
       }
     ],
     "implementation_sha256": {
@@ -553398,7 +558693,7 @@
       "crates/dearust-path/src/abi/frontends.rs": "57f9f1ee8af962decfdd73520365f754eb0876149c8b6aa86675e41e3c95eb2f",
       "crates/dearust-path/src/abi/fstat.rs": "c6324557f17a37e583a45cda909e26b655de47c6f0982b3ec5a65315e4076f4f",
       "crates/dearust-path/src/abi/fstatat.rs": "45d8d804776e9190b76d170a481ee7bde01881890f8f651211220d9ce3a7f956",
-      "crates/dearust-path/src/abi/guarded.rs": "680d2ddb0e911acac66199b1d1f0315c809d477ffc316501af780114a1dbf006",
+      "crates/dearust-path/src/abi/guarded.rs": "e3bb9c74c0df88fc2ab4bc5b84d4781c263a58ef5b08e15a70610a4db071dfce",
       "crates/dearust-path/src/abi/linkat.rs": "c50ed736cda8bac7c17de56335512507a094a39e86747ee008076dc6e5098983",
       "crates/dearust-path/src/abi/lstat.rs": "f4f92555d939218e74b355b6a589b9c76342b8d9e45476143e5f12076b215e67",
       "crates/dearust-path/src/abi/memory.rs": "126d68df4aada0b5a28f7408a5c55394b666f7c3eb6535b1cfd503dcd0307a91",
@@ -553424,7 +558719,7 @@
       "crates/dearust-process/src/parse.rs": "1194e861ecc1b412cae1892b68a01bfe7f056642f4a71acead878d975b043be1",
       "crates/dearust-process/src/resource_abi.rs": "f70b628f6bc62ca1d67b1fec2694f6471d6054e10656f82ca02b0b1d69f6733d",
       "crates/dearust-process/src/resource_policy.rs": "1397d2448b484828cd94ca5bf43e9f9e15c4401d39f300534c2def58177aae1e",
-      "crates/dearust-process/src/resource_view.rs": "93fb4e58ed06e20b2c48bb4e5e8b71165375d339a83c028664edaf45286885ea",
+      "crates/dearust-process/src/resource_view.rs": "f5fc6e53f37077f4ae77c8bf279f13c2330e3fb897a3801579d1cdef0445baf7",
       "crates/dearust-process/src/resources.rs": "a99dc979b9f15732c1a5c5ebfc9c86b6d60f9bc3a61d93be5576b8f99bf0f5f6",
       "crates/dearust-process/src/services.rs": "515b0a805240e0a9e8275c5f3d4580508bb9d9eecdf1fb0ed327366e07b66f35",
       "src/bin/bsdln.rs": "a7d591ae9b524a19760be90cb6137080fe2a16e9f31e36454753f4ddfa6f3f43",

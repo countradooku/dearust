@@ -32,9 +32,15 @@ Original i386 retained in fat links is original implementation, not Rust coverag
 Unresolved / unknown rows
 -------------------------
 resources [unfinished]: Exact unsigned ownership, XNU enforcement and candidate lifecycle plus measured CPU gates; finish before post-resource packages.
-optional-configurations [unknown]: Additional component/architecture graph captures and custom-command bodies; default graph is not every supported configuration.
-unclassified-implementation [review-required]: Suffix labels are heuristics; every unobserved source, symlink alias, generated input, SDK/data and handwritten language needs explicit ownership review.
+optional-configurations [unknown]: Exact-pinned CMake declarations capture 1,144 selected files across 161 repositories, including custom commands, options and conditions. Fifteen inputs remain unparsed; expansion, reachability, configured command bodies, architecture variants and additional graph captures remain unknown.
+unclassified-implementation [review-required]: Suffix labels are heuristics. The exact CMake scan identifies 15 prose/header/template/malformed inputs requiring role review; unobserved sources, symlink aliases, SDK/data and handwritten languages still need semantic ownership review.
 blocked-validation [externally-blocked]: Previously rejected adversarial RPC validation remains unverified; ordinary functional work only.
+
+Exact-pinned build declarations: {"by_category": {"condition": 5329, "configure": 37, "custom-command": 100, "definition": 313, "execute-process": 45, "file-generate": 1, "option": 155, "other": 17239, "target": 1457}, "declarations": 24676, "files": 1144, "parse_invalid_files": 15, "repositories": 161}
+360 plain literal target names are absent from the captured graph; reachability and configuration remain unknown.
+Declarations are not evaluated or executed; they do not add observed targets or implementation counts.
+Unparsed exact inputs: src/external/apr/apr-util/apr-util/README.cmake, src/external/apr/apr/apr/README.cmake, src/external/curl/curl/CMake/curl-config.cmake.in, src/external/curl/curl/docs/INSTALL.cmake, src/external/curl/curl/docs/README.cmake, src/external/curl/curl/lib/curl_config.h.cmake, src/external/expat/expat/cmake/expat-config.cmake.in, src/external/expat/expat/expat_config.h.cmake, src/external/xcbuild/Specifications/BuildPhase/CMakeLists.txt, src/external/xcbuild/Specifications/BuildRules/CMakeLists.txt, src/external/xcbuild/Specifications/BuildSystem/CMakeLists.txt, src/external/xcbuild/Specifications/Compiler/CMakeLists.txt, src/external/xcbuild/Specifications/FileType/CMakeLists.txt, src/external/xcbuild/Specifications/Linker/CMakeLists.txt, src/external/xcbuild/Specifications/Tool/CMakeLists.txt
+Unparsed input roles: {"C-header-configuration-template": 2, "CMake-package-configuration-template": 2, "malformed-commented-install-body": 7, "prose-build-documentation": 4}; configured behavior and reachability remain unverified.
 
 Captured graph reconciliation: {"canonical_non_generated_paths": 23783, "generated_records": 9593, "generated_unique_paths": 4042, "non_generated_unique_paths": 23790, "shared_source_paths": 888, "source_records": 34478, "symlink_resolved_records": 588, "unresolved_non_generated_paths": 0}
 84670 source-classified leaves absent by literal path from this graph need scope review; they may include tests, generated inputs or optional sources.

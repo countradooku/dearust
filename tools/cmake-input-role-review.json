@@ -1,0 +1,937 @@
+{
+  "completion": {
+    "all_15_role_classified": true,
+    "configured_or_executed": false,
+    "handwritten_CMake_semantic_review_complete": false,
+    "reachability_resolved": false,
+    "resource_gate_complete": false
+  },
+  "counts_by_role": {
+    "C-header-configuration-template": 2,
+    "CMake-package-configuration-template": 2,
+    "malformed-commented-install-body": 7,
+    "prose-build-documentation": 4
+  },
+  "files": [
+    {
+      "commit": "5aa6eba89e497a67f1b9db7842371141a8616674",
+      "consumer_declarations": [],
+      "consumer_search_scope": "No literal configure_file/configure_package_config_file/include/install/add_subdirectory reference to this basename was found among successfully parsed declarations in the exact input inventory. Dynamic references, other source kinds and unparsed files remain unresolved.",
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "a46327126ff754652fb4b14111d422bc29152b80",
+      "original_parse_error": "src/external/apr/apr-util/apr-util/README.cmake:1: expected command opening parenthesis",
+      "path": "src/external/apr/apr-util/apr-util/README.cmake",
+      "rationale": "The committed text identifies itself as experimental Windows build-support documentation, with prose headings and instructions. Its .cmake suffix does not make it a CMake program.",
+      "reachability": "unknown",
+      "repository_path": "src/external/apr",
+      "review_gate": "Preserve as documentation; its described platform support and instructions are not validation of those configurations.",
+      "role": "prose-build-documentation",
+      "sha256": "83a8cf7473a0f5a8e705be779cef1326b0b07fb622d5513d3e701fd0b9f703de",
+      "source_evidence": [
+        {
+          "line": 1,
+          "text": "Experimental cmake-based build support for APR-Util on Microsoft Windows"
+        },
+        {
+          "line": 3,
+          "text": "Status"
+        },
+        {
+          "line": 4,
+          "text": "------"
+        },
+        {
+          "line": 6,
+          "text": "This build support is currently intended only for Microsoft Windows."
+        }
+      ],
+      "source_path": "apr-util/apr-util/README.cmake"
+    },
+    {
+      "commit": "5aa6eba89e497a67f1b9db7842371141a8616674",
+      "consumer_declarations": [],
+      "consumer_search_scope": "No literal configure_file/configure_package_config_file/include/install/add_subdirectory reference to this basename was found among successfully parsed declarations in the exact input inventory. Dynamic references, other source kinds and unparsed files remain unresolved.",
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "cfff8ca0d053f89291e83856efd9ffc7b39973b4",
+      "original_parse_error": "src/external/apr/apr/apr/README.cmake:1: expected command opening parenthesis",
+      "path": "src/external/apr/apr/apr/README.cmake",
+      "rationale": "The committed text identifies itself as experimental Windows build-support documentation, with prose headings and instructions. Its .cmake suffix does not make it a CMake program.",
+      "reachability": "unknown",
+      "repository_path": "src/external/apr",
+      "review_gate": "Preserve as documentation; its described platform support and instructions are not validation of those configurations.",
+      "role": "prose-build-documentation",
+      "sha256": "51a7725eb169b9b0ec4cfa85f6bebc06c9f98354482b5723f6aa75876f119510",
+      "source_evidence": [
+        {
+          "line": 1,
+          "text": "Experimental cmake-based build support for APR on Microsoft Windows"
+        },
+        {
+          "line": 3,
+          "text": "Status"
+        },
+        {
+          "line": 4,
+          "text": "------"
+        },
+        {
+          "line": 6,
+          "text": "This build support is currently intended only for Microsoft Windows."
+        }
+      ],
+      "source_path": "apr/apr/README.cmake"
+    },
+    {
+      "commit": "92f54fd7eceabed2c2382a4acc0f7293dedd92ff",
+      "consumer_declarations": [
+        {
+          "command": "set",
+          "commit": "92f54fd7eceabed2c2382a4acc0f7293dedd92ff",
+          "context": [],
+          "end_line": 1153,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 1153,
+          "object_id": "edb1cec2122ba77cd049359037d893c1653e17dd",
+          "path": "src/external/curl/curl/CMakeLists.txt",
+          "raw": "set(project_config \"${generated_dir}/${PROJECT_NAME}Config.cmake\")",
+          "repository_path": "src/external/curl",
+          "sha256": "c9bd1fb3ddadad4feb00d68b55625f099e222942658e5fe4f2fc1211603a34a6",
+          "source_path": "curl/CMakeLists.txt"
+        },
+        {
+          "command": "configure_package_config_file",
+          "commit": "92f54fd7eceabed2c2382a4acc0f7293dedd92ff",
+          "context": [],
+          "end_line": 1318,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 1315,
+          "object_id": "edb1cec2122ba77cd049359037d893c1653e17dd",
+          "path": "src/external/curl/curl/CMakeLists.txt",
+          "raw": "configure_package_config_file(CMake/curl-config.cmake.in\n        \"${project_config}\"\n        INSTALL_DESTINATION ${CURL_INSTALL_CMAKE_DIR}\n)",
+          "repository_path": "src/external/curl",
+          "sha256": "c9bd1fb3ddadad4feb00d68b55625f099e222942658e5fe4f2fc1211603a34a6",
+          "source_path": "curl/CMakeLists.txt"
+        },
+        {
+          "command": "install",
+          "commit": "92f54fd7eceabed2c2382a4acc0f7293dedd92ff",
+          "context": [],
+          "end_line": 1329,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 1326,
+          "object_id": "edb1cec2122ba77cd049359037d893c1653e17dd",
+          "path": "src/external/curl/curl/CMakeLists.txt",
+          "raw": "install(\n        FILES ${version_config} ${project_config}\n        DESTINATION ${CURL_INSTALL_CMAKE_DIR}\n)",
+          "repository_path": "src/external/curl",
+          "sha256": "c9bd1fb3ddadad4feb00d68b55625f099e222942658e5fe4f2fc1211603a34a6",
+          "source_path": "curl/CMakeLists.txt"
+        }
+      ],
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "template-unresolved",
+      "object_id": "1294e173a009afbfb19a81f742fe5bd27510e3aa",
+      "original_parse_error": "src/external/curl/curl/CMake/curl-config.cmake.in:1: expected literal command identifier",
+      "path": "src/external/curl/curl/CMake/curl-config.cmake.in",
+      "rationale": "The source contains the unexpanded @PACKAGE_INIT@ command hole and @...@ argument substitutions. Pinned configure_package_config_file and install declarations identify an intended generated package-config artifact; the raw template is not a directly parsed CMake program.",
+      "reachability": "unknown",
+      "repository_path": "src/external/curl",
+      "review_gate": "Expansion of PACKAGE_INIT and variables, emitted CMake syntax, optional dependency conditions, installed paths, package inclusion and execution remain unresolved.",
+      "role": "CMake-package-configuration-template",
+      "sha256": "1688669b3d84b79b10b1bc65fe0f4717b8855c05d787abfc277e8d9e738867ce",
+      "source_evidence": [
+        {
+          "line": 1,
+          "text": "@PACKAGE_INIT@"
+        },
+        {
+          "line": 3,
+          "text": "include(CMakeFindDependencyMacro)"
+        },
+        {
+          "line": 4,
+          "text": "if(@USE_OPENSSL@)"
+        },
+        {
+          "line": 5,
+          "text": "  find_dependency(OpenSSL @OPENSSL_VERSION_MAJOR@)"
+        },
+        {
+          "line": 7,
+          "text": "if(@USE_ZLIB@)"
+        },
+        {
+          "line": 8,
+          "text": "  find_dependency(ZLIB @ZLIB_VERSION_MAJOR@)"
+        },
+        {
+          "line": 11,
+          "text": "include(\"${CMAKE_CURRENT_LIST_DIR}/@TARGETS_EXPORT_NAME@.cmake\")"
+        },
+        {
+          "line": 12,
+          "text": "check_required_components(\"@PROJECT_NAME@\")"
+        }
+      ],
+      "source_path": "curl/CMake/curl-config.cmake.in"
+    },
+    {
+      "commit": "92f54fd7eceabed2c2382a4acc0f7293dedd92ff",
+      "consumer_declarations": [],
+      "consumer_search_scope": "No literal configure_file/configure_package_config_file/include/install/add_subdirectory reference to this basename was found among successfully parsed declarations in the exact input inventory. Dynamic references, other source kinds and unparsed files remain unresolved.",
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "03328cbcd9346ddd1d3d19d3ac463932bd46c515",
+      "original_parse_error": "src/external/curl/curl/docs/INSTALL.cmake:1: expected command opening parenthesis",
+      "path": "src/external/curl/curl/docs/INSTALL.cmake",
+      "rationale": "The committed file is a formatted compilation guide with prose paragraphs and section headings, not a CMake program.",
+      "reachability": "unknown",
+      "repository_path": "src/external/curl",
+      "review_gate": "Preserve as documentation; prose build instructions are not evidence of configured or executed behavior.",
+      "role": "prose-build-documentation",
+      "sha256": "e1124a9f2a4f73ca74055c96f2670d5533c3505da1ed917c6cfc4378eb73e89d",
+      "source_evidence": [
+        {
+          "line": 7,
+          "text": "                                How To Compile with CMake"
+        },
+        {
+          "line": 9,
+          "text": "Building with CMake"
+        },
+        {
+          "line": 10,
+          "text": "=========================="
+        },
+        {
+          "line": 11,
+          "text": "   This document describes how to compile, build and install curl and libcurl"
+        },
+        {
+          "line": 12,
+          "text": "   from source code using the CMake build tool. To build with CMake, you will"
+        }
+      ],
+      "source_path": "curl/docs/INSTALL.cmake"
+    },
+    {
+      "commit": "92f54fd7eceabed2c2382a4acc0f7293dedd92ff",
+      "consumer_declarations": [],
+      "consumer_search_scope": "No literal configure_file/configure_package_config_file/include/install/add_subdirectory reference to this basename was found among successfully parsed declarations in the exact input inventory. Dynamic references, other source kinds and unparsed files remain unresolved.",
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "084c1de6d56ac40083c56904d6fbe3d47ae418c3",
+      "original_parse_error": "src/external/curl/curl/docs/README.cmake:1: expected command opening parenthesis",
+      "path": "src/external/curl/curl/docs/README.cmake",
+      "rationale": "The text explicitly instructs readers to read README and INSTALL.cmake; these are prose instructions about CMake rather than executable commands.",
+      "reachability": "unknown",
+      "repository_path": "src/external/curl",
+      "review_gate": "Preserve as documentation; independently review installation/documentation distribution rules before replacing build packaging.",
+      "role": "prose-build-documentation",
+      "sha256": "69c9ce683083e0cd5772225807f88992801100d438164d46e4460d6f941cb1ce",
+      "source_evidence": [
+        {
+          "line": 7,
+          "text": "README.cmake"
+        },
+        {
+          "line": 8,
+          "text": "  Read the README file first."
+        },
+        {
+          "line": 10,
+          "text": "  Curl contains CMake build files that provide a way to build Curl with the"
+        },
+        {
+          "line": 11,
+          "text": "  CMake build tool (www.cmake.org). CMake is a cross platform meta build tool"
+        },
+        {
+          "line": 15,
+          "text": "  Read the INSTALL.cmake file for instructions on how to compile curl with"
+        },
+        {
+          "line": 16,
+          "text": "  CMake."
+        }
+      ],
+      "source_path": "curl/docs/README.cmake"
+    },
+    {
+      "commit": "92f54fd7eceabed2c2382a4acc0f7293dedd92ff",
+      "consumer_declarations": [
+        {
+          "command": "configure_file",
+          "commit": "92f54fd7eceabed2c2382a4acc0f7293dedd92ff",
+          "context": [],
+          "end_line": 12,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 11,
+          "object_id": "eca9a8af934e18a66623bb7a05f8252d9d005484",
+          "path": "src/external/curl/curl/lib/CMakeLists.txt",
+          "raw": "configure_file(curl_config.h.cmake\n  ${CMAKE_CURRENT_BINARY_DIR}/curl_config.h)",
+          "repository_path": "src/external/curl",
+          "sha256": "938538418105e67e48060aad0af6fefc6a5d592688f2916608defd1506bd45c6",
+          "source_path": "curl/lib/CMakeLists.txt"
+        }
+      ],
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "5308eb579da53b7dea27f845a8ca260a6211ba0d",
+      "original_parse_error": "src/external/curl/curl/lib/curl_config.h.cmake:1: expected literal command identifier",
+      "path": "src/external/curl/curl/lib/curl_config.h.cmake",
+      "rationale": "C comments and #cmakedefine directives describe a generated C header. A pinned configure_file declaration names this file as input and curl_config.h as output.",
+      "reachability": "unknown",
+      "repository_path": "src/external/curl",
+      "review_gate": "Configured header contents, feature values, architecture choices, consumers and generator execution remain unverified here.",
+      "role": "C-header-configuration-template",
+      "sha256": "1264289e9e198eb917b25151d7289d594824f6209fc531c65e2873066de7e6fc",
+      "source_evidence": [
+        {
+          "line": 1,
+          "text": "/* lib/curl_config.h.in.  Generated somehow by cmake.  */"
+        },
+        {
+          "line": 3,
+          "text": "/* when building libcurl itself */"
+        },
+        {
+          "line": 4,
+          "text": "#cmakedefine BUILDING_LIBCURL 1"
+        },
+        {
+          "line": 6,
+          "text": "/* Location of default ca bundle */"
+        },
+        {
+          "line": 7,
+          "text": "#cmakedefine CURL_CA_BUNDLE \"${CURL_CA_BUNDLE}\""
+        }
+      ],
+      "source_path": "curl/lib/curl_config.h.cmake"
+    },
+    {
+      "commit": "70006a0c32d7c8653c11e53fc0c905f1bb498218",
+      "consumer_declarations": [
+        {
+          "command": "configure_package_config_file",
+          "commit": "70006a0c32d7c8653c11e53fc0c905f1bb498218",
+          "context": [],
+          "end_line": 487,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 482,
+          "object_id": "0c49c2f52df4f5c6aebc66cf829c0c511a6540b2",
+          "path": "src/external/expat/expat/CMakeLists.txt",
+          "raw": "configure_package_config_file(\n        cmake/expat-config.cmake.in\n        cmake/expat-config.cmake\n    INSTALL_DESTINATION\n        ${CMAKE_INSTALL_LIBDIR}/cmake/expat-${PROJECT_VERSION}/\n)",
+          "repository_path": "src/external/expat",
+          "sha256": "2a879170e986f95aeda8999207242925a4cdb0b4cbc385e453a4d74614384ecc",
+          "source_path": "expat/CMakeLists.txt"
+        },
+        {
+          "command": "expat_install",
+          "commit": "70006a0c32d7c8653c11e53fc0c905f1bb498218",
+          "context": [],
+          "end_line": 504,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 498,
+          "object_id": "0c49c2f52df4f5c6aebc66cf829c0c511a6540b2",
+          "path": "src/external/expat/expat/CMakeLists.txt",
+          "raw": "expat_install(\n    FILES\n        ${CMAKE_CURRENT_BINARY_DIR}/cmake/expat-config.cmake\n        ${CMAKE_CURRENT_BINARY_DIR}/cmake/expat-config-version.cmake\n    DESTINATION\n        ${CMAKE_INSTALL_LIBDIR}/cmake/expat-${PROJECT_VERSION}/\n)",
+          "repository_path": "src/external/expat",
+          "sha256": "2a879170e986f95aeda8999207242925a4cdb0b4cbc385e453a4d74614384ecc",
+          "source_path": "expat/CMakeLists.txt"
+        }
+      ],
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "template-unresolved",
+      "object_id": "a4da61e0104e63cd81670e554f304209da52097e",
+      "original_parse_error": "src/external/expat/expat/cmake/expat-config.cmake.in:37: expected literal command identifier",
+      "path": "src/external/expat/expat/cmake/expat-config.cmake.in",
+      "rationale": "The source combines CMake declarations with an unexpanded @PACKAGE_INIT@ command hole and feature placeholders. Pinned configure_package_config_file and expat_install wrapper declarations identify the intended generated package-config artifact.",
+      "reachability": "unknown",
+      "repository_path": "src/external/expat",
+      "review_gate": "Expansion of PACKAGE_INIT and feature substitutions, wrapper install semantics, output paths, generated CMake syntax and downstream package execution remain unresolved.",
+      "role": "CMake-package-configuration-template",
+      "sha256": "737c28c075eab9fd576ad22a68c8d880281d83240d6e08372afda2cf3acac733",
+      "source_evidence": [
+        {
+          "line": 30,
+          "text": "if(NOT _expat_config_included)"
+        },
+        {
+          "line": 35,
+          "text": "include(\"${CMAKE_CURRENT_LIST_DIR}/expat.cmake\")"
+        },
+        {
+          "line": 37,
+          "text": "@PACKAGE_INIT@"
+        },
+        {
+          "line": 42,
+          "text": "macro(expat_register_component _NAME _AVAILABE)"
+        },
+        {
+          "line": 43,
+          "text": "    set(expat_${_NAME}_FOUND ${_AVAILABE})"
+        },
+        {
+          "line": 44,
+          "text": "endmacro()"
+        },
+        {
+          "line": 46,
+          "text": "expat_register_component(attr_info          @EXPAT_ATTR_INFO@)"
+        },
+        {
+          "line": 47,
+          "text": "expat_register_component(dtd                @EXPAT_DTD@)"
+        },
+        {
+          "line": 48,
+          "text": "expat_register_component(large_size         @EXPAT_LARGE_SIZE@)"
+        },
+        {
+          "line": 49,
+          "text": "expat_register_component(min_size           @EXPAT_MIN_SIZE@)"
+        },
+        {
+          "line": 50,
+          "text": "expat_register_component(ns                 @EXPAT_NS@)"
+        }
+      ],
+      "source_path": "expat/cmake/expat-config.cmake.in"
+    },
+    {
+      "commit": "70006a0c32d7c8653c11e53fc0c905f1bb498218",
+      "consumer_declarations": [
+        {
+          "command": "configure_file",
+          "commit": "70006a0c32d7c8653c11e53fc0c905f1bb498218",
+          "context": [],
+          "end_line": 162,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 162,
+          "object_id": "0c49c2f52df4f5c6aebc66cf829c0c511a6540b2",
+          "path": "src/external/expat/expat/CMakeLists.txt",
+          "raw": "configure_file(expat_config.h.cmake \"${CMAKE_CURRENT_BINARY_DIR}/expat_config.h\")",
+          "repository_path": "src/external/expat",
+          "sha256": "2a879170e986f95aeda8999207242925a4cdb0b4cbc385e453a4d74614384ecc",
+          "source_path": "expat/CMakeLists.txt"
+        }
+      ],
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "173fed168c11c30461c0d5b004691107f09ad487",
+      "original_parse_error": "src/external/expat/expat/expat_config.h.cmake:1: expected literal command identifier",
+      "path": "src/external/expat/expat/expat_config.h.cmake",
+      "rationale": "C comments and #cmakedefine directives describe a generated C header. A pinned configure_file declaration names this input and expat_config.h as output.",
+      "reachability": "unknown",
+      "repository_path": "src/external/expat",
+      "review_gate": "Configured header contents, feature values, architecture choices, consumers and generator execution remain unverified here.",
+      "role": "C-header-configuration-template",
+      "sha256": "adde3e2bc48d6593b3ff8949dc200f141b8c3b8f105b9c8c0a6dde1cc6544f0d",
+      "source_evidence": [
+        {
+          "line": 1,
+          "text": "/* expat_config.h.cmake.  Based upon generated expat_config.h.in.  */"
+        },
+        {
+          "line": 3,
+          "text": "/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */"
+        },
+        {
+          "line": 4,
+          "text": "#cmakedefine BYTEORDER @BYTEORDER@"
+        },
+        {
+          "line": 6,
+          "text": "/* Define to 1 if you have the `arc4random' function. */"
+        },
+        {
+          "line": 7,
+          "text": "#cmakedefine HAVE_ARC4RANDOM"
+        }
+      ],
+      "source_path": "expat/expat_config.h.cmake"
+    },
+    {
+      "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+      "consumer_declarations": [
+        {
+          "command": "add_subdirectory",
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "context": [],
+          "end_line": 13,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 13,
+          "object_id": "db077ac6b02d95f6ddfd5cebd0d9f2459b0ee91c",
+          "path": "src/external/xcbuild/Specifications/CMakeLists.txt",
+          "raw": "add_subdirectory(BuildPhase)",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "673546a948e75ef9c7b49d0e2cf296213aa206affe67794a6b1078903309085c",
+          "source_path": "Specifications/CMakeLists.txt"
+        }
+      ],
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "b98f1bae9b753ce356c4c4e8c93da441cf45e05e",
+      "original_parse_error": "src/external/xcbuild/Specifications/BuildPhase/CMakeLists.txt:11: expected command opening parenthesis",
+      "path": "src/external/xcbuild/Specifications/BuildPhase/CMakeLists.txt",
+      "rationale": "Only the install opening line is commented. Subsequent asset arguments and the final closing parenthesis remain bare, so this committed file is not a valid standalone CMake command sequence. The parent Specifications file declares this child; the project-level Specifications edge is commented.",
+      "reachability": "unknown",
+      "repository_path": "src/external/xcbuild",
+      "review_gate": "Do not infer global unreachability: dynamic or other entry paths have not been evaluated. Any future activation requires an intentional semantics-preserving source repair plus configuration, asset/install and supported-platform validation.",
+      "role": "malformed-commented-install-body",
+      "sha256": "7bb47b7d4e2b65dbf4531fc5e6e3b44a01b8680a25bfcff1d1aad95e7db3941c",
+      "source_evidence": [
+        {
+          "line": 10,
+          "text": "#install(FILES"
+        },
+        {
+          "line": 11,
+          "text": "        com.apple.buildphase.applescript.xcspec"
+        },
+        {
+          "line": 20,
+          "text": "        DESTINATION Library/Xcode/Specifications)"
+        }
+      ],
+      "source_path": "Specifications/BuildPhase/CMakeLists.txt",
+      "surrounding_source_references": [
+        {
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "evidence_kind": "commented source text; not an executable declaration",
+          "object_id": "80e97fbdb88aff55252f525c9b2c2da9bf378fad",
+          "path": "src/external/xcbuild/CMakeLists.txt",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "bff46892cfb45b75dbd746771897d7c69605fafdb2ca219c179d5c551d65360e",
+          "source_evidence": [
+            {
+              "line": 49,
+              "text": "add_subdirectory(Libraries)"
+            },
+            {
+              "line": 50,
+              "text": "#add_subdirectory(Specifications)"
+            }
+          ],
+          "source_path": "CMakeLists.txt"
+        }
+      ]
+    },
+    {
+      "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+      "consumer_declarations": [
+        {
+          "command": "add_subdirectory",
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "context": [],
+          "end_line": 14,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 14,
+          "object_id": "db077ac6b02d95f6ddfd5cebd0d9f2459b0ee91c",
+          "path": "src/external/xcbuild/Specifications/CMakeLists.txt",
+          "raw": "add_subdirectory(BuildRules)",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "673546a948e75ef9c7b49d0e2cf296213aa206affe67794a6b1078903309085c",
+          "source_path": "Specifications/CMakeLists.txt"
+        }
+      ],
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "5a5b488d5c196b9e167082ff5d9668627d36dc4b",
+      "original_parse_error": "src/external/xcbuild/Specifications/BuildRules/CMakeLists.txt:11: expected command opening parenthesis",
+      "path": "src/external/xcbuild/Specifications/BuildRules/CMakeLists.txt",
+      "rationale": "Only the install opening line is commented. Subsequent asset arguments and the final closing parenthesis remain bare, so this committed file is not a valid standalone CMake command sequence. The parent Specifications file declares this child; the project-level Specifications edge is commented.",
+      "reachability": "unknown",
+      "repository_path": "src/external/xcbuild",
+      "review_gate": "Do not infer global unreachability: dynamic or other entry paths have not been evaluated. Any future activation requires an intentional semantics-preserving source repair plus configuration, asset/install and supported-platform validation.",
+      "role": "malformed-commented-install-body",
+      "sha256": "b67e84f0100e664190d8b76cbdb93ac31cb2b1a562c5d33991e2fce0ff508bde",
+      "source_evidence": [
+        {
+          "line": 10,
+          "text": "#install(FILES"
+        },
+        {
+          "line": 11,
+          "text": "        BuiltInBuildRules.plist"
+        },
+        {
+          "line": 12,
+          "text": "        DESTINATION Library/Xcode/Specifications)"
+        }
+      ],
+      "source_path": "Specifications/BuildRules/CMakeLists.txt",
+      "surrounding_source_references": [
+        {
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "evidence_kind": "commented source text; not an executable declaration",
+          "object_id": "80e97fbdb88aff55252f525c9b2c2da9bf378fad",
+          "path": "src/external/xcbuild/CMakeLists.txt",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "bff46892cfb45b75dbd746771897d7c69605fafdb2ca219c179d5c551d65360e",
+          "source_evidence": [
+            {
+              "line": 49,
+              "text": "add_subdirectory(Libraries)"
+            },
+            {
+              "line": 50,
+              "text": "#add_subdirectory(Specifications)"
+            }
+          ],
+          "source_path": "CMakeLists.txt"
+        }
+      ]
+    },
+    {
+      "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+      "consumer_declarations": [
+        {
+          "command": "add_subdirectory",
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "context": [],
+          "end_line": 15,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 15,
+          "object_id": "db077ac6b02d95f6ddfd5cebd0d9f2459b0ee91c",
+          "path": "src/external/xcbuild/Specifications/CMakeLists.txt",
+          "raw": "add_subdirectory(BuildSystem)",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "673546a948e75ef9c7b49d0e2cf296213aa206affe67794a6b1078903309085c",
+          "source_path": "Specifications/CMakeLists.txt"
+        }
+      ],
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "cdd9c7478cb27abedf81366023947b0eca038c4b",
+      "original_parse_error": "src/external/xcbuild/Specifications/BuildSystem/CMakeLists.txt:11: expected command opening parenthesis",
+      "path": "src/external/xcbuild/Specifications/BuildSystem/CMakeLists.txt",
+      "rationale": "Only the install opening line is commented. Subsequent asset arguments and the final closing parenthesis remain bare, so this committed file is not a valid standalone CMake command sequence. The parent Specifications file declares this child; the project-level Specifications edge is commented.",
+      "reachability": "unknown",
+      "repository_path": "src/external/xcbuild",
+      "review_gate": "Do not infer global unreachability: dynamic or other entry paths have not been evaluated. Any future activation requires an intentional semantics-preserving source repair plus configuration, asset/install and supported-platform validation.",
+      "role": "malformed-commented-install-body",
+      "sha256": "adf13137bcac2289a7e465bdc71909f1e9b49eaa1b0c7f01b0732c145394edc7",
+      "source_evidence": [
+        {
+          "line": 10,
+          "text": "#install(FILES"
+        },
+        {
+          "line": 11,
+          "text": "        com.apple.build-system.core.xcspec"
+        },
+        {
+          "line": 16,
+          "text": "        DESTINATION Library/Xcode/Specifications)"
+        }
+      ],
+      "source_path": "Specifications/BuildSystem/CMakeLists.txt",
+      "surrounding_source_references": [
+        {
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "evidence_kind": "commented source text; not an executable declaration",
+          "object_id": "80e97fbdb88aff55252f525c9b2c2da9bf378fad",
+          "path": "src/external/xcbuild/CMakeLists.txt",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "bff46892cfb45b75dbd746771897d7c69605fafdb2ca219c179d5c551d65360e",
+          "source_evidence": [
+            {
+              "line": 49,
+              "text": "add_subdirectory(Libraries)"
+            },
+            {
+              "line": 50,
+              "text": "#add_subdirectory(Specifications)"
+            }
+          ],
+          "source_path": "CMakeLists.txt"
+        }
+      ]
+    },
+    {
+      "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+      "consumer_declarations": [
+        {
+          "command": "add_subdirectory",
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "context": [],
+          "end_line": 16,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 16,
+          "object_id": "db077ac6b02d95f6ddfd5cebd0d9f2459b0ee91c",
+          "path": "src/external/xcbuild/Specifications/CMakeLists.txt",
+          "raw": "add_subdirectory(Compiler)",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "673546a948e75ef9c7b49d0e2cf296213aa206affe67794a6b1078903309085c",
+          "source_path": "Specifications/CMakeLists.txt"
+        }
+      ],
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "05e4b11ab77130b975bbe4e195fd98e172ae4365",
+      "original_parse_error": "src/external/xcbuild/Specifications/Compiler/CMakeLists.txt:11: expected command opening parenthesis",
+      "path": "src/external/xcbuild/Specifications/Compiler/CMakeLists.txt",
+      "rationale": "Only the install opening line is commented. Subsequent asset arguments and the final closing parenthesis remain bare, so this committed file is not a valid standalone CMake command sequence. The parent Specifications file declares this child; the project-level Specifications edge is commented.",
+      "reachability": "unknown",
+      "repository_path": "src/external/xcbuild",
+      "review_gate": "Do not infer global unreachability: dynamic or other entry paths have not been evaluated. Any future activation requires an intentional semantics-preserving source repair plus configuration, asset/install and supported-platform validation.",
+      "role": "malformed-commented-install-body",
+      "sha256": "f0bd36dc5e49eb2b19c2c1b998c1fd3312c735874bf0e246615598aa008afbbf",
+      "source_evidence": [
+        {
+          "line": 10,
+          "text": "#install(FILES"
+        },
+        {
+          "line": 11,
+          "text": "        com.apple.build-tasks.copy-tiff-file.xcspec"
+        },
+        {
+          "line": 30,
+          "text": "        DESTINATION Library/Xcode/Specifications)"
+        }
+      ],
+      "source_path": "Specifications/Compiler/CMakeLists.txt",
+      "surrounding_source_references": [
+        {
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "evidence_kind": "commented source text; not an executable declaration",
+          "object_id": "80e97fbdb88aff55252f525c9b2c2da9bf378fad",
+          "path": "src/external/xcbuild/CMakeLists.txt",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "bff46892cfb45b75dbd746771897d7c69605fafdb2ca219c179d5c551d65360e",
+          "source_evidence": [
+            {
+              "line": 49,
+              "text": "add_subdirectory(Libraries)"
+            },
+            {
+              "line": 50,
+              "text": "#add_subdirectory(Specifications)"
+            }
+          ],
+          "source_path": "CMakeLists.txt"
+        }
+      ]
+    },
+    {
+      "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+      "consumer_declarations": [
+        {
+          "command": "add_subdirectory",
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "context": [],
+          "end_line": 17,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 17,
+          "object_id": "db077ac6b02d95f6ddfd5cebd0d9f2459b0ee91c",
+          "path": "src/external/xcbuild/Specifications/CMakeLists.txt",
+          "raw": "add_subdirectory(FileType)",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "673546a948e75ef9c7b49d0e2cf296213aa206affe67794a6b1078903309085c",
+          "source_path": "Specifications/CMakeLists.txt"
+        }
+      ],
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "ad8b8cd5b074beffa12d99ec1ba9865a88e6dc99",
+      "original_parse_error": "src/external/xcbuild/Specifications/FileType/CMakeLists.txt:11: expected command opening parenthesis",
+      "path": "src/external/xcbuild/Specifications/FileType/CMakeLists.txt",
+      "rationale": "Only the install opening line is commented. Subsequent asset arguments and the final closing parenthesis remain bare, so this committed file is not a valid standalone CMake command sequence. The parent Specifications file declares this child; the project-level Specifications edge is commented.",
+      "reachability": "unknown",
+      "repository_path": "src/external/xcbuild",
+      "review_gate": "Do not infer global unreachability: dynamic or other entry paths have not been evaluated. Any future activation requires an intentional semantics-preserving source repair plus configuration, asset/install and supported-platform validation.",
+      "role": "malformed-commented-install-body",
+      "sha256": "654a680c14b9a1c71a802578f8b4bb395777a4c9a9c81acb46869a351f7aa4a3",
+      "source_evidence": [
+        {
+          "line": 10,
+          "text": "#install(FILES"
+        },
+        {
+          "line": 11,
+          "text": "        archive.ar.xcspec"
+        },
+        {
+          "line": 183,
+          "text": "        DESTINATION Library/Xcode/Specifications)"
+        }
+      ],
+      "source_path": "Specifications/FileType/CMakeLists.txt",
+      "surrounding_source_references": [
+        {
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "evidence_kind": "commented source text; not an executable declaration",
+          "object_id": "80e97fbdb88aff55252f525c9b2c2da9bf378fad",
+          "path": "src/external/xcbuild/CMakeLists.txt",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "bff46892cfb45b75dbd746771897d7c69605fafdb2ca219c179d5c551d65360e",
+          "source_evidence": [
+            {
+              "line": 49,
+              "text": "add_subdirectory(Libraries)"
+            },
+            {
+              "line": 50,
+              "text": "#add_subdirectory(Specifications)"
+            }
+          ],
+          "source_path": "CMakeLists.txt"
+        }
+      ]
+    },
+    {
+      "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+      "consumer_declarations": [
+        {
+          "command": "add_subdirectory",
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "context": [],
+          "end_line": 18,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 18,
+          "object_id": "db077ac6b02d95f6ddfd5cebd0d9f2459b0ee91c",
+          "path": "src/external/xcbuild/Specifications/CMakeLists.txt",
+          "raw": "add_subdirectory(Linker)",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "673546a948e75ef9c7b49d0e2cf296213aa206affe67794a6b1078903309085c",
+          "source_path": "Specifications/CMakeLists.txt"
+        }
+      ],
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "4740cebaab7e229c9041ad05913cfa8e68213c44",
+      "original_parse_error": "src/external/xcbuild/Specifications/Linker/CMakeLists.txt:11: expected command opening parenthesis",
+      "path": "src/external/xcbuild/Specifications/Linker/CMakeLists.txt",
+      "rationale": "Only the install opening line is commented. Subsequent asset arguments and the final closing parenthesis remain bare, so this committed file is not a valid standalone CMake command sequence. The parent Specifications file declares this child; the project-level Specifications edge is commented.",
+      "reachability": "unknown",
+      "repository_path": "src/external/xcbuild",
+      "review_gate": "Do not infer global unreachability: dynamic or other entry paths have not been evaluated. Any future activation requires an intentional semantics-preserving source repair plus configuration, asset/install and supported-platform validation.",
+      "role": "malformed-commented-install-body",
+      "sha256": "3e26fcb8c00a12d428cfe5654d90f36a1cf356b44773d8ef43641851c102ddb8",
+      "source_evidence": [
+        {
+          "line": 10,
+          "text": "#install(FILES"
+        },
+        {
+          "line": 11,
+          "text": "        com.apple.pbx.linkers.ld.xcspec"
+        },
+        {
+          "line": 14,
+          "text": "        DESTINATION Library/Xcode/Specifications)"
+        }
+      ],
+      "source_path": "Specifications/Linker/CMakeLists.txt",
+      "surrounding_source_references": [
+        {
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "evidence_kind": "commented source text; not an executable declaration",
+          "object_id": "80e97fbdb88aff55252f525c9b2c2da9bf378fad",
+          "path": "src/external/xcbuild/CMakeLists.txt",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "bff46892cfb45b75dbd746771897d7c69605fafdb2ca219c179d5c551d65360e",
+          "source_evidence": [
+            {
+              "line": 49,
+              "text": "add_subdirectory(Libraries)"
+            },
+            {
+              "line": 50,
+              "text": "#add_subdirectory(Specifications)"
+            }
+          ],
+          "source_path": "CMakeLists.txt"
+        }
+      ]
+    },
+    {
+      "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+      "consumer_declarations": [
+        {
+          "command": "add_subdirectory",
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "context": [],
+          "end_line": 19,
+          "evidence_kind": "lexical declaration; execution and variable expansion unresolved",
+          "line": 19,
+          "object_id": "db077ac6b02d95f6ddfd5cebd0d9f2459b0ee91c",
+          "path": "src/external/xcbuild/Specifications/CMakeLists.txt",
+          "raw": "add_subdirectory(Tool)",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "673546a948e75ef9c7b49d0e2cf296213aa206affe67794a6b1078903309085c",
+          "source_path": "Specifications/CMakeLists.txt"
+        }
+      ],
+      "declaration_or_role_presence_establishes_execution": false,
+      "lexical_parse_status": "invalid-or-non-script",
+      "object_id": "649100d2b3d2f4067f654a690e522b884db56bf8",
+      "original_parse_error": "src/external/xcbuild/Specifications/Tool/CMakeLists.txt:11: expected command opening parenthesis",
+      "path": "src/external/xcbuild/Specifications/Tool/CMakeLists.txt",
+      "rationale": "Only the install opening line is commented. Subsequent asset arguments and the final closing parenthesis remain bare, so this committed file is not a valid standalone CMake command sequence. The parent Specifications file declares this child; the project-level Specifications edge is commented.",
+      "reachability": "unknown",
+      "repository_path": "src/external/xcbuild",
+      "review_gate": "Do not infer global unreachability: dynamic or other entry paths have not been evaluated. Any future activation requires an intentional semantics-preserving source repair plus configuration, asset/install and supported-platform validation.",
+      "role": "malformed-commented-install-body",
+      "sha256": "323a99ed0a697208488cc4a3e54812bdafc794d76d0d510f24c6eb4d2370a033",
+      "source_evidence": [
+        {
+          "line": 10,
+          "text": "#install(FILES"
+        },
+        {
+          "line": 11,
+          "text": "        com.apple.build-tools.nmedit.xcspec"
+        },
+        {
+          "line": 30,
+          "text": "        DESTINATION Library/Xcode/Specifications)"
+        }
+      ],
+      "source_path": "Specifications/Tool/CMakeLists.txt",
+      "surrounding_source_references": [
+        {
+          "commit": "a903c6952fc5617816113cbb7b551ac701dba2ff",
+          "evidence_kind": "commented source text; not an executable declaration",
+          "object_id": "80e97fbdb88aff55252f525c9b2c2da9bf378fad",
+          "path": "src/external/xcbuild/CMakeLists.txt",
+          "repository_path": "src/external/xcbuild",
+          "sha256": "bff46892cfb45b75dbd746771897d7c69605fafdb2ca219c179d5c551d65360e",
+          "source_evidence": [
+            {
+              "line": 49,
+              "text": "add_subdirectory(Libraries)"
+            },
+            {
+              "line": 50,
+              "text": "#add_subdirectory(Specifications)"
+            }
+          ],
+          "source_path": "CMakeLists.txt"
+        }
+      ]
+    }
+  ],
+  "inputs": {
+    "declaration_inventory_path": "work/cmake-declarations-agent-v3.json",
+    "declaration_inventory_sha256": "6904e6d9f47ad1e6a30acf8580b2b2e8f9bb8f08d27d1d22322e5129416c5614",
+    "review_generator_path": "work/review-cmake-input-roles.py",
+    "review_generator_sha256": "9fc0aff897024774db8728b1e57325f0fbf3bbe265e99d49435cc54ee9ff5bab"
+  },
+  "remaining_gates": [
+    "All conditions, variable expansions, generated contents, dynamic include/subdirectory paths, tool side effects, supported configurations, architecture and installation semantics require separate evidence.",
+    "No default graph omission is used to infer that an input or optional scope is unreachable.",
+    "The declaration inventory remains lexically invalid for the original 15 raw inputs; this role review does not rewrite, repair or execute them.",
+    "Runtime/resources ownership and correctness/performance gates remain unfinished and inactive."
+  ],
+  "reviewed_files": 15,
+  "schema_version": 1,
+  "scope": "Exact-source role review of all 15 unparsed CMake-suffix/category inventory inputs; no CMake configuration, execution, activation or migration completion.",
+  "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff"
+}

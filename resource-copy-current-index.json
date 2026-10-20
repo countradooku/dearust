@@ -1,0 +1,334 @@
+{
+  "blocked_checks_retried": false,
+  "darwin_abi": {
+    "command": "CARGO_TARGET_DIR=work/resource-copy-next/workspace-target cargo test -p dearust-xtask --test runtime darwin_objects_preserve_exact_c_abi_and_staging -- --ignored --exact",
+    "exit_code": 0,
+    "passed": 1,
+    "path": "work/resource-copy-next/darwin-abi-check.log",
+    "sha256": "db8ee8d7cd61f3ac3deedf6ead9d921956f27014ca630cd139663479f11676b8"
+  },
+  "evidence": {
+    "copy_component": {
+      "path": "work/resource-copy-next/verification.json",
+      "sha256": "2968a924015f84341d302e6f45ae08a347d01b78b3b7744eeb69a60c8d9c2ae6"
+    },
+    "current_recorder": {
+      "path": "tools/record_resource_copy_progress.py",
+      "sha256": "94dd23873764edb351c916e5ddb141fd3d9491470cfcceab8cfe63fdf2c11cb6"
+    },
+    "historical_lifecycle": {
+      "path": "resource-lifecycle-current-index.json",
+      "sha256": "de247e2d8f85fb62731d4d55bac0c2bfb0b31f0b5e115299c49e80304a6b5d94"
+    },
+    "snapshot_component": {
+      "path": "work/resource-policy-next/verification.json",
+      "sha256": "fef9acac50b5d93712c15089c33c14fdf34d19353a28ed7af34201e2f91febad"
+    }
+  },
+  "guest": {
+    "cohorts": [
+      {
+        "group": "guards",
+        "path": "work/resource-copy-next/guests-complete/guards/comparison.json",
+        "sha256": "da08bdfef3ecb6e4a285af2ea306e989bcdc544765ddf046f7b9c92fc25295d6"
+      },
+      {
+        "group": "filesystem",
+        "path": "work/resource-copy-next/guests-complete/filesystem/comparison.json",
+        "sha256": "b8fc94bf816d56df2d82dd2324bae2055448b2b78e7fa7b47d1ab6800a4f83fd"
+      },
+      {
+        "group": "existing",
+        "path": "work/resource-copy-next/guests-complete/existing/comparison.json",
+        "sha256": "b68baf0ff5b8042ec73a4db60cc5f802826a05b304620ea8cb98a4cdb546ea38"
+      },
+      {
+        "group": "apps",
+        "path": "work/resource-copy-next/guests-complete/apps/comparison.json",
+        "sha256": "e78e8b43e466418b49e2e312442dce82378fc59a3a5c94cfa2085bee9e5d2070"
+      },
+      {
+        "group": "resources",
+        "path": "work/resource-copy-next/guests-complete/resources/comparison.json",
+        "sha256": "274a9a4b2c39eb41860a889469a3aea1b0aeed979ef13b9710af43c441f30811"
+      }
+    ],
+    "executions": 88,
+    "kernel": {
+      "path": "work/resource-copy-next/matching-simd/libsystem_kernel-rust.dylib",
+      "sha256": "2e413374080b96d4828521995425b4f8ff30ecbd917352e381314d9b128b1a26"
+    },
+    "loader": {
+      "path": "work/resources-complete/loader12/mldr",
+      "sha256": "60046ab06fe63360b819233e64cec40612010c20392b322a7b21e8340ff85b78"
+    },
+    "run": {
+      "path": "work/resource-copy-next/guests-complete/run.json",
+      "sha256": "5f48a5704cc917c250ab40d1069de0c1d17fd3b2527e4eb99626bfce85ea0759"
+    },
+    "server": {
+      "path": "work/resource-death-continuation/lockset57-single/server/linked/darlingserver",
+      "sha256": "2f14c74906faa6ca5f14ea6080ca648ec1339fb0d705538b0dabce536c356936"
+    },
+    "slots": "Same owned server57/loader12/current SIMD kernel in both slots; not C versus Rust.",
+    "strict_passes": 88
+  },
+  "guest_comparison": {
+    "SIMD": {
+      "median_cpu_us": 1.0975,
+      "median_wall_us": 1.10675,
+      "q1_cpu_us": 1.091925,
+      "q3_cpu_us": 1.112975
+    },
+    "cpu_change_percent": 0.5589151548469617,
+    "previous": {
+      "median_cpu_us": 1.0914000000000001,
+      "median_wall_us": 1.0968,
+      "q1_cpu_us": 1.08295,
+      "q3_cpu_us": 1.09645
+    }
+  },
+  "implemented_checks_passed": true,
+  "links": {
+    "matching": {
+      "all_original_input_paths_and_hashes_unchanged": true,
+      "all_replacements_except_paths_unchanged": true,
+      "changed_paths_replacements": 24,
+      "imports_match_original": true,
+      "new_kernel_sha256": "2e413374080b96d4828521995425b4f8ff30ecbd917352e381314d9b128b1a26",
+      "new_paths_sha256": "d9d7e22cab70e4b551dc11deb90c7f60b20b9ba39d722c7ab666c6d4d5ca630b",
+      "old_kernel_sha256": "1914e257be34c877f7ab266378b195b538840b0881a4f6a0c93bf4a333242854",
+      "old_paths_sha256": "e8743f9c29ed370d0688cee5780d73a86e30315687917e858b8895c6d877edbf",
+      "original_input_count": 892,
+      "process_object_sha256": "2a8f435199649c0373050123de928768fe44de2b0eccfe54199eb23d0294fe68",
+      "public_definitions": 1370
+    },
+    "pinned": {
+      "all_recorded_input_hashes_unchanged": true,
+      "i386_preserved_byte_identical": true,
+      "i386_slice_sha256": "d6577770fd4877197fd3818af990cff5de7566a420ede74207394d6faac4eed0",
+      "import_symbol_sets_identical": true,
+      "kernel_sha256": "5bd63d0d43238258c41545d287a1fbb3ff5c506bb885337eb2101e5ee6a8190e",
+      "only_changed_replacement": "paths.o",
+      "public_definitions": 1362,
+      "public_symbol_sets_identical": true,
+      "recorded_inputs": 911,
+      "scope": "Owned full pinned kernel link only; no runtime execution, installation, production activation or target retirement.",
+      "undefined_imports": 18
+    }
+  },
+  "multiworker_gate_passed": false,
+  "native_comparison": {
+    "crosspage": {
+      "C-guarded": {
+        "cold_ns": 2234,
+        "median_cpu_ns": 1060.17252,
+        "p99_ns": 1202,
+        "private_dirty_kib": 116,
+        "q1_cpu_ns": 1048.96886,
+        "q3_cpu_ns": 1069.15326,
+        "rss_kib": 1752
+      },
+      "SIMD-fallback": {
+        "change_vs_previous_percent": -0.5024468807502069,
+        "cold_ns": 8777,
+        "median_cpu_ns": 5626.9686,
+        "p99_ns": 6322,
+        "private_dirty_kib": 116,
+        "q1_cpu_ns": 5605.85494,
+        "q3_cpu_ns": 5665.0812,
+        "rss_kib": 1736
+      },
+      "SIMD-guarded": {
+        "change_vs_previous_percent": -0.8658074850850128,
+        "cold_ns": 3276,
+        "median_cpu_ns": 1760.88192,
+        "p99_ns": 1933,
+        "private_dirty_kib": 116,
+        "q1_cpu_ns": 1748.60712,
+        "q3_cpu_ns": 1778.86028,
+        "rss_kib": 1740
+      },
+      "previous-fallback": {
+        "cold_ns": 8857,
+        "median_cpu_ns": 5655.3839,
+        "p99_ns": 7273,
+        "private_dirty_kib": 116,
+        "q1_cpu_ns": 5607.4778,
+        "q3_cpu_ns": 5677.65768,
+        "rss_kib": 1744
+      },
+      "previous-guarded": {
+        "cold_ns": 3096,
+        "median_cpu_ns": 1776.26092,
+        "p99_ns": 1954,
+        "private_dirty_kib": 116,
+        "q1_cpu_ns": 1755.51748,
+        "q3_cpu_ns": 1786.92446,
+        "rss_kib": 1744
+      }
+    },
+    "heap": {
+      "C-guarded": {
+        "cold_ns": 2245,
+        "median_cpu_ns": 1051.17192,
+        "p99_ns": 1363,
+        "private_dirty_kib": 112,
+        "q1_cpu_ns": 1047.32104,
+        "q3_cpu_ns": 1059.14068,
+        "rss_kib": 1744
+      },
+      "SIMD-fallback": {
+        "change_vs_previous_percent": -0.14447038671081547,
+        "cold_ns": 8215,
+        "median_cpu_ns": 5253.38072,
+        "p99_ns": 6752,
+        "private_dirty_kib": 112,
+        "q1_cpu_ns": 5214.92838,
+        "q3_cpu_ns": 5310.10962,
+        "rss_kib": 1740
+      },
+      "SIMD-guarded": {
+        "change_vs_previous_percent": -0.4547717224108294,
+        "cold_ns": 3146,
+        "median_cpu_ns": 1773.49494,
+        "p99_ns": 2385,
+        "private_dirty_kib": 112,
+        "q1_cpu_ns": 1765.21324,
+        "q3_cpu_ns": 1786.98124,
+        "rss_kib": 1744
+      },
+      "previous-fallback": {
+        "cold_ns": 8736,
+        "median_cpu_ns": 5260.98128,
+        "p99_ns": 7284,
+        "private_dirty_kib": 112,
+        "q1_cpu_ns": 5232.12396,
+        "q3_cpu_ns": 5304.47774,
+        "rss_kib": 1792
+      },
+      "previous-guarded": {
+        "cold_ns": 3166,
+        "median_cpu_ns": 1781.59714,
+        "p99_ns": 2265,
+        "private_dirty_kib": 112,
+        "q1_cpu_ns": 1766.4554,
+        "q3_cpu_ns": 1796.19626,
+        "rss_kib": 1744
+      }
+    },
+    "stack": {
+      "C-guarded": {
+        "cold_ns": 2164,
+        "median_cpu_ns": 1044.08332,
+        "p99_ns": 1122,
+        "private_dirty_kib": 112,
+        "q1_cpu_ns": 1039.59728,
+        "q3_cpu_ns": 1054.00166,
+        "rss_kib": 1728
+      },
+      "SIMD-fallback": {
+        "change_vs_previous_percent": -0.20054271651407385,
+        "cold_ns": 8275,
+        "median_cpu_ns": 5243.70518,
+        "p99_ns": 5791,
+        "private_dirty_kib": 112,
+        "q1_cpu_ns": 5210.93068,
+        "q3_cpu_ns": 5270.5743,
+        "rss_kib": 1728
+      },
+      "SIMD-guarded": {
+        "change_vs_previous_percent": 0.15424138467190485,
+        "cold_ns": 2615,
+        "median_cpu_ns": 1071.07714,
+        "p99_ns": 1303,
+        "private_dirty_kib": 112,
+        "q1_cpu_ns": 1064.71818,
+        "q3_cpu_ns": 1741.37234,
+        "rss_kib": 1736
+      },
+      "previous-fallback": {
+        "cold_ns": 8666,
+        "median_cpu_ns": 5254.24218,
+        "p99_ns": 5771,
+        "private_dirty_kib": 112,
+        "q1_cpu_ns": 5231.02224,
+        "q3_cpu_ns": 5283.02116,
+        "rss_kib": 1732
+      },
+      "previous-guarded": {
+        "cold_ns": 2354,
+        "median_cpu_ns": 1069.42764,
+        "p99_ns": 1163,
+        "private_dirty_kib": 112,
+        "q1_cpu_ns": 1060.34322,
+        "q3_cpu_ns": 1077.37286,
+        "rss_kib": 1728
+      }
+    }
+  },
+  "open_gates": [
+    "Review-stopped intrusive C wait-admission work remains inactive and multiworker lockset remains failing; it was not retried or transferred.",
+    "Resource ownership/enforcement and inactive view integration, VM/credential/NPROC/fork/exec/cancellation/architecture/fault/shutdown gates remain unfinished.",
+    "Generic heap/crosspage copy CPU remains materially above C; this loop change does not resolve the required fresh mask-query cost.",
+    "Exact-pinned CMake declaration coverage is lexical; fifteen inputs remain unparsed and configuration/reachability/handwritten semantics are unverified."
+  ],
+  "performance_gate_passed": false,
+  "performance_scope": "Native exact C/previous/current cohorts and guest previous/current ABBA retain raw samples. C retains known output-conversion defects. Effects below1percent with overlapping distributions do not establish a material speedup; generic heap/crosspage CPU remains about68percent above exact C. No constant eligibility or memory advantage inferred.",
+  "preservation": {
+    "preserved-candidates.json": {
+      "count": 23,
+      "path": "work/resource-death-continuation/preserved-candidates.json",
+      "sha256": "44193fa8bc08dccf0706d44a546daecd2272e3d7f04127adfbd705bfec4a1f23"
+    },
+    "stopped-wip-preservation4.json": {
+      "count": 11,
+      "path": "work/resource-death-continuation/stopped-wip-preservation4.json",
+      "sha256": "b6c41aea6096bc40858253c285b8facc7886c4d462db0532e1075ba5741a95e1"
+    }
+  },
+  "python": {
+    "command": "python3 -m unittest discover -s tools -p 'test_*.py' -v",
+    "count": 115,
+    "exit_code": 0,
+    "path": "work/resource-copy-next/python-current.log",
+    "sha256": "6b6c622181b82d24d675e2fc548bc42f2a517cce7017018f95d40f39e450f56e"
+  },
+  "resource_complete": false,
+  "resource_ownership_activated": false,
+  "schema_version": 1,
+  "scope": "Current resource copy loop and inactive snapshot foundation only; complete resource/multiworker/architecture/performance acceptance remains open.",
+  "source_sha256": {
+    "crates/dearust-path/SAFETY-MEMORY.txt": "f36dc833de0be4aa02a569b1868ed7606cf1e8066c87b00ac0c54d643ee197d8",
+    "crates/dearust-path/src/abi/guarded.rs": "e3bb9c74c0df88fc2ab4bc5b84d4781c263a58ef5b08e15a70610a4db071dfce",
+    "crates/dearust-process/SAFETY-RESOURCES.txt": "190d1dd321a55cc415fbf56a843c97237718faea9a24891897b8634beeb38d3f",
+    "crates/dearust-process/src/resource_view.rs": "f5fc6e53f37077f4ae77c8bf279f13c2330e3fb897a3801579d1cdef0445baf7",
+    "tools/check_resource_copy_simd.py": "274968a4beb73c821f641b8d87666494a6b2fb59875712bdc6982e4f967408f8",
+    "tools/fixtures/resource-copy-simd-native.c": "4611852d0914318c174209b504a16ec6b6cd0aad8f70000fd0d235ab08e45abc"
+  },
+  "stack_tail_followup": {
+    "SIMD": {
+      "median_cpu_ns": 1057.9902,
+      "median_p99_ns": 1102,
+      "q1_cpu_ns": 1050.6432,
+      "q3_cpu_ns": 1065.0763,
+      "slow_processes_above_1500ns": 12
+    },
+    "median_change_percent": -0.21107722008123497,
+    "previous": {
+      "median_cpu_ns": 1060.2281,
+      "median_p99_ns": 1113,
+      "q1_cpu_ns": 1054.7603,
+      "q3_cpu_ns": 1749.0229,
+      "slow_processes_above_1500ns": 33
+    }
+  },
+  "workspace": {
+    "command": "CARGO_TARGET_DIR=work/resource-copy-next/workspace-target cargo xtask check",
+    "compile_fail": 11,
+    "exit_code": 0,
+    "ordinary": 214,
+    "path": "work/resource-copy-next/workspace-check.log",
+    "sha256": "b8b41a9e4bb2c5dd95bee0c211dd17c75b732506e430e9ec5748df4a3a4eb5c6"
+  }
+}
