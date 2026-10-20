@@ -1,0 +1,84 @@
+#include <atomic>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <new>
+#include <mutex>
+#include <shared_mutex>
+#include <thread>
+#include <ucontext.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+#include "semaphore-model.h"
+static std::atomic<bool> deny{false};static std::atomic<unsigned> denied{0};
+void* operator new(size_t n){if(deny.load()){++denied;throw std::bad_alloc();}if(auto*p=std::malloc(n?n:1))return p;throw std::bad_alloc();}
+void operator delete(void*p) noexcept{std::free(p);}void operator delete(void*p,size_t) noexcept{std::free(p);}
+@DECLARATIONS@
+struct Process {
+    std::shared_mutex _rwlock;
+    bool _dead=false,_resourceCleanupQueued=false;
+    dtape_semaphore_t* _dtapeForkWaitSemaphore=nullptr;
+    std::atomic<bool> listenerLockAcquired{false};
+    void notifyFork(){auto* parent=this;
+@SIGNAL@
+        _notifyListeningKqchannels();
+    }
+    void _notifyListeningKqchannels(){if(_rwlock.try_lock_shared()){listenerLockAcquired=true;_rwlock.unlock_shared();}}
+};
+static Process process;
+static ucontext_t fiber,returnA,returnB;
+alignas(16) static unsigned char stackMemory[256*1024];
+static std::atomic<bool> runA{false},parked{false},runB{false},done{false};
+static std::atomic<int> acquiredNative{0},resumedNative{0};
+extern "C" void native_fixture_migrate(){
+    acquiredNative=static_cast<int>(syscall(SYS_gettid));
+    assert(swapcontext(&fiber,&returnA)==0);
+    resumedNative=static_cast<int>(syscall(SYS_gettid));
+    assert(acquiredNative!=resumedNative);
+}
+static void fiberMain(){process.notifyFork();done=true;assert(setcontext(&returnB)==0);std::abort();}
+template<class P>static void waitFor(P p){auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(5);while(!p()){assert(std::chrono::steady_clock::now()<deadline);std::this_thread::yield();}}
+static void one(bool retire){
+    process._dead=false;process._resourceCleanupQueued=false;process.listenerLockAcquired=false;
+    process._dtapeForkWaitSemaphore=model_semaphore_create();
+    runA=false;parked=false;runB=false;done=false;
+    assert(getcontext(&fiber)==0);fiber.uc_stack.ss_sp=stackMemory;fiber.uc_stack.ss_size=sizeof(stackMemory);fiber.uc_link=nullptr;makecontext(&fiber,fiberMain,0);
+    std::thread a([]{waitFor([]{return runA.load();});assert(swapcontext(&returnA,&fiber)==0);parked=true;});
+    std::thread b([]{waitFor([]{return runB.load();});assert(swapcontext(&returnB,&fiber)==0);});
+    deny=true;runA=true;waitFor([]{return parked.load();});
+#ifndef BEFORE_FORK_SIGNAL_FIX
+    // The owner lock is available while foreign signaling is suspended; the
+    // retained XNU structure outlives wrapper/task-side retirement.
+    assert(model_live_semaphores()==1&&model_reference_count()==2);
+    if(retire){
+        std::unique_lock lock(process._rwlock);process._dead=true;
+        model_semaphore_destroy(process._dtapeForkWaitSemaphore);process._dtapeForkWaitSemaphore=nullptr;
+        assert(model_live_semaphores()==1&&model_reference_count()==1);
+    }
+#else
+    (void)retire;
+#endif
+    runB=true;a.join();b.join();assert(done);
+#ifdef BEFORE_FORK_SIGNAL_FIX
+    assert(!process.listenerLockAcquired);
+    assert(model_live_semaphores()==1&&model_reference_count()==1);
+#else
+    assert(process.listenerLockAcquired);
+    if(!retire){assert(model_reference_count()==1);model_semaphore_destroy(process._dtapeForkWaitSemaphore);process._dtapeForkWaitSemaphore=nullptr;}
+    assert(model_live_semaphores()==0);
+#endif
+    deny=false;
+}
+int main(){
+#ifdef BEFORE_FORK_SIGNAL_FIX
+    one(false);assert(denied==0);
+    std::printf("{\"wrong_native_unlock_reproduced\":true,\"subsequent_shared_lock_failed\":true,\"acquired_native\":%d,\"resumed_native\":%d,\"denied_allocations\":0}\n",acquiredNative.load(),resumedNative.load());std::fflush(stdout);
+    // Baseline intentionally violates native rwlock ownership. Leave its
+    // corrupted rwlock in this subprocess rather than destructing/reusing it.
+    std::_Exit(0);
+#else
+    for(unsigned i=0;i<32;++i)one(i%2);
+    assert(denied==0&&model_successful_signals()==16&&model_terminated_signals()==16);
+    std::puts("{\"native_migrations\":32,\"live_signals\":16,\"retirement_races\":16,\"all_listener_locks_available\":true,\"all_references_released\":true,\"denied_allocations\":0}");
+#endif
+}

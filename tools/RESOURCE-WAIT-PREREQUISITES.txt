@@ -1,0 +1,51 @@
+Resource registration and wait prerequisites — candidate implementation
+======================================================================
+
+This records the source version used by owned builds54/55. Resource logical
+ownership/enforcement remains inactive. No runtime was installed. These C/C++
+prerequisites and a partial Rust lockset correction are not source replacements,
+target retirement, whole resource completion, or a performance acceptance.
+
+Prepared Registry factories and C acquisition run outside native Registry locks;
+private index nodes and in-flight capacity budgets precede publication. Reserved
+EIDs are consumed on abort. Process/task pins finish on the allocation-free
+kernel cleanup lane. Bootstrap Thread map nodes are staged privately, including
+when an active kernel helper already exists. Focused native and ASan/UBSan tests
+cover reentry, native-worker migration, competing publication and bounded capacity.
+
+The fork checkin signal pins its XNU semaphore under the parent Process lock,
+then signals/releases outside that native lock. Impersonation claims are exclusive
+and preserve pending work. Native dispatch no longer rewrites logical XNU wait
+state. A wake permission is consumed before entering a saved suspension, so a
+reserved queue retry alone cannot resume a later unrelated wait.
+
+Kernel-async synchronous submission prepares a list node and runner storage
+before acceptance, uses RAII for its native interlock, and commits a nonthrowing
+splice. The executing runner callback body remains unchanged; the stopped
+closure-lifetime ownership work remains inactive. Additional per-submission
+allocation and broader performance costs remain open gates.
+
+Rust lockset state no longer holds REGISTRY across suspension-capable C calls.
+Stable event tokens pin foreign wait/wake identity, with pure predicate rechecks
+after wait registration. Port conversion and cleanup preserve references outside
+Rust guards. Queue-first event/thread-matched cancellation avoids clear_wait's
+nested-delay wait: trace53 and the native regression reproduce the old panic.
+
+Evidence under work/resource-death-continuation/:
+  registration-lock-scope/proof5, bootstrap-thread-storage/proof2,
+  impersonation-handoff/proof4, fork-signal/proof1,
+  kernel-async-submission/proof3, resume-consumption/proof2,
+  xnu-wait-state/proof3, lockset-registry/proof6, lockset-cancel/proof1.
+These proofs have explicit modeled foreign boundaries and do not establish a
+whole-scheduler or adversarial RPC result. Blocked checks were not retried.
+
+Owned54 single-worker passes all88 retained cases, including corrected thread-info
+and 300000-lock Mach workloads. Owned55 multiworker still corrupts a C mutex
+intrusive waiter queue. Actual trace56 records the same mutex_link enqueued twice
+without removal, after an unrelated XNU wake. That defect and interruption
+precedence are being corrected separately; multiworker acceptance is OPEN here.
+Reverse XNU impersonation wake identity, complete lifecycle/fault coverage,
+architecture/ABI enforcement, resource policy and performance gates remain open.
+All old binaries, failed candidates, original dirty files and stopped WIP remain
+preserved. See subsequent lifecycle index for later evidence; do not relabel
+historical failures when later source changes pass.

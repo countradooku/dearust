@@ -1,0 +1,87 @@
+#include <atomic>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <memory>
+#include <mutex>
+#include <new>
+#include <shared_mutex>
+#include <stdexcept>
+#include <system_error>
+#include <unordered_map>
+#include <functional>
+static bool deny=false;static unsigned denied=0;
+void* operator new(size_t n){if(deny){++denied;throw std::bad_alloc();}if(auto*p=std::malloc(n?n:1))return p;throw std::bad_alloc();}
+void operator delete(void*p)noexcept{std::free(p);}void operator delete(void*p,size_t)noexcept{std::free(p);}
+struct dtape_task_t{};struct dtape_thread_t{dtape_task_t* task=nullptr;};
+extern "C" dtape_task_t* dearust_thread_owning_task(dtape_thread_t* t){return t->task;}
+namespace DarlingServer {
+class Thread;
+class Process {public:
+    std::shared_mutex _rwlock;bool _dead=false,_resourceCleanupQueued=false;
+    std::unordered_map<uint64_t,std::weak_ptr<Thread>> _threads;
+    size_t _preparedThreadsInFlight=0;
+    dtape_task_t task;
+    std::atomic<dtape_task_t*> _dtapeTask{&task};
+};
+class Thread:public std::enable_shared_from_this<Thread>{public:
+    std::shared_ptr<Process> _process;
+    uint64_t _nstid;
+    std::shared_ptr<Thread> _selfReference;
+    dtape_thread_t modelHandle;
+    std::atomic<dtape_thread_t*> _dtapeThread{nullptr};
+    std::unique_lock<std::shared_mutex> _publicationProcessLock;
+    std::weak_ptr<Thread> _publicationIdentity,_publicationPrevious;
+    bool _publicationStaged=false,_publicationPrepared=false,_publicationCommitted=false,_publicationHadPrevious=false;
+    std::unordered_map<uint64_t,std::weak_ptr<Thread>>::node_type _publicationNode;
+    std::function<void()> foreign;
+    Thread(std::shared_ptr<Process> p,uint64_t id):_process(std::move(p)),_nstid(id){}
+    static bool currentThread(){return true;} // actual startup includes active C helpers
+    void stageBootstrapPublication();void preparePublication();void commitPublication()noexcept;void abortPublication()noexcept;
+    dtape_thread_t* createOwnedThread(dtape_task_t* task){if(foreign)foreign();modelHandle.task=task;return &modelHandle;}
+    void abortKernelHandles()noexcept{_selfReference.reset();}
+    void bootstrapForeignStage(){const bool bootstrap=true;
+@BOOTSTRAP@
+    }
+};
+}
+@STAGE@
+@PREPARE@
+@COMMIT@
+@ABORT@
+int main(){using namespace DarlingServer;auto process=std::make_shared<Process>();auto boot=std::make_shared<Thread>(process,1);
+#ifdef BEFORE_BOOTSTRAP_STORAGE
+    bool rejected=false;try{boot->bootstrapForeignStage();}catch(const std::logic_error&){rejected=true;}
+    assert(rejected&&process->_threads.empty());
+    puts("{\"active_bootstrap_helper_rejected\":true}");
+#else
+    std::shared_ptr<Thread> ordinary[120];
+    boot->foreign=[&]{
+        assert(process->_rwlock.try_lock());assert(process->_threads.empty()&&process->_preparedThreadsInFlight==1);process->_rwlock.unlock();
+        // Real ordinary Thread publication methods reserve around the private
+        // bootstrap node even after many intervening insertions.
+        for(unsigned i=0;i<120;++i){ordinary[i]=std::make_shared<Thread>(process,100+i);ordinary[i]->modelHandle.task=&process->task;ordinary[i]->_dtapeThread=&ordinary[i]->modelHandle;ordinary[i]->preparePublication();ordinary[i]->commitPublication();}
+    };
+    boot->bootstrapForeignStage();assert(!process->_threads.count(1)&&process->_preparedThreadsInFlight==1);
+    deny=true;boot->preparePublication();boot->commitPublication();deny=false;
+    assert(process->_preparedThreadsInFlight==0&&process->_threads.at(1).lock()==boot&&denied==0);boot->_selfReference.reset();
+    // Abort before foreign acquisition releases the private reservation once.
+    auto abandoned=std::make_shared<Thread>(process,300);abandoned->stageBootstrapPublication();
+    deny=true;abandoned->abortPublication();abandoned->abortPublication();deny=false;assert(process->_preparedThreadsInFlight==0&&!process->_threads.count(300));
+    // Replacement rollback restores the prior weak owner with no allocation.
+    auto replacement=std::make_shared<Thread>(process,1);replacement->stageBootstrapPublication();replacement->modelHandle.task=&process->task;replacement->_dtapeThread=&replacement->modelHandle;
+    deny=true;replacement->preparePublication();replacement->abortPublication();deny=false;
+    assert(process->_preparedThreadsInFlight==0&&process->_threads.at(1).lock()==boot);
+    // The exact replacement-map reserve fragment preserves an outstanding node's
+    // promised capacity across a Process map swap (no guest exec/RPC exercised).
+    auto pending=std::make_shared<Thread>(process,400);pending->stageBootstrapPublication();pending->modelHandle.task=&process->task;pending->_dtapeThread=&pending->modelHandle;
+    decltype(process->_threads) replacementThreads;replacementThreads.emplace(1,boot);
+    {std::unique_lock lock(process->_rwlock);
+@REPLACEMENT_CAPACITY@
+        process->_threads.swap(replacementThreads);
+    }
+    deny=true;pending->preparePublication();pending->commitPublication();deny=false;
+    assert(process->_preparedThreadsInFlight==0&&process->_threads.at(400).lock()==pending&&denied==0);
+    puts("{\"active_bootstrap_helper_accepted\":true,\"no_process_lock_across_foreign_stage\":true,\"private_until_publication\":true,\"ordinary_and_swap_capacity_budget\":true,\"commit_and_rollback_no_allocation\":true,\"reservation_balanced\":true,\"denied_allocations\":0}");
+#endif
+}

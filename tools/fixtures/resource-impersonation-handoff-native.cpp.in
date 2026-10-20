@@ -1,0 +1,188 @@
+#include <darlingserver/workers.hpp>
+#include <atomic>
+#include <cassert>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <memory>
+#include <new>
+#include <shared_mutex>
+#include <system_error>
+#include <optional>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <darlingserver/rpc-supplement.h>
+static std::atomic<bool> deny{false};
+static std::atomic<unsigned> denied{0};
+void* operator new(size_t n) { if(deny.load()){++denied;throw std::bad_alloc();} if(auto*p=std::malloc(n?n:1))return p;throw std::bad_alloc(); }
+void operator delete(void*p) noexcept { std::free(p); }
+void operator delete(void*p,size_t) noexcept { std::free(p); }
+struct ObservedCondvar {
+    std::condition_variable_any cv;
+    std::atomic<unsigned> waiters{0};
+    template<class Lock,class Predicate> void wait(Lock&lock,Predicate predicate) {
+        if(predicate()) return;
+        ++waiters;
+        cv.wait(lock,predicate);
+        --waiters;
+    }
+    void notify_all(){cv.notify_all();}
+};
+namespace DarlingServer {
+class Thread;
+class Server {
+public:
+    WorkQueue<std::shared_ptr<Thread>> queue;
+    std::atomic<unsigned> scheduled{0};
+    Server(); static Server& sharedInstance();
+    bool rearmPreparedMonitor(void*) noexcept { return true; }
+    void scheduleThread(std::shared_ptr<Thread>);
+    void scheduleResumedThread(std::shared_ptr<Thread>) noexcept;
+};
+class Thread: public std::enable_shared_from_this<Thread> {
+public:
+    enum class DeferralState { NotDeferred, DeferredNotPending, DeferredPending };
+    std::shared_mutex _rwlock;
+    bool _running=false,_workHandoffPending=false,_impersonationActive=false;
+    bool _dead=false,_terminating=false,_preparedDeathInProgress=false;
+    DeferralState _deferralState=DeferralState::NotDeferred;
+    std::shared_ptr<int> _activeCall,_pendingCall;
+    std::shared_ptr<Thread> _impersonating,_selfReference;
+    ObservedCondvar _runningCondvar;
+    ReservedWorkNode<std::shared_ptr<Thread>> _deathWork;
+    std::atomic<unsigned> ran{0}, releases{0};
+    std::function<void()> job;
+    static std::shared_ptr<Thread> currentThread();
+    static void kernelAsync(std::function<void()>);
+    bool _resourceCleanupQueued=false;
+    struct Job { void(*run)(void*) noexcept=nullptr;void* context=nullptr; } _resourceCleanupJob;
+    void* _dtapeThread=this;
+    void* _s2cPerformSempahore=nullptr,*_s2cReplySempahore=nullptr;
+    void* _s2cInterruptEnterSemaphore=nullptr,*_s2cInterruptExitSemaphore=nullptr;
+    void impersonate(std::shared_ptr<Thread>);
+    void _deferLocked(bool,std::unique_lock<std::shared_mutex>&);
+    void _undeferLocked(std::unique_lock<std::shared_mutex>&);
+    void _handoffPendingWorkLocked() noexcept;
+    void abortKernelHandles() noexcept;
+    void notifyDead();
+    void defer(){std::unique_lock lock(_rwlock);_deferLocked(false,lock);}
+    void undefer(){std::unique_lock lock(_rwlock);_undeferLocked(lock);}
+    void resume() {} // Foreign wake is modeled; these cases do not suspend C.
+    void _scheduleRelease(){abortKernelHandles();}
+    static void _resourceCleanupRun(void* raw) noexcept {
+        auto*t=static_cast<Thread*>(raw);std::unique_lock lock(t->_rwlock);
+        assert(!t->_running);t->_dtapeThread=nullptr;++t->releases;t->_selfReference.reset();
+    }
+    static void enqueueResourceCleanup(Job&job) noexcept {job.run(job.context);}
+    void doWork();
+};
+}
+static DarlingServer::Server* activeServer;
+static void dtape_thread_dying(void* t){assert(t);}
+struct Registry {
+    std::shared_ptr<DarlingServer::Thread> target;
+    std::optional<std::shared_ptr<DarlingServer::Thread>> lookupEntryByNSID(pid_t){ if(target)return target;return std::nullopt; }
+    void unregisterEntry(std::shared_ptr<DarlingServer::Thread>){};
+};
+static Registry& threadRegistry(){static Registry registry;return registry;}
+static thread_local std::shared_ptr<DarlingServer::Thread> runningWorker;
+static std::atomic<bool> failAsync{false};
+DarlingServer::Server::Server():queue([](auto thread){runningWorker=thread;if(thread->job)thread->job();else thread->doWork();runningWorker.reset();}){}
+std::shared_ptr<DarlingServer::Thread> DarlingServer::Thread::currentThread(){return runningWorker;}
+void DarlingServer::Thread::kernelAsync(std::function<void()> fn){if(failAsync)throw std::bad_alloc();auto runner=std::make_shared<Thread>();runner->job=std::move(fn);Server::sharedInstance().scheduleThread(runner);}
+DarlingServer::Server& DarlingServer::Server::sharedInstance(){return *activeServer;}
+void DarlingServer::Server::scheduleThread(std::shared_ptr<Thread> t){++scheduled;queue.push(std::move(t));}
+void DarlingServer::Server::scheduleResumedThread(std::shared_ptr<Thread> t) noexcept {++scheduled;queue.pushReserved(t->_deathWork,t);}
+@CALLER_SUPPORT@
+@IMPERSONATE@
+@DEFER@
+@UNDEFER@
+@HANDOFF@
+@ABORT@
+@NOTIFY@
+@CALLERS@
+void DarlingServer::Thread::doWork(){
+    _rwlock.lock();
+@ENTRY@
+    // The foreign work is modeled: consume one accepted call, with the same
+    // _running ownership and locked final handoff as the production epilogue.
+    _running=true;
+    if(_pendingCall){_pendingCall.reset();++ran;}
+    _running=false;
+    _handoffPendingWorkLocked();
+    _rwlock.unlock();_runningCondvar.notify_all();
+}
+template<class P> static void waitFor(P p){auto end=std::chrono::steady_clock::now()+std::chrono::seconds(5);while(!p()){assert(std::chrono::steady_clock::now()<end);std::this_thread::yield();}}
+[[maybe_unused]] static void idle(DarlingServer::Server&s,DarlingServer::Thread&t){waitFor([&]{return s.queue.testReservedIdle(t._deathWork);});}
+int main(){
+    using namespace DarlingServer;
+    Server server;activeServer=&server;
+    auto token=std::make_shared<int>(1);
+    {
+        auto target=std::make_shared<Thread>(),a=std::make_shared<Thread>(),b=std::make_shared<Thread>();
+        a->impersonate(target);
+        std::atomic<bool> acquired{false},release{false};
+        std::thread contender([&]{b->impersonate(target);acquired=true;while(!release.load())std::this_thread::yield();b->impersonate(nullptr);});
+        waitFor([&]{return target->_runningCondvar.waiters.load()==1;});
+        deny=true;a->impersonate(nullptr);waitFor([&]{return acquired.load();});
+        {std::unique_lock lock(target->_rwlock);target->_pendingCall=token;}
+        for(unsigned i=0;i<1000;++i)target->doWork();
+        assert(target->ran==0);
+        release=true;contender.join();
+#ifdef BEFORE_IMPERSONATION_FIX
+        assert(target->_pendingCall&&target->_workHandoffPending&&target->ran==0&&server.scheduled==0);
+#else
+        waitFor([&]{return target->ran==1;});idle(server,*target);
+        assert(!target->_pendingCall&&!target->_workHandoffPending);
+#endif
+        deny=false;
+    }
+    {
+        auto target=std::make_shared<Thread>(),a=std::make_shared<Thread>();a->impersonate(target);
+        deny=true;target->notifyDead();target->abortKernelHandles();
+        assert(target->_running&&target->_dtapeThread&&target->releases==0);
+        a->impersonate(nullptr);
+#ifdef BEFORE_IMPERSONATION_FIX
+        assert(target->releases==0&&target->_selfReference);
+        target->_selfReference.reset(); // Release only fixture ownership after reproducing leak.
+#else
+        assert(target->releases==1&&!target->_dtapeThread&&target->_terminating);
+#endif
+        deny=false;
+    }
+#ifndef BEFORE_IMPERSONATION_FIX
+    for(unsigned pass=0;pass<128;++pass){
+        auto target=std::make_shared<Thread>(),a=std::make_shared<Thread>();
+        target->defer();a->impersonate(target);
+        {std::unique_lock lock(target->_rwlock);target->_pendingCall=token;}
+        unsigned before=server.scheduled;
+        deny=true;target->doWork();a->impersonate(nullptr);
+        assert(target->_deferralState==Thread::DeferralState::DeferredPending&&target->ran==0&&server.scheduled==before);
+        target->undefer();waitFor([&]{return target->ran==1;});idle(server,*target);
+        assert(server.scheduled==before+1);deny=false;
+    }
+    {
+        auto target=std::make_shared<Thread>(),a=std::make_shared<Thread>();
+        target->defer();a->impersonate(target);
+        {std::unique_lock lock(target->_rwlock);target->_pendingCall=token;}
+        deny=true;target->doWork();target->undefer();assert(target->ran==0);
+        a->impersonate(nullptr);waitFor([&]{return target->ran==1;});idle(server,*target);deny=false;
+    }
+    {
+        // An unrelated running invocation owns the handoff when external
+        // undefer happens before that invocation's epilogue.
+        auto target=std::make_shared<Thread>();target->defer();
+        {std::unique_lock lock(target->_rwlock);target->_deferralState=Thread::DeferralState::DeferredPending;target->_running=true;target->_pendingCall=token;}
+        deny=true;target->undefer();assert(target->_workHandoffPending);
+        {std::unique_lock lock(target->_rwlock);target->_running=false;target->_handoffPendingWorkLocked();}
+        waitFor([&]{return target->ran==1;});idle(server,*target);deny=false;
+    }
+#endif
+    @CALLER_TESTS@
+    assert(denied==0);
+#ifdef BEFORE_IMPERSONATION_FIX
+    std::puts("{\"lost_dispatch_reproduced\":true,\"deferred_death_release_missing\":true,\"denied_allocations\":0}");
+#else
+    std::printf("{\"competing_claims\":true,\"coalesced_duplicates\":1000,\"external_deferral_cases\":130,\"deferred_death_release\":true,\"scheduled_dispatches\":%u,\"caller_reply_cases\":14,\"caller_error_replies\":12,\"denied_allocations\":0}\n",server.scheduled.load());
+#endif
+}

@@ -9,10 +9,11 @@ LIFO/prepost flags are deliberately rejected. Fixed priority uses the thread's
 scheduled priority at enqueue time; live reprioritization while blocked is not
 implemented. A per-set limit of 1,048,576 locks returns KERN_RESOURCE_SHORTAGE.
 
-lib.rs stores each set in a Mutex-protected registry. A one-byte Box gives the
+lib.rs stores each set in a Mutex-protected registry. An Arc-owned one-byte token gives the
 opaque set handle and scheduler event a stable unique live address. C never
-interprets that byte as an XNU struct. The registry owns the Box until all MIG
-and port references are released, retaining it through kernel port teardown.
+interprets that byte as an XNU struct. The registry owns an Arc until all MIG
+and port references are released. Each foreign call pins its own Arc; removed
+sets retain their token through kernel port teardown and its synchronous callbacks.
 The real IKOT_LOCK_SET port is constructed through the existing XNU port allocator.
 The create reference is donated to the first send right; subsequent conversions
 consume their reference, just as the existing semaphore converter does. The
@@ -21,19 +22,47 @@ acquire/release their set reference via converters/destructors, including destro
 No client-visible synthetic integer or process-local substitute for Mach ports
 is used. Handles are only interpreted in this trusted internal server ABI.
 
-Registry locks are held for short state transitions; never across thread_block.
-assert_wait registers the wait while the registry is still locked. The lock is
-then released before thread_block, preserving XNU's wake-before-suspend protocol.
-Wakers update state and wake while holding the same registry lock. A concurrent
-handoff transfer takes precedence over interruption so callers do not receive an
-error while silently owning the lock. Cancelling a queue head wakes successors.
+Registry locks protect state transitions only. No foreign bridge call runs with
+REGISTRY held, including assert_wait, current-thread/priority lookup, wake, lazy
+port allocation, or port teardown. An operation first records its queue position,
+drops REGISTRY, then registers its interruptible XNU wait. It rechecks set activity
+and a pure lock-state wait predicate under REGISTRY. When waiting is no longer
+required, it cancels only the current thread's matching event registration outside
+REGISTRY and retries; otherwise it blocks outside REGISTRY. No revision counter
+or overflow path is needed. An update after the recheck wakes the
+already-registered waiter. This covers update-before-assert and wake-before-block.
+Cancellation uses XNU's targeted thread_wakeup_thread: it locks the event queue
+before the thread, removes only that thread's matching event, and records an
+awakened result. An interruption that already removed the registration retains
+its recorded result. A different event is never cancelled. This avoids
+clear_wait_internal's opposite-order try-lock/retry path: its delay can assert a
+second wait while the original registration is still present in Darling.
+Cancellation preserves an interruption already recorded by XNU. The existing core
+state machine gives completed handoff transfer precedence over interruption;
+ordinary acquisition cannot be newly granted while cancelling an interrupted wait.
+Cancelling a queue head wakes successors. Each event Arc remains live until its
+foreign wake/cancel/block has returned. Arc clones on wake/cleanup do not allocate.
+Cleanup snapshots its maximum set ID and updates one set at a time in increasing
+ID order, pinning one event before dropping REGISTRY and waking. It allocates no
+Vec of wake targets. Retired task/thread callers cannot start new operations;
+their live referenced C identity cannot be reused during the destruction hook.
 The ABI test adapter uses native threads/condition variables solely for tests;
 production blocks and resumes the existing Darling stackful microthreads.
+
+Port conversion takes a temporary set reference and event Arc before leaving
+REGISTRY. An in-registry flag serializes conversions, while C receives a stack-
+local port slot, never a mutable pointer into a map value. Contending converters
+prepare an uninterruptible event wait, recheck the flag, then cancel/retry or block
+outside REGISTRY. The first send/no-senders rearm donates the caller's reference;
+other conversions consume it. A terminal conversion wait interruption consumes
+the input reference and temporary pin without producing a send right. Publication
+and donation accounting finish under REGISTRY; wake and final pin release happen
+after its guard is dropped. No port lock is held while acquiring REGISTRY.
 
 The C bridge is necessary for private XNU structure access, task locking, thread
 identity/priority, macro-based wait primitives, and real kernel-port lifecycle.
 The only raw output writes in Rust are lock_set_create's caller-owned pointer
-and the C bridge's exclusive port slot. Existing generated MIG supplies valid
+and the C bridge's exclusive stack-local port slot. Existing generated MIG supplies valid
 referenced task arguments and writable output. None of these functions may be
 called with invented pointers or allowed to unwind through the C ABI. Rust's
 extern-C boundary aborts on a panic; allocation failure also aborts as with native

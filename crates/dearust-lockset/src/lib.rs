@@ -2,10 +2,12 @@
 mod core;
 use core::{Lock, Operation, Result as Step};
 use std::collections::BTreeMap;
-use std::sync::{Mutex, MutexGuard};
+use std::ops::Bound::{Excluded, Included};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 struct Set {
-    _event: Box<u8>,
+    event: Arc<u8>,
+    port_converting: bool,
     owner: usize,
     port: usize,
     references: usize,
@@ -29,14 +31,31 @@ unsafe extern "C" {
     fn darling_lockset_task_lock_active(task: usize) -> bool;
     fn darling_lockset_task_unlock(task: usize);
     fn darling_lockset_prepare_wait(event: usize) -> i32;
+    fn darling_lockset_prepare_port_wait(event: usize) -> i32;
+    fn darling_lockset_cancel_wait(event: usize) -> i32;
     fn darling_lockset_block() -> i32;
     fn darling_lockset_wake(event: usize);
     fn darling_lockset_make_port(id: usize, port: *mut usize) -> bool;
     fn darling_lockset_drop_port(port: usize);
 }
-fn wake(id: usize) {
-    // SAFETY: Live heap token provides a unique address, never dereferenced by XNU.
-    unsafe { darling_lockset_wake(id) }
+fn event_id(event: &Arc<u8>) -> usize {
+    Arc::as_ptr(event) as usize
+}
+fn wake(event: &Arc<u8>) {
+    // SAFETY: The Arc pins a unique live event address throughout this call.
+    // No registry guard is held; the bridge may suspend or reenter the registry.
+    unsafe { darling_lockset_wake(event_id(event)) }
+}
+// Temporary conversion ownership includes both a registry reference and event
+// pin. This value is only dropped after every registry guard has been released.
+struct ConversionReference {
+    id: usize,
+    event: Arc<u8>,
+}
+impl Drop for ConversionReference {
+    fn drop(&mut self) {
+        lock_set_dereference(self.id);
+    }
 }
 
 /// # Safety
@@ -70,12 +89,13 @@ pub unsafe extern "C" fn lock_set_create(
         return 16;
     }
     let mut r = registry();
-    let event = Box::new(0u8);
-    let id = (&*event as *const u8) as usize;
+    let event = Arc::new(0u8);
+    let id = event_id(&event);
     r.sets.insert(
         id,
         Set {
-            _event: event,
+            event,
+            port_converting: false,
             owner: task,
             port: 0,
             references: 1,
@@ -100,83 +120,188 @@ pub extern "C" fn lock_set_reference(id: usize) {
 }
 #[unsafe(no_mangle)]
 pub extern "C" fn lock_set_dereference(id: usize) {
-    let mut r = registry();
-    let Some(set) = r.sets.get_mut(&id) else {
-        return;
+    let removed = {
+        let mut r = registry();
+        let Some(set) = r.sets.get_mut(&id) else {
+            return;
+        };
+        set.references -= 1;
+        if set.references != 0 {
+            return;
+        }
+        r.sets.remove(&id)
     };
-    set.references -= 1;
-    if set.references != 0 {
-        return;
-    }
-    let removed = r.sets.remove(&id);
-    let port = removed.as_ref().map_or(0, |s| s.port);
-    drop(r);
-    if port != 0 {
-        // SAFETY: Last reference is the no-senders notification, no send rights remain.
-        unsafe { darling_lockset_drop_port(port) };
+    if let Some(set) = removed {
+        // Keep the token live through wake and kernel port teardown.
+        wake(&set.event);
+        if set.port != 0 {
+            // SAFETY: Last reference is no-senders; no send rights remain.
+            // No registry guard is held across the foreign teardown.
+            unsafe { darling_lockset_drop_port(set.port) };
+        }
     }
 }
 #[unsafe(no_mangle)]
 pub extern "C" fn convert_lock_set_to_port(id: usize) -> usize {
-    let mut r = registry();
-    let Some(set) = r.sets.get_mut(&id) else {
-        return 0;
+    let pin = {
+        let mut r = registry();
+        let Some(set) = r.sets.get_mut(&id) else {
+            return 0;
+        };
+        set.references += 1;
+        ConversionReference {
+            id,
+            event: set.event.clone(),
+        }
     };
-    // SAFETY: Registry mutex stabilizes port slot; bridge binds real IKOT_LOCK_SET port.
-    let donated = unsafe { darling_lockset_make_port(id, &mut set.port) };
-    if !donated {
-        set.references -= 1;
+    loop {
+        let port = {
+            let mut r = registry();
+            let set = r.sets.get_mut(&id).expect("conversion reference pins set");
+            if set.port_converting {
+                None
+            } else {
+                set.port_converting = true;
+                Some(set.port)
+            }
+        };
+        if let Some(mut port) = port {
+            // SAFETY: The local port slot is exclusive to this conversion.
+            // The temporary set reference and event pin survive all callouts.
+            // Lazy IPC allocation explicitly requires that nothing is locked.
+            let donated = unsafe { darling_lockset_make_port(id, &mut port) };
+            {
+                let mut r = registry();
+                let set = r.sets.get_mut(&id).expect("conversion reference pins set");
+                set.port = port;
+                set.port_converting = false;
+                if !donated {
+                    set.references -= 1;
+                }
+            }
+            wake(&pin.event);
+            return port;
+        }
+        // SAFETY: This thread owns a referenced stable token. Registering an
+        // uninterruptible conversion wait may suspend; no Rust guard is held.
+        let prepared = unsafe { darling_lockset_prepare_port_wait(event_id(&pin.event)) };
+        let result = if prepared == -1 {
+            let converting = registry()
+                .sets
+                .get(&id)
+                .is_some_and(|set| set.port_converting);
+            if !converting {
+                // SAFETY: Cancel only this thread's matching event registration.
+                unsafe { darling_lockset_cancel_wait(event_id(&pin.event)) }
+            } else {
+                // SAFETY: No registry guard crosses the foreign suspension.
+                unsafe { darling_lockset_block() }
+            }
+        } else {
+            prepared
+        };
+        if result != 0 {
+            // A terminal interruption consumes the converter's original input
+            // reference as well as the temporary pin; no send right was made.
+            lock_set_dereference(id);
+            return 0;
+        }
     }
-    set.port
 }
 #[unsafe(no_mangle)]
 pub extern "C" fn lock_set_destroy(task: usize, id: usize) -> i32 {
-    let mut r = registry();
-    let Some(set) = r.sets.get_mut(&id) else {
-        return core::INVALID_ARGUMENT;
+    let event = {
+        let mut r = registry();
+        let Some(set) = r.sets.get_mut(&id) else {
+            return core::INVALID_ARGUMENT;
+        };
+        if task == 0 {
+            return core::INVALID_ARGUMENT;
+        }
+        if !set.active {
+            return core::DESTROYED;
+        }
+        if set.owner != task {
+            return core::INVALID_RIGHT;
+        }
+        set.active = false;
+        set.event.clone()
     };
-    if task == 0 {
-        return core::INVALID_ARGUMENT;
-    }
-    if !set.active {
-        return core::DESTROYED;
-    }
-    if set.owner != task {
-        return core::INVALID_RIGHT;
-    }
-    set.active = false;
-    wake(id);
+    wake(&event);
     core::SUCCESS
+}
+
+// Pin one event at a time in a bounded ID-ordered pass. No wake-list allocation
+// and no registry guard crosses a foreign call. Retired tasks/threads cannot
+// initiate new operations while their destruction hook is running.
+fn update_sets(mut update: impl FnMut(&mut Set) -> bool) {
+    let Some(last) = registry().sets.last_key_value().map(|(&id, _)| id) else {
+        return;
+    };
+    let mut cursor = 0;
+    loop {
+        let next = {
+            let mut r = registry();
+            r.sets
+                .range_mut((Excluded(cursor), Included(last)))
+                .next()
+                .map(|(&id, set)| {
+                    let event = if update(set) {
+                        Some(set.event.clone())
+                    } else {
+                        None
+                    };
+                    (id, event)
+                })
+        };
+        let Some((id, event)) = next else {
+            return;
+        };
+        cursor = id;
+        if let Some(event) = event {
+            wake(&event);
+        }
+    }
 }
 #[unsafe(no_mangle)]
 pub extern "C" fn darling_lockset_task_destroyed(task: usize) {
-    let mut r = registry();
-    for (&id, set) in &mut r.sets {
-        if set.owner == task && set.active {
-            set.active = false;
-            wake(id);
+    update_sets(|set| {
+        if set.owner != task || !set.active {
+            return false;
         }
-    }
+        set.active = false;
+        true
+    });
 }
 #[unsafe(no_mangle)]
 pub extern "C" fn darling_lockset_thread_destroyed(thread: usize) {
-    let mut r = registry();
-    for (&id, set) in &mut r.sets {
+    update_sets(|set| {
         for lock in &mut set.locks {
             lock.thread_died(thread);
         }
-        wake(id);
+        true
+    });
+}
+fn interrupted(id: usize, index: usize, thread: usize, operation: Operation) -> i32 {
+    let mut r = registry();
+    let Some(set) = r.sets.get_mut(&id) else {
+        return core::ABORTED;
+    };
+    if !set.active {
+        return core::DESTROYED;
     }
+    set.locks
+        .get_mut(index)
+        .map_or(core::ABORTED, |lock| lock.interrupted(thread, operation))
 }
 fn operate(id: usize, lock_id: i32, operation: Operation) -> i32 {
-    // SAFETY: MIG runs on a live server microthread; bridge retrieves its XNU identity.
+    // SAFETY: MIG runs on a live server microthread; bridge retrieves its identity.
     let thread = unsafe { darling_lockset_current_thread() };
-    // SAFETY: Same live server microthread as above.
+    // SAFETY: Same live server microthread; no registry lock held.
     let priority = unsafe { darling_lockset_priority() };
-    let mut waiting = false;
-    loop {
-        let mut r = registry();
-        let Some(set) = r.sets.get_mut(&id) else {
+    let (event, index) = {
+        let r = registry();
+        let Some(set) = r.sets.get(&id) else {
             return core::INVALID_ARGUMENT;
         };
         if !set.active {
@@ -185,48 +310,64 @@ fn operate(id: usize, lock_id: i32, operation: Operation) -> i32 {
         let Ok(index) = usize::try_from(lock_id) else {
             return core::INVALID_ARGUMENT;
         };
-        let Some(lock) = set.locks.get_mut(index) else {
-            return core::INVALID_ARGUMENT;
-        };
-        match lock.step(thread, priority, set.policy, operation, waiting) {
-            Step::Done(result) => {
-                if matches!(
-                    operation,
-                    Operation::Release | Operation::Handoff | Operation::Accept
-                ) {
-                    wake(id);
-                }
-                return result;
+        (set.event.clone(), index)
+    };
+    let mut waiting = false;
+    loop {
+        {
+            let mut r = registry();
+            let Some(set) = r.sets.get_mut(&id) else {
+                return core::INVALID_ARGUMENT;
+            };
+            if !set.active {
+                return core::DESTROYED;
             }
-            Step::Wait => {
-                // SAFETY: Register wait while state is locked, preventing lost wakeups.
-                let prepared = unsafe { darling_lockset_prepare_wait(id) };
-                drop(r);
-                // SAFETY: No Rust lock held across the server's stackful microthread suspension.
-                let result = if prepared == -1 {
-                    // SAFETY: No state lock is held across microthread suspension.
-                    unsafe { darling_lockset_block() }
-                } else {
-                    prepared
-                };
-                if result != 0 {
-                    let mut r = registry();
-                    if let Some(set) = r.sets.get_mut(&id) {
-                        if !set.active {
-                            return core::DESTROYED;
-                        }
-                        if let Some(lock) = set.locks.get_mut(index) {
-                            let result = lock.interrupted(thread, operation);
-                            wake(id);
-                            return result;
-                        }
+            let Some(lock) = set.locks.get_mut(index) else {
+                return core::INVALID_ARGUMENT;
+            };
+            let step = lock.step(thread, priority, set.policy, operation, waiting);
+            match step {
+                Step::Done(result) => {
+                    drop(r);
+                    if matches!(
+                        operation,
+                        Operation::Release | Operation::Handoff | Operation::Accept
+                    ) {
+                        wake(&event);
                     }
-                    wake(id);
-                    return core::ABORTED;
+                    return result;
                 }
-                waiting = true;
+                Step::Wait => {}
             }
+        };
+        // SAFETY: Token is pinned; assertion may suspend/reenter, so no guard
+        // crosses it. Rechecking the wait condition closes wake-before-assert loss.
+        let prepared = unsafe { darling_lockset_prepare_wait(event_id(&event)) };
+        let result = if prepared == -1 {
+            let required = registry().sets.get(&id).is_some_and(|set| {
+                set.active
+                    && set
+                        .locks
+                        .get(index)
+                        .is_some_and(|lock| lock.wait_required(thread, operation))
+            });
+            if required {
+                // SAFETY: Wait is registered and no Rust guard is held.
+                unsafe { darling_lockset_block() }
+            } else {
+                // SAFETY: Cancel only the calling thread's matching wait and
+                // retain its result if an interruption already cleared it.
+                unsafe { darling_lockset_cancel_wait(event_id(&event)) }
+            }
+        } else {
+            prepared
+        };
+        if result != 0 {
+            let result = interrupted(id, index, thread, operation);
+            wake(&event);
+            return result;
         }
+        waiting = true;
     }
 }
 macro_rules! operation {

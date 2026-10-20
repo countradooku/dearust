@@ -31,6 +31,13 @@ from patch_resource_worker_ownership import patch_worker_ownership_files
 from patch_resource_work_handoff import patch_work_handoff
 from patch_resource_mutex_interlock import patch_mutex_interlock_files
 from patch_resource_dispatch_wakeup import patch_dispatch_wakeup_files
+from patch_resource_impersonation_handoff import patch_impersonation
+from patch_resource_fork_signal import patch_fork_signal_cpp, patch_fork_signal_c
+from patch_resource_kernel_async_submission import patch_kernel_async_submission
+from patch_resource_resume_consumption import patch_resume_consumption
+from patch_resource_registration_lock_scope import patch_registration_lock_scope
+from patch_resource_xnu_wait_state import patch_xnu_wait_state
+from patch_resource_bootstrap_thread_storage import patch_bootstrap_thread_storage
 
 
 def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c_flags=(), checked_generation=False, prepared_exec=False):
@@ -50,7 +57,7 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
         'resource-cpu-timer.inc': candidate / 'tools/resource-cpu-timer.inc',
     }
     checked_extras = ('xnu/osfmk/kern/ipc_tt.c', 'xnu/osfmk/kern/ipc_kobject.c', 'pthread/kern_synch.c') if checked_generation else ()
-    c_keys = tuple(dict.fromkeys(('src/task.c', 'src/thread.c', 'src/locks.c', 'src/misc.c',
+    c_keys = tuple(dict.fromkeys(('src/task.c', 'src/thread.c', 'src/locks.c', 'src/misc.c', 'src/semaphore.c',
         'xnu/osfmk/kern/turnstile.c', 'src/kqchan.c', *checked_extras, *extra_c)))
     c_inputs = {key: builder.selected_duct_source(previous, source, key) for key in c_keys}
     builder.EXTRA_TRANSFORM_INPUTS = [Path(__file__).resolve(), *c_inputs.values(), *[
@@ -62,7 +69,11 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
             'prepared-resource-mach-notifications.inc', 'patch_prepared_resource_mach_waiter.py',
             'patch_resource_death_work.py', 'patch_resource_worker_ownership.py',
             'patch_resource_death_lifecycle.py', 'patch_resource_work_handoff.py',
-            'patch_resource_mutex_interlock.py', 'patch_resource_dispatch_wakeup.py')]]
+            'patch_resource_mutex_interlock.py', 'patch_resource_dispatch_wakeup.py',
+            'patch_resource_impersonation_handoff.py', 'patch_resource_fork_signal.py',
+            'patch_resource_kernel_async_submission.py', 'patch_resource_resume_consumption.py',
+            'patch_resource_registration_lock_scope.py', 'patch_resource_xnu_wait_state.py',
+            'patch_resource_bootstrap_thread_storage.py')]]
     if checked_generation:
         builder.EXTRA_TRANSFORM_INPUTS += [tools / 'patch_prepared_resource_checked_ipc.py',
             tools / 'patch_resource_kernel_contexts.py', tools / 'patch_resource_generation_resume.py',
@@ -93,8 +104,17 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
         if checked_generation:
             files = patch_generation_resume(patch_kernel_context_cpp(patch_checked_cpp(files)))
         if prepared_exec:
-            files = patch_prepared_replies(patch_prepared_exec(files))
-        return patch_dispatch_wakeup_files(patch_work_handoff(files))
+            files = patch_fork_signal_cpp(patch_prepared_replies(patch_prepared_exec(files)))
+        files = patch_work_handoff(files)
+        files = patch_impersonation(files)
+        files = patch_dispatch_wakeup_files(files)
+        files = patch_kernel_async_submission(files)
+        if checked_generation:
+            files = patch_resume_consumption(files)
+        if prepared_exec:
+            files = patch_registration_lock_scope(files)
+            files = patch_bootstrap_thread_storage(files)
+        return files
 
     builder.patch_checkin = lifecycle
     previous_relink = builder.relink
@@ -109,11 +129,13 @@ def configure(builder, candidate, output, instrument_c=None, extra_c=(), extra_c
         sources['src/task.c'] = (output / 'task.c').read_text()
         sources = patch_inner_dtape(sources)
         sources = patch_mutex_interlock_files(sources)
+        sources = patch_fork_signal_c(sources)
         sources['src/task.c'] = patch_task_dispose_identity(sources['src/task.c'])
         sources['src/kqchan.c'] = patch_machport_c(sources['src/kqchan.c'])
         sources['src/kqchan.c'] = patch_mach_waiter(sources['src/kqchan.c'])
         if checked_generation:
             sources = patch_kernel_context_c(patch_checked_c(sources))
+        sources = patch_xnu_wait_state(sources)
         if instrument_c:
             sources = instrument_c(sources)
         commands = []

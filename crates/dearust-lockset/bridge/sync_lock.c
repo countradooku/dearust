@@ -30,6 +30,7 @@
 #include <mach/mach_types.h>
 #include <kern/sync_lock.h>
 #include <kern/sched_prim.h>
+#include <kern/spl.h>
 #include <kern/ipc_kobject.h>
 #include <kern/thread.h>
 #include <kern/task.h>
@@ -51,6 +52,23 @@ bool darling_lockset_task_lock_active(uintptr_t value) {
 }
 void darling_lockset_task_unlock(uintptr_t task) { task_unlock((task_t)task); }
 int darling_lockset_prepare_wait(uintptr_t event) { return assert_wait((event_t)event, THREAD_INTERRUPTIBLE); }
+int darling_lockset_prepare_port_wait(uintptr_t event) { return assert_wait((event_t)event, THREAD_UNINT); }
+int darling_lockset_cancel_wait(uintptr_t event) {
+    thread_t thread = current_thread();
+    // Queue-first selection removes only this thread's matching registration.
+    // clear_wait_internal takes the opposite lock order and retries with
+    // delay(), which can assert a second wait before the first is removed.
+    (void)thread_wakeup_thread((event_t)event, thread);
+    spl_t level = splsched();
+    thread_lock(thread);
+    // A prior interruption/wake already removed its registration and owns the
+    // recorded result. Never cancel or consume another subsystem's wait.
+    int result = thread->wait_event == NO_EVENT64
+        ? thread->wait_result : THREAD_INTERRUPTED;
+    thread_unlock(thread);
+    splx(level);
+    return result;
+}
 int darling_lockset_block(void) { return thread_block(THREAD_CONTINUE_NULL); }
 void darling_lockset_wake(uintptr_t event) { thread_wakeup((event_t)event); }
 bool darling_lockset_make_port(uintptr_t id, uintptr_t *port) {

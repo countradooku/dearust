@@ -1,0 +1,58 @@
+#include "prepared-resource-cleanup.hpp"
+#include <atomic>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <memory>
+#include <new>
+#include <thread>
+#include <chrono>
+static std::atomic<bool> deny{false};static std::atomic<unsigned> denied{0},releases{0};
+void* operator new(size_t n){if(deny){++denied;throw std::bad_alloc();}if(auto*p=std::malloc(n?n:1))return p;throw std::bad_alloc();}
+void operator delete(void*p) noexcept{std::free(p);}void operator delete(void*p,size_t) noexcept{std::free(p);}
+static thread_local bool kernelLane=false;
+struct dtape_task_t{std::atomic<unsigned> references{1};};
+static void dtape_task_release(dtape_task_t* task){assert(kernelLane);assert(task->references==1);++releases;delete task;}
+namespace DarlingServer {
+static PreparedResourceCleanupQueue pinQueue;
+class Process:public std::enable_shared_from_this<Process>{public:
+    dtape_task_t* _resourcePreparationParentTask=nullptr;
+    dtape_task_t* _resourcePreparationReleaseTask=nullptr;
+    std::shared_ptr<Process> _resourcePreparationOwner;
+    PreparedResourceCleanupJob _resourcePreparationCleanupJob;
+    static void _resourcePreparationCleanupRun(void*) noexcept;
+    void finishPreparation() noexcept;
+};
+class Thread:public std::enable_shared_from_this<Thread>{public:
+    dtape_task_t* _resourcePreparationTask=nullptr;
+    dtape_task_t* _resourcePreparationReleaseTask=nullptr;
+    std::shared_ptr<Thread> _resourcePreparationOwner;
+    PreparedResourceCleanupJob _resourcePreparationCleanupJob;
+    static void _resourcePreparationCleanupRun(void*) noexcept;
+    void finishPreparation() noexcept;
+    static void enqueueResourceCleanup(PreparedResourceCleanupJob& job) noexcept{pinQueue.push(job);}
+};
+}
+@PROCESS_PIN_METHODS@
+@THREAD_PIN_METHODS@
+template<class P>static void waitFor(P p){auto end=std::chrono::steady_clock::now()+std::chrono::seconds(5);while(!p()){assert(std::chrono::steady_clock::now()<end);std::this_thread::yield();}}
+int main(){using namespace DarlingServer;
+    auto parentCase=std::make_shared<Process>();parentCase->_resourcePreparationParentTask=new dtape_task_t;
+    auto threadCase=std::make_shared<Thread>();threadCase->_resourcePreparationTask=new dtape_task_t;
+    std::weak_ptr<Process> parentOwner=parentCase;std::weak_ptr<Thread> threadOwner=threadCase;
+    deny=true;
+    // Both may be final references even when C construction failed completely.
+    // Native submission performs no C release, allocates nothing, and consumes
+    // the pin before a duplicate finish or any cleanup reentry can see it.
+    parentCase->finishPreparation();threadCase->finishPreparation();
+    parentCase->finishPreparation();threadCase->finishPreparation();
+    assert(!parentCase->_resourcePreparationParentTask&&!threadCase->_resourcePreparationTask&&releases==0);
+    parentCase.reset();threadCase.reset();assert(!parentOwner.expired()&&!threadOwner.expired());
+    auto* one=pinQueue.take();auto* two=pinQueue.take();assert(one!=two&&releases==0);
+    // The real intrusive queue is used; only the permanent kernel execution
+    // identity is modeled here, independently of executing closure ownership.
+    kernelLane=true;one->run(one->context);two->run(two->context);kernelLane=false;
+    assert(releases==2&&parentOwner.expired()&&threadOwner.expired()&&denied==0);
+    deny=false;
+    puts("{\"final_task_pins_release_only_on_kernel_lane\":true,\"duplicate_finish_noop\":true,\"embedded_jobs_keep_unpublished_entries_alive\":true,\"denied_allocations\":0}");
+}

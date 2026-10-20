@@ -1,0 +1,104 @@
+#include <assert.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <libsimple/lock.h>
+#define TH_WAIT 0x01
+#define TH_RUN 0x04
+#define TH_UNINT 0x08
+#define TH_TERMINATE 0x10
+#define THREAD_WAITING -1
+#define THREAD_AWAKENED 0
+#define THREAD_INTERRUPTED 2
+#define THREAD_INTERRUPTIBLE 1
+#define THREAD_UNINT 0
+#define TRUE 1
+#define FALSE 0
+#define kThreadWaitNone 0
+#define dtape_stub_safe() ((void)0)
+typedef int wait_result_t;typedef int wait_interrupt_t;typedef int boolean_t;
+typedef void(*thread_continue_t)(void*,wait_result_t);
+typedef struct {
+    int state,wait_result,block_hint,pending_block_hint;
+    bool wait_timer_is_set;
+    int wait_timer,wait_timer_active;
+    thread_continue_t continuation;void* parameter;
+    pthread_mutex_t lock;
+} xnu_thread;
+typedef xnu_thread* thread_t;
+typedef struct {void* context;xnu_thread xnu_thread;libsimple_lock_t block_suspend_gate;} dtape_thread_t;
+static dtape_thread_t thread;
+static pthread_mutex_t model_lock=PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t model_changed=PTHREAD_COND_INITIALIZER;
+static bool blocked=false,resumed=false;
+static unsigned suspensions=0,wakes=0;
+static void thread_lock(thread_t t){assert(pthread_mutex_lock(&t->lock)==0);}
+static void thread_unlock(thread_t t){assert(pthread_mutex_unlock(&t->lock)==0);}
+static dtape_thread_t* dtape_thread_for_xnu_thread(thread_t t){assert(t==&thread.xnu_thread);return &thread;}
+static bool timer_call_cancel(int* timer){(void)timer;return true;}
+static void thread_continuation_callback(void* c){(void)c;abort();}
+static void clear_wait_internal(thread_t t,int result){(void)t;(void)result;}
+void dtape_thread_entering(dtape_thread_t* t);
+void dtape_thread_exiting(dtape_thread_t* t);
+static dtape_thread_t* current_thread_hook(void){return &thread;}
+static void resume_hook(void* context){assert(context==&thread);assert(pthread_mutex_lock(&model_lock)==0);++wakes;resumed=true;assert(pthread_cond_broadcast(&model_changed)==0);assert(pthread_mutex_unlock(&model_lock)==0);}
+static void suspend_hook(void* context,void(*continuation)(void*),void* parameter,libsimple_lock_t* gate){
+    (void)parameter;assert(context==&thread&&!continuation&&gate==&thread.block_suspend_gate);
+    assert(pthread_mutex_lock(&model_lock)==0);++suspensions;blocked=true;
+    dtape_thread_exiting(&thread);
+    libsimple_lock_unlock(gate);
+    assert(pthread_cond_broadcast(&model_changed)==0);
+    while(!resumed)assert(pthread_cond_wait(&model_changed,&model_lock)==0);
+    assert(pthread_mutex_unlock(&model_lock)==0);
+    dtape_thread_entering(&thread);
+}
+static const struct {
+    dtape_thread_t*(*current_thread)(void);
+    void(*thread_suspend)(void*,void(*)(void*),void*,libsimple_lock_t*);
+    void(*thread_resume)(void*);
+} hooks={current_thread_hook,suspend_hook,resume_hook},*dtape_hooks=&hooks;
+@ENTER@
+@EXIT@
+@MARK@
+@BLOCK@
+@UNBLOCK@
+@SIGEXC@
+static void initialize(void){thread.context=&thread;thread.xnu_thread.state=TH_RUN;thread.xnu_thread.wait_result=THREAD_WAITING;thread.xnu_thread.lock=(pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;libsimple_lock_init(&thread.block_suspend_gate);}
+#ifndef BEFORE_XNU_WAIT_STATE
+static void* waiter(void* unused){(void)unused;assert(thread_block_parameter(NULL,NULL)==THREAD_AWAKENED);return NULL;}
+#endif
+int main(void){initialize();
+    assert(thread_mark_wait_locked(&thread.xnu_thread,THREAD_INTERRUPTIBLE)==THREAD_WAITING);
+    thread.xnu_thread.state|=TH_UNINT;thread.xnu_thread.block_hint=7;
+    // Model a nested C-mutex yield/reentry after XNU wait registration.
+    dtape_thread_exiting(&thread);dtape_thread_entering(&thread);
+#ifdef BEFORE_XNU_WAIT_STATE
+    assert(!(thread.xnu_thread.state&TH_WAIT));
+    assert(thread_block_parameter(NULL,NULL)==THREAD_WAITING);
+    assert(suspensions==0);
+    puts("{\"registered_wait_cleared_without_wake\":true,\"block_returned_thread_waiting\":true}");
+#else
+    assert((thread.xnu_thread.state&(TH_WAIT|TH_UNINT))==(TH_WAIT|TH_UNINT));
+    assert(thread.xnu_thread.wait_result==THREAD_WAITING&&thread.xnu_thread.block_hint==7);
+    pthread_t native;assert(pthread_create(&native,NULL,waiter,NULL)==0);
+    assert(pthread_mutex_lock(&model_lock)==0);while(!blocked)assert(pthread_cond_wait(&model_changed,&model_lock)==0);assert(pthread_mutex_unlock(&model_lock)==0);
+    thread_lock(&thread.xnu_thread);assert(thread_unblock(&thread.xnu_thread,THREAD_AWAKENED));thread_unlock(&thread.xnu_thread);
+    assert(pthread_join(native,NULL)==0);assert(suspensions==1&&wakes==1);
+    assert(!(thread.xnu_thread.state&(TH_WAIT|TH_UNINT))&&(thread.xnu_thread.state&TH_RUN));
+    // Explicit signal-exception cancellation retains its existing semantics.
+    assert(thread_mark_wait_locked(&thread.xnu_thread,THREAD_INTERRUPTIBLE)==THREAD_WAITING);
+    thread.xnu_thread.state|=TH_UNINT;dtape_thread_sigexc_enter(&thread);
+    assert(!(thread.xnu_thread.state&(TH_WAIT|TH_UNINT))&&thread.xnu_thread.wait_result==THREAD_INTERRUPTED);
+    dtape_thread_entering(&thread);assert(thread.xnu_thread.wait_result==THREAD_INTERRUPTED);
+    assert(thread_block_parameter(NULL,NULL)==THREAD_INTERRUPTED);
+    // Native dispatch also preserves terminal state and an already-awakened
+    // result; it cannot manufacture a new transition for a saved context.
+    thread.xnu_thread.state=TH_TERMINATE;thread.xnu_thread.wait_result=THREAD_INTERRUPTED;
+    dtape_thread_exiting(&thread);dtape_thread_entering(&thread);
+    assert(thread.xnu_thread.state==TH_TERMINATE&&thread.xnu_thread.wait_result==THREAD_INTERRUPTED);
+    puts("{\"registered_wait_preserved\":true,\"actual_block_suspended\":true,\"real_wake_completes_wait\":true,\"sigexc_cancellation_preserved\":true,\"terminal_state_preserved\":true}");
+#endif
+    assert(pthread_mutex_destroy(&thread.xnu_thread.lock)==0);return 0;
+}

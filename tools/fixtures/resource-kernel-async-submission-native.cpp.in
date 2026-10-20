@@ -1,0 +1,106 @@
+#include <darlingserver/workers.hpp>
+#include <libsimple/lock.h>
+#include <array>
+#include <atomic>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <functional>
+#include <list>
+#include <memory>
+#include <new>
+#include <queue>
+#include <shared_mutex>
+#include <string>
+#include <ucontext.h>
+static std::atomic<long> budget{-1};static std::atomic<unsigned> attempts{0},liveThreads{0},callbacks{0},resumes{0};
+void* operator new(size_t n){long b=budget.load();if(b>=0){++attempts;if(b==0)throw std::bad_alloc();budget=b-1;}if(auto*p=std::malloc(n?n:1))return p;throw std::bad_alloc();}
+void operator delete(void*p) noexcept{std::free(p);}void operator delete(void*p,size_t) noexcept{std::free(p);}
+using dtape_semaphore_t=int;
+static bool returnNullSemaphore=false;
+static dtape_semaphore_t* dtape_semaphore_create(void*,int){if(returnNullSemaphore)return nullptr;return new int(0);}
+static void dtape_semaphore_up(dtape_semaphore_t*s){assert(s);++*s;}
+namespace DarlingServer {
+using EternalID=uint64_t;
+class Process {public:void* _dtapeTask=nullptr;static Process* kernelProcess(){static Process process;return &process;}};
+class Thread:public std::enable_shared_from_this<Thread>{
+public:
+    struct KernelThreadConstructorTag{};
+    std::shared_mutex _rwlock;std::function<void()> _continuationCallback;
+    bool _suspended=false;ucontext_t _resumeContext;
+    std::array<std::unique_ptr<char[]>,3> handles;
+    Thread(KernelThreadConstructorTag,EternalID){++liveThreads;}
+    ~Thread(){--liveThreads;}
+    void setupKernelThread(std::function<void()>);
+    void startKernelThread(std::function<void()>);
+    void resume(){++resumes;}
+    static void kernelAsync(std::function<void()>);
+};
+}
+static std::atomic<unsigned> factoryEntrances{0};static std::atomic<bool> pauseFactory{false},releaseFactory{false};
+struct Registry{
+    template<class Factory>std::shared_ptr<DarlingServer::Thread> registerPrepared(Factory factory,bool replace){
+        assert(replace);unsigned eid=++factoryEntrances;
+        while(pauseFactory.load()&&!releaseFactory.load())std::this_thread::yield();
+        auto thread=factory(eid);
+        // Model Registry's foreign-acquisition allocation prefix. These are
+        // deliberately separate fallible steps after the factory callback.
+        for(auto&handle:thread->handles)handle=std::make_unique<char[]>(32);
+        return thread;
+    }
+};
+static Registry& threadRegistry(){static Registry registry;return registry;}
+@GLOBALS@
+static void kernelAsyncRunnerThreadWorker(bool,std::shared_ptr<DarlingServer::Thread>){/* Foreign runner body intentionally not modeled/exercised. */}
+@SETUP@
+@START@
+@METHOD@
+static std::function<void()> callback(){
+    struct Large {std::array<unsigned char,256> bytes{};void operator()() const{++callbacks;}};
+    return Large{};
+}
+static bool lockFree(){bool acquired=libsimple_lock_try_lock(&kernelAsyncRunnerQueueLock);if(acquired)libsimple_lock_unlock(&kernelAsyncRunnerQueueLock);return acquired;}
+static void drainAccepted(){
+    while(!kernelAsyncRunnerQueue.empty()){
+        auto value=std::move(kernelAsyncRunnerQueue.front());kernelAsyncRunnerQueue.pop();value();
+    }
+}
+template<class P>static void waitFor(P p){auto end=std::chrono::steady_clock::now()+std::chrono::seconds(5);while(!p()){assert(std::chrono::steady_clock::now()<end);std::this_thread::yield();}}
+static void emit(bool rejected,bool free,unsigned queued){
+    std::printf("{\"attempts\":%u,\"rejected\":%s,\"queue_lock_released\":%s,\"queued\":%u,\"live_threads\":%u,\"resumes\":%u,\"permanent\":%zu}\n",attempts.load(),rejected?"true":"false",free?"true":"false",queued,liveThreads.load(),resumes.load(),permanentKernelAsyncRunners.size());
+    std::fflush(stdout);std::_Exit(0);
+}
+int main(int argc,char**argv){
+    assert(argc>=2);std::string mode=argv[1];
+#ifndef ORIGINAL_SUBMISSION
+    if(mode=="concurrent"){
+        pauseFactory=true;std::atomic<bool> begin{false};std::array<std::thread,20> submitters;
+        for(auto&t:submitters)t=std::thread([&]{auto fn=callback();while(!begin.load())std::this_thread::yield();DarlingServer::Thread::kernelAsync(std::move(fn));});
+        begin=true;waitFor([]{return factoryEntrances==20;});
+        assert(lockFree());releaseFactory=true;
+        for(auto&t:submitters)t.join();
+        assert(kernelAsyncRunnerQueue.size()==20&&permanentKernelAsyncRunners.size()==10&&kernelAsyncPermanentRunnersStarting==0&&resumes==20&&lockFree());
+        drainAccepted();assert(callbacks==20);
+        std::puts("{\"submitters\":20,\"permanent_limit\":10,\"exactly_once\":true,\"foreign_preparation_outside_queue_lock\":true}");std::fflush(stdout);std::_Exit(0);
+    }
+    if(mode=="null-init"){
+        auto fn=callback();returnNullSemaphore=true;bool rejected=false;
+        try{DarlingServer::Thread::kernelAsync(std::move(fn));}catch(const std::bad_alloc&){rejected=true;}
+        assert(rejected&&kernelAsyncRunnerQueue.empty()&&lockFree());
+        returnNullSemaphore=false;DarlingServer::Thread::kernelAsync(callback());assert(kernelAsyncRunnerQueue.size()==1);drainAccepted();assert(callbacks==1);
+        std::puts("{\"null_init_rejected\":true,\"initialization_retry_passed\":true}");std::fflush(stdout);std::_Exit(0);
+    }
+#endif
+    bool warm=mode=="warm";
+    if(warm){DarlingServer::Thread::kernelAsync(callback());drainAccepted();callbacks=0;assert(permanentKernelAsyncRunners.size()==1);}
+    auto fn=callback();long fail=argc>2?std::strtol(argv[2],nullptr,10):100000;
+    attempts=0;budget=fail;bool rejected=false;
+    try{DarlingServer::Thread::kernelAsync(std::move(fn));}catch(const std::bad_alloc&){rejected=true;}
+    budget=-1;bool free=lockFree();unsigned queued=kernelAsyncRunnerQueue.size();
+#ifndef ORIGINAL_SUBMISSION
+    assert(free&&kernelAsyncPermanentRunnersStarting==0);
+    if(rejected){assert(queued==0&&liveThreads==(warm?1u:0u));}
+    else{assert(queued==1);drainAccepted();assert(callbacks==1);}
+#endif
+    emit(rejected,free,queued);
+}

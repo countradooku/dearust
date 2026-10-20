@@ -1,0 +1,137 @@
+#include <darlingserver/workers.hpp>
+#include <atomic>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <memory>
+#include <new>
+#include <shared_mutex>
+#include <functional>
+static std::atomic<bool> deny{false};static std::atomic<unsigned> denied{0};
+void* operator new(size_t n){if(deny){++denied;throw std::bad_alloc();}if(auto*p=std::malloc(n?n:1))return p;throw std::bad_alloc();}
+void operator delete(void*p) noexcept{std::free(p);}void operator delete(void*p,size_t) noexcept{std::free(p);}
+using dtape_thread_t=void;
+static void preparedResourceCleanupWake(){std::abort();}
+namespace DarlingServer {
+class Thread;
+class Server {
+public:
+    WorkQueue<std::shared_ptr<Thread>> queue;
+    std::atomic<unsigned> scheduled{0};
+    std::atomic<bool> gate{false},arrived{false};
+    Server();static Server& sharedInstance();
+    void scheduleResumedThread(std::shared_ptr<Thread>) noexcept;
+};
+class Thread:public std::enable_shared_from_this<Thread>{
+public:
+    enum class DeferralState{NotDeferred,DeferredNotPending,DeferredPending};
+    std::shared_mutex _rwlock;
+    bool _suspended=false,_resumePending=false,_running=false,_impersonationActive=false;
+    bool _terminating=false,_dead=false,_workHandoffPending=false,_pendingCallOverride=false;
+    bool _activeCall=true;
+    int _pendingCall=0;
+    DeferralState _deferralState=DeferralState::NotDeferred;
+    std::shared_ptr<Thread> _selfReference;
+    std::atomic<dtape_thread_t*> _dtapeThread{this};
+    ReservedWorkNode<std::shared_ptr<Thread>> _deathWork;
+    std::atomic<unsigned> resumed{0},called{0},visited{0};
+    std::function<void()> body;
+    static bool resourceCleanupLane(const Thread*) noexcept{return false;}
+    void resume(dtape_thread_t* expectedGeneration=nullptr);
+    void doWork();void _handoffPendingWorkLocked() noexcept;
+    void suspendState(){std::unique_lock lock(_rwlock);
+@SUSPEND@
+    }
+};
+}
+static DarlingServer::Server* active;
+template<class P>static void waitFor(P p){auto end=std::chrono::steady_clock::now()+std::chrono::seconds(5);while(!p()){assert(std::chrono::steady_clock::now()<end);std::this_thread::yield();}}
+DarlingServer::Server::Server():queue([this](auto thread){if(gate){arrived=true;waitFor([this]{return !gate.load();});}thread->doWork();}){}
+DarlingServer::Server& DarlingServer::Server::sharedInstance(){return *active;}
+void DarlingServer::Server::scheduleResumedThread(std::shared_ptr<Thread> t) noexcept{++scheduled;queue.pushReserved(t->_deathWork,t);}
+@RESUME@
+@HANDOFF@
+void DarlingServer::Thread::doWork(){
+    ++visited;
+    _rwlock.lock();
+@ENTRY@
+    _running=true;
+    // Exact production permission consumption at both context-selection sites;
+    // saved ucontext and foreign wait bodies are modeled by counters/state.
+    if(_suspended&&(_pendingCallOverride||!_pendingCall)){
+@CONSUME@
+        ++resumed;
+    }else if(_pendingCall){
+@CONSUME@
+        _pendingCall=0;++called;
+    }
+    _rwlock.unlock();
+    if(body)body();
+    _rwlock.lock();
+    _running=false;
+doneWorking:
+    _handoffPendingWorkLocked();
+    _rwlock.unlock();
+}
+static void idle(DarlingServer::Server&s,DarlingServer::Thread&t){waitFor([&]{return s.queue.testReservedIdle(t._deathWork);});}
+int main(){using namespace DarlingServer;Server server;active=&server;
+    // A queued duplicate is coalesced before dequeue, then consumed once.
+    auto queued=std::make_shared<Thread>();queued->suspendState();
+    server.gate=true;queued->resume();waitFor([&]{return server.arrived.load();});
+    for(unsigned i=0;i<1000;++i)queued->resume();
+    deny=true;server.gate=false;idle(server,*queued);deny=false;
+    // The worker had dequeued the first node; repeated publication requests
+    // set `again`. Its second dispatch is allowed to consume this same wait
+    // only once, even before a later suspension is introduced.
+#ifndef BEFORE_RESUME_CONSUMPTION
+    assert(queued->resumed==1);
+#endif
+    // Force a reserved node to remain running after its first wake consumes.
+    // An older queued/in-flight retry must not enter the next, unwoken wait.
+    auto target=std::make_shared<Thread>();std::atomic<bool> entered{false},release{false};
+    target->body=[&]{target->suspendState();entered=true;waitFor([&]{return release.load();});};
+    target->suspendState();server.arrived=false;server.gate=true;target->resume();
+    waitFor([&]{return server.arrived.load();});
+    // Both real resume hooks observe the FIRST suspension, before its worker
+    // consumes that wake. WorkQueue has already marked its node running.
+    target->resume();server.gate=false;waitFor([&]{return entered.load();});
+    // A residual scheduler retry adds no permission for the SECOND suspension.
+    deny=true;server.scheduleResumedThread(target);release=true;idle(server,*target);deny=false;
+#ifdef BEFORE_RESUME_CONSUMPTION
+    assert(target->resumed==2);
+    std::puts("{\"later_wait_resumed_without_wake\":true,\"denied_allocations\":0}");
+    return 0;
+#else
+    assert(target->resumed==1&&target->visited==2);
+    target->body=nullptr;
+    // A genuine wake for the new wait grants exactly one new admission.
+    deny=true;target->resume();idle(server,*target);deny=false;
+    assert(target->resumed==2);
+    // A stale concurrent doWork while _running cannot preserve permission
+    // across a new suspension through the epilogue handoff helper.
+    auto running=std::make_shared<Thread>();entered=false;release=false;
+    running->body=[&]{entered=true;waitFor([&]{return release.load();});running->suspendState();};
+    running->suspendState();running->resume();waitFor([&]{return entered.load();});
+    deny=true;for(unsigned i=0;i<1000;++i)running->doWork();release=true;idle(server,*running);deny=false;
+    assert(running->resumed==1);running->body=nullptr;
+    // A real pending call must still run while an old saved context is parked.
+    {std::unique_lock lock(running->_rwlock);running->_pendingCall=1;}
+    deny=true;server.scheduleResumedThread(running);idle(server,*running);deny=false;
+    assert(running->called==1&&running->resumed==1);
+    // Generation mismatch cannot authorize the wait; a matching wake can.
+    running->suspendState();auto visits=running->visited.load();
+    deny=true;running->resume(reinterpret_cast<void*>(1));idle(server,*running);deny=false;
+    assert(running->visited==visits);
+    deny=true;running->resume(running->_dtapeThread.load());idle(server,*running);deny=false;
+    assert(running->resumed==2);
+    // A current wake arriving while the prior worker still owns _running is
+    // preserved by both the claim guard and final reserved-node handoff.
+    auto early=std::make_shared<Thread>();entered=false;release=false;
+    early->body=[&]{early->suspendState();entered=true;waitFor([&]{return release.load();});};
+    early->suspendState();early->resume();waitFor([&]{return entered.load();});
+    deny=true;early->resume();early->doWork();release=true;idle(server,*early);deny=false;
+    early->body=nullptr;assert(early->resumed==2);
+    assert(denied==0);
+    std::puts("{\"later_wait_parked_without_wake\":true,\"current_wake_runs\":true,\"queued_inflight_running_cases\":true,\"pending_call_runs\":true,\"generation_checked\":true,\"denied_allocations\":0}");
+#endif
+}

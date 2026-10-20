@@ -44,6 +44,25 @@ impl Lock {
             _ => false,
         }
     }
+    /// Recheck a previously queued operation without changing ownership. The
+    /// caller arms its foreign wait first, then tests this under the state lock.
+    /// A cancelled sender/acceptor must retry registration before blocking.
+    pub fn wait_required(&self, thread: usize, operation: Operation) -> bool {
+        match operation {
+            Operation::Acquire => {
+                self.owner != Some(thread)
+                    && (self.owner.is_some()
+                        || self.queue.front().is_some_and(|waiter| waiter.0 != thread))
+            }
+            Operation::Handoff => {
+                self.sender == Some(thread) && self.owner == Some(thread) && self.acceptor.is_none()
+            }
+            Operation::Accept => {
+                self.acceptor == Some(thread) && self.owner != Some(thread) && self.sender.is_none()
+            }
+            Operation::Try | Operation::Release | Operation::Stable => false,
+        }
+    }
     fn acquired(&self) -> Result {
         Result::Done(if self.unstable { UNSTABLE } else { SUCCESS })
     }
@@ -246,5 +265,80 @@ mod tests {
         assert_eq!(call(&mut l, 3, Operation::Accept), Result::Wait);
         l.cancel(3);
         assert_eq!(call(&mut l, 4, Operation::Accept), Result::Wait);
+    }
+    #[test]
+    fn wait_predicate_fifo_priority_and_cancelled_head() {
+        let mut fifo = Lock::default();
+        assert!(!fifo.wait_required(1, Operation::Acquire));
+        call(&mut fifo, 1, Operation::Acquire);
+        assert!(!fifo.wait_required(1, Operation::Acquire));
+        assert_eq!(call(&mut fifo, 2, Operation::Acquire), Result::Wait);
+        assert_eq!(call(&mut fifo, 3, Operation::Acquire), Result::Wait);
+        assert!(fifo.wait_required(2, Operation::Acquire));
+        call(&mut fifo, 1, Operation::Release);
+        assert!(!fifo.wait_required(2, Operation::Acquire));
+        assert!(fifo.wait_required(3, Operation::Acquire));
+        assert_eq!(fifo.interrupted(2, Operation::Acquire), ABORTED);
+        assert!(!fifo.wait_required(3, Operation::Acquire));
+        assert_eq!(
+            fifo.step(3, 0, 0, Operation::Acquire, true),
+            Result::Done(SUCCESS)
+        );
+
+        let mut priority = Lock::default();
+        call(&mut priority, 1, Operation::Acquire);
+        assert_eq!(
+            priority.step(2, 10, 1, Operation::Acquire, false),
+            Result::Wait
+        );
+        assert_eq!(
+            priority.step(3, 20, 1, Operation::Acquire, false),
+            Result::Wait
+        );
+        call(&mut priority, 1, Operation::Release);
+        assert!(priority.wait_required(2, Operation::Acquire));
+        assert!(!priority.wait_required(3, Operation::Acquire));
+        priority.cancel(3);
+        assert!(!priority.wait_required(2, Operation::Acquire));
+    }
+    #[test]
+    fn wait_predicate_sender_transfer_and_cancellation() {
+        let mut lock = Lock::default();
+        call(&mut lock, 1, Operation::Acquire);
+        assert_eq!(call(&mut lock, 1, Operation::Handoff), Result::Wait);
+        assert!(lock.wait_required(1, Operation::Handoff));
+        assert_eq!(lock.interrupted(1, Operation::Handoff), ABORTED);
+        assert!(!lock.wait_required(1, Operation::Handoff));
+        assert_eq!(call(&mut lock, 1, Operation::Handoff), Result::Wait);
+        assert!(lock.wait_required(1, Operation::Handoff));
+        assert_eq!(call(&mut lock, 2, Operation::Accept), Result::Done(SUCCESS));
+        assert!(!lock.wait_required(1, Operation::Handoff));
+        assert_eq!(lock.interrupted(1, Operation::Handoff), SUCCESS);
+        assert_eq!(
+            call(&mut lock, 2, Operation::Release),
+            Result::Done(SUCCESS)
+        );
+    }
+    #[test]
+    fn wait_predicate_acceptor_transfer_and_cancelled_registration() {
+        let mut lock = Lock::default();
+        call(&mut lock, 1, Operation::Acquire);
+        assert_eq!(call(&mut lock, 2, Operation::Accept), Result::Wait);
+        assert!(lock.wait_required(2, Operation::Accept));
+        assert_eq!(lock.interrupted(2, Operation::Accept), ABORTED);
+        assert!(!lock.wait_required(2, Operation::Accept));
+        assert_eq!(call(&mut lock, 3, Operation::Accept), Result::Wait);
+        assert!(lock.wait_required(3, Operation::Accept));
+        assert!(!lock.wait_required(2, Operation::Accept));
+        assert_eq!(
+            call(&mut lock, 1, Operation::Handoff),
+            Result::Done(SUCCESS)
+        );
+        assert!(!lock.wait_required(3, Operation::Accept));
+        assert_eq!(lock.interrupted(3, Operation::Accept), SUCCESS);
+        assert_eq!(
+            call(&mut lock, 3, Operation::Release),
+            Result::Done(SUCCESS)
+        );
     }
 }
