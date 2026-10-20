@@ -1,0 +1,34 @@
+Thread-info join/termination regression
+======================================
+
+The immediate post-pthread_join ESRCH assertion was invalid. Pinned libpthread
+f07f265bfbcf071c1adfc808de971e053ea5edc5 publishes its exit gate and wakes a joiner
+before __bsdthread_terminate enters native termination. A proc thread-info query
+can therefore still observe the native thread. This ordering is source evidence,
+not a claim of execution on an independent macOS installation.
+
+The owned loader27-delayed-exit adds a 50ms scheduling pause at native termination
+entry. Both same-candidate guest slots reproduce the old assertion failure with
+a valid112-byte reply and errno0. The original source, executable and failure
+reports remain preserved. No installed loader or original probe was overwritten.
+
+The corrected fixture checks valid records and exact output bounds while the
+thread exists, then requires ESRCH with the entire output untouched. Its five-
+second bound catches failure to retire the native thread. All preceding ABI,
+buffer/error, CPU, thread identity/name and executable-path checks remain.
+
+Both corrected slots pass with the normal loader and delayed loader. A logging-
+only companion observes45/44 valid post-join records followed by ESRCH. Expected
+stdout remains the independently retained original golden, not generated output.
+
+Exact inputs, commands and raw reports:
+  work/resource-death-continuation/thread-info-ordering/verification.json
+  work/resource-death-continuation/thread-info-ordering/source-review.json
+  work/resource-death-continuation/thread-info-ordering/delayed27/comparison.json
+  work/resource-death-continuation/thread-info-fixed28/{normal,delayed}/comparison.json
+  work/resource-death-continuation/thread-info-observed31/delayed/comparison.json
+  work/resource-death-continuation/retained-probes29/revision.json
+
+Retained cohorts copy the old probe directory into a fresh owned directory and
+replace only this executable, recording both hashes. These are two slots of the
+same owned server/loader/kernel, not an original-C versus Rust comparison.

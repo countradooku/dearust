@@ -57,8 +57,23 @@ int main(void) {
     assert(__proc_info(2,2147483647,PROC_PIDTHREADINFO,tid,bytes,128)==-1&&errno==ESRCH); untouched(bytes,sizeof(bytes));
     assert(__proc_info(2,getpid(),PROC_PIDTHREADINFO,tid|(1ull<<32),bytes,128)==112); untouched(bytes+112,sizeof(bytes)-112);
     assert(write(gate[1],"x",1)==1&&pthread_join(thread,NULL)==0);
-    memset(bytes,0xa5,sizeof(bytes));
-    assert(__proc_info(2,getpid(),PROC_PIDTHREADINFO,other,bytes,128)==-1&&errno==ESRCH); untouched(bytes,sizeof(bytes));
+    /* libpthread wakes joiners before entering native thread termination.
+     * A still-existing thread may therefore return valid info after join.
+     * Check that interval, then require ESRCH and no output after disappearance. */
+    uint64_t exit_deadline=micros()+5000000;
+    for(;;) {
+        memset(bytes,0xa5,sizeof(bytes)); errno=0;
+        int result=__proc_info(2,getpid(),PROC_PIDTHREADINFO,other,bytes,128);
+        if(result==-1) {
+            assert(errno==ESRCH); untouched(bytes,sizeof(bytes)); break;
+        }
+        assert(result==sizeof(struct proc_threadinfo));
+        memcpy(&after,bytes,sizeof(after));
+        assert(strcmp(after.pth_name,"worker )\nname")==0);
+        untouched(bytes+sizeof(after),sizeof(bytes)-sizeof(after));
+        assert(micros()<exit_deadline);
+        usleep(1000);
+    }
     assert(__proc_info(2,getpid(),PROC_PIDPATHINFO,0,NULL,4096)==-1&&errno==EFAULT);
     assert(__proc_info(2,getpid(),PROC_PIDPATHINFO,0,bytes,-1)==-1&&errno==EINVAL); untouched(bytes,sizeof(bytes));
     assert(__proc_info(2,getpid(),PROC_PIDPATHINFO,0,bytes,1023)==-1&&errno==ENOMEM); untouched(bytes,sizeof(bytes));
