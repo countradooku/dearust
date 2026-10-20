@@ -1,0 +1,53 @@
+{
+  "scope": "Owned builder selected-C-source preservation and extensible frozen build inputs; no runtime activation or whole-server OOM claim.",
+  "passed": true,
+  "source_sha256": {
+    "tools/build_prepared_resource_server.py": "55c951c14c4fc72e83aaaabae049997d921f97da6a5323c0bcfe680221424901",
+    "tools/test_prepared_resource_builder.py": "516ed83ca1cf8ec68c89576f0b3c274729930cd1189aef776e09a384e612b770",
+    "work/resource-death-continuation/builder-tests2.log": "7356ad57b8bb8f81dc5e07cb0ae0b08c550a79af9f54c5b0fd65ca25a817099e",
+    "work/resource-death-continuation/bridge-preservation-actual1/verification.json": "8bba958e99e0155bd721df1ce7e24725ac621b788cbd7ee7b6aece74fbb73b20"
+  },
+  "unit_tests": 13,
+  "unit_command": "python3 -m unittest discover -s tools -p test_prepared_resource_builder.py -v",
+  "actual_native_report": "work/resource-death-continuation/bridge-preservation-actual1/verification.json",
+  "actual_server_sha256": "bb2c26761eca723880242b41e44b1d9a5e8a8173156e1b3ba2e56992fcf60a97",
+  "actual_native_result": {
+    "process_rollback_stages": 3,
+    "thread_rollback_stages": 6,
+    "task_context_disposals": 4,
+    "thread_context_disposals": 7,
+    "ordinary_successful_lifecycles": 1,
+    "descriptor_and_epoll_restored": true,
+    "saved_reserved_eid_checked": true,
+    "interposed_cleanup_allocations_denied": true,
+    "cleanup_allocation_attempts": 0,
+    "allocation_interposition_calibration_attempts": 10
+  },
+  "preserved_candidate_count": 23,
+  "preserved_candidate_sha256": {
+    "tools/relink_matching_kernel.py": "6a174a5e3e31549a8328d1c8a7987bc377efb296a9571b7046e7d71d265c723c",
+    "tools/relink_system_kernel.py": "1384f6e77699714cfa2b121e3b00b9db0b96f4e07d834a591d9432f99e44359b",
+    "tools/build_resource_exec_bridge.py": "82c50ecaf214be718517623361dafcb048bad762335cf9bf7874d1487df09f70",
+    "tools/build_resource_loader.py": "7da926806fdfbd6ea3ed3dbbc4013c983164894bb8f931400b869b8096cf96b6",
+    "tools/build_resource_server.py": "31a759aba961312576f603e2750603397c4a5a002a80e07cf50aa67978564ba2",
+    "tools/check_resource_checkin.py": "243c7dde11735b5a6e851b22dd3b720b6cf009c233e1c6da9154ff93896e8918",
+    "tools/check_resource_cpu.py": "f9463c2b75ba515720630e6aa9a4217401fa31e06f491462cc888f1b11a053d5",
+    "tools/check_resource_loader.py": "ef5273b516e43d1488860b5b712748aa5a352cdfb8f5685c7dcaafdcaae83308",
+    "tools/check_resource_policy.py": "bc24874fbde3ecba2c7d51d2f3f794a28d97d74a2de5fd5e1cbb4b69837f2124",
+    "tools/check_resource_threads.py": "dd1d6bd3b52bb25ec25e11f085e8a80f36cb1faca81c3262e130d72b69815316",
+    "tools/fixtures/resource-checkin-native.c.in": "faf24c67f29c4f16dffed916eac869653f3a429f20752e20d956b594be4e3d2c",
+    "tools/fixtures/resource-cpu-timer-native.cpp": "16c653cc0cdae3a0c1b061500c86a88c292671c96b4258bbd49a4f093bc536b4",
+    "tools/fixtures/resource-effect-wire.h": "8947907e2bd4f5019832ff9db46458edf96298044395502adb7a3ea319e5a5b1",
+    "tools/fixtures/resource-loader-native.c.in": "84a2ed0a310ac70556bb81f63d6a7358dabb3a353a67bdf538b4f7245c6f1dc7",
+    "tools/fixtures/resource-monitor-native.cpp.in": "7b006be86f796c4914d9df8e7f4f69fb55c51767cbe3e22b71d20ed6d823c8cb",
+    "tools/fixtures/resource-threads-native.cpp.in": "424ee9541d068024eb33a8db1dfe655f05961e06fa7e7a8f4b6571889ba87c13",
+    "tools/resource-cpu-timer.inc": "669b8a75962d816cdae617e19cde6dbcdeb9fb7249e6b16af42dba72d3ea9d26",
+    "tools/resource-policy-host.rs.in": "2ca051a6d9287f2cfbcefefa91fcffcc584358659b762da5a583c50eea27d34a",
+    "tools/resource-server-call.inc": "b978e0928223a4b02e0b4aa6783a2d065fa31731b3c4fb430f1b90a0033e8bc5",
+    "tools/resource-server-declarations.inc": "f490ff0f8c2e9bf0f448e941b3b3c63450b871304c6dd37c0a9beef7fd52875a",
+    "tools/resource-server-state.inc": "04b855ea22b683c1076917384d38d14e8d26c4a795ee23a644c9644884956f86",
+    "tools/resource-server-thread.inc": "7c205ff2ad103d550a284123e9126dfa2af9d0e5e517ee5de451e55d226d5f09",
+    "tools/test_resource_server.py": "b1720c1234a50efe152401b504881ff458d4f164cedbb28eb4146d6ecaf881a4"
+  },
+  "resource_ownership_activated": false
+}

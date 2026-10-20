@@ -20,8 +20,28 @@ from patch_prepared_resource_checkin import patch_checkin
 from relink_darlingserver import relink, validate_output
 
 
+# Optional owned derivatives declare all extra inputs before the initial snapshot.
+EXTRA_SERVER_INPUTS = {}
+EXTRA_TRANSFORM_INPUTS = []
+EXTRA_BUILD_RECORDS = []
+
+
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+
+def selected_duct_source(previous, source, key):
+    """Preserve an existing selected bridge when recompiling one C translation unit."""
+    records = [item for item in previous['inputs'] if item.get('source') == key]
+    if len(records) > 1:
+        raise ValueError('ambiguous selected duct source: ' + key)
+    if records and records[0].get('replaced'):
+        path = Path(records[0]['selected']).with_suffix('')
+        if not path.is_file():
+            raise ValueError('selected bridge source unavailable: ' + str(path))
+        return path
+    return source / 'duct-tape' / key
 
 
 def main():
@@ -52,18 +72,21 @@ def main():
         if digest(Path(item['path'])) != item['sha256']:
             raise ValueError('frozen archive changed: ' + item['path'])
         frozen_hashes[item['path']] = item['sha256']
+    task_original = selected_duct_source(previous, source, 'src/task.c')
     tools = Path(__file__).resolve().parent
     transform_inputs = [Path(__file__).resolve(), *helper_files()] + [tools / name for name in (
         'patch_prepared_resource_cleanup.py', 'patch_prepared_resource_publication.py',
         'patch_prepared_resource_registration.py', 'patch_prepared_resource_death_barrier.py',
         'patch_prepared_resource_checkin.py',
         'prepared-resource-cleanup-process.inc', 'prepared-resource-cleanup-thread.inc')]
-    direct_inputs = [base_path, previous_path, source / 'duct-tape/src/task.c',
+    transform_inputs += [Path(p) for p in EXTRA_TRANSFORM_INPUTS]
+    direct_inputs = [base_path, previous_path, task_original,
         build / 'src/external/darlingserver/duct-tape/CMakeFiles/darlingserver_duct_tape.dir/flags.make']
     for name in ('process', 'thread', 'server', 'registry'):
         path = candidate / 'internal-include/darlingserver' / (name + '.hpp')
         direct_inputs.append(path if path.is_file() else source / 'internal-include/darlingserver' / (name + '.hpp'))
     direct_inputs += [candidate / 'src' / (name + '.cpp') for name in ('process', 'thread', 'server', 'call')]
+    direct_inputs += [Path(p) for p in EXTRA_SERVER_INPUTS.values()]
     initial_hashes = dict(frozen_hashes)
     initial_hashes.update({str(p): digest(p) for p in transform_inputs + direct_inputs})
     shutil.copytree(candidate, output, ignore=shutil.ignore_patterns('*.o', '*.a', 'linked', 'build.json'))
@@ -77,6 +100,7 @@ def main():
         files[name + '.hpp'] = path.read_text()
     for name in ('process', 'thread', 'server', 'call'):
         files[name + '.cpp'] = (candidate / 'src' / (name + '.cpp')).read_text()
+    files.update({name: Path(path).read_text() for name, path in EXTRA_SERVER_INPUTS.items()})
     files = patch_checkin(patch_thread_death_barrier(patch_registration(patch_publication(patch_cleanup(files)))))
     # An actual C-side check, including kernel-task adoption, prevents a later
     # refactor silently reverting to an initialized but incorrect saved identity.
@@ -86,7 +110,8 @@ def main():
         'if (!_dtapeTask) throw std::bad_alloc();\n'
         '    if (dearust_prepared_task_saved_eid(_dtapeTask) != _eid) std::terminate();')
     for name, text in files.items():
-        path = output / ('internal-include/darlingserver' if name.endswith('.hpp') else 'src') / name
+        directory = 'internal-include/darlingserver' if name.endswith('.hpp') or name == 'rpc.internal.h' else ('tools' if name.endswith('.inc') else 'src')
+        path = output / directory / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text)
     for path in helper_files():
@@ -103,7 +128,6 @@ def main():
         commands.append(command)
         server_objects[key] = output / (key + '.o')
     # Kernel adoption must update the saved C identity as well as its context.
-    task_original = source / 'duct-tape/src/task.c'
     text = task_original.read_text()
     anchor = '\t\t\ttask->context = context;'
     if text.count(anchor) != 1:
@@ -130,13 +154,15 @@ def main():
             raise ValueError('build input changed during compilation: ' + name)
     inputs = [Path(name) for name in initial_hashes]
     inputs += [p for p in output.rglob('*') if p.is_file() and p.suffix in {'.cpp', '.hpp', '.c', '.inc', '.h', '.o', '.a', '.d'}]
+    inputs += [output / name for name in EXTRA_BUILD_RECORDS]
     record = dict(scope='Owned prepared-registration candidate; resource ownership/enforcement unactivated; inner XNU OOM/startup/performance gates remain open.',
         inputs_unchanged=True, initial_input_sha256=initial_hashes,
         parent_candidate=str(candidate), parent_report_sha256=digest(base_path), build=str(build), source=str(source),
         commands=commands, sha256={str(p): digest(p) for p in inputs},
         server=str(output / 'linked/darlingserver'), server_sha256=digest(output / 'linked/darlingserver'),
         server_objects={key: str(value) for key, value in server_objects.items()},
-        kernel_saved_identity_checked=True, resource_ownership_activated=False)
+        kernel_saved_identity_checked=True, resource_ownership_activated=False,
+        selected_task_source=str(task_original), selected_task_source_sha256=digest(task_original))
     (output / 'build.json').write_text(json.dumps(record, indent=2) + '\n')
     print(json.dumps({k: record[k] for k in ('scope', 'server', 'server_sha256')}, indent=2))
 

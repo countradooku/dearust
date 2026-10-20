@@ -85,6 +85,45 @@ class PreparedBuilderPreservation(unittest.TestCase):
             stack.enter_context(contextlib.redirect_stderr(io.StringIO()))
             builder.main()
 
+    def test_selected_bridge_source_is_preserved(self):
+        bridge = self.root / 'bridge/task.c'
+        self.write(bridge, 'lockset task lifecycle callbacks\n')
+        record = dict(inputs=[dict(source='src/task.c', replaced=True,
+                                  selected=str(bridge) + '.o')])
+        self.assertEqual(builder.selected_duct_source(record, self.source, 'src/task.c'), bridge)
+
+    def test_missing_selected_bridge_does_not_fall_back(self):
+        record = dict(inputs=[dict(source='src/task.c', replaced=True,
+                                  selected=str(self.root / 'missing.c.o'))])
+        with self.assertRaisesRegex(ValueError, 'selected bridge source unavailable'):
+            builder.selected_duct_source(record, self.source, 'src/task.c')
+
+    def test_original_source_used_when_no_bridge_selected(self):
+        self.assertEqual(builder.selected_duct_source(dict(inputs=[]), self.source, 'src/task.c'),
+                         self.source / 'duct-tape/src/task.c')
+
+    def test_ambiguous_selected_bridge_is_rejected(self):
+        record = dict(inputs=[dict(source='src/task.c'), dict(source='src/task.c')])
+        with self.assertRaisesRegex(ValueError, 'ambiguous selected duct source'):
+            builder.selected_duct_source(record, self.source, 'src/task.c')
+
+    def test_extra_generated_header_keeps_its_include_location_and_hash(self):
+        header = self.root / 'selected/rpc.internal.h'
+        self.write(header, 'owned generated declarations\n')
+        with mock.patch.object(builder, 'EXTRA_SERVER_INPUTS', {'rpc.internal.h': header}):
+            self.run_builder()
+        owned = self.output / 'internal-include/darlingserver/rpc.internal.h'
+        self.assertEqual(owned.read_bytes(), header.read_bytes())
+        record = json.loads((self.output / 'build.json').read_text())
+        self.assertEqual(record['initial_input_sha256'][str(header)], builder.digest(header))
+        self.assertEqual(record['sha256'][str(owned)], builder.digest(owned))
+
+    def test_missing_required_extra_build_record_prevents_success_manifest(self):
+        with mock.patch.object(builder, 'EXTRA_BUILD_RECORDS', ['missing-commands.json']):
+            with self.assertRaises(FileNotFoundError):
+                self.run_builder()
+        self.assertFalse((self.output / 'build.json').exists())
+
     def test_existing_output_and_candidate_are_preserved(self):
         self.write(self.output / 'keep', 'previous owned candidate\n')
         before = builder.digest(self.candidate / 'build.json')
