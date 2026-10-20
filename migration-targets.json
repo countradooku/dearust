@@ -28,7 +28,7 @@
   ],
   "compatibility": "v1 names/id/type/graph_reference/status/legacy_target_retired retained; counts corrected. See tools/MIGRATION-LEDGER.txt.",
   "counts": {
-    "candidate_artifacts": 1,
+    "candidate_artifacts": 2,
     "legacy_targets_retired": 0,
     "manifest_artifacts": 17,
     "observed_default_targets": 1629,
@@ -36,7 +36,7 @@
     "pending_targets": 1629,
     "production_active_targets": 0,
     "source_target_participations": 110,
-    "unique_artifacts": 20,
+    "unique_artifacts": 21,
     "unique_ported_upstream_sources": 59,
     "unique_sources_participating_in_captured_graph": 58,
     "unique_sources_with_rust_work": 59,
@@ -6171,6 +6171,38 @@
           "production_active": false,
           "scope": "Selected matching x86_64 execution only; unported consumers and architectures remain.",
           "target": "darlingserver"
+        },
+        {
+          "activation": "candidate-only",
+          "architectures": [
+            "x86_64"
+          ],
+          "artifact": "candidate:lockset-host-archive:76421d09cb72bbfa",
+          "compiled": true,
+          "configurations": [
+            "matching-locally-modified-runtime",
+            "owned-multiworker-DSERVER_SINGLE_THREADED=0",
+            "owned-singleworker-DSERVER_SINGLE_THREADED=1"
+          ],
+          "evidence": [
+            "resource-lockset-rust-build58",
+            "resource-lockset-consumer-build58",
+            "resource-lockset-consumer-link58",
+            "resource-lifecycle-current-index"
+          ],
+          "evidence_currently_available": true,
+          "executed": true,
+          "linked": true,
+          "open_gates": [
+            "Complete multiworker correctness, shutdown/fault and performance acceptance; current ordinary multiworker Mach lockset still times out in both same-candidate slots.",
+            "Duplicate intrusive wake/admission ownership and interrupt interactions remain unresolved; newly review-stopped wait-admission work stays inactive and unverified.",
+            "All required configurations/architectures, clean standalone startup and genuine replacement/legacy retirement remain open."
+          ],
+          "optional": false,
+          "original_slices_retained": [],
+          "production_active": false,
+          "scope": "The same exact Rust archive is compiled/linked into owned57 and58. Owned57 passes88 scoped ordinary guest cases, including Mach lockset; owned58 executes80 cases with78 passes and2 lockset timeouts. Execution is scoped candidate evidence, not complete concurrency, lifecycle, resource or performance acceptance.",
+          "target": "darlingserver"
         }
       ],
       "coverage": "scoped-partial",
@@ -6195,7 +6227,8 @@
       "source_ports": [
         {
           "artifacts": [
-            "integration:lockset-host-archive"
+            "integration:lockset-host-archive",
+            "candidate:lockset-host-archive:76421d09cb72bbfa"
           ],
           "commit": "89751e64bc6c2082f7725061824ee0e33395b0de",
           "coverage": "partial-source",
@@ -6203,10 +6236,13 @@
           "legacy_status": "partial",
           "object_id": "4a0e9c05d673dfeb1929ce205c5187948ae86633",
           "open_gates": [
-            "Original server and most duct-tape sources retained; clean pinned full-runtime integration and other architectures pending"
+            "Original server and most duct-tape sources retained; clean pinned full-runtime integration and other architectures pending",
+            "Current Rust/C boundary revision has scoped native proofs and owned candidate link; full multiworker wait/admission, cancellation/lifecycle and performance acceptance remain open.",
+            "No additional upstream source replacement, complete target replacement, production activation or retirement follows from revising this existing partial slice."
           ],
           "rust_sources": [
-            "crates/dearust-lockset/src/lib.rs"
+            "crates/dearust-lockset/src/lib.rs",
+            "crates/dearust-lockset/src/core.rs"
           ],
           "source": "src/external/darlingserver/duct-tape/xnu/osfmk/kern/sync_lock.c"
         }

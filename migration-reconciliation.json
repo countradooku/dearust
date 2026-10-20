@@ -240,13 +240,27 @@
       },
       "scope": "Allocator-free host Rust resource policy in candidate server; client ownership not activated.",
       "staging": "explicit-candidate-builder"
+    },
+    {
+      "activation": "candidate-only",
+      "id": "candidate:lockset-host-archive:76421d09cb72bbfa",
+      "kind": "staticlib",
+      "manifest": null,
+      "package": "dearust-lockset",
+      "recorded_output": {
+        "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/lockset58-multi/rust-target/release/libdearust_lockset.a",
+        "sha256": "76421d09cb72bbfa69fcbdb278c7a371b6604150b6507a42c6ea84ef5136c1f0"
+      },
+      "scope": "Fresh current Rust lockset archive compiled in owned build58 and linked into its candidate darlingserver with the current C boundary. Host/native and consumer-link scope only; no final guest/concurrency, production activation, complete source or target replacement claimed.",
+      "staging": "explicit-candidate-builder"
     }
   ],
   "candidate_work": [
     {
       "activation": "candidate-only",
       "artifacts": [
-        "candidate:resource-policy-archive"
+        "candidate:resource-policy-archive",
+        "candidate:lockset-host-archive:76421d09cb72bbfa"
       ],
       "build_tools": [
         "tools/build_resource_exec_bridge.py",
@@ -254,13 +268,38 @@
         "tools/build_resource_server.py",
         "tools/build_prepared_resource_server.py",
         "tools/build_resource_lifecycle_server.py",
-        "tools/build_resource_workqueue_configuration.py"
+        "tools/build_resource_workqueue_configuration.py",
+        "tools/build_resource_lockset_server.py"
       ],
       "evidence": [
         "work/resources-complete/continuation-20261019/guest-summary-final6.json",
         "work/resources-complete/continuation-20261019/wip-sources.json",
         "resource-prepared-registration-verification.json",
-        "resource-lifecycle-current-index.json"
+        "resource-lifecycle-current-index.json",
+        "work/resource-death-continuation/lockset58-multi/rust-build.json",
+        "work/resource-death-continuation/lockset58-multi/server/build.json",
+        "work/resource-death-continuation/lockset58-multi/server/linked/relink.json",
+        "work/resource-death-continuation/lockset-registry/proof6/verification.json",
+        "work/resource-death-continuation/lockset-cancel/proof1/verification.json"
+      ],
+      "historical_scope_observations": [
+        {
+          "open_gates": [
+            "Client owner lifecycle/fork/exec/signal/cancellation",
+            "Host hard-limit concurrency/partial mprotect and coherent VM/wiring lifecycle",
+            "Guest credential/NPROC authority",
+            "Old-kernel and queued message-lifetime identity",
+            "Native generic-copy CPU regressions",
+            "Adversarial RPC validation externally blocked; do not retry.",
+            "Checked ordinary acquisition and generation lifetime have scoped native proofs; final combined exec/initial-call failure, generic/lazy IPC, bootstrap, active-call cancellation and full shutdown remain open.",
+            "Additional exec-notification/extra-guest/cleanup-lane follow-up and direct native Checkin fault proof stopped by automatic cybersecurity review; do not retry/rephrase/transfer.",
+            "Additional native cleanup pthread/default stack and broader performance acceptance remain open.",
+            "Multiworker ordinary guest timeout remains unresolved; deterministic handoff fixes pass scoped native/sanitized methods and default88 guests.",
+            "Continuation closure lifetime validation stopped by automatic cybersecurity review; inactive WIP must not be retried/rephrased/transferred.",
+            "Latest single-worker thread-info.c post-join ESRCH assertion failed; exact termination/result ordering remains under review, without weakened expectations."
+          ],
+          "scope": "Owned lifecycle prerequisites include worker ownership/handoff, C mutex interlock and eventfd rearm fixes. Latest single/multi owned guest cohorts fail; earlier same-candidate88 passes remain historical. Component native proofs retain exact binaries. Ownership inactive; no Rust replacement/retirement."
+        }
       ],
       "name": "resource-ownership",
       "open_gates": [
@@ -275,13 +314,15 @@
         "Additional native cleanup pthread/default stack and broader performance acceptance remain open.",
         "Multiworker ordinary guest timeout remains unresolved; deterministic handoff fixes pass scoped native/sanitized methods and default88 guests.",
         "Continuation closure lifetime validation stopped by automatic cybersecurity review; inactive WIP must not be retried/rephrased/transferred.",
-        "Latest single-worker thread-info.c post-join ESRCH assertion failed; exact termination/result ordering remains under review, without weakened expectations."
+        "Post-join thread-info ordering has an independent pinned-contract correction; historical immediate-ESRCH failures remain preserved. This does not close complete lifecycle/concurrency acceptance.",
+        "Duplicate intrusive wake/TailQ and wait/admission/interrupt ownership remain unresolved in multiworker scope; no complete concurrency gate is passed.",
+        "New wait-admission fix/check/fixture work was stopped by automatic cybersecurity review and remains inactive/unverified; do not retry, rephrase, transfer or execute it. Previously stopped work remains stopped."
       ],
       "rust_foundations": [
         "crates/dearust-process/src/resource_policy.rs",
         "crates/dearust-process/src/resource_view.rs"
       ],
-      "scope": "Owned lifecycle prerequisites include worker ownership/handoff, C mutex interlock and eventfd rearm fixes. Latest single/multi owned guest cohorts fail; earlier same-candidate88 passes remain historical. Component native proofs retain exact binaries. Ownership inactive; no Rust replacement/retirement."
+      "scope": "Owned registration, cleanup and wait prerequisites plus revised partial Rust lockset: owned57 single-worker passes88 ordinary guests; owned58 multiworker passes78/80 executed cases and fails2 Mach lockset cases. Resource ownership inactive; no additional source replacement, whole-target replacement or retirement. Full faults/shutdown/performance and automatic-review-stopped wait-admission work remain open."
     }
   ],
   "cargo_packages": [
@@ -867,7 +908,7 @@
     "upstream_commit": "60ba801decee7a00782f74f6be4c8ffb013f79ff"
   },
   "counts": {
-    "candidate_artifacts": 1,
+    "candidate_artifacts": 2,
     "legacy_targets_retired": 0,
     "manifest_artifacts": 17,
     "observed_default_targets": 1629,
@@ -875,7 +916,7 @@
     "pending_targets": 1629,
     "production_active_targets": 0,
     "source_target_participations": 110,
-    "unique_artifacts": 20,
+    "unique_artifacts": 21,
     "unique_ported_upstream_sources": 59,
     "unique_sources_participating_in_captured_graph": 58,
     "unique_sources_with_rust_work": 59,
@@ -1571,6 +1612,109 @@
       "id": "resource-lifecycle-current-index",
       "kind": "current-evidence-index",
       "path": "resource-lifecycle-current-index.json",
+      "scope": "Current owned57 single-worker passes88 ordinary cases; owned58 multiworker passes78/80 executed cases and times out twice in Mach lockset. Exact selected current Rust archive/C boundary provenance and scoped native proofs are recorded. Resource ownership, full faults/shutdown/performance and automatically stopped wait-admission work remain unfinished.",
+      "sha256": "de247e2d8f85fb62731d4d55bac0c2bfb0b31f0b5e115299c49e80304a6b5d94"
+    },
+    {
+      "assertions": [
+        {
+          "equals": false,
+          "pointer": "/resource_ownership_activated"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "resource-lockset-rust-build58",
+      "kind": "scoped-candidate-build",
+      "path": "work/resource-death-continuation/lockset58-multi/rust-build.json",
+      "scope": "Current lockset Rust archive/compiler/source provenance only; resource ownership inactive.",
+      "sha256": "95620b59d3f30e259177ba83e980a49845212834ce213d2ae5322c3bde5a092a"
+    },
+    {
+      "assertions": [
+        {
+          "equals": true,
+          "pointer": "/inputs_unchanged"
+        },
+        {
+          "equals": false,
+          "pointer": "/resource_ownership_activated"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "resource-lockset-consumer-build58",
+      "kind": "scoped-candidate-build",
+      "path": "work/resource-death-continuation/lockset58-multi/server/build.json",
+      "scope": "Owned matching x86_64 multiworker server build/link provenance only; guest and full concurrency acceptance remain separate.",
+      "sha256": "23285626862ccd0e8f89a77f8971f39f29323e825fd79a1e42fc49676b62c506"
+    },
+    {
+      "availability": "hash-matched",
+      "id": "resource-lockset-consumer-link58",
+      "kind": "scoped-candidate-link",
+      "path": "work/resource-death-continuation/lockset58-multi/server/linked/relink.json",
+      "scope": "Actual candidate server archive selection/link map and symbols; no full runtime replacement or guest result inferred.",
+      "sha256": "6d887a904c35fed2b9099e7f5d70e4df6bf541d9ac0b1a56f8210e55f72989cf"
+    },
+    {
+      "assertions": [
+        {
+          "equals": true,
+          "pointer": "/passed"
+        },
+        {
+          "equals": true,
+          "pointer": "/inputs_unchanged"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "resource-lockset-focused6",
+      "kind": "scoped-native-component-proof",
+      "path": "work/resource-death-continuation/lockset-registry/proof6/verification.json",
+      "scope": "Current Rust lockset/native methods and C boundary source scope; not a complete multiworker guest or shutdown/fault proof.",
+      "sha256": "337f26f37ac9367aeb19b3c4f93bf2707054202be7e9b58633b5a4804849bef3"
+    },
+    {
+      "assertions": [
+        {
+          "equals": true,
+          "pointer": "/passed"
+        },
+        {
+          "equals": true,
+          "pointer": "/inputs_unchanged"
+        }
+      ],
+      "availability": "hash-matched",
+      "id": "resource-lockset-cancellation1",
+      "kind": "scoped-native-component-proof",
+      "path": "work/resource-death-continuation/lockset-cancel/proof1/verification.json",
+      "scope": "Existing recorded targeted lockset cancellation/native sanitized proof only; no blocked validation retried or transferred. Not complete wait-admission or guest concurrency acceptance.",
+      "sha256": "27aca1dbb32917b8c59a530013d90907f5a387c41b3f642dc48cf4555b89664b"
+    },
+    {
+      "assertions": [
+        {
+          "equals": false,
+          "pointer": "/resource_complete"
+        },
+        {
+          "equals": false,
+          "pointer": "/resource_ownership_activated"
+        },
+        {
+          "equals": false,
+          "pointer": "/blocked_rpc_checks_retried"
+        },
+        {
+          "equals": 88,
+          "pointer": "/guests/expected_count"
+        }
+      ],
+      "availability": "hash-matched",
+      "date": "2026-10-20",
+      "id": "historical-resource-lifecycle-index-6f60f32",
+      "kind": "current-evidence-index",
+      "path": "work/resource-death-continuation/historical-current-index-6f60f32.json",
       "scope": "Owned C/C++ prerequisites only. Handoff, mutex interlock and eventfd masks pass scoped native/sanitized regressions. Latest single-worker server20 fails thread-info after66 cases; multiworker server21 times out after58. Earlier server16 passes88 remain historical. Resource ownership inactive; full fault/shutdown/performance/stopped gates open.",
       "sha256": "954b2f0cc6679b1e24b3f4bdd52961da4f06d7b6b07cf4f14490289c213a64e7"
     }
@@ -3581,6 +3725,78 @@
       "path": "xtask/tests/runtime.rs",
       "provenance": "work/resources-complete/default-final-validation/summary.json",
       "sha256": "465541adead28b4e46d34ff16fb6de8a4905b29b3a58b34383894a4915d3f140"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-lockset-source-revision",
+      "observed_sha256": "9cdc6e89bddd9af2e65d40b364e845cd519324e6f348332e73a448869b4cb6fa",
+      "path": "crates/dearust-lockset/src/lib.rs",
+      "provenance": "work/resource-death-continuation/lockset-registry/proof6/verification.json",
+      "sha256": "9cdc6e89bddd9af2e65d40b364e845cd519324e6f348332e73a448869b4cb6fa"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-lockset-source-revision",
+      "observed_sha256": "82d1d441286cc009eca32705a530b029f84cc82ab81b3896115fbac3b2919047",
+      "path": "crates/dearust-lockset/src/core.rs",
+      "provenance": "work/resource-death-continuation/lockset-registry/proof6/verification.json",
+      "sha256": "82d1d441286cc009eca32705a530b029f84cc82ab81b3896115fbac3b2919047"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-lockset-source-revision",
+      "observed_sha256": "90a98a9c8e565ed43ce57ee3d3638d866f9dd287b81f01c6710381f70ef54e14",
+      "path": "crates/dearust-lockset/src/tests.rs",
+      "provenance": "work/resource-death-continuation/lockset-registry/proof6/verification.json",
+      "sha256": "90a98a9c8e565ed43ce57ee3d3638d866f9dd287b81f01c6710381f70ef54e14"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-lockset-source-revision",
+      "observed_sha256": "3ad9a8ddb0e70e6599f30d1fab33d26bf480e579f7fe070fe4c5ec1a11087f00",
+      "path": "crates/dearust-lockset/bridge/sync_lock.c",
+      "provenance": "work/resource-death-continuation/lockset-registry/proof6/verification.json",
+      "sha256": "3ad9a8ddb0e70e6599f30d1fab33d26bf480e579f7fe070fe4c5ec1a11087f00"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-lockset-source-revision",
+      "observed_sha256": "b13d6897a7c203b328b2f3202ab3e06889f84921aa5e04a25dda717f8c1ec430",
+      "path": "crates/dearust-lockset/SAFETY.txt",
+      "provenance": "work/resource-death-continuation/lockset-registry/proof6/verification.json",
+      "sha256": "b13d6897a7c203b328b2f3202ab3e06889f84921aa5e04a25dda717f8c1ec430"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-lockset-archive",
+      "observed_sha256": "76421d09cb72bbfa69fcbdb278c7a371b6604150b6507a42c6ea84ef5136c1f0",
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/lockset58-multi/rust-target/release/libdearust_lockset.a",
+      "provenance": "work/resource-death-continuation/lockset58-multi/server/linked/relink.json",
+      "sha256": "76421d09cb72bbfa69fcbdb278c7a371b6604150b6507a42c6ea84ef5136c1f0"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-server",
+      "observed_sha256": "b6e7711747afe7fedc69dc2279944d60082124ba7446267d3b45bbde53a38c31",
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/lockset58-multi/server/linked/darlingserver",
+      "provenance": "work/resource-death-continuation/lockset58-multi/server/linked/relink.json",
+      "sha256": "b6e7711747afe7fedc69dc2279944d60082124ba7446267d3b45bbde53a38c31"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-link-map",
+      "observed_sha256": "cc9d28a08ec0d4111413ad4b20da9ce51f73bff5d19e342b1dcb84595753d23c",
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/lockset58-multi/server/linked/darlingserver.map",
+      "provenance": "work/resource-death-continuation/lockset58-multi/server/linked/relink.json",
+      "sha256": "cc9d28a08ec0d4111413ad4b20da9ce51f73bff5d19e342b1dcb84595753d23c"
+    },
+    {
+      "availability": "hash-matched",
+      "kind": "candidate-lockset-c-boundary-object",
+      "observed_sha256": "3efa8d7c9c6833a50e993686e5abcb00d01a5ee5ad8ff8076deb2ad96e12ccab",
+      "path": "/home/radud/Documents/Codex/2026-10-18/re/outputs/darling-rust/work/resource-death-continuation/lockset58-multi/server/duct-tape/xnu/osfmk/kern/sync_lock.c.o",
+      "provenance": "work/resource-death-continuation/lockset58-multi/server/linked/relink.json",
+      "sha256": "3efa8d7c9c6833a50e993686e5abcb00d01a5ee5ad8ff8076deb2ad96e12ccab"
     }
   ],
   "gaps": [
@@ -3616,7 +3832,7 @@
   "generator_inputs_sha256": {
     "dependency-inventory.json": "b93144bf7276349f8423a85be3a0180caf2e78b876520a5cd7720c307ac44fcd",
     "migration-inventory.json": "308426bdb469e38a8aceec78bed3d5350a92750528874abbc46bad9f4aec13d5",
-    "migration-ledger.json": "a7be0ae2ce7bd449bea9aae6c784aa2011e2a7e87e5945530b194c01477f6e10",
+    "migration-ledger.json": "6638af055eba95e75e523a78779bfd98c6d50ca54bbc1aa086c5702dca88c0e7",
     "tools/migration-packages.json": "657a4900cc97b75579caead0afacabf71816d5fdff46064caaaf951c4363b8bc",
     "tools/target_inventory.py": "0db5b20841711375eff9e88cb4638491c60ea9525e770468382f88f9aa03c40a",
     "upstream-cmake-graph.json": "736ebae1cb52161a7d63d14638c93b1f3f5a703b809f7fd4c05defa15dba0dbd",
@@ -552751,21 +552967,21 @@
       "status": "matched"
     },
     {
-      "observed_sha256": "b827537b6ddd63940005496f0a78ce3b707654fb22bd84bbf206fe48e7cdea0d",
+      "observed_sha256": "82d1d441286cc009eca32705a530b029f84cc82ab81b3896115fbac3b2919047",
       "path": "crates/dearust-lockset/src/core.rs",
-      "recorded_sha256": "b827537b6ddd63940005496f0a78ce3b707654fb22bd84bbf206fe48e7cdea0d",
+      "recorded_sha256": "82d1d441286cc009eca32705a530b029f84cc82ab81b3896115fbac3b2919047",
       "status": "matched"
     },
     {
-      "observed_sha256": "f37468cbc82d95d9e0d129dc22d7e36e8e43a9cab2377f599a3db56e732a2eb1",
+      "observed_sha256": "9cdc6e89bddd9af2e65d40b364e845cd519324e6f348332e73a448869b4cb6fa",
       "path": "crates/dearust-lockset/src/lib.rs",
-      "recorded_sha256": "f37468cbc82d95d9e0d129dc22d7e36e8e43a9cab2377f599a3db56e732a2eb1",
+      "recorded_sha256": "9cdc6e89bddd9af2e65d40b364e845cd519324e6f348332e73a448869b4cb6fa",
       "status": "matched"
     },
     {
-      "observed_sha256": "522ca8bdefbb85b53c04ee9f9965396604e82bb2531b9a5c3528845864be61b5",
+      "observed_sha256": "90a98a9c8e565ed43ce57ee3d3638d866f9dd287b81f01c6710381f70ef54e14",
       "path": "crates/dearust-lockset/src/tests.rs",
-      "recorded_sha256": "522ca8bdefbb85b53c04ee9f9965396604e82bb2531b9a5c3528845864be61b5",
+      "recorded_sha256": "90a98a9c8e565ed43ce57ee3d3638d866f9dd287b81f01c6710381f70ef54e14",
       "status": "matched"
     },
     {
@@ -553053,6 +553269,103 @@
   ],
   "inputs": {
     "base_commit": "6245da168dd2ca75c668d2d7cf2d58f14dbe2f51",
+    "current_lockset_revision": {
+      "evidence": [
+        "resource-lockset-rust-build58",
+        "resource-lockset-consumer-build58",
+        "resource-lockset-consumer-link58",
+        "resource-lockset-focused6",
+        "resource-lockset-cancellation1"
+      ],
+      "id": "candidate:lockset-host-archive:76421d09cb72bbfa",
+      "scope": "Explicit current lockset Rust/test/C-boundary/safety-document revision. Only the three preexisting Rust input hashes are refreshed in implementation_sha256; this five-file revision and file_evidence retain complete current provenance. Original captured input hashes remain historical. Candidate build/link is not production activation or additional source/target completion.",
+      "source_sha256": {
+        "crates/dearust-lockset/SAFETY.txt": "b13d6897a7c203b328b2f3202ab3e06889f84921aa5e04a25dda717f8c1ec430",
+        "crates/dearust-lockset/bridge/sync_lock.c": "3ad9a8ddb0e70e6599f30d1fab33d26bf480e579f7fe070fe4c5ec1a11087f00",
+        "crates/dearust-lockset/src/core.rs": "82d1d441286cc009eca32705a530b029f84cc82ab81b3896115fbac3b2919047",
+        "crates/dearust-lockset/src/lib.rs": "9cdc6e89bddd9af2e65d40b364e845cd519324e6f348332e73a448869b4cb6fa",
+        "crates/dearust-lockset/src/tests.rs": "90a98a9c8e565ed43ce57ee3d3638d866f9dd287b81f01c6710381f70ef54e14"
+      }
+    },
+    "historical_implementation_snapshots": [
+      {
+        "base_commit": "6245da168dd2ca75c668d2d7cf2d58f14dbe2f51",
+        "implementation_sha256": {
+          "crates/dearust-coredump/src/backing.rs": "ddcc2f9afe9038f10246809c3a107c93e72084f023717310836dad6628acf966",
+          "crates/dearust-coredump/src/fp.rs": "b0683e2846483dc5e9b76d575a0c8b3c7014d9980bdf0c05edb378a91e6420c2",
+          "crates/dearust-coredump/src/lib.rs": "e3119c224e5df759a45b99420067afb7fbae28aefdfdaddc640199c22bdbd012",
+          "crates/dearust-coredump/src/main.rs": "f64ef1308d333fa68e3bcb2964fb3319bfc3940884a871ecc48f222c44843157",
+          "crates/dearust-coredump/src/payload.rs": "b7ca2d4749063108297c3473b6459b4217a9f913cf0b334faed5867a3a1a138e",
+          "crates/dearust-coredump/tests/conversion.rs": "864ca459e301eacbcbcdafeaa8f53f908ae63b1884f6cf5ec78a51bec1a62f86",
+          "crates/dearust-coredump/tests/core_states.rs": "e6a4b4b5ad9fe598e476449fac3f7727206133db8fda7a0f0fc008cf638e1eac",
+          "crates/dearust-errno/src/abi.rs": "26b90263a0ef0eb27f08e3318d3b5e008f35b3715f54b0435f6b8a2c0083130b",
+          "crates/dearust-errno/src/conversion.rs": "6e0f7ae2bd1f0e7418c40ac76f1c68b964c5c9a9d9e1098ea94b02aa8365d918",
+          "crates/dearust-errno/src/lib.rs": "0a66a5f44114167a65d8ed7a94046d8496c1b9276620063dc79b2d626aa495a9",
+          "crates/dearust-fd/src/abi.rs": "ec0319b67f0bcc00f059de7a7c0e3df70e8b9ab8554c3e0be91ef0e5aa03f114",
+          "crates/dearust-fd/src/lib.rs": "cf0f1aa8ced8ab2376478de2ef358fe46a2da30cd474486108c167811ed10344",
+          "crates/dearust-fd/src/stream.rs": "b3d800374dfc78610d0ee3accf481725c98e716a9c12f03c64300632f479b307",
+          "crates/dearust-futex/src/abi.rs": "883fc81d2b10a5e83f622518695702de5b7105fc74f868ef81ecfcf28345a8a6",
+          "crates/dearust-futex/src/lib.rs": "0a6af66a161fb2b46cef90a4fcd9ed9bff72d962a793c9abccf324068cb34f7f",
+          "crates/dearust-futex/src/result.rs": "26bd96dc322bde6c7c3a792f5c741d30b0bbedf1dec1ba23952381f2ce390fbd",
+          "crates/dearust-guarded/src/abi.rs": "d2a5ab1f2cdc2f02a8ae640c3f81f336cd0e8df6a96c636bd272896c0a669839",
+          "crates/dearust-guarded/src/lib.rs": "fb295e98cd713a1c858d2b61bbc64daaf8b99ec593c42ba2c6ca4aa149a0550d",
+          "crates/dearust-guarded/src/table.rs": "3943799963d4f519a23b09e727eb01152389bda79f79e2510f1b865e3e06b08e",
+          "crates/dearust-libsimple/src/core.rs": "ab9feb45f47a05eee1bf46335a2465a455033dc1c11e8cbef67c489e4388af3e",
+          "crates/dearust-libsimple/src/lib.rs": "a897e76abffff70a1ba5526cdea3d0b18be516fa05cc013dd267c316c887a1d9",
+          "crates/dearust-lockset/src/core.rs": "b827537b6ddd63940005496f0a78ce3b707654fb22bd84bbf206fe48e7cdea0d",
+          "crates/dearust-lockset/src/lib.rs": "f37468cbc82d95d9e0d129dc22d7e36e8e43a9cab2377f599a3db56e732a2eb1",
+          "crates/dearust-lockset/src/tests.rs": "522ca8bdefbb85b53c04ee9f9965396604e82bb2531b9a5c3528845864be61b5",
+          "crates/dearust-path/src/abi/conversion.rs": "a2425960a58a6e09791dc7b1b9e45d699c03a941ebe62773e5aec6ef5dee705b",
+          "crates/dearust-path/src/abi/faccessat.rs": "151118c14332bfaebbb86503d034ec44bb9460a3967a3487eec709e6668ffe30",
+          "crates/dearust-path/src/abi/fchmodat.rs": "afe496ed2355785d0d363f3f47c59f0af869a4a71fbe367af1a5dff4ffb454c0",
+          "crates/dearust-path/src/abi/filesystem.rs": "73d3447158828e927dd6e47d2cc1819815561a77ba4bfa008d1a38d6120b9611",
+          "crates/dearust-path/src/abi/frontends.rs": "57f9f1ee8af962decfdd73520365f754eb0876149c8b6aa86675e41e3c95eb2f",
+          "crates/dearust-path/src/abi/fstat.rs": "c6324557f17a37e583a45cda909e26b655de47c6f0982b3ec5a65315e4076f4f",
+          "crates/dearust-path/src/abi/fstatat.rs": "45d8d804776e9190b76d170a481ee7bde01881890f8f651211220d9ce3a7f956",
+          "crates/dearust-path/src/abi/guarded.rs": "680d2ddb0e911acac66199b1d1f0315c809d477ffc316501af780114a1dbf006",
+          "crates/dearust-path/src/abi/linkat.rs": "c50ed736cda8bac7c17de56335512507a094a39e86747ee008076dc6e5098983",
+          "crates/dearust-path/src/abi/lstat.rs": "f4f92555d939218e74b355b6a589b9c76342b8d9e45476143e5f12076b215e67",
+          "crates/dearust-path/src/abi/memory.rs": "126d68df4aada0b5a28f7408a5c55394b666f7c3eb6535b1cfd503dcd0307a91",
+          "crates/dearust-path/src/abi/mkdirat.rs": "1aaed251c7bee9afa5027cfc895758e019045392172e453b568e5306152407e2",
+          "crates/dearust-path/src/abi/mod.rs": "8c3ca2a444cd986a463789fb52b1dee63468ce38f251cbd8010ab3a4b1ea6098",
+          "crates/dearust-path/src/abi/permissions.rs": "4b5826dd4b5405552b6c9c2e7a6398ff4fd06608030e368abebf60771f36116e",
+          "crates/dearust-path/src/abi/readlinkat.rs": "d34f591e5bbeb21480dbabe2291de18742d92f161af1d1c5938c828b0b2f65ee",
+          "crates/dearust-path/src/abi/renameat.rs": "27b63aa53dff03fbd5af4be2fc727ce04afe105d59a699d236fa459a0165e0c3",
+          "crates/dearust-path/src/abi/rmdir.rs": "9630f95a65d49c01f35190ccc00431ae12d957a2b754016777944051e5872031",
+          "crates/dearust-path/src/abi/stat.rs": "b67bdf19890ccce7020beb0e0594b04aeaae75659d7a1afa4d1c475aa8d3b5f4",
+          "crates/dearust-path/src/abi/symlinkat.rs": "9df303b9a5ee2e5b954068f986b99c50c7663ef9c3f3cbbe0dc2549040f618cd",
+          "crates/dearust-path/src/abi/truncate.rs": "a013a33dd7de56228bdf0f49d6e847889d728377c3e7150e505750befb8935f1",
+          "crates/dearust-path/src/abi/unlinkat.rs": "30b3e739e5eb04f3384604dad4e7633a6e620c33139d12685838a91b13f5be44",
+          "crates/dearust-path/src/filesystem.rs": "adb9b6f9e68f9b5bc0efeaeb063e07079eed3ee0fba60fc6b1113364e5e49bba",
+          "crates/dearust-path/src/filesystem_io.rs": "8136eb8cb726f3112631d60ee1da7f653be04230d5cbee0d89d9ed499adad0d6",
+          "crates/dearust-path/src/host_filesystem.rs": "ca12982211cafd52374aa1f290e5e0ce44f8456067e2904a77a642c370fa0054",
+          "crates/dearust-path/src/lib.rs": "24441aca54caec0bc8c23190fb81da29b3e74347c2e91ec8e8e058a8ca3c13d5",
+          "crates/dearust-path/src/path.rs": "21063aa97965bb950336a571e96bc80800b30aa74fca490078601211b4acb5df",
+          "crates/dearust-process/src/abi.rs": "31efc72d23c1459a9be30fc7005fe3bef29ceb3e91b0fe18e2447abca17fe574",
+          "crates/dearust-process/src/identifiers.rs": "59427e40009df77bcdb6877b2b5ba6216150b5caf27e71e62c5b861d27fdd460",
+          "crates/dearust-process/src/info.rs": "4c7d31091cfbdc8e673816e323a5d1a2a67a1e00e46c1c08af5460841ed3d2a0",
+          "crates/dearust-process/src/lib.rs": "9c4770da58cc11143689f87b119a3ac72535ecf5f5fa77b5afd4cfd451853283",
+          "crates/dearust-process/src/parse.rs": "1194e861ecc1b412cae1892b68a01bfe7f056642f4a71acead878d975b043be1",
+          "crates/dearust-process/src/resource_abi.rs": "f70b628f6bc62ca1d67b1fec2694f6471d6054e10656f82ca02b0b1d69f6733d",
+          "crates/dearust-process/src/resource_policy.rs": "1397d2448b484828cd94ca5bf43e9f9e15c4401d39f300534c2def58177aae1e",
+          "crates/dearust-process/src/resource_view.rs": "93fb4e58ed06e20b2c48bb4e5e8b71165375d339a83c028664edaf45286885ea",
+          "crates/dearust-process/src/resources.rs": "a99dc979b9f15732c1a5c5ebfc9c86b6d60f9bc3a61d93be5576b8f99bf0f5f6",
+          "crates/dearust-process/src/services.rs": "515b0a805240e0a9e8275c5f3d4580508bb9d9eecdf1fb0ed327366e07b66f35",
+          "src/bin/bsdln.rs": "a7d591ae9b524a19760be90cb6137080fe2a16e9f31e36454753f4ddfa6f3f43",
+          "src/bin/elfdep.rs": "8fb4bfa349e545ce0cb223f561bbeaf0443afacf27f39c9af1c9833f9f89630e",
+          "src/bin/getuuid.rs": "64c30d472d8a05c3835b445c0fd07975eb370e13cf4b1abf4d2f3143e99227a0",
+          "src/bin/print_wrapped_elf.rs": "216b4e7a7311ec99f19a1905366d168881ad1a39fb74c4551a6fccd9823a8ce4",
+          "src/bin/wrapgen.rs": "e30a41982126ef859b26b81a80acf94f8b4d5e597313875815d12f09c250cb2a",
+          "src/elf_wrapper.rs": "a16be484c1586422fe67b1f5614e5ad40b9bdd59f68005b288bfc11ea4ed3413",
+          "src/lib.rs": "fc42026d51281c6277f3e0bfa2460df302d923fc877e159e80cbe683d75ff6b7",
+          "src/wrapped_elf.rs": "b58643df98f597d4497d32a75eef91377e55585a439dacb9bcca042cc4e32d65",
+          "xtask/src/install.rs": "c67d6fa155f90de96963a21bf83c9d970408136875737656f8b9118633f6c9c3",
+          "xtask/src/main.rs": "4a3d554c960a1c612dc08429634f8b2ebc1c222f891b2a787b8be8851d1ed91c",
+          "xtask/src/runtime.rs": "8103745d1e308a5e2ac05b1a79837388fae4ea0d7ef7943a81b61a2807370a5c"
+        },
+        "scope": "Original captured implementation hashes before the current lockset lifecycle revision; preserved verbatim as historical input, not overwritten by a newer verification claim."
+      }
+    ],
     "implementation_sha256": {
       "crates/dearust-coredump/src/backing.rs": "ddcc2f9afe9038f10246809c3a107c93e72084f023717310836dad6628acf966",
       "crates/dearust-coredump/src/fp.rs": "b0683e2846483dc5e9b76d575a0c8b3c7014d9980bdf0c05edb378a91e6420c2",
@@ -553075,9 +553388,9 @@
       "crates/dearust-guarded/src/table.rs": "3943799963d4f519a23b09e727eb01152389bda79f79e2510f1b865e3e06b08e",
       "crates/dearust-libsimple/src/core.rs": "ab9feb45f47a05eee1bf46335a2465a455033dc1c11e8cbef67c489e4388af3e",
       "crates/dearust-libsimple/src/lib.rs": "a897e76abffff70a1ba5526cdea3d0b18be516fa05cc013dd267c316c887a1d9",
-      "crates/dearust-lockset/src/core.rs": "b827537b6ddd63940005496f0a78ce3b707654fb22bd84bbf206fe48e7cdea0d",
-      "crates/dearust-lockset/src/lib.rs": "f37468cbc82d95d9e0d129dc22d7e36e8e43a9cab2377f599a3db56e732a2eb1",
-      "crates/dearust-lockset/src/tests.rs": "522ca8bdefbb85b53c04ee9f9965396604e82bb2531b9a5c3528845864be61b5",
+      "crates/dearust-lockset/src/core.rs": "82d1d441286cc009eca32705a530b029f84cc82ab81b3896115fbac3b2919047",
+      "crates/dearust-lockset/src/lib.rs": "9cdc6e89bddd9af2e65d40b364e845cd519324e6f348332e73a448869b4cb6fa",
+      "crates/dearust-lockset/src/tests.rs": "90a98a9c8e565ed43ce57ee3d3638d866f9dd287b81f01c6710381f70ef54e14",
       "crates/dearust-path/src/abi/conversion.rs": "a2425960a58a6e09791dc7b1b9e45d699c03a941ebe62773e5aec6ef5dee705b",
       "crates/dearust-path/src/abi/faccessat.rs": "151118c14332bfaebbb86503d034ec44bb9460a3967a3487eec709e6668ffe30",
       "crates/dearust-path/src/abi/fchmodat.rs": "afe496ed2355785d0d363f3f47c59f0af869a4a71fbe367af1a5dff4ffb454c0",

@@ -61,18 +61,21 @@ runtime-resource-copies-verification.json and its hashed raw summary. These
 counts describe that run, not a rerun at the current checkout. No owner candidate
 was selected in that default validation.
 
-The later owned resource lifecycle candidate is built separately with
-tools/build_resource_lifecycle_server.py. It requires the preserved matching
-server-build12 inputs and an absent owned output directory; it rebuilds all12
-server translation units and selected C bridges without installation/activation.
-tools/RESOURCE-LIFECYCLE-CANDIDATE.txt and resource-lifecycle-current-index.json
-record earlier88 single-worker ordinary guests,94 Python tests, separately scoped
-native evidence and unverified/stopped gates. These counts describe identified
-runs, not additional Rust replacements or complete resource acceptance.
-tools/build_resource_workqueue_configuration.py selects an explicit single/multi
-worker configuration for all12 owned server TUs. The current multiworker guest
-run still fails, and latest single-worker checks expose a thread-info assertion.
-See the index rather than inferring acceptance from compilation.
+The current owned resource lifecycle candidate is built separately with
+tools/build_resource_lockset_server.py, selecting --work-queue single or multi.
+It requires preserved server-build12 inputs and an absent owned output directory.
+It rebuilds the current Rust lockset, all12 server translation units and selected
+C bridges without installation or ownership activation. The exact selected Rust
+archive/C object/consumer map/link are checked in resource-lifecycle-current-index.json.
+Owned57 single-worker passes88/88 ordinary guests. Owned58 multiworker passes78
+of80 executed cases and still times out twice in Mach lockset. Thread-info's
+post-join ordering fixture is corrected and validated with forced native-exit
+delay. The workspace passes213 ordinary Rust/11 compile-fail/94 Python checks.
+These counts are scoped evidence, not resource completion, additional Rust source
+replacement or performance acceptance. See tools/RESOURCE-LIFECYCLE-CANDIDATE.txt
+for precise reproduction and all unfinished/automatically stopped gates. The
+wait-admission fix/regression was stopped by automatic review and stays inactive;
+its checker and earlier blocked checks must not be retried.
 
 Functioning executables: elfdep, getuuid, bsdln, print_wrapped_elf,
 darling-coredump and wrapgen (partial loader-name resolution; see README.md). No libbsd

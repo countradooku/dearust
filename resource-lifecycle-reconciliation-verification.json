@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "deterministic_pair": true,
+  "output_sha256": {
+    "migration-targets.json": "c40597a3554f6e52b0752fa354ad5a03aa3035d2d337b91a1ac7a5d26a0381f1",
+    "migration-reconciliation.json": "bc089c2555eca01c8ad67a46c8ddbe1d5eeea53bd17acdd5aafb631f80a50640",
+    "migration-gap-matrix.txt": "9da4cdde3e80163095fadfae118f18df5361ab852a72be28403976df1c8f67ce"
+  },
+  "counts": {
+    "candidate_artifacts": 2,
+    "legacy_targets_retired": 0,
+    "manifest_artifacts": 17,
+    "observed_default_targets": 1629,
+    "optional_artifact_bindings": 1,
+    "pending_targets": 1629,
+    "production_active_targets": 0,
+    "source_target_participations": 110,
+    "unique_artifacts": 21,
+    "unique_ported_upstream_sources": 59,
+    "unique_sources_participating_in_captured_graph": 58,
+    "unique_sources_with_rust_work": 59,
+    "unretired_targets": 1629,
+    "whole_target_replacements_verified": 0,
+    "with_cargo_artifact_slice": 11,
+    "with_compiled_unlinked_scopes": 3,
+    "with_consumer_link_evidence": 9,
+    "with_execution_evidence": 9,
+    "with_rust_work": 12,
+    "with_source_port_participation": 10
+  },
+  "evidence_hash_matched": 75,
+  "input_hash_matched": 85,
+  "historical_source_drift": [
+    {
+      "availability": "changed",
+      "kind": "historical-source",
+      "observed_sha256": "6a174a5e3e31549a8328d1c8a7987bc377efb296a9571b7046e7d71d265c723c",
+      "path": "tools/relink_matching_kernel.py",
+      "provenance": "work/resources-complete/default-final-validation/summary.json",
+      "sha256": "e8c710aeeea8bf9ec1af9a7fdaa9b4e63555df5a11008b0292c2a853569339e9"
+    },
+    {
+      "availability": "changed",
+      "kind": "historical-source",
+      "observed_sha256": "1384f6e77699714cfa2b121e3b00b9db0b96f4e07d834a591d9432f99e44359b",
+      "path": "tools/relink_system_kernel.py",
+      "provenance": "work/resources-complete/default-final-validation/summary.json",
+      "sha256": "c178a9b9bc394a621fdd1f380f06164295af9dba8011c2b68c30c08449be1f61"
+    },
+    {
+      "availability": "changed",
+      "kind": "historical-source",
+      "observed_sha256": "f8db57282dc3516388b90d2498c2c297626d14e8511bcc4e2ba16e30ad53676b",
+      "path": "tools/run_isolated_server.py",
+      "provenance": "work/resources-complete/default-final-validation/summary.json",
+      "sha256": "5ede507d79afc0fb47e5998d6758367bba3863eeb4ce099f9766c90d6238d9fb"
+    }
+  ],
+  "scope": "Current accounting/links and scoped candidate evidence, not resource/full migration completion.",
+  "commands": [
+    "python3 tools/target_inventory.py --output work/resource-death-continuation/migration-targets57-a.json --reconciliation work/resource-death-continuation/migration-reconciliation57-a.json --matrix work/resource-death-continuation/migration-gap-matrix57-a.txt",
+    "python3 tools/target_inventory.py --output work/resource-death-continuation/migration-targets57-b.json --reconciliation work/resource-death-continuation/migration-reconciliation57-b.json --matrix work/resource-death-continuation/migration-gap-matrix57-b.txt"
+  ]
+}

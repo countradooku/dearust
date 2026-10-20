@@ -1,187 +1,123 @@
-Owned resource lifecycle continuation (unfinished)
-===================================================
+Owned resource lifecycle candidate — UNFINISHED
+================================================
 
-resource-lifecycle-current-index.json indexes this continuation separately from
-the immutable resource-prepared-registration-verification.json. Every native
-derivative retains its own binary/input hashes; results are not a combined fault
-matrix for the final candidate. These C/C++ prerequisites neither activate
-unsigned resource ownership nor add Rust replacements or target retirements.
+The current index is resource-lifecycle-current-index.json. Every report keeps
+its exact artifact, source hashes, models and scope. Historical native derivatives
+are not a complete combined fault matrix for the current server. Resource logical
+ownership/enforcement remains inactive; no runtime was installed. C/C++ prerequisites
+are not Rust source replacements, whole-target replacements or legacy retirement.
 
-Implementation
-----------------
-The Registry reserves EIDs before factories and map nodes before foreign handles.
-Selected task/thread C source now follows the selected bridge object's adjacent
-source, preserving Rust lockset dying/destruction callbacks. Owned builds freeze
-inputs, rebuild all12 server translation units, compile checked C changes and
-record all selected objects/archives and C compilation commands.
+Current implementation
+----------------------
+Prepared registration reserves EIDs before factory/C acquisition. Factories and
+suspension-capable C preparation run outside native Registry/Process locks. Private
+map nodes and in-flight bucket budgets precede publication; final collision and
+generation checks occur under brief native locks. Failed attempts consume EIDs.
+Strong Process/task pins finish once on embedded allocation-free kernel-cleanup
+jobs; they cannot perform final C release on the native event loop. Bootstrap
+Thread map storage is staged privately even if a kernel helper is already active.
 
-Private task/thread preparation checks VM, IPC, importance, psynch and turnstile
-stages and retains partial ownership explicitly. Kernel-lane abort releases only
-acquired state; thread dying decrements active_thread_count once. Every opaque C
-context independently owns its generation, so retained old handles keep C++
-owners alive and late disposal cannot clear replacements. Resume validates its
-expected generation under the Thread lock through reserved queue insertion.
-StackPool reserves its cache and honors capacity without the old off-by-one.
+Generation-owned C contexts, reserved dispatch/reply nodes, callback retirement,
+worker-map ownership, running-work handoffs, active mutex try-lock interlocks and
+producer eventfd rearming remain composed into the owned build. Impersonation
+claims are exclusive. Fork checkin pins the XNU semaphore under the parent lock,
+then signals and releases outside it, preventing a native writer lock from
+spanning a migrating C suspension.
 
-Worker launch allocates/extracts a map node before creating its native thread.
-Constructor failure joins every started worker before rethrowing. Shutdown swaps
-the worker map under the queue mutex, then joins outside it, excluding concurrent
-temporary timeout retirement. Optional growth failure preserves accepted work.
-These queue ownership fixes do not establish whole-server shutdown draining.
+Kernel-async synchronous submission prepares its list node and runner storage
+before nonthrowing acceptance. Its executing runner callback body is unchanged;
+stopped closure-lifetime ownership work is inactive. Native dispatch no longer
+rewrites XNU logical wait state. Saved-context entry consumes the current wake
+permission; stale reserved-queue retries do not authorize a later unrelated wait.
 
-A Thread now retains requests arriving while its prior worker is still running.
-The epilogue combines them with pending interrupts into one reserved handoff.
-Death and rollback defer C handle cleanup until that worker finishes; the kernel
-suspend interlock is released before publishing _running=false. Native-worker
-TLS is cleared while the Thread lock still prevents another worker's entry.
+The partial Rust lockset implementation releases REGISTRY before foreign waits,
+wakes, port conversion and cleanup. Stable event tokens pin identity through
+foreign calls; pure predicates recheck wait registration races. Queue-first
+thread/event-matched cancellation avoids clear_wait_internal's nested delay wait.
+A later selected thread_unblock retains an interruption already committed by
+sigexc/dying while still completing timer cleanup and resume.
 
-Active C mutex try-lock now acquires its queue interlock before examining the
-owner and releases only an interlock it owns. Assertions/destroy and waitq owner
-diagnostics use atomic observations without changing the ABI layout. Both
-locks.c and misc.c are rebuilt. The native no-active-thread busy-spin fallback
-is unchanged and remains outside performance acceptance.
+Thread-info is corrected: pinned libpthread releases its join gate before native
+thread termination. A successful112-byte record can therefore remain valid after
+pthread_join. The fixture validates such records and output bounds until eventual
+ESRCH with untouched output. Forced native-exit delay reproduces the old invalid
+immediate-ESRCH assertion; corrected normal/delayed tests pass. Originals remain
+preserved. See tools/THREAD-INFO-ORDERING.txt.
 
-The server's producer eventfd is always rearmed with EPOLLIN|EPOLLONESHOT.
-Disabling it after an empty-outbox snapshot could discard a producer's later
-counter write before epoll_ctl. This change adds no descriptor, polling loop,
-timer, allocation or extra syscall; complete transport acceptance remains open.
+Owned evidence
+---------------
+Current builds are lockset57-single/server and lockset58-multi/server beneath
+work/resource-death-continuation. Both rebuild all12 server translation units and
+selected C inputs, linking a freshly built current Rust lockset archive. The
+index checks archive/source/object/consumer-map/link provenance separately from
+behavior. Historical selected archive ea368a6b... remains unchanged; the current
+archive is76421d09cb72bbfa69fcbdb278c7a371b6604150b6507a42c6ea84ef5136c1f0.
+The paired loader12 and matching-exec-fixed kernel are unchanged and bound only
+inside private user/mount/PID namespaces. Both harness slots use the SAME owned
+server/loader/kernel; they are not original-C versus Rust comparisons.
 
-Process death marks ResourceState synchronously and stops timer rearming. Owned
-channels are destroyed outside the Process lock; exit fanout and foreign cleanup
-use reserved events/jobs. ResourceState's embedded job precedes its real gate
-semaphore. Startup-owned cleanup TLS removes the previous64MiB allocator arena
-reservation; the lane still adds a default-stack pthread, an open performance gate.
+The ordinary cohort is88 cases:2 guards,1 filesystem,30 retained,10 applications
+and1 resource case per slot. Single-worker54 and57 pass88/88. Multiworker58 passes guards/filesystem/retained cohorts
+but its Mach lockset workload still fails:78/80 executed cases pass and2 time out. The index retains exact counts, native
+thread/inode observations, failures and earlier cohorts, rather than merging them.
+No throughput, latency or full runtime performance acceptance follows.
 
-Process/Mach notification packets retain fixed storage across EAGAIN. Weak C
-callback promotion defers final C detach. Port-set unlink atomically publishes
-shutdown, posts the read semaphore and interrupts an existing wait, closing a
-reproduced lost wakeup when callback return preceded its next semaphore wait.
+Actual diagnostic53 traces a matching lockset wait cancellation followed by a
+second wait assertion from clear_wait_internal -> delay(1), while its old waitq
+is still linked. The queue-first cancellation regression reproduces and fixes
+that path. Actual diagnostic56 then records the SAME C mutex_link enqueued twice
+without an intervening removal after an unrelated XNU wake. The multiworker TAILQ
+panic/stall remains unresolved. Both trace findings and every failed binary/run
+are preserved; fixing the first failure does not close the second gate.
 
-Exec prepares a replacement task, thread and five semaphores before publishing.
-It pins predecessor handles, releases both owner locks for C preparation, then
-relocks and revalidates exact live ownership before commit. An embedded cleanup
-capsule retires handles after unlocking. Physical exec has already occurred;
-failure is terminal bookkeeping, not image rollback. Checkin Call/reply storage
-is reserved before Registry publication. Message tokens preserve signal/S2C
-deferrals; intrusive nodes merge into ordinary FIFO/batched transport without
-queue allocation. Terminal exec errors queue their reserved reply before death.
+Focused native and sanitizer evidence under work/resource-death-continuation:
+  registration-lock-scope/proof5 — reentry, migration, private publication,
+    competing insertion budgets, consumed EIDs and cleanup-lane task pins;
+  bootstrap-thread-storage/proof2 — active helper and private capacity staging;
+  impersonation-handoff/proof4 — exclusive claims and caller error protocol;
+  fork-signal/proof1 — migrating parent semaphore signal outside native locks;
+  kernel-async-submission/proof3 — synchronous submission failure boundaries;
+  resume-consumption/proof2 — stale reserved retry versus a later wait;
+  xnu-wait-state/proof3 — logical wait preservation across native dispatch;
+  lockset-registry/proof6 —17 Rust lockset tests and strict Clippy;
+  lockset-cancel/proof1 — exact selected queue-first C path, old nested wait;
+  wait-result/proof2 — exact selected methods,2000 interruption/removal races.
+Foreign acquisitions, waitq ownership, scheduler/fiber paths and callers are
+modeled where stated in those reports. These are not actual adversarial RPC or
+whole-scheduler proofs. Current workspace checks pass213 ordinary Rust tests,
+11 compile-fail checks and94 Python tests; see exact logs in the index.
 
-Recorded evidence and limits
-------------------------------
-Earlier single-worker server16 SHA256:
-9f9c97b36ab08a104d982d023c2b5a1ea6bdfdefd7b5c138b5a52b2e143fbc83
-Its88 ordinary guest executions pass: guards2, filesystem1, retained30,
-applications10 and resource1 in each of two same-candidate slots. Actual kernel
-mapping and paired loader/kernel hashes remain recorded. Earlier server4 also
-passed two ordinary Process kqueue executions; that is earlier scoped evidence.
+All23 original dirty candidates,70 frozen build12 files, earlier archives and
+failed candidates remain unchanged/preserved. Eleven stopped WIP files are
+hashed separately and inactive. No reference or installed runtime is replaced.
 
-Latest single-worker server20 SHA256:
-dee45f4e60c8daad182f9867f23849a5533c40683a7336a9dedbe924082964c3
-Its cohort stopped after66 executions: thread-info.c's post-pthread_join ESRCH
-assertion failed once. No expectation was weakened. The exact termination/join
-ordering and result semantics remain under review. This is a failed current run;
-server16's earlier88 passes do not validate this later binary.
+Reproduction of allowed owned build/index
+------------------------------------------
+  python3 tools/build_resource_lockset_server.py     --candidate work/resources-complete/server-build12     --output /fresh/owned/current --work-queue single
 
-The pinned-source ordering review shows ordinary pthread_join wakes before the
-native termination tail and legacy Darling also reads /proc for this query.
-An owned logging-only derivative retains the ESRCH assertion and passed two
-same-candidate cases with result=-1/errno=3. It does not reproduce the original
-failure or establish its return value. Original fixtures/expectations remain
-unchanged; the failed cohort is still recorded as failing.
+Use --work-queue multi for a separately owned multiworker build. Each output must
+be absent. Resource ownership remains inactive in both configurations.
 
-Historical owned native derivatives pass79 real acquisition failures, three
-overlapping generations with newest-first disposal, real ResourceState semaphore
-accounting, real Mach callback/detach races and allocation-denied notifications.
-Exact reply queue methods pass natively and under ASan/UBSan:1024 concurrent
-replies, mixed batched FIFO, EAGAIN, SCM_RIGHTS, moved/deferred/dropped owners,
-shutdown and callback replacement/reentrancy, with zero denied allocations.
-Generation resume passes64 forced publication interleavings in native/sanitized
-fixtures. Public ABI interposition excludes hidden libc internals; fixture
-sanitizers do not instrument linked Rust/XNU. The identified Python run passes94
-tests; no Rust source changed in this batch.
-
-Exact WorkQueue native/sanitized tests pass7 constructor allocation failures,
-2 injected std::thread-boundary launch failures,3 optional-growth allocation
-failures, accepted-work recovery and64 timeout/shutdown interleavings. The exact
-committed original Darlingserver89751e64 aborts at allocation indices3/4/5/6;
-the fixed queue catches and joins at each. The4096-item reserved-dispatch suite
-also passes with zero denied C++ allocations. Test-only timeout/barrier changes
-and failure-hook scope remain explicit in the native report.
-
-The handoff state-method fixture reproduces the pinned original guard losing
-1000 running requests. The fixed native/sanitized fixture coalesces them and
-checks dead active continuations, interrupt/request combination, running death
-and kernel unlock ordering with zero denied allocations. Its ucontext body and
-foreign objects are modeled; actual guest evidence is recorded separately.
-
-The mutex native/sanitized fixture uses exact pinned/selected mutex functions,
-the real internal mutex type and actual Linux libsimple interlock implementation.
-It reproduces the original try-lock succeeding and unlocking another worker's
-held interlock. Fixed variants preserve that interlock and execute40000 try-lock
-plus8000 blocking critical sections each with zero overlaps. Current-thread
-identity and suspend/resume callbacks are modeled; full XNU/ucontext execution
-and native-fallback performance are not established by this fixture.
-
-The native/sanitized eventfd fixture uses the extracted selected and pinned
-original wake masks with real Linux epoll/eventfd calls. Both old masks lose all64
-forced writes between mask computation and MOD; the fixed mask delivers64/64.
-Zero counters remain idle and ONESHOT behavior is preserved. Outbox state and
-producer timing are modeled. This does not prove the cause of guest timeouts or
-complete socket-backpressure behavior.
-
-All12 server TUs were also rebuilt with DSERVER_SINGLE_THREADED=0. The actual
-multiworker run observed the selected executable inode and multiple native
-workers, but timed out in process-control-regression.c after54 executions.
-Earlier server11 timed out in linkat-regression.c; both failures are preserved.
-A traced diagnostic and a subsequent plain retained cohort passed60 ordinary
-cases each, which does not resolve the intermittent failure. Multiworker
-server17 includes the mutex fix and still timed out in fsync-regression.c after44
-executions. A later standalone server17 cohort passed retained60 then timed out
-twice in mach_lockset_basic.c. Latest server21 includes the eventfd fix and still
-times out in readlinkat-regression.c after58 executions. Multiworker validation
-remains failing. The separate continuation
-ownership candidate stopped during automatic review and remains inactive,
-unverified WIP. No comparative performance claim follows from these runs.
-
-The earlier29-failure exec proof predates the later owner-lock fix and remains
-historical evidence. Final combined fault validation is NOT passed. All23 old
-dirty candidates and frozen build12 inputs remain unchanged; failed iterations
-are preserved. The final ordinary bootstrap run caught and verified correction
-of a real C-callback lock recursion absent from the earlier native context.
-
-Reproduction (owned build/index only)
----------------------------------------
-  python3 tools/build_resource_lifecycle_server.py \
-    --candidate work/resources-complete/server-build12 \
-    --output /fresh/owned/lifecycle-server
-
-  python3 tools/record_resource_lifecycle_progress.py \
-    --output /fresh/current-evidence-index.json
-
-  python3 tools/build_resource_workqueue_configuration.py \
-    --candidate work/resources-complete/server-build12 \
-    --output /fresh/owned/multiworker-server --work-queue multi
-
-No installation or activation occurs. Inputs/reference builds, prior paired
-artifacts, prefixes and work evidence remain preserved.
+  python3 tools/record_resource_lifecycle_progress.py     --build-report work/resource-death-continuation/lockset57-single/server/build.json     --guest-run work/resource-death-continuation/guests57-single/run.json     --multi-build-report work/resource-death-continuation/lockset58-multi/server/build.json     --multi-guest-run work/resource-death-continuation/guests58-multi/run.json     --multi-observation work/resource-death-continuation/plain-observation58/verification.json     --python-check-log work/resource-death-continuation/python-tests-wait57.log     --output /fresh/current-evidence-index.json
 
 Open and stopped gates
--------------------------
-Original adversarial RPC verification remains blocked. Further automatic review
-stopped an exec-notification/extra-guest/cleanup-lane redesign follow-up and a
-direct native Checkin fault test, citing possible cybersecurity risk. These
-actions were not retried, rephrased or transferred. Their WIP remains separate;
-verification is unclaimed. Reproduction commands for stopped work are omitted.
+------------------------
+Automatic cybersecurity review stopped the delegated intrusive C queue
+wait-admission fix/regression, citing possible cybersecurity risk. Its new patch,
+checker and fixture remain inactive/unverified WIP. This work was not retried,
+rephrased or transferred. Reproduction commands for stopped work are omitted.
+Earlier stops remain: exec-notification/extra-guest/cleanup-lane redesign,
+direct native Checkin allocation/terminal-reply fault proof, and executing
+microthread continuation-lifetime ownership validation. The original adversarial
+RPC check remains blocked. None was retried or used as a passing verification.
 
-Automatic review also stopped native continuation-lifetime validation, citing
-possible cybersecurity risk. The suspected closure lifetime gap across logical
-microthread suspension/native-worker reuse remains an open gate. Its new module,
-checker and fixture are preserved outside the active build and Git commit.
-
-Latest combined exec fault behavior, initial-call failure, active-call
-cancellation, full shutdown, generic/lazy IPC allocation, bootstrap exhaustion,
-optional configurations/architectures and performance remain open. Physical
-exec versus old-task VM access needs its own drain/cancellation protocol.
-Exact unsigned ownership/enforcement, host hard-limit/VM partial effects,
-credential/NPROC authority and generic-copy CPU gates remain unfinished.
-Resources and post-resource packages01-09 are not complete.
+Foreign XNU impersonation shares the target's C wait identity; reverse wake
+routing remains unresolved and inactive. Full initial-call failure, active-call
+cancellation, combined exec faults, shutdown draining, generic/lazy IPC and
+bootstrap OOM, optional configurations/architectures remain unverified. Physical
+exec versus old-task VM access needs a drain/cancellation protocol. Native cleanup
+retains an additional default-stack pthread; synchronous kernel submissions add
+a list-node allocation. Broader performance and generic-copy CPU gates remain
+open. Exact unsigned resource ownership/enforcement, host hard-limit/VM coherence
+and partial effects, credential/NPROC authority remain unfinished. Resources and
+packages01-09 are not complete.
